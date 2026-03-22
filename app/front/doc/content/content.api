@@ -1,0 +1,125 @@
+syntax = "v1"
+
+import "../base/base.api"
+
+type (
+	ContentUploadsCredentialsReq {
+		Scene    *string `json:"scene,optional" validate:"required"`
+		FileExt  *string `json:"file_ext,optional" validate:"required"`
+		FileSize *int64  `json:"file_size,optional" validate:"required,min=1,max=10737418240"`
+		FileName *string `json:"file_name,optional" validate:"required"`
+	}
+	ContentUploadsCredentialsRes {
+		ObjectKey string      `json:"object_key"`
+		FormData  OssFormData `json:"form_data"`
+		ExpiredAt int64       `json:"expired_at"`
+	}
+	OssFormData {
+		Host             string `json:"host"`
+		Policy           string `json:"policy"`
+		Signature        string `json:"signature"`
+		SecurityToken    string `json:"x-oss-security-token"`
+		SignatureVersion string `json:"x-oss-signature-version"`
+		Credential       string `json:"x-oss-credential"`
+		Date             string `json:"x-oss-date"`
+		Key              string `json:"key"`
+	}
+	PublishArticleReq {
+		Title       *string `json:"title,optional" validate:"required,min=1,max=100"`
+		Description *string `json:"description,optional" validate:"min=1,max=255"`
+		Cover       *string `json:"cover,optional" validate:"required,url"`
+		Content     *string `json:"content,optional" validate:"required,min=1,max=1000000"`
+		Visibility  *int32  `json:"visibility,optional" validate:"required"`
+	}
+	PublishArticleRes {
+		ContentId int64 `json:"content_id"`
+	}
+	PublishVideoReq {
+		Title       *string `json:"title,optional" validate:"required,min=1,max=100"`
+		Description *string `json:"description,optional" validate:"min=1,max=500"`
+		VideoUrl    *string `json:"video_url,optional" validate:"required,url"`
+		CoverUrl    *string `json:"cover_url,optional" validate:"required,url"`
+		Duration    *int32  `json:"duration,optional" validate:"min=1,max=7200"`
+		Visibility  *int32  `json:"visibility,optional" validate:"required"`
+	}
+	PublishVideoRes {
+		ContentId int64 `json:"content_id"`
+	}
+	DeleteContentReq {
+		ContentId int64 `path:"content_id"`
+	}
+	DeleteContentRes  {}
+	GetContentDetailReq {
+		ContentId *int64 `json:"content_id,string,optional" validate:"required"`
+	}
+	ContentDetail {
+		ContentId         int64  `json:"content_id,string"`
+		ContentType       int32  `json:"content_type"`
+		AuthorId          int64  `json:"author_id,string"`
+		AuthorName        string `json:"author_name"`
+		AuthorAvatar      string `json:"author_avatar"`
+		Title             string `json:"title"`
+		Description       string `json:"description"`
+		CoverUrl          string `json:"cover_url"`
+		ArticleContent    string `json:"article_content"`
+		VideoUrl          string `json:"video_url"`
+		VideoDuration     int32  `json:"video_duration"`
+		PublishedAt       int64  `json:"published_at"`
+		LikeCount         int64  `json:"like_count"`
+		FavoriteCount     int64  `json:"favorite_count"`
+		CommentCount      int64  `json:"comment_count"`
+		IsLiked           bool   `json:"is_liked"`
+		IsFavorited       bool   `json:"is_favorited"`
+		IsFollowingAuthor bool   `json:"is_following_author"`
+	}
+	GetContentDetailRes {
+		Detail ContentDetail `json:"detail"`
+	}
+)
+
+@server (
+	tags:   content
+	group:  content
+	prefix: /v1/content
+	middleware: UserLoginStatusAuthMiddleware
+)
+service front-api {
+	@doc (
+		description: "获取内容上传凭证"
+	)
+	@handler ContentUploadsCredentials
+	post /upload-credentials (ContentUploadsCredentialsReq) returns (ContentUploadsCredentialsRes)
+
+	@doc (
+		description: "发布文章"
+	)
+	@handler PublishArticle
+	post /article/publish (PublishArticleReq) returns (PublishArticleRes)
+
+	@doc (
+		description: "发布视频"
+	)
+	@handler PublishVideo
+	post /video/publish (PublishVideoReq) returns (PublishVideoRes)
+
+	@doc (
+		description: "删除已发布内容"
+	)
+	@handler DeleteContent
+	delete /:content_id (DeleteContentReq) returns (DeleteContentRes)
+}
+
+@server (
+	tags:   content
+	group:  content
+	prefix: /v1/content
+	middleware: OptionalLoginMiddleware
+)
+service front-api {
+	@doc (
+		description: "获取内容详情"
+	)
+	@handler GetContentDetail
+	post /detail (GetContentDetailReq) returns (GetContentDetailRes)
+}
+

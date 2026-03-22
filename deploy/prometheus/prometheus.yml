@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "front-api"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["front-api:9290"]
+
+  - job_name: "content-rpc"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["content-rpc:9291"]
+
+  - job_name: "count-rpc"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["count-rpc:9292"]
+
+  - job_name: "interaction-rpc"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["interaction-rpc:9293"]
+
+  - job_name: "user-rpc"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["user-rpc:9294"]

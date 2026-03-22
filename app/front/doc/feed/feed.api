@@ -1,0 +1,125 @@
+syntax = "v1"
+
+type (
+	RecommendFeedReq {
+		Cursor     *string `json:"cursor,optional" validate:"required"`
+		PageSize   *uint32 `json:"page_size,optional" validate:"required,min=1,max=50"`
+		SnapshotId *string `json:"snapshot_id,optional"`
+	}
+	FollowFeedReq {
+		Cursor   *string `json:"cursor,optional" validate:"required"`
+		PageSize *uint32 `json:"page_size,optional" validate:"required,min=1,max=50"`
+	}
+	UserPublishFeedReq {
+		ViewerId *int64  `json:"viewer_id,string,optional"`
+		UserId   *int64  `json:"user_id,string,optional" validate:"required"`
+		Cursor   *string `json:"cursor,optional" validate:"required"`
+		PageSize *uint32 `json:"page_size,optional" validate:"required,min=1,max=50"`
+	}
+	UserFavoriteFeedReq {
+		UserId   *int64  `json:"user_id,string,optional" validate:"required"`
+		Cursor   *string `json:"cursor,optional" validate:"required"`
+		PageSize *uint32 `json:"page_size,optional" validate:"required,min=1,max=50"`
+	}
+	RecommendFeedItem {
+		ContentId    int64  `json:"content_id,string"`
+		ContentType  int32  `json:"content_type"`
+		AuthorId     int64  `json:"author_id,string"`
+		AuthorName   string `json:"author_name"`
+		AuthorAvatar string `json:"author_avatar"`
+		Title        string `json:"title"`
+		CoverUrl     string `json:"cover_url"`
+		PublishedAt  int64  `json:"published_at"`
+		IsLiked      bool   `json:"is_liked"`
+		LikeCount    int64  `json:"like_count"`
+	}
+	FollowFeedItem {
+		ContentId    int64  `json:"content_id,string"`
+		ContentType  int32  `json:"content_type"`
+		AuthorId     int64  `json:"author_id,string"`
+		AuthorName   string `json:"author_name"`
+		AuthorAvatar string `json:"author_avatar"`
+		Title        string `json:"title"`
+		CoverUrl     string `json:"cover_url"`
+		PublishedAt  int64  `json:"published_at"`
+		IsLiked      bool   `json:"is_liked"`
+		LikeCount    int64  `json:"like_count"`
+	}
+	UserPublishFeedItem {
+		ContentId    int64  `json:"content_id,string"`
+		ContentType  int32  `json:"content_type"`
+		AuthorId     int64  `json:"author_id,string"`
+		AuthorName   string `json:"author_name"`
+		AuthorAvatar string `json:"author_avatar"`
+		Title        string `json:"title"`
+		CoverUrl     string `json:"cover_url"`
+		PublishedAt  int64  `json:"published_at"`
+		IsLiked      bool   `json:"is_liked"`
+		LikeCount    int64  `json:"like_count"`
+	}
+	UserFavoriteFeedItem {
+		ContentId    int64  `json:"content_id,string"`
+		ContentType  int32  `json:"content_type"`
+		AuthorId     int64  `json:"author_id,string"`
+		AuthorName   string `json:"author_name"`
+		AuthorAvatar string `json:"author_avatar"`
+		Title        string `json:"title"`
+		CoverUrl     string `json:"cover_url"`
+		PublishedAt  int64  `json:"published_at"`
+		IsLiked      bool   `json:"is_liked"`
+		LikeCount    int64  `json:"like_count"`
+	}
+	RecommendFeedRes {
+		Items      []RecommendFeedItem `json:"items"`
+		NextCursor string              `json:"next_cursor"`
+		HasMore    bool                `json:"has_more"`
+		SnapshotId string              `json:"snapshot_id"`
+	}
+	FollowFeedRes {
+		Items      []FollowFeedItem `json:"items"`
+		NextCursor string           `json:"next_cursor"`
+		HasMore    bool             `json:"has_more"`
+	}
+	UserPublishFeedRes {
+		Items      []UserPublishFeedItem `json:"items"`
+		NextCursor string                `json:"next_cursor"`
+		HasMore    bool                  `json:"has_more"`
+	}
+	UserFavoriteFeedRes {
+		Items      []UserFavoriteFeedItem `json:"items"`
+		NextCursor string                 `json:"next_cursor"`
+		HasMore    bool                   `json:"has_more"`
+	}
+)
+
+@server (
+	tags:   feed
+	group:  feed
+	prefix: /v1/feed
+	middleware: OptionalLoginMiddleware
+)
+service front-api {
+	@doc (
+		description: "获取推荐流"
+	)
+	@handler Recommend
+	post /recommend (RecommendFeedReq) returns (RecommendFeedRes)
+
+	@doc (
+		description: "获取关注流"
+	)
+	@handler Follow
+	post /follow (FollowFeedReq) returns (FollowFeedRes)
+
+	@doc (
+		description: "获取用户发布内容列表"
+	)
+	@handler UserPublish
+	post /user/publish (UserPublishFeedReq) returns (UserPublishFeedRes)
+
+	@doc (
+		description: "获取用户收藏内容列表"
+	)
+	@handler UserFavorite
+	post /user/favorite (UserFavoriteFeedReq) returns (UserFavoriteFeedRes)
+}

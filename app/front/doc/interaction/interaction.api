@@ -1,0 +1,221 @@
+syntax = "v1"
+
+import "../base/base.api"
+
+type (
+	LikeReq {
+		ContentId *int64  `json:"content_id,string,optional" validate:"required"`
+		ContentUserId *int64  `json:"content_user_id,string,optional" validate:"required"`
+		Scene     *string `json:"scene,optional" validate:"required"`
+	}
+	LikeRes {
+	}
+	UnlikeReq {
+		ContentId *int64  `json:"content_id,string,optional" validate:"required"`
+		Scene     *string `json:"scene,optional" validate:"required"`
+	}
+	UnlikeRes {
+	}
+	QueryLikeInfoReq {
+		ContentId *int64  `json:"content_id,string,optional" validate:"required"`
+		Scene     *string `json:"scene,optional" validate:"required"`
+	}
+	QueryLikeInfoRes {
+		LikeCount int64  `json:"like_count"`
+		IsLiked   bool   `json:"is_liked"`
+		ContentId int64  `json:"content_id,string"`
+		Scene     string `json:"scene"`
+	}
+	BatchQueryLikeInfoReq {
+		LikeInfos []QueryLikeInfoReq `json:"like_infos" validate:"required"`
+	}
+	BatchQueryLikeInfoRes {
+		LikeInfos []QueryLikeInfoRes `json:"like_infos"`
+	}
+	FavoriteReq {
+		ContentId *int64  `json:"content_id,string,optional" validate:"required"`
+		ContentUserId *int64  `json:"content_user_id,string,optional" validate:"required"`
+		Scene     *string `json:"scene,optional" validate:"required"`
+	}
+	FavoriteRes {
+	}
+	RemoveFavoriteReq {
+		ContentId *int64  `json:"content_id,string,optional" validate:"required"`
+		Scene     *string `json:"scene,optional" validate:"required"`
+	}
+	RemoveFavoriteRes {
+	}
+	QueryFavoriteInfoReq {
+		ContentId *int64  `json:"content_id,string,optional" validate:"required"`
+		Scene     *string `json:"scene,optional" validate:"required"`
+	}
+	QueryFavoriteInfoRes {
+		FavoriteCount int64  `json:"favorite_count"`
+		IsFavorite    bool   `json:"is_favorite"`
+		ContentId     int64  `json:"content_id,string"`
+		Scene         string `json:"scene"`
+	}
+	CommentReq {
+		ContentId     *int64  `json:"content_id,string,optional" validate:"required"`
+		Scene         *string `json:"scene,optional" validate:"required"`
+		Comment       *string `json:"comment,optional" validate:"required,max=255"`
+		ParentId      *int64  `json:"parent_id,string,optional"`
+		RootId        *int64  `json:"root_id,string,optional"`
+		ReplyToUserId *int64  `json:"reply_to_user_id,string,optional"`
+		ContentUserId *int64  `json:"content_user_id,string,optional" validate:"required"`
+	}
+	CommentRes {
+		CommentId int64 `json:"comment_id,string"`
+	}
+	QueryCommentListReq {
+		ContentId *int64  `json:"content_id,string,optional" validate:"required"`
+		Scene     *string `json:"scene,optional" validate:"required"`
+		Cursor    *int64  `json:"cursor,optional" validate:"required,max=50"`
+		PageSize  *uint32 `json:"page_size,optional" validate:"required,max=50"`
+	}
+	QueryCommentListRes {
+		Comments   []*CommentItem `json:"comments"`
+		NextCursor int64          `json:"next_cursor"`
+		HasMore    bool           `json:"has_more"`
+	}
+	CommentItem {
+		CommentId     int64  `json:"comment_id"`
+		ContentId     int64  `json:"content_id"`
+		UserId        int64  `json:"user_id"`
+		ReplyToUserId int64  `json:"reply_to_user_id"`
+		ParentId      int64  `json:"parent_id"`
+		RootId        int64  `json:"root_id"`
+		Comment       string `json:"comment"`
+		CreatedAt     int64  `json:"created_at"`
+		Status        int32  `json:"status"`
+		UserName      string `json:"user_name"`
+		UserAvatar    string `json:"user_avatar"`
+		ReplyCount    int64  `json:"reply_count"`
+	}
+	QueryReplyCommentListReq {
+		CommentId *int64  `json:"comment_id,string,optional" validate:"required"`
+		Cursor    *int64  `json:"cursor,optional" validate:"required"`
+		PageSize  *uint32 `json:"page_size,optional" validate:"required"`
+	}
+	QueryReplyCommentListRes {
+		Comments   []*CommentItem `json:"comments"`
+		NextCursor int64          `json:"next_cursor"`
+		HasMore    bool           `json:"has_more"`
+	}
+	DeleteCommentReq {
+		CommentId     *int64  `json:"comment_id,string,optional" validate:"required"`
+		ContentId     *int64  `json:"content_id,string,optional" validate:"required"`
+		RootId        *int64  `json:"root_id,string,optional"`
+		ParentId      *int64  `json:"parent_id,string,optional"`
+		Scene         *string `json:"scene,optional"`
+	}
+	DeleteCommentRes {
+	}
+	FollowUserReq {
+		targetUserId *int64 `json:"target_user_id,string,optional" validate:"required"`
+	}
+	FollowUserRes {
+		IsFollowed bool `json:"is_followed"`
+	}
+	UnFollowUserReq {
+		targetUserId *int64 `json:"target_user_id,string,optional" validate:"required"`
+	}
+	UnFollowUserRes {
+		IsFollowed bool `json:"is_followed"`
+	}
+)
+
+@server (
+	tags: interaction
+	group:  interaction
+	prefix: /v1/interaction
+)
+service front-api {
+	@doc (
+		description: "获取点赞信息"
+	)
+	@handler QueryLikeInfo
+	post /like/info (QueryLikeInfoReq) returns (QueryLikeInfoRes)
+
+	@doc (
+		description: "批量获取点赞信息"
+	)
+	@handler BatchQueryLikeInfo
+	post /like/info/batch (BatchQueryLikeInfoReq) returns (BatchQueryLikeInfoRes)
+
+	@doc (
+		description: "获取收藏信息"
+	)
+	@handler QueryFavoriteInfo
+	post /favorite/info (QueryFavoriteInfoReq) returns (QueryFavoriteInfoRes)
+
+	@doc (
+		description: "查询评论列表"
+	)
+	@handler QueryCommentList
+	post /comment/list (QueryCommentListReq) returns (QueryCommentListRes)
+
+	@doc (
+		description: "查询回复评论列表"
+	)
+	@handler QueryReplyCommentList
+	post /comment/reply/list (QueryReplyCommentListReq) returns (QueryReplyCommentListRes)
+
+}
+
+@server (
+	tags: interaction
+	group:  interaction
+	prefix: /v1/interaction
+	middleware: UserLoginStatusAuthMiddleware
+)
+service front-api {
+	@doc (
+		description: "点赞"
+	)
+	@handler Like
+	post /like (LikeReq) returns (LikeRes)
+
+	@doc (
+		description: "取消点赞"
+	)
+	@handler Unlike
+	post /unlike (UnlikeReq) returns (UnlikeRes)
+
+	@doc (
+		description: "收藏"
+	)
+	@handler Favorite
+	post /favorite (FavoriteReq) returns (FavoriteRes)
+
+	@doc (
+		description: "取消收藏"
+	)
+	@handler RemoveFavorite
+	delete /favorite (RemoveFavoriteReq) returns (RemoveFavoriteRes)
+
+	@doc (
+		description: "评论"
+	)
+	@handler Comment
+	post /comment (CommentReq) returns (CommentRes)
+
+	@doc (
+		description: "删除评论"
+	)
+	@handler DeleteComment
+	delete /comment (DeleteCommentReq) returns (DeleteCommentRes)
+
+	@doc (
+		description: "关注用户"
+	)
+	@handler FollowUser
+	post /followings (FollowUserReq) returns (FollowUserRes)
+
+	@doc (
+		description: "取消关注用户"
+	)
+	@handler UnFollowUser
+	delete /followings (UnFollowUserReq) returns (UnFollowUserRes)
+}
+

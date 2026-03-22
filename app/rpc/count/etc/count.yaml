@@ -1,0 +1,53 @@
+Name: count.rpc
+ListenOn: 0.0.0.0:5004
+Etcd:
+  Hosts:
+  - ${ETCD_HOST}:2379
+  Key: count.rpc
+
+Telemetry:
+  Name: count.rpc-server
+  Endpoint: ${OTEL_ENDPOINT}
+  Batcher: otlpgrpc
+  Sampler: 1.0
+
+Prometheus:
+  Host: ${PROM_HOST}
+  Port: 9292
+  Path: /metrics
+
+Log:
+  ServiceName: "count.rpc"
+  Mode: "file"
+  Encoding: "json"
+  TimeFormat: "2006-01-02T15:04:05.000Z07:00"
+  Path: ${LOG_PATH}
+  Level: "info"
+  MaxContentLength: 0
+  Compress: false
+  Stat: true
+  KeepDays: 1
+  StackCooldownMillis: 100
+  MaxBackups: 0
+  MaxSize: 0
+  Rotation: "daily"
+  FileTimeFormat: "2006-01-02T15:04:05.000Z07:00"
+
+RedisConfig:
+  Host: ${REDIS_HOST}:6379
+  Type: node
+  Pass: ${REDIS_PASSWORD}
+
+MySQL:
+  DataSource: ${MYSQL_APP_USER}:${MYSQL_APP_PASSWORD}@tcp(${MYSQL_HOST}:3306)/ran-feed?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+
+# kafka消费者配置（Canal 单 Topic，按 table 分流）
+KqConsumerConf:
+  Name: count-canal-consumer
+  Brokers:
+    - ${KAFKA_BROKERS}
+  Group: ran-feed-count-canal-consumer
+  Topic: ran-feed-count-canal
+  Offset: last
+  Consumers: 8
+  Processors: 8

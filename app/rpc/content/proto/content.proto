@@ -1,0 +1,261 @@
+syntax = "proto3";
+
+package content;
+
+option go_package = "./content";
+
+// 内容类型枚举
+enum ContentType {
+  CONTENT_TYPE_UNKNOWN = 0;
+  ARTICLE = 10;
+  VIDEO = 20;
+}
+
+// 内容状态枚举
+enum ContentStatus {
+  STATUS_UNKNOWN = 0;
+  DRAFT = 10;
+  PROCESSING = 20;
+  PUBLISHED = 30;
+  FAILED = 40;
+}
+
+// 可见性枚举
+enum Visibility {
+  VISIBILITY_UNKNOWN = 0;
+  PUBLIC = 10;
+  PRIVATE = 20;
+}
+
+message PageReq {
+  uint32 page = 1;
+  uint32 page_size = 2;
+}
+
+message PageRes {
+  uint32 page = 1;
+  uint32 page_size = 2;
+  uint32 total = 3;
+}
+
+message ContentUploadsCredentialsReq {
+  int64 user_id = 1;
+  Scene scene = 2;
+  FileExt file_ext = 3;
+  int64 file_size = 4;
+  string file_name = 5;
+  enum Scene{
+    SCENE_UNKNOWN = 0;
+    ARTICLE_COVER = 1;
+    VIDEO = 2;
+    AVATAR = 3;
+  }
+  enum FileExt{
+    FILE_EXT_UNKNOWN = 0;
+    JPG = 1;
+    PNG = 2;
+    GIF = 3;
+    MP4 = 4;
+    MP3 = 5;
+    DOC = 6;
+    DOCX = 7;
+    PDF = 8;
+    XLS = 9;
+  }
+}
+
+message ContentUploadsCredentialsRes {
+  string object_key = 1;
+  OssFormData form_data = 2;
+  int64 expired_at = 3;
+}
+
+message OssFormData {
+  string host = 1;
+  string policy = 2;
+  string signature = 3;
+  string security_token = 4;
+  string signature_version = 5;
+  string credential = 6;
+  string date = 7;
+  string key = 8;
+}
+
+message ArticlePublishReq {
+  int64 user_id = 1;
+  string title = 2;
+  optional string description = 3;
+  string cover = 4;
+  string content = 5;
+  Visibility visibility = 6;
+}
+
+message ArticlePublishRes {
+  int64 content_id = 1;
+}
+
+message VideoPublishReq {
+  int64 user_id = 1;
+  string title = 2;
+  optional string description = 3;
+  string video_url = 4;
+  string cover_url = 5;
+  int32 duration = 6;
+  Visibility visibility = 7;
+}
+
+message VideoPublishRes {
+  int64 content_id = 1;
+}
+
+message GetUserContentCountReq {
+  int64 user_id = 1;
+}
+
+message GetUserContentCountRes {
+  int64 content_count = 1;
+}
+
+message DeleteContentReq {
+  int64 user_id = 1;
+  int64 content_id = 2;
+}
+
+message DeleteContentRes {
+}
+
+
+message GetContentDetailReq {
+  int64 content_id = 1;
+  optional int64 viewer_id = 2;
+}
+
+message ContentDetail {
+  int64 content_id = 1;
+  ContentType content_type = 2;
+  int64 author_id = 3;
+  string author_name = 4;
+  string author_avatar = 5;
+  string title = 6;
+  string description = 7;
+  string cover_url = 8;
+  string article_content = 9;
+  string video_url = 10;
+  int32 video_duration = 11;
+  int64 published_at = 12;
+  int64 like_count = 13;
+  int64 favorite_count = 14;
+  int64 comment_count = 15;
+  bool is_liked = 16;
+  bool is_favorited = 17;
+  bool is_following_author = 18;
+}
+
+message GetContentDetailRes {
+  ContentDetail detail = 1;
+}
+
+message RecommendFeedReq {
+  optional int64 user_id = 1;
+  string cursor = 2;
+  uint32 page_size = 3;
+  optional string snapshot_id = 4;
+}
+
+message RecommendFeedRes {
+  repeated ContentItem items = 1;
+  int64 next_cursor = 2;
+  bool has_more = 3;
+  string snapshot_id = 4;
+}
+
+message FollowFeedReq {
+  int64 user_id = 1;
+  string cursor = 2;
+  uint32 page_size = 3;
+}
+
+message FollowFeedRes {
+  repeated FollowFeedItem items = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message BackfillFollowInboxReq {
+  int64 follower_id = 1;
+  int64 followee_id = 2;
+  uint32 limit = 3;
+}
+
+message BackfillFollowInboxRes {
+  int32 added_count = 1;
+}
+
+message UserPublishFeedReq {
+  int64 author_id = 1;
+  optional int64 viewer_id = 2;
+  string cursor = 3;
+  uint32 page_size = 4;
+}
+
+message UserPublishFeedRes {
+  repeated ContentItem items = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message UserFavoriteFeedReq {
+  optional int64 viewer_id = 1;
+  int64 user_id = 2;
+  string cursor = 3;
+  uint32 page_size = 4;
+}
+
+message UserFavoriteFeedRes {
+  repeated ContentItem items = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
+}
+
+message ContentItem {
+  int64 content_id = 1;
+  ContentType content_type = 2;
+  int64 author_id = 3;
+  string author_name = 4;
+  string author_avatar = 5;
+  string title = 6;
+  string cover_url = 7;
+  int64 published_at = 8;
+  bool is_liked = 9;
+  int64 like_count = 10;
+}
+
+message FollowFeedItem {
+  int64 content_id = 1;
+  ContentType content_type = 2;
+  int64 author_id = 3;
+  string author_name = 4;
+  string author_avatar = 5;
+  string title = 6;
+  string cover_url = 7;
+  int64 published_at = 8;
+  bool is_liked = 9;
+  int64 like_count = 10;
+}
+
+service ContentService{
+  rpc Uploads(ContentUploadsCredentialsReq) returns (ContentUploadsCredentialsRes);
+  rpc PublishArticle(ArticlePublishReq) returns (ArticlePublishRes);
+  rpc PublishVideo(VideoPublishReq) returns (VideoPublishRes);
+  rpc GetUserContentCount(GetUserContentCountReq) returns (GetUserContentCountRes);
+  rpc DeleteContent(DeleteContentReq) returns (DeleteContentRes);
+  rpc GetContentDetail(GetContentDetailReq) returns (GetContentDetailRes);
+  rpc BackfillFollowInbox(BackfillFollowInboxReq) returns (BackfillFollowInboxRes);
+}
+
+service FeedService{
+  rpc RecommendFeed(RecommendFeedReq) returns (RecommendFeedRes);
+  rpc FollowFeed(FollowFeedReq) returns (FollowFeedRes);
+  rpc UserPublishFeed(UserPublishFeedReq) returns (UserPublishFeedRes);
+  rpc UserFavoriteFeed(UserFavoriteFeedReq) returns (UserFavoriteFeedRes);
+}

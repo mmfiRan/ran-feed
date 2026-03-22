@@ -1,0 +1,80 @@
+Name: front-api
+Host: 0.0.0.0
+Port: 5000
+MaxBytes: 20971520
+Timeout: 100000
+
+Telemetry:
+  Name: front-api-server
+  Endpoint: ${OTEL_ENDPOINT}
+  Batcher: otlpgrpc
+  Sampler: 1.0
+
+Log:
+  ServiceName: "front-api"
+  Mode: "file"
+  Encoding: "json"
+  TimeFormat: "2006-01-02T15:04:05.000Z07:00"
+  Path: ${LOG_PATH}
+  Level: "info"
+  MaxContentLength: 0
+  Compress: false
+  Stat: true
+  KeepDays: 1
+  StackCooldownMillis: 100
+  MaxBackups: 0
+  MaxSize: 0
+  Rotation: "daily"
+  FileTimeFormat: "2006-01-02T15:04:05.000Z07:00"
+
+Prometheus:
+  Host: ${PROM_HOST}
+  Port: 9290
+  Path: /metrics
+
+# Redis配置
+RedisConfig:
+  Host: ${REDIS_HOST}:6379
+  Type: node
+  Pass: ${REDIS_PASSWORD}
+
+ContentRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: content.rpc
+  NonBlock: true
+
+
+InteractionRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: interaction.rpc
+  NonBlock: true
+
+UserRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: user.rpc
+  NonBlock: true
+
+CountRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: count.rpc
+  NonBlock: true
+
+Oss:
+  Provider: ${OSS_PROVIDER}
+  Region: ${OSS_REGION}
+  BucketName: ${OSS_BUCKET_NAME}
+  AccessKeyId: ${OSS_ACCESS_KEY_ID}
+  AccessKeySecret: ${OSS_ACCESS_KEY_SECRET}
+  Endpoint: ${OSS_ENDPOINT}
+  UploadDir: ${OSS_UPLOAD_DIR}
+  PublicHost: ${OSS_PUBLIC_HOST}
+
+SessionTTL: 86400

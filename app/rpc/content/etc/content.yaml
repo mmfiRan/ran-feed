@@ -1,0 +1,90 @@
+Name: content.rpc
+ListenOn: 0.0.0.0:5001
+Etcd:
+  Hosts:
+  - ${ETCD_HOST}:2379
+  Key: content.rpc
+
+Telemetry:
+  Name: content.rpc-server
+  Endpoint: ${OTEL_ENDPOINT}
+  Batcher: otlpgrpc
+  Sampler: 1.0
+
+Prometheus:
+  Host: ${PROM_HOST}
+  Port: 9291
+  Path: /metrics
+
+Log:
+  ServiceName: "content.rpc"
+  Mode: "file"
+  Encoding: "json"
+  TimeFormat: "2006-01-02T15:04:05.000Z07:00"
+  Path: ${LOG_PATH}
+  Level: "info"
+  MaxContentLength: 0
+  Compress: false
+  Stat: true
+  KeepDays: 1
+  StackCooldownMillis: 100
+  MaxBackups: 0
+  MaxSize: 0
+  Rotation: "daily"
+  FileTimeFormat: "2006-01-02T15:04:05.000Z07:00"
+
+UserRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: user.rpc
+  NonBlock: true
+
+InteractionRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: interaction.rpc
+  NonBlock: true
+
+CountRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: count.rpc
+  NonBlock: true
+
+# Redis配置
+RedisConfig:
+  Host: ${REDIS_HOST}:6379
+  Type: node
+  Pass: ${REDIS_PASSWORD}
+
+# OSS 配置
+Oss:
+  Provider: ${OSS_PROVIDER}                 # 云服务提供商
+  Region: ${OSS_REGION}                     # 地域
+  BucketName: ${OSS_BUCKET_NAME}            # Bucket 名称
+  AccessKeyId: ${OSS_ACCESS_KEY_ID}         # 从环境变量读取
+  AccessKeySecret: ${OSS_ACCESS_KEY_SECRET} # 从环境变量读取
+  RoleArn: ${OSS_ROLE_ARN}                  # RAM 角色 ARN
+  RoleSessionName: ran-feed-upload         # 角色会话名称
+  DurationSeconds: 3600                     # 临时凭证有效期（1小时）
+  UploadDir: uploads                        # 上传目录前缀
+
+  
+# 数据库配置
+MySQL:
+  DataSource: ${MYSQL_APP_USER}:${MYSQL_APP_PASSWORD}@tcp(${MYSQL_HOST}:3306)/ran-feed?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+
+# XXL-Job 执行器配置
+XxlJob:
+  AppName: ran-feed-content-cron
+  Address: ${XXL_EXECUTOR_ADDRESS}
+  IP: ${XXL_EXECUTOR_IP}
+  Port: ${XXL_EXECUTOR_PORT}
+  AccessToken: ${XXL_JOB_ACCESS_TOKEN}
+  AdminAddresses:
+    - ${XXL_JOB_ADMIN_ADDR}
+  RegistryInterval: 30s
+  HTTPTimeout: 10s

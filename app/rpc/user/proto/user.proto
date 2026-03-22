@@ -1,0 +1,132 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "./user";
+
+// 性别
+enum Gender {
+  GENDER_UNKNOWN = 0; // 未知
+  GENDER_MALE = 1; // 男
+  GENDER_FEMALE = 2; // 女
+}
+
+// 用户状态
+enum UserStatus {
+  USER_STATUS_UNKNOWN = 0; // 未知
+  USER_STATUS_ACTIVE = 10; // 正常
+  USER_STATUS_DISABLED = 20; // 禁用
+}
+
+// 用户基础信息
+message UserInfo {
+  int64 user_id = 1;
+  string username = 2;
+  string mobile = 3 ;
+  string nickname = 4;
+  string avatar = 5;
+  string bio = 6;
+  Gender gender = 7;
+  UserStatus status = 8;
+}
+
+// 用户主页资料
+message UserProfile {
+  int64 user_id = 1;
+  string nickname = 2;
+  string avatar = 3;
+  string bio = 4;
+  Gender gender = 5;
+  UserStatus status = 6;
+}
+
+// 注册
+message RegisterReq {
+  string mobile = 1;
+  string password = 2;
+  string nickname = 3;
+  string avatar = 4;
+  optional string bio = 5;
+  string email = 6;
+  Gender gender = 7;
+  int64 birthday = 8;
+}
+
+message RegisterRes {
+  int64 user_id = 1;
+  string token = 2;
+  int64 expired_at = 3; // 过期时间戳（秒）
+}
+
+// 登录
+message LoginReq {
+  string mobile = 1;
+  string password = 2;
+}
+
+message LoginRes {
+  int64 user_id = 1;
+  string token = 2;
+  int64 expired_at = 3; // 过期时间戳（秒）
+  string nickname = 4;
+  string avatar = 5;
+}
+
+// 退出登录
+message LogoutReq {
+  int64 user_id = 1;
+  string token = 2;
+}
+
+message LogoutRes {
+}
+
+// 获取当前用户信息
+message GetMeReq {
+  int64 user_id = 1;
+}
+
+message GetMeRes {
+  UserInfo user_info = 1;
+  int64 followee_count = 2;
+  int64 follower_count = 3;
+  int64 like_received_count = 4;
+  int64 favorite_received_count = 5;
+}
+
+// 根据 user_id 查询单个用户
+message GetUserReq {
+  int64 user_id = 1;
+}
+
+message GetUserRes {
+  UserInfo user_info = 1;
+}
+
+// 查询用户主页资料
+message GetUserProfileReq {
+  int64 user_id = 1;
+}
+
+message GetUserProfileRes {
+  UserProfile user_profile = 1;
+}
+
+// 批量查询用户信息
+message BatchGetUserReq {
+  repeated int64 user_ids = 1;
+}
+
+message BatchGetUserRes {
+  repeated UserInfo users = 1;
+}
+
+service UserService {
+  rpc Register(RegisterReq) returns (RegisterRes);
+  rpc Login(LoginReq) returns (LoginRes);
+  rpc Logout(LogoutReq) returns (LogoutRes);
+  rpc GetMe(GetMeReq) returns (GetMeRes);
+  rpc GetUser(GetUserReq) returns (GetUserRes);
+  rpc GetUserProfile(GetUserProfileReq) returns (GetUserProfileRes);
+  rpc BatchGetUser(BatchGetUserReq) returns (BatchGetUserRes);
+}

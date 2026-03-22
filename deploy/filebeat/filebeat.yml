@@ -1,0 +1,23 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /logs/**/*.log
+      - /logs/*.log
+    recursive_glob.enabled: true
+
+processors:
+  - add_host_metadata: {}
+  - add_cloud_metadata: {}
+  - add_docker_metadata: {}
+
+output.kafka:
+  hosts: ["kafka:9092"]
+  topic: "filebeat-logs"
+  partition.round_robin:
+    reachable_only: true
+  required_acks: 1
+  compression: gzip
+
+setup.template.enabled: false
+logging.level: info

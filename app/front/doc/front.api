@@ -1,0 +1,17 @@
+syntax = "v1"
+
+import "content/content.api"
+import "interaction/interaction.api"
+import "user/user.api"
+import "feed/feed.api"
+
+info (
+	title:        "ran-feed相关接口"
+	description:  "ran-feed相关接口 "
+	contactName:  "Ran"
+	contactEmail: "3246617572@qq.com"
+	version:      "v0.0.1"
+	basePath:     "/v1"
+	schemes:      "https/http"
+)
+

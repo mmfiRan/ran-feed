@@ -1,0 +1,277 @@
+syntax = "proto3";
+
+package interaction;
+
+option go_package = "./interaction";
+
+message PageReq {
+  uint32 page = 1;
+  uint32 page_size = 2;
+}
+
+message PageRes {
+  uint32 page = 1;
+  uint32 page_size = 2;
+  uint32 total = 3;
+}
+enum Scene {
+  SCENE_UNKNOWN = 0; // 未知场景
+  ARTICLE = 10; // 文章
+  VIDEO = 20; // 视频
+  COMMENT = 30; // 评论
+}
+
+message LikeReq{
+  int64 user_id = 1;
+  int64 content_id = 2;
+  int64 content_user_id = 3;
+  Scene scene = 4;
+}
+message LikeRes{
+}
+
+message UnlikeReq{
+  int64 user_id = 1;
+  int64 content_id = 2;
+  Scene scene = 3;
+}
+message UnlikeRes{
+}
+
+message QueryLikeInfoReq{
+  int64 user_id = 1;
+  int64 content_id = 2;
+  Scene scene = 3;
+}
+message QueryLikeInfoRes{
+  int64 like_count = 1;
+  bool is_liked = 2;
+  int64 content_id = 3;
+  Scene scene = 4;
+}
+
+message BatchQueryLikeInfoReq{
+  int64 user_id = 1;
+  repeated LikeInfo like_infos = 2;
+}
+message BatchQueryLikeInfoRes{
+  repeated QueryLikeInfoRes like_infos = 1;
+}
+
+message LikeInfo{
+  int64 content_id = 1;
+  Scene scene = 2;
+}
+
+message IsLikedInfo{
+  int64 content_id = 1;
+  Scene scene = 2;
+  bool is_liked = 3;
+}
+
+message BatchQueryIsLikedReq{
+  optional int64 user_id = 1;
+  repeated LikeInfo like_infos = 2;
+}
+message BatchQueryIsLikedRes{
+  repeated IsLikedInfo is_liked_infos = 1;
+}
+message FavoriteReq{
+  int64 user_id = 1;
+  int64 content_id = 2;
+  int64 content_user_id = 3;
+  Scene scene = 4;
+}
+message FavoriteRes{
+}
+
+message RemoveFavoriteReq{
+  int64 user_id = 1;
+  int64 content_id = 2;
+  Scene scene = 3;
+}
+
+message RemoveFavoriteRes{
+}
+
+message QueryFavoriteInfoReq{
+  int64 user_id = 1;
+  int64 content_id = 2;
+  Scene scene = 3;
+}
+message QueryFavoriteInfoRes{
+  int64 favorite_count = 1;
+  bool is_favorited = 2;
+  int64 content_id = 3;
+  Scene scene = 4;
+}
+
+message QueryFavoriteListReq{
+  int64 user_id = 1;
+  int64 cursor = 2;
+  uint32 page_size = 3;
+}
+
+message FavoriteItem{
+  int64 favorite_id = 1;
+  int64 content_id = 2;
+  int64 content_user_id = 3;
+}
+
+message QueryFavoriteListRes{
+  repeated FavoriteItem items = 1;
+  int64 next_cursor = 2;
+  bool has_more = 3;
+}
+
+message CommentReq{
+  int64 user_id = 1;
+  int64 content_id = 2;
+  Scene scene = 3;
+  string comment = 4;
+  int64 parent_id = 5;
+  int64 root_id = 6;
+  int64 reply_to_user_id = 7;
+  int64 content_user_id = 8;
+}
+message CommentRes{
+  int64 comment_id = 1;
+}
+
+message DeleteCommentReq{
+  int64 user_id = 1;
+  int64 comment_id = 2;
+  int64 content_id = 3;
+  optional int64 root_id = 5;
+  optional int64 parent_id = 6;
+  Scene scene = 7;
+}
+message DeleteCommentRes{
+}
+
+message CommentItem{
+  int64 comment_id = 1;
+  int64 content_id = 2;
+  int64 user_id = 3;
+  int64 reply_to_user_id = 4;
+  int64 parent_id = 5;
+  int64 root_id = 6;
+  string comment = 7;
+  int64 created_at = 8;
+  int32 status = 9;
+  string user_name = 10;
+  string user_avatar = 11;
+  int64 reply_count = 12;
+}
+
+message QueryCommentListReq{
+  int64 content_id = 1;
+  Scene scene = 2;
+  int64 cursor = 3;
+  uint32 page_size = 4;
+}
+
+message QueryCommentListRes{
+  repeated CommentItem comments = 1;
+  int64 next_cursor = 2;
+  bool has_more = 3;
+}
+
+message QueryReplyListReq{
+  int64 root_id = 1;
+  int64 cursor = 2;
+  uint32 page_size = 3;
+}
+
+message QueryReplyListRes{
+  int64 root_id = 1;
+  repeated CommentItem replies = 2;
+  int64 next_cursor = 3;
+  bool has_more = 4;
+}
+
+message BatchGetCommentsReq{
+  repeated int64 comment_ids = 1;
+}
+
+message BatchGetCommentsRes{
+  repeated CommentItem comments = 1;
+  repeated int64 miss_ids = 2;
+}
+
+message RefillCommentCacheReq{
+  repeated int64 comment_ids = 1;
+}
+
+message RefillCommentCacheRes{
+  repeated CommentItem comments = 1;
+}
+
+message FollowUserReq{
+  int64 user_id = 1;
+  int64 follow_user_id = 2;
+}
+message FollowUserRes{
+  bool is_followed = 1;
+}
+
+message UnfollowUserReq{
+  int64 user_id = 1;
+  int64 follow_user_id = 2;
+}
+
+message UnfollowUserRes{
+  bool is_followed = 1;
+}
+
+message ListFolloweesReq{
+  int64 user_id = 1;
+  int64 cursor = 2;
+  uint32 page_size = 3;
+}
+
+message ListFolloweesRes{
+  repeated int64 follow_user_ids = 1;
+  int64 next_cursor = 2;
+  bool has_more = 3;
+}
+
+message GetFollowSummaryReq{
+  int64 user_id = 1;
+  optional int64 viewer_id = 2;
+}
+
+message GetFollowSummaryRes{
+  int64 followee_count = 1;
+  int64 follower_count = 2;
+  bool is_following = 3;
+}
+
+service LikeService {
+  rpc Like(LikeReq) returns (LikeRes);
+  rpc Unlike(UnlikeReq) returns (UnlikeRes);
+  rpc QueryLikeInfo(QueryLikeInfoReq) returns (QueryLikeInfoRes);
+  rpc BatchQueryLikeInfo(BatchQueryLikeInfoReq) returns (BatchQueryLikeInfoRes);
+  rpc BatchQueryIsLiked(BatchQueryIsLikedReq) returns (BatchQueryIsLikedRes);
+}
+service FavoriteService {
+  rpc Favorite(FavoriteReq) returns (FavoriteRes);
+  rpc RemoveFavorite(RemoveFavoriteReq) returns (RemoveFavoriteRes);
+  rpc QueryFavoriteInfo(QueryFavoriteInfoReq) returns (QueryFavoriteInfoRes);
+  rpc QueryFavoriteList(QueryFavoriteListReq) returns (QueryFavoriteListRes);
+}
+service CommentService {
+  rpc Comment(CommentReq) returns (CommentRes);
+  rpc DeleteComment(DeleteCommentReq) returns (DeleteCommentRes);
+  rpc QueryCommentList(QueryCommentListReq) returns (QueryCommentListRes);
+  rpc QueryReplyList(QueryReplyListReq) returns (QueryReplyListRes);
+  rpc BatchGetComments(BatchGetCommentsReq) returns (BatchGetCommentsRes);
+  rpc RefillCommentCache(RefillCommentCacheReq) returns (RefillCommentCacheRes);
+}
+
+service FollowService {
+  rpc FollowUser(FollowUserReq) returns (FollowUserRes);
+  rpc UnfollowUser(UnfollowUserReq) returns (UnfollowUserRes);
+  rpc ListFollowees(ListFolloweesReq) returns (ListFolloweesRes);
+  rpc GetFollowSummary(GetFollowSummaryReq) returns (GetFollowSummaryRes);
+}

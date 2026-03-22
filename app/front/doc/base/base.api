@@ -1,0 +1,14 @@
+syntax = "v1"
+
+type (
+	PageQueryReq {
+		Page     uint32 `json:"page,default=1"`
+		PageSize uint32 `json:"page_size,default=10"`
+	}
+	PageQueryResp {
+		Page     uint32 `json:"page"`
+		PageSize uint32 `json:"page_size"`
+		Total    uint32 `json:"total"`
+	}
+)
+

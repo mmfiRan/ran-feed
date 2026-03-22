@@ -1,0 +1,2036 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "https/http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "ran-feed相关接口 ",
+    "title": "ran-feed相关接口",
+    "contact": {
+      "name": "Ran",
+      "email": "3246617572@qq.com"
+    },
+    "version": "v0.0.1"
+  },
+  "basePath": "/v1",
+  "paths": {
+    "/v1/content/article/publish": {
+      "post": {
+        "description": "发布文章",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "PublishArticle",
+        "operationId": "contentPublishArticle",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string"
+                },
+                "cover": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "visibility": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/content/detail": {
+      "post": {
+        "description": "获取内容详情",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "GetContentDetail",
+        "operationId": "contentGetContentDetail",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "object",
+                  "required": [
+                    "content_id",
+                    "content_type",
+                    "author_id",
+                    "author_name",
+                    "author_avatar",
+                    "title",
+                    "description",
+                    "cover_url",
+                    "article_content",
+                    "video_url",
+                    "video_duration",
+                    "published_at",
+                    "like_count",
+                    "favorite_count",
+                    "comment_count",
+                    "is_liked",
+                    "is_favorited",
+                    "is_following_author"
+                  ],
+                  "properties": {
+                    "article_content": {
+                      "type": "string"
+                    },
+                    "author_avatar": {
+                      "type": "string"
+                    },
+                    "author_id": {
+                      "type": "integer"
+                    },
+                    "author_name": {
+                      "type": "string"
+                    },
+                    "comment_count": {
+                      "type": "integer"
+                    },
+                    "content_id": {
+                      "type": "integer"
+                    },
+                    "content_type": {
+                      "type": "integer"
+                    },
+                    "cover_url": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "favorite_count": {
+                      "type": "integer"
+                    },
+                    "is_favorited": {
+                      "type": "boolean"
+                    },
+                    "is_following_author": {
+                      "type": "boolean"
+                    },
+                    "is_liked": {
+                      "type": "boolean"
+                    },
+                    "like_count": {
+                      "type": "integer"
+                    },
+                    "published_at": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "video_duration": {
+                      "type": "integer"
+                    },
+                    "video_url": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/content/upload-credentials": {
+      "post": {
+        "description": "获取内容上传凭证",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "ContentUploadsCredentials",
+        "operationId": "contentContentUploadsCredentials",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "file_ext": {
+                  "type": "string"
+                },
+                "file_name": {
+                  "type": "string"
+                },
+                "file_size": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "expired_at": {
+                  "type": "integer"
+                },
+                "form_data": {
+                  "type": "object",
+                  "required": [
+                    "host",
+                    "policy",
+                    "signature",
+                    "x-oss-security-token",
+                    "x-oss-signature-version",
+                    "x-oss-credential",
+                    "x-oss-date",
+                    "key"
+                  ],
+                  "properties": {
+                    "host": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    },
+                    "policy": {
+                      "type": "string"
+                    },
+                    "signature": {
+                      "type": "string"
+                    },
+                    "x-oss-credential": {
+                      "type": "string"
+                    },
+                    "x-oss-date": {
+                      "type": "string"
+                    },
+                    "x-oss-security-token": {
+                      "type": "string"
+                    },
+                    "x-oss-signature-version": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "object_key": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/content/video/publish": {
+      "post": {
+        "description": "发布视频",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "PublishVideo",
+        "operationId": "contentPublishVideo",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cover_url": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "duration": {
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "video_url": {
+                  "type": "string"
+                },
+                "visibility": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/content/{content_id}": {
+      "delete": {
+        "description": "删除已发布内容",
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "DeleteContent",
+        "operationId": "contentDeleteContent",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "content_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/feed/follow": {
+      "post": {
+        "description": "获取关注流",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "feed"
+        ],
+        "summary": "Follow",
+        "operationId": "feedFollow",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cursor": {
+                  "type": "string"
+                },
+                "page_size": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "has_more": {
+                  "type": "boolean"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "content_id",
+                      "content_type",
+                      "author_id",
+                      "author_name",
+                      "author_avatar",
+                      "title",
+                      "cover_url",
+                      "published_at",
+                      "is_liked",
+                      "like_count"
+                    ],
+                    "properties": {
+                      "author_avatar": {
+                        "type": "string"
+                      },
+                      "author_id": {
+                        "type": "integer"
+                      },
+                      "author_name": {
+                        "type": "string"
+                      },
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "content_type": {
+                        "type": "integer"
+                      },
+                      "cover_url": {
+                        "type": "string"
+                      },
+                      "is_liked": {
+                        "type": "boolean"
+                      },
+                      "like_count": {
+                        "type": "integer"
+                      },
+                      "published_at": {
+                        "type": "integer"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "next_cursor": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/feed/recommend": {
+      "post": {
+        "description": "获取推荐流",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "feed"
+        ],
+        "summary": "Recommend",
+        "operationId": "feedRecommend",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cursor": {
+                  "type": "string"
+                },
+                "page_size": {
+                  "type": "integer"
+                },
+                "snapshot_id": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "has_more": {
+                  "type": "boolean"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "content_id",
+                      "content_type",
+                      "author_id",
+                      "author_name",
+                      "author_avatar",
+                      "title",
+                      "cover_url",
+                      "published_at",
+                      "is_liked",
+                      "like_count"
+                    ],
+                    "properties": {
+                      "author_avatar": {
+                        "type": "string"
+                      },
+                      "author_id": {
+                        "type": "integer"
+                      },
+                      "author_name": {
+                        "type": "string"
+                      },
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "content_type": {
+                        "type": "integer"
+                      },
+                      "cover_url": {
+                        "type": "string"
+                      },
+                      "is_liked": {
+                        "type": "boolean"
+                      },
+                      "like_count": {
+                        "type": "integer"
+                      },
+                      "published_at": {
+                        "type": "integer"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "next_cursor": {
+                  "type": "string"
+                },
+                "snapshot_id": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/feed/user/favorite": {
+      "post": {
+        "description": "获取用户收藏内容列表",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "feed"
+        ],
+        "summary": "UserFavorite",
+        "operationId": "feedUserFavorite",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cursor": {
+                  "type": "string"
+                },
+                "page_size": {
+                  "type": "integer"
+                },
+                "user_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "has_more": {
+                  "type": "boolean"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "content_id",
+                      "content_type",
+                      "author_id",
+                      "author_name",
+                      "author_avatar",
+                      "title",
+                      "cover_url",
+                      "published_at",
+                      "is_liked",
+                      "like_count"
+                    ],
+                    "properties": {
+                      "author_avatar": {
+                        "type": "string"
+                      },
+                      "author_id": {
+                        "type": "integer"
+                      },
+                      "author_name": {
+                        "type": "string"
+                      },
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "content_type": {
+                        "type": "integer"
+                      },
+                      "cover_url": {
+                        "type": "string"
+                      },
+                      "is_liked": {
+                        "type": "boolean"
+                      },
+                      "like_count": {
+                        "type": "integer"
+                      },
+                      "published_at": {
+                        "type": "integer"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "next_cursor": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/feed/user/publish": {
+      "post": {
+        "description": "获取用户发布内容列表",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "feed"
+        ],
+        "summary": "UserPublish",
+        "operationId": "feedUserPublish",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cursor": {
+                  "type": "string"
+                },
+                "page_size": {
+                  "type": "integer"
+                },
+                "user_id": {
+                  "type": "integer"
+                },
+                "viewer_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "has_more": {
+                  "type": "boolean"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "content_id",
+                      "content_type",
+                      "author_id",
+                      "author_name",
+                      "author_avatar",
+                      "title",
+                      "cover_url",
+                      "published_at",
+                      "is_liked",
+                      "like_count"
+                    ],
+                    "properties": {
+                      "author_avatar": {
+                        "type": "string"
+                      },
+                      "author_id": {
+                        "type": "integer"
+                      },
+                      "author_name": {
+                        "type": "string"
+                      },
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "content_type": {
+                        "type": "integer"
+                      },
+                      "cover_url": {
+                        "type": "string"
+                      },
+                      "is_liked": {
+                        "type": "boolean"
+                      },
+                      "like_count": {
+                        "type": "integer"
+                      },
+                      "published_at": {
+                        "type": "integer"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "next_cursor": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/interaction/comment": {
+      "post": {
+        "description": "评论",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "Comment",
+        "operationId": "interactionComment",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "comment": {
+                  "type": "string"
+                },
+                "content_id": {
+                  "type": "integer"
+                },
+                "content_user_id": {
+                  "type": "integer"
+                },
+                "parent_id": {
+                  "type": "integer"
+                },
+                "reply_to_user_id": {
+                  "type": "integer"
+                },
+                "root_id": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "comment_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "删除评论",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "DeleteComment",
+        "operationId": "interactionDeleteComment",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "comment_id": {
+                  "type": "integer"
+                },
+                "content_id": {
+                  "type": "integer"
+                },
+                "parent_id": {
+                  "type": "integer"
+                },
+                "root_id": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/interaction/comment/list": {
+      "post": {
+        "description": "查询评论列表",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "QueryCommentList",
+        "operationId": "interactionQueryCommentList",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "cursor": {
+                  "type": "integer"
+                },
+                "page_size": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "comments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "comment_id",
+                      "content_id",
+                      "user_id",
+                      "reply_to_user_id",
+                      "parent_id",
+                      "root_id",
+                      "comment",
+                      "created_at",
+                      "status",
+                      "user_name",
+                      "user_avatar",
+                      "reply_count"
+                    ],
+                    "properties": {
+                      "comment": {
+                        "type": "string"
+                      },
+                      "comment_id": {
+                        "type": "integer"
+                      },
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "created_at": {
+                        "type": "integer"
+                      },
+                      "parent_id": {
+                        "type": "integer"
+                      },
+                      "reply_count": {
+                        "type": "integer"
+                      },
+                      "reply_to_user_id": {
+                        "type": "integer"
+                      },
+                      "root_id": {
+                        "type": "integer"
+                      },
+                      "status": {
+                        "type": "integer"
+                      },
+                      "user_avatar": {
+                        "type": "string"
+                      },
+                      "user_id": {
+                        "type": "integer"
+                      },
+                      "user_name": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "has_more": {
+                  "type": "boolean"
+                },
+                "next_cursor": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/interaction/comment/reply/list": {
+      "post": {
+        "description": "查询回复评论列表",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "QueryReplyCommentList",
+        "operationId": "interactionQueryReplyCommentList",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "comment_id": {
+                  "type": "integer"
+                },
+                "cursor": {
+                  "type": "integer"
+                },
+                "page_size": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "comments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "comment_id",
+                      "content_id",
+                      "user_id",
+                      "reply_to_user_id",
+                      "parent_id",
+                      "root_id",
+                      "comment",
+                      "created_at",
+                      "status",
+                      "user_name",
+                      "user_avatar",
+                      "reply_count"
+                    ],
+                    "properties": {
+                      "comment": {
+                        "type": "string"
+                      },
+                      "comment_id": {
+                        "type": "integer"
+                      },
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "created_at": {
+                        "type": "integer"
+                      },
+                      "parent_id": {
+                        "type": "integer"
+                      },
+                      "reply_count": {
+                        "type": "integer"
+                      },
+                      "reply_to_user_id": {
+                        "type": "integer"
+                      },
+                      "root_id": {
+                        "type": "integer"
+                      },
+                      "status": {
+                        "type": "integer"
+                      },
+                      "user_avatar": {
+                        "type": "string"
+                      },
+                      "user_id": {
+                        "type": "integer"
+                      },
+                      "user_name": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "has_more": {
+                  "type": "boolean"
+                },
+                "next_cursor": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/interaction/favorite": {
+      "post": {
+        "description": "收藏",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "Favorite",
+        "operationId": "interactionFavorite",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "content_user_id": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "取消收藏",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "RemoveFavorite",
+        "operationId": "interactionRemoveFavorite",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/interaction/favorite/info": {
+      "post": {
+        "description": "获取收藏信息",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "QueryFavoriteInfo",
+        "operationId": "interactionQueryFavoriteInfo",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "favorite_count": {
+                  "type": "integer"
+                },
+                "is_favorite": {
+                  "type": "boolean"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/interaction/followings": {
+      "post": {
+        "description": "关注用户",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "FollowUser",
+        "operationId": "interactionFollowUser",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "target_user_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "is_followed": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "取消关注用户",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "UnFollowUser",
+        "operationId": "interactionUnFollowUser",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "target_user_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "is_followed": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/interaction/like": {
+      "post": {
+        "description": "点赞",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "Like",
+        "operationId": "interactionLike",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "content_user_id": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/interaction/like/info": {
+      "post": {
+        "description": "获取点赞信息",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "QueryLikeInfo",
+        "operationId": "interactionQueryLikeInfo",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "is_liked": {
+                  "type": "boolean"
+                },
+                "like_count": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/interaction/like/info/batch": {
+      "post": {
+        "description": "批量获取点赞信息",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "BatchQueryLikeInfo",
+        "operationId": "interactionBatchQueryLikeInfo",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "like_infos"
+              ],
+              "properties": {
+                "like_infos": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "scene": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "like_infos": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "like_count",
+                      "is_liked",
+                      "content_id",
+                      "scene"
+                    ],
+                    "properties": {
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "is_liked": {
+                        "type": "boolean"
+                      },
+                      "like_count": {
+                        "type": "integer"
+                      },
+                      "scene": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/interaction/unlike": {
+      "post": {
+        "description": "取消点赞",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "interaction"
+        ],
+        "summary": "Unlike",
+        "operationId": "interactionUnlike",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "scene": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/login": {
+      "post": {
+        "description": "用户登录",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "Login",
+        "operationId": "userLogin",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "mobile": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "avatar": {
+                  "type": "string"
+                },
+                "expired_at": {
+                  "type": "integer"
+                },
+                "nickname": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                },
+                "user_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/logout": {
+      "post": {
+        "description": "用户登出",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "Logout",
+        "operationId": "userLogout",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/user/profile/{userId}": {
+      "get": {
+        "description": "查询用户详情",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "QueryUserProfile",
+        "operationId": "userQueryUserProfile",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "counts": {
+                  "type": "object",
+                  "required": [
+                    "followee_count",
+                    "follower_count",
+                    "like_received_count",
+                    "favorite_received_count",
+                    "content_count"
+                  ],
+                  "properties": {
+                    "content_count": {
+                      "type": "integer"
+                    },
+                    "favorite_received_count": {
+                      "type": "integer"
+                    },
+                    "followee_count": {
+                      "type": "integer"
+                    },
+                    "follower_count": {
+                      "type": "integer"
+                    },
+                    "like_received_count": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "user_profile": {
+                  "type": "object",
+                  "required": [
+                    "user_id",
+                    "nickname",
+                    "avatar",
+                    "bio",
+                    "gender"
+                  ],
+                  "properties": {
+                    "avatar": {
+                      "type": "string"
+                    },
+                    "bio": {
+                      "type": "string"
+                    },
+                    "gender": {
+                      "type": "integer"
+                    },
+                    "nickname": {
+                      "type": "string"
+                    },
+                    "user_id": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "viewer": {
+                  "type": "object",
+                  "required": [
+                    "is_following"
+                  ],
+                  "properties": {
+                    "is_following": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users": {
+      "post": {
+        "description": "用户注册",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "Register",
+        "operationId": "userRegister",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "avatar": {
+                  "type": "string"
+                },
+                "bio": {
+                  "type": "string"
+                },
+                "birthday": {
+                  "type": "integer"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "gender": {
+                  "type": "integer"
+                },
+                "mobile": {
+                  "type": "string"
+                },
+                "nickname": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "expired_at": {
+                  "type": "integer"
+                },
+                "token": {
+                  "type": "string"
+                },
+                "user_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/avatar/upload": {
+      "post": {
+        "description": "上传用户头像",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "UploadAvatar",
+        "operationId": "userUploadAvatar",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "mime": {
+                  "type": "string"
+                },
+                "object_key": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "integer"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/me": {
+      "get": {
+        "description": "获取个人信息",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "GetMe",
+        "operationId": "userGetMe",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "favorite_received_count": {
+                  "type": "integer"
+                },
+                "followee_count": {
+                  "type": "integer"
+                },
+                "follower_count": {
+                  "type": "integer"
+                },
+                "like_received_count": {
+                  "type": "integer"
+                },
+                "user_info": {
+                  "type": "object",
+                  "required": [
+                    "user_id",
+                    "mobile",
+                    "nickname",
+                    "avatar",
+                    "bio",
+                    "gender",
+                    "status"
+                  ],
+                  "properties": {
+                    "avatar": {
+                      "type": "string"
+                    },
+                    "bio": {
+                      "type": "string"
+                    },
+                    "gender": {
+                      "type": "integer"
+                    },
+                    "mobile": {
+                      "type": "string"
+                    },
+                    "nickname": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "user_id": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-date": "2026-03-20 15:47:33",
+  "x-description": "This is a goctl generated swagger file.",
+  "x-github": "https://github.com/zeromicro/go-zero",
+  "x-go-zero-doc": "https://go-zero.dev/",
+  "x-goctl-version": "1.9.2"
+}

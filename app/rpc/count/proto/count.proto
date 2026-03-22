@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package count;
+
+option go_package = "./count";
+
+// BizType 计数业务类型
+enum BizType {
+  BIZ_TYPE_UNKNOWN = 0;
+  LIKE = 10;
+  FAVORITE = 20;
+  COMMENT = 30;
+  FOLLOWED = 40;
+  FOLLOWING = 41;
+}
+
+// TargetType 计数对象类型
+enum TargetType {
+  TARGET_TYPE_UNKNOWN = 0;
+  CONTENT = 10;
+  USER = 20;
+}
+
+// GetCountReq 查询单个计数
+message GetCountReq {
+  BizType biz_type = 1;
+  TargetType target_type = 2;
+  int64 target_id = 3;
+}
+
+// GetCountRes 查询结果
+message GetCountRes {
+  int64 value = 1;
+}
+
+// CountKey 计数唯一键
+message CountKey {
+  BizType biz_type = 1;
+  TargetType target_type = 2;
+  int64 target_id = 3;
+}
+
+// BatchGetCountReq 批量查询计数
+message BatchGetCountReq {
+  repeated CountKey keys = 1;
+}
+
+// CountValueItem 批量查询的单项返回
+message CountValueItem {
+  CountKey key = 1;
+  int64 value = 2;
+}
+
+// BatchGetCountRes 批量查询结果
+message BatchGetCountRes {
+  repeated CountValueItem items = 1;
+}
+
+// IncReq 对计数 +1
+message IncReq {
+  BizType biz_type = 1;
+  TargetType target_type = 2;
+  int64 target_id = 3;
+}
+
+// IncRes +1 后的计数值
+message IncRes {
+}
+
+// DecReq 对计数 -1
+message DecReq {
+  BizType biz_type = 1;
+  TargetType target_type = 2;
+  int64 target_id = 3;
+}
+
+// DecRes -1 后的计数值
+message DecRes {
+}
+
+// GetUserProfileCountsReq 查询用户主页计数
+message GetUserProfileCountsReq {
+  int64 user_id = 1;
+}
+
+// GetUserProfileCountsRes 用户主页计数结果
+message GetUserProfileCountsRes {
+  int64 following_count = 1;
+  int64 followed_count = 2;
+  int64 like_count = 3;
+  int64 favorite_count = 4;
+}
+
+service CounterService {
+  rpc GetCount(GetCountReq) returns (GetCountRes);
+  rpc BatchGetCount(BatchGetCountReq) returns (BatchGetCountRes);
+  rpc Inc(IncReq) returns (IncRes);
+  rpc Dec(DecReq) returns (DecRes);
+  rpc GetUserProfileCounts(GetUserProfileCountsReq) returns (GetUserProfileCountsRes);
+}
+

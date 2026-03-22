@@ -1,0 +1,130 @@
+syntax = "v1"
+
+type (
+	RegisterReq {
+		Mobile   *string `json:"mobile,optional" validate:"required,e164"`
+		Password *string `json:"password,optional" validate:"required"`
+		Nickname *string `json:"nickname,optional" validate:"max=64"`
+		Avatar   *string `json:"avatar,optional" validate:"required"`
+		Bio      *string `json:"bio,optional" validate:"max=255"`
+		Gender   *int32  `json:"gender,optional" validate:"required,oneof=0 1 2"`
+		Email    *string `json:"email,optional" validate:"required,email"`
+		Birthday *int64  `json:"birthday,optional" validate:"required"`
+	}
+	RegisterRes {
+		UserId    int64  `json:"user_id"`
+		Token     string `json:"token"`
+		ExpiredAt int64  `json:"expired_at"`
+	}
+	LoginReq {
+		Mobile   *string `json:"mobile,optional" validate:"required"`
+		Password *string `json:"password,optional" validate:"required"`
+	}
+	LoginRes {
+		UserId    int64  `json:"user_id"`
+		Token     string `json:"token"`
+		ExpiredAt int64  `json:"expired_at"`
+		Nickname  string `json:"nickname"`
+		Avatar    string `json:"avatar"`
+	}
+	LogoutRes  {}
+	UserInfo {
+		UserId   int64  `json:"user_id"`
+		Mobile   string `json:"mobile"`
+		Nickname string `json:"nickname"`
+		Avatar   string `json:"avatar"`
+		Bio      string `json:"bio"`
+		Gender   int32  `json:"gender"`
+		Status   int32  `json:"status"`
+	}
+	GetMeRes {
+		UserInfo UserInfo `json:"user_info"`
+		FolloweeCount int64 `json:"followee_count"`
+		FollowerCount int64 `json:"follower_count"`
+	    LikeReceivedCount int64 `json:"like_received_count"`
+		FavoriteReceivedCount int64 `json:"favorite_received_count"`
+	}
+	UploadAvatarRes {
+		Url       string `json:"url"`
+		ObjectKey string `json:"object_key"`
+		Mime      string `json:"mime"`
+		Size      int64  `json:"size"`
+	}
+	QueryUserProfileReq {
+		UserId int64 `json:"user_id,optional" validate:"required"`
+	}
+	QueryUserProfileRes {
+		UserProfileInfo    UserProfileInfo    `json:"user_profile"`
+		UserProfileCounts  UserProfileCounts  `json:"counts"`
+		ViewerProfileState ViewerProfileState `json:"viewer"`
+	}
+	UserProfileInfo {
+		UserId   int64  `json:"user_id"`
+		Nickname string `json:"nickname"`
+		Avatar   string `json:"avatar"`
+		Bio      string `json:"bio"`
+		Gender   int32  `json:"gender"`
+	}
+	UserProfileCounts {
+		FolloweeCount         int64 `json:"followee_count"`
+		FollowerCount         int64 `json:"follower_count"`
+		LikeReceivedCount     int64 `json:"like_received_count"`
+		FavoriteReceivedCount int64 `json:"favorite_received_count"`
+		ContentCount          int64 `json:"content_count"`
+	}
+	ViewerProfileState {
+		IsFollowing bool `json:"is_following"`
+	}
+)
+
+@server (
+	tags:   user
+	group:  user
+	prefix: /v1
+)
+service front-api {
+	@doc (
+		description: "用户注册"
+	)
+	@handler Register
+	post /users (RegisterReq) returns (RegisterRes)
+
+	@doc (
+		description: "用户登录"
+	)
+	@handler Login
+	post /login (LoginReq) returns (LoginRes)
+
+	@doc (
+		description: "上传用户头像"
+	)
+	@handler UploadAvatar
+	post /users/avatar/upload returns (UploadAvatarRes)
+}
+
+@server (
+	tags:   user
+	group:  user
+	prefix: /v1
+	middleware: UserLoginStatusAuthMiddleware
+)
+service front-api {
+	@doc (
+		description: "用户登出"
+	)
+	@handler Logout
+	post /logout returns (LogoutRes)
+
+	@doc (
+		description: "获取个人信息"
+	)
+	@handler GetMe
+	get /users/me returns (GetMeRes)
+	
+	@doc (
+		description: "查询用户详情"
+	)
+	@handler QueryUserProfile
+	get /user/profile/:userId (QueryUserProfileReq) returns (QueryUserProfileRes)
+}
+

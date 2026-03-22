@@ -1,0 +1,442 @@
+version: "3.9"
+
+services:
+  front-api:
+    image: ${FRONT_API_IMAGE}
+    build:
+      context: ..
+      dockerfile: build/front-api.Dockerfile
+    container_name: front-api
+    command: ["/app/bin/front-api", "-f", "/app/app/front/etc/front-api.yaml"]
+    working_dir: /app
+    restart: unless-stopped
+    environment:
+      - ENV_FILE=/app/.env
+    env_file:
+      - ./.env
+    ports:
+      - "${FRONT_API_PORT}:5000"
+    volumes:
+      - ./.env:/app/.env:ro
+      - app-logs:/var/log/ran-feed
+    depends_on:
+      etcd:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+    networks:
+      - ran-feed-net
+
+  content-rpc:
+    image: ${CONTENT_RPC_IMAGE}
+    build:
+      context: ..
+      dockerfile: build/content-rpc.Dockerfile
+    container_name: content-rpc
+    command: ["/app/bin/content-rpc", "-f", "/app/app/rpc/content/etc/content.yaml"]
+    working_dir: /app
+    restart: unless-stopped
+    environment:
+      - ENV_FILE=/app/.env
+    env_file:
+      - ./.env
+    ports:
+      - "${CONTENT_RPC_PORT}:5001"
+      - "${XXL_JOB_EXECUTOR_PORT}:5005"
+    volumes:
+      - ./.env:/app/.env:ro
+      - app-logs:/var/log/ran-feed
+    depends_on:
+      etcd:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      xxl-job-admin:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+    networks:
+      - ran-feed-net
+
+  interaction-rpc:
+    image: ${INTERACTION_RPC_IMAGE}
+    build:
+      context: ..
+      dockerfile: build/interaction-rpc.Dockerfile
+    container_name: interaction-rpc
+    command: ["/app/bin/interaction-rpc", "-f", "/app/app/rpc/interaction/etc/interaction.yaml"]
+    working_dir: /app
+    restart: unless-stopped
+    environment:
+      - ENV_FILE=/app/.env
+    env_file:
+      - ./.env
+    ports:
+      - "${INTERACTION_RPC_PORT}:5002"
+    volumes:
+      - ./.env:/app/.env:ro
+      - app-logs:/var/log/ran-feed
+    depends_on:
+      etcd:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+    networks:
+      - ran-feed-net
+
+  user-rpc:
+    image: ${USER_RPC_IMAGE}
+    build:
+      context: ..
+      dockerfile: build/user-rpc.Dockerfile
+    container_name: user-rpc
+    command: ["/app/bin/user-rpc", "-f", "/app/app/rpc/user/etc/user.yaml"]
+    working_dir: /app
+    restart: unless-stopped
+    environment:
+      - ENV_FILE=/app/.env
+    env_file:
+      - ./.env
+    ports:
+      - "${USER_RPC_PORT}:5003"
+    volumes:
+      - ./.env:/app/.env:ro
+      - app-logs:/var/log/ran-feed
+    depends_on:
+      etcd:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    networks:
+      - ran-feed-net
+
+  count-rpc:
+    image: ${COUNT_RPC_IMAGE}
+    build:
+      context: ..
+      dockerfile: build/count-rpc.Dockerfile
+    container_name: count-rpc
+    command: ["/app/bin/count-rpc", "-f", "/app/app/rpc/count/etc/count.yaml"]
+    working_dir: /app
+    restart: unless-stopped
+    environment:
+      - ENV_FILE=/app/.env
+    env_file:
+      - ./.env
+    ports:
+      - "${COUNT_RPC_PORT}:5004"
+    volumes:
+      - ./.env:/app/.env:ro
+      - app-logs:/var/log/ran-feed
+    depends_on:
+      etcd:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      otel-collector:
+        condition: service_started
+    networks:
+      - ran-feed-net
+
+  front-web:
+    image: ran-feed-front:latest
+    container_name: front-web
+    env_file:
+      - ./.env
+    environment:
+      - API_BASE_URL=${API_BASE_URL}
+    networks:
+      - ran-feed-net
+
+  nginx:
+    image: ${NGINX_IMAGE}
+    container_name: nginx
+    ports:
+      - "${NGINX_HTTP_PORT}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - front-web
+      - front-api
+    networks:
+      - ran-feed-net
+
+  etcd:
+    image: ${ETCD_IMAGE}
+    container_name: etcd
+    ports:
+      - "${ETCD_CLIENT_PORT}:2379"
+      - "${ETCD_PEER_PORT}:2380"
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_NAME=etcd
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd:2380
+      - ETCD_INITIAL_CLUSTER=etcd=http://etcd:2380
+      - ETCDCTL_API=3
+    volumes:
+      - etcd-data:/bitnami/etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "--endpoints=http://127.0.0.1:2379", "endpoint", "health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - ran-feed-net
+
+  redis:
+    image: ${REDIS_IMAGE}
+    container_name: redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - ran-feed-net
+
+  mysql:
+    image: ${MYSQL_IMAGE}
+    container_name: mysql
+    ports:
+      - "${MYSQL_PORT}:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./mysql/mysql-reseed.sh:/usr/local/bin/mysql-reseed.sh:ro
+      - ../script/sql:/seed-sql:ro
+      - mysql-data:/var/lib/mysql
+    entrypoint: ["/bin/bash", "/usr/local/bin/mysql-reseed.sh"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - ran-feed-net
+
+  kafka:
+    image: ${KAFKA_IMAGE}
+    container_name: kafka
+    ports:
+      - "${KAFKA_PORT}:${KAFKA_PORT}"
+    environment:
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:${KAFKA_PORT},CONTROLLER://0.0.0.0:${KAFKA_CONTROLLER_PORT}
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:${KAFKA_PORT}
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:${KAFKA_CONTROLLER_PORT}
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_KRAFT_CLUSTER_ID=${KAFKA_CLUSTER_ID}
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    volumes:
+      - kafka-data:/bitnami/kafka
+    networks:
+      - ran-feed-net
+
+  xxl-job-admin:
+    image: ${XXL_JOB_IMAGE}
+    container_name: xxl-job-admin
+    ports:
+      - "${XXL_JOB_PORT}:8080"
+    environment:
+      PARAMS: >-
+        --spring.datasource.url=jdbc:mysql://mysql:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
+        --spring.datasource.username=${MYSQL_USER}
+        --spring.datasource.password=${MYSQL_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ran-feed-net
+
+  canal:
+    image: ${CANAL_IMAGE}
+    container_name: canal
+    ports:
+      - "${CANAL_PORT}:11111"
+    command: ["/bin/sh", "-lc", "/usr/local/bin/canal-reset-and-start.sh"]
+    volumes:
+      - ./canal/conf/canal.properties:/home/admin/canal-server/conf/canal.properties
+      - ./canal/conf/count:/home/admin/canal-server/conf/count
+      - ./canal/reset-and-start.sh:/usr/local/bin/canal-reset-and-start.sh:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - ran-feed-net
+
+  otel-collector:
+    image: ${OTEL_COLLECTOR_IMAGE}
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector.yaml"]
+    ports:
+      - "${OTEL_COLLECTOR_GRPC_PORT}:4317"
+      - "${OTEL_COLLECTOR_HTTP_PORT}:4318"
+    volumes:
+      - ./otel/otel-collector.yaml:/etc/otel-collector.yaml:ro
+    depends_on:
+      - jaeger
+    networks:
+      - ran-feed-net
+
+  jaeger:
+    image: ${JAEGER_IMAGE}
+    container_name: jaeger
+    ports:
+      - "${JAEGER_UI_PORT}:16686"
+      - "14268:14268"
+      - "14250:14250"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=badger
+      - BADGER_DIRECTORY_VALUE=/badger/data
+      - BADGER_DIRECTORY_KEY=/badger/key
+    volumes:
+      - jaeger-data:/badger
+    networks:
+      - ran-feed-net
+
+  prometheus:
+    image: ${PROMETHEUS_IMAGE}
+    container_name: prometheus
+    ports:
+      - "${PROMETHEUS_PORT}:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - ran-feed-net
+
+  grafana:
+    image: ${GRAFANA_IMAGE}
+    container_name: grafana
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - ran-feed-net
+
+  elasticsearch:
+    image: ${ELASTIC_IMAGE}
+    container_name: elasticsearch
+    ports:
+      - "${ELASTIC_PORT}:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    networks:
+      - ran-feed-net
+
+  logstash:
+    image: ${LOGSTASH_IMAGE}
+    container_name: logstash
+    ports:
+      - "${LOGSTASH_PORT}:5044"
+    environment:
+      - LS_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - logstash-data:/usr/share/logstash/data
+    depends_on:
+      - elasticsearch
+      - kafka
+    networks:
+      - ran-feed-net
+
+  kibana:
+    image: ${KIBANA_IMAGE}
+    container_name: kibana
+    ports:
+      - "${KIBANA_PORT}:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    volumes:
+      - kibana-data:/usr/share/kibana/data
+    networks:
+      - ran-feed-net
+
+  filebeat:
+    image: ${FILEBEAT_IMAGE}
+    container_name: filebeat
+    user: root
+    command: ["--strict.perms=false"]
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - app-logs:/logs:ro
+      - filebeat-data:/usr/share/filebeat/data
+    depends_on:
+      - kafka
+    networks:
+      - ran-feed-net
+
+networks:
+  ran-feed-net:
+    driver: bridge
+
+volumes:
+  app-logs:
+  etcd-data:
+  redis-data:
+  mysql-data:
+  kafka-data:
+  prometheus-data:
+  grafana-data:
+  es-data:
+  logstash-data:
+  filebeat-data:
+  kibana-data:
+  jaeger-data:

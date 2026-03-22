@@ -1,0 +1,85 @@
+Name: interaction.rpc
+ListenOn: 0.0.0.0:5002
+Etcd:
+  Hosts:
+  - ${ETCD_HOST}:2379
+  Key: interaction.rpc
+
+
+Telemetry:
+  Name: interaction.rpc-server
+  Endpoint: ${OTEL_ENDPOINT}
+  Batcher: otlpgrpc
+  Sampler: 1.0
+
+Prometheus:
+  Host: ${PROM_HOST}
+  Port: 9293
+  Path: /metrics
+
+Log:
+  ServiceName: "interaction.rpc"
+  Mode: "file"
+  Encoding: "json"
+  TimeFormat: "2006-01-02T15:04:05.000Z07:00"
+  Path: ${LOG_PATH}
+  Level: "info"
+  MaxContentLength: 0
+  Compress: false
+  Stat: true
+  KeepDays: 1
+  StackCooldownMillis: 100
+  MaxBackups: 0
+  MaxSize: 0
+  Rotation: "daily"
+  FileTimeFormat: "2006-01-02T15:04:05.000Z07:00"
+
+CountRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: count.rpc
+  NonBlock: true
+
+UserRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: user.rpc
+  NonBlock: true
+
+ContentRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: content.rpc
+  NonBlock: true
+
+# Redis配置
+RedisConfig:
+  Host: ${REDIS_HOST}:6379
+  Type: node
+  Pass: ${REDIS_PASSWORD}
+
+# kafka生产者配置
+KqProducerConf:
+  Brokers:
+    - ${KAFKA_BROKERS}
+  Topic: ran-feed-like
+  DeadLetterTopic: ran-feed-like-dlq  # 死信队列 Topic
+  MaxRetries: 3                         # 最大重试次数
+
+# kafka消费者配置
+KqConsumerConf:
+  Name: interaction-like-consumer
+  Brokers:
+    - ${KAFKA_BROKERS}
+  Group: ran-feed-like-consumer
+  Topic: ran-feed-like
+  Offset: last
+  Consumers: 8
+  Processors: 8
+
+# 数据库配置
+MySQL:
+  DataSource: ${MYSQL_APP_USER}:${MYSQL_APP_PASSWORD}@tcp(${MYSQL_HOST}:3306)/ran-feed?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
