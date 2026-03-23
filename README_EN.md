@@ -108,6 +108,7 @@ script/             # SQL + scripts
 
 ## Quick Start
 ### 1. Prerequisites
+- Recommended: **Ubuntu 22.04** (suggested for the one-click startup via Docker Compose)
 - Docker + Docker Compose
 - Go (local dev)
 

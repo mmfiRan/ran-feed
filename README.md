@@ -110,6 +110,7 @@ script/             # SQL与启动脚本
 
 ## 快速开始
 ### 1. 环境准备
+- 推荐环境：**Ubuntu 22.04**（建议在该环境下使用 Docker Compose 一键启动）
 - Docker + Docker Compose
 - Go (本地开发)
 
