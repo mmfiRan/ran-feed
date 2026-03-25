@@ -127,6 +127,7 @@ script/             # SQL + scripts
 ```bash
 ./script/start.sh
 ```
+**Access after startup: `http://localhost`**
 
 ### 3. Stop
 ```bash

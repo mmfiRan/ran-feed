@@ -129,6 +129,7 @@ script/             # SQL与启动脚本
 ```bash
 ./script/start.sh
 ```
+**启动完成后访问：`http://localhost`**
 
 ### 3. 停止
 ```bash
