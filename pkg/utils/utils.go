@@ -114,6 +114,5 @@ func GetUserIdFromHttpHeader(r *http.Request) (int64, error) {
 	if err != nil {
 		return 0, fmt.Errorf("解析X-User-Id失败: %w", err)
 	}
-	context.WithValue(r.Context(), "user_id", userID)
 	return userID, nil
 }

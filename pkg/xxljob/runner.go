@@ -90,7 +90,9 @@ func (r *taskRunner) start(ctx context.Context, param TriggerParam, client *Admi
 		ctx = context.Background()
 	}
 	if param.ExecutorTimeout > 0 {
-		ctx, _ = context.WithTimeout(ctx, time.Duration(param.ExecutorTimeout)*time.Second)
+		var timeoutCancel context.CancelFunc
+		ctx, timeoutCancel = context.WithTimeout(ctx, time.Duration(param.ExecutorTimeout)*time.Second)
+		defer timeoutCancel()
 	}
 	ctx, cancel := context.WithCancel(ctx)
 	slot.running = &runningTask{cancel: cancel, jobID: param.JobID}
