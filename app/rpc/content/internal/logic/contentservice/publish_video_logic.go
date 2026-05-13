@@ -67,34 +67,33 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 			Duration:        in.Duration,
 			TranscodeStatus: 10,
 		}
-
-		if err := videoRepo.CreateVideo(videoDO); err != nil {
-			return err
-		}
-
-		feedKey := rediskey.BuildUserPublishFeedKey(in.UserId)
-		contentIDStr := strconv.FormatInt(contentId, 10)
-		_, cacheErr := l.svcCtx.Redis.EvalCtx(
-			l.ctx,
-			luautils.UpdateUserPublishZSetScript,
-			[]string{feedKey},
-			strconv.FormatInt(int64(userPublishFeedKeepN), 10),
-			contentIDStr, contentIDStr,
-		)
-		if cacheErr != nil {
-			return cacheErr
-		}
-		if shouldSeedHotIncrement(in.Visibility) {
-			if err := writePublishHotSeed(l.ctx, l.svcCtx, contentId); err != nil {
-				return err
-			}
-		}
-		return nil
+		return videoRepo.CreateVideo(videoDO)
 	}); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("发布视频失败"))
 	}
 
+	l.afterPublish(contentId, in.UserId, in.Visibility)
+
 	return &content.VideoPublishRes{
 		ContentId: contentId,
 	}, nil
+}
+
+func (l *PublishVideoLogic) afterPublish(contentId, userID int64, visibility content.Visibility) {
+	feedKey := rediskey.BuildUserPublishFeedKey(userID)
+	contentIDStr := strconv.FormatInt(contentId, 10)
+	if _, err := l.svcCtx.Redis.EvalCtx(
+		l.ctx,
+		luautils.UpdateUserPublishZSetScript,
+		[]string{feedKey},
+		strconv.FormatInt(userPublishFeedKeepN, 10),
+		contentIDStr, contentIDStr,
+	); err != nil {
+		l.Logger.Errorf("更新用户发布列表缓存失败 contentId=%d: %v", contentId, err)
+	}
+	if shouldSeedHotIncrement(visibility) {
+		if err := writePublishHotSeed(l.ctx, l.svcCtx, contentId); err != nil {
+			l.Logger.Errorf("写热榜增量失败 contentId=%d: %v", contentId, err)
+		}
+	}
 }

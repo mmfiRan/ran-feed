@@ -67,35 +67,33 @@ func (l *PublishArticleLogic) PublishArticle(in *content.ArticlePublishReq) (*co
 			Cover:       in.Cover,
 			Content:     in.Content,
 		}
-
-		if err := articleRepo.CreateArticle(articleDO); err != nil {
-			return err
-		}
-
-		feedKey := rediskey.BuildUserPublishFeedKey(in.UserId)
-		contentIDStr := strconv.FormatInt(contentId, 10)
-		_, cacheErr := l.svcCtx.Redis.EvalCtx(
-			l.ctx,
-			luautils.UpdateUserPublishZSetScript,
-			[]string{feedKey},
-			strconv.FormatInt(int64(userPublishFeedKeepN), 10),
-			contentIDStr, contentIDStr,
-		)
-		if cacheErr != nil {
-			return cacheErr
-		}
-		if shouldSeedHotIncrement(in.Visibility) {
-			if err := writePublishHotSeed(l.ctx, l.svcCtx, contentId); err != nil {
-				return err
-			}
-		}
-
-		return nil
+		return articleRepo.CreateArticle(articleDO)
 	}); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("发布文章失败"))
 	}
 
+	l.afterPublish(contentId, in.UserId, in.Visibility)
+
 	return &content.ArticlePublishRes{
 		ContentId: contentId,
 	}, nil
+}
+
+func (l *PublishArticleLogic) afterPublish(contentId, userID int64, visibility content.Visibility) {
+	feedKey := rediskey.BuildUserPublishFeedKey(userID)
+	contentIDStr := strconv.FormatInt(contentId, 10)
+	if _, err := l.svcCtx.Redis.EvalCtx(
+		l.ctx,
+		luautils.UpdateUserPublishZSetScript,
+		[]string{feedKey},
+		strconv.FormatInt(userPublishFeedKeepN, 10),
+		contentIDStr, contentIDStr,
+	); err != nil {
+		l.Logger.Errorf("更新用户发布列表缓存失败 contentId=%d: %v", contentId, err)
+	}
+	if shouldSeedHotIncrement(visibility) {
+		if err := writePublishHotSeed(l.ctx, l.svcCtx, contentId); err != nil {
+			l.Logger.Errorf("写热榜增量失败 contentId=%d: %v", contentId, err)
+		}
+	}
 }
