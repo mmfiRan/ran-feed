@@ -96,4 +96,6 @@ func (l *PublishArticleLogic) afterPublish(contentId, userID int64, visibility c
 			l.Logger.Errorf("写热榜增量失败 contentId=%d: %v", contentId, err)
 		}
 	}
+	// 推拉结合：小账号 fan-out 到 follower inbox，大 V 跳过
+	fanOutToFollowersAsync(l.svcCtx, userID, contentId, visibility)
 }

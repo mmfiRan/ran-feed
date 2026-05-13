@@ -54,6 +54,12 @@ CountRpcClientConf:
     Key: count.rpc
   NonBlock: true
 
+# 关注流推送配置（推拉结合）
+FollowFanOut:
+  BigVFollowerThreshold: 5000   # 粉丝数 >= 此值的作者发布时不推送，由读路径 merge
+  BatchSize: 500                # 单次 ListFollowers 拉取批大小
+  InboxKeepN: 5000              # follower inbox 保留最近条数
+
 # Redis配置
 RedisConfig:
   Host: ${REDIS_HOST}:6379
