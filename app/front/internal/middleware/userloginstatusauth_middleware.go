@@ -67,29 +67,27 @@ func (m *UserLoginStatusAuthMiddleware) Handle(next http.HandlerFunc) http.Handl
 }
 
 func parseSessionTTL(cfg config.Config) time.Duration {
-	ttlStr := cfg.SessionTTL
-	if ttlStr <= 0 {
+	if cfg.SessionTTL <= 0 {
 		return defaultSessionTTL
 	}
-	if d, err := time.ParseDuration(strconv.Itoa(int(ttlStr))); err == nil && d > 0 {
-		return d
-	}
-	if sec, err := strconv.ParseInt(strconv.Itoa(int(ttlStr)), 10, 64); err == nil && sec > 0 {
-		return time.Duration(sec) * time.Second
-	}
-	return defaultSessionTTL
+	return time.Duration(cfg.SessionTTL) * time.Second
 }
 
 func extractToken(r *http.Request) (string, bool) {
 	authorization := strings.TrimSpace(r.Header.Get(headerAuthorization))
-	if authorization != "" {
-		parts := strings.SplitN(authorization, " ", 2)
-		if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
-			t := strings.TrimSpace(parts[1])
-			if t != "" {
-				return t, true
-			}
+	if authorization == "" {
+		return "", false
+	}
+	parts := strings.SplitN(authorization, " ", 2)
+	if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		t := strings.TrimSpace(parts[1])
+		if t != "" {
+			return t, true
 		}
+		return "", false
+	}
+	// 兼容直接传 token（无 Bearer 前缀）
+	if len(parts) == 1 && parts[0] != "" {
 		return parts[0], true
 	}
 	return "", false
