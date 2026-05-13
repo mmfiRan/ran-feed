@@ -2,6 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-13",
+  "_meta_note": "feat-021 关注流推拉结合三件套全部完成（feat-019/020/021）",
   "features": [
     {
       "id": "feat-001",
@@ -272,8 +273,8 @@
       "name": "关注流推拉结合改造 - Feature C：读时大 V merge",
       "description": "FollowFeed 读路径：识别 viewer 关注列表中粉丝数 >= 阈值的大 V，单独查每个大 V 的 publish zset 最近 N 条，与 inbox 结果按 score 合并、去重、分页。cursor 设计需兼容两种数据源。",
       "dependencies": ["feat-019", "feat-020"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "新增 bigv_merge_helper.go（loadViewerBigVList 缓存读 + computeViewerBigVList 并行 GetCount + fetchBigVContentIDs 并行 Lua + mergeContentIDs 合并算法）；新增 Redis key feed:follow:bigv:{userId} SET 缓存 viewer 大 V 列表（TTL 默认 300s，空集用 sentinel='0'）；复用现有 QueryUserPublishZSetScript，contentID 全局自增保证 inbox/publish zset 共用同一根 score 轴；FollowFeed cacheExists 分支注入 merge，cold backfill 路径不动；FollowFanOut 配置扩展 4 项（BigVMergeMaxQuery/BigVCacheTTLSeconds/BigVFolloweesScanLimit/BigVCountConcurrency）；./init.sh 编译/vet 通过。"
     }
   ]
 }

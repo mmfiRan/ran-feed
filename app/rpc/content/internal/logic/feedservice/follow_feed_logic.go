@@ -73,7 +73,14 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 
 	var contents []*model.RanFeedContent
 	if cacheExists {
-		// 2a. 缓存命中：按 inbox 顺序取内容详情
+		// 2a. 缓存命中：先 merge 大 V publish zset（推拉结合读时拉）
+		bigVIDs := l.loadViewerBigVList(userID)
+		if len(bigVIDs) > 0 {
+			pool, anyMore := l.fetchBigVContentIDs(bigVIDs, in.Cursor, pageSize)
+			ids, hasMore, nextCursor = mergeContentIDs(ids, hasMore, pool, anyMore, pageSize)
+		}
+
+		// 2a. 缓存命中：按合并后顺序取内容详情
 		if len(ids) > 0 {
 			statusPublished := int32(content.ContentStatus_PUBLISHED)
 			visibilityPublic := int32(content.Visibility_PUBLIC)

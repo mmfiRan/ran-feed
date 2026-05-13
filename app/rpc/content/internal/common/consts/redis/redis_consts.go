@@ -23,6 +23,10 @@ const (
 	RedisFeedFollowInboxPrefix = "feed:follow:inbox"
 	// RedisFeedFollowInboxRebuildLockPrefix 关注收件箱重建锁前缀 feed:follow:inbox:lock
 	RedisFeedFollowInboxRebuildLockPrefix = "feed:follow:inbox:lock"
+	// RedisFeedFollowBigVPrefix viewer 大 V 关注列表缓存前缀 feed:follow:bigv
+	RedisFeedFollowBigVPrefix = "feed:follow:bigv"
+	// FollowBigVEmptySentinel 已计算且为空的占位成员，避免 miss 时反复 rebuild
+	FollowBigVEmptySentinel = "0"
 	// RedisFeedUserPublishPrefix 用户发布列表前缀 feed:user:publish
 	RedisFeedUserPublishPrefix = "feed:user:publish"
 	// RedisFeedUserFavoritePrefix 用户收藏列表前缀 feed:user:favoriteBuildUserFavoriteFeedKey
@@ -61,6 +65,10 @@ func BuildFollowInboxKey(userID int64) string {
 
 func BuildFollowInboxRebuildLockKey(userID int64) string {
 	return GetRedisPrefixKey(RedisFeedFollowInboxRebuildLockPrefix, strconv.FormatInt(userID, 10))
+}
+
+func BuildFollowBigVKey(userID int64) string {
+	return GetRedisPrefixKey(RedisFeedFollowBigVPrefix, strconv.FormatInt(userID, 10))
 }
 
 func BuildUserPublishFeedKey(userID int64) string {
