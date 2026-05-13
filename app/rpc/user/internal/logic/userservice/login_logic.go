@@ -42,12 +42,12 @@ func (l *LoginLogic) Login(in *user.LoginReq) (*user.LoginRes, error) {
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询用户失败"))
 	}
-	if u == nil {
-		return nil, errorx.NewMsg("用户不存在")
+	if u == nil || !utils.CheckPassword(u.PasswordHash, password+u.PasswordSalt) {
+		return nil, errorx.NewMsg("手机号或密码错误")
 	}
 
-	if !utils.CheckPassword(u.PasswordHash, password+u.PasswordSalt) {
-		return nil, errorx.NewMsg("密码错误")
+	if u.Status != int32(user.UserStatus_USER_STATUS_ACTIVE) {
+		return nil, errorx.NewMsg("账号已被禁用")
 	}
 
 	sessionTTL := session.GetSessionTTL(l.svcCtx.Config)
