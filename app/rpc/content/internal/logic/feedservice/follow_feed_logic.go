@@ -20,6 +20,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/mr"
 	"github.com/zeromicro/go-zero/core/stores/redis"
+	"github.com/zeromicro/go-zero/core/threading"
 )
 
 const (
@@ -50,14 +51,9 @@ func NewFollowFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Follow
 }
 
 func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.FollowFeedRes, error) {
-
 	// todo 查询该用户是否存在
 	if in == nil {
-		return &content.FollowFeedRes{
-			Items:      []*content.FollowFeedItem{},
-			NextCursor: "",
-			HasMore:    false,
-		}, nil
+		return emptyFollowFeedRes(), nil
 	}
 	userID := in.UserId
 	pageSize := int(in.PageSize)
@@ -68,63 +64,52 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 		pageSize = 50
 	}
 
-	// 优先查询用户收信箱
+	// 1. 先查 inbox 缓存
 	inboxKey := rediskey.BuildFollowInboxKey(userID)
 	ids, nextCursor, hasMore, cacheExists, err := l.queryInboxIDs(inboxKey, in.Cursor, pageSize)
 	if err != nil {
 		return nil, err
 	}
 
-	// 仅当缓存不存在时，才会回填缓存
-	// 缓存存在但本次返回数量不足，视为已到末尾，直接返回即可
-	if !cacheExists {
-		lockKey := rediskey.BuildFollowInboxRebuildLockKey(userID)
-		redisLock := redis.NewRedisLock(l.svcCtx.Redis, lockKey)
-		redisLock.SetExpire(followInboxRebuildLockTTLSeconds)
-		locked, lockErr := redisLock.AcquireCtx(l.ctx)
-		if lockErr != nil {
-			return nil, errorx.Wrap(l.ctx, lockErr, errorx.NewMsg("查询失败请稍后重试"))
-		}
-		if locked {
-			defer func() {
-				if releaseOk, releaseErr := redisLock.ReleaseCtx(l.ctx); !releaseOk || releaseErr != nil {
-					l.Errorf("释放分布式锁失败: %v", releaseErr)
+	var contents []*model.RanFeedContent
+	if cacheExists {
+		// 2a. 缓存命中：按 inbox 顺序取内容详情
+		if len(ids) > 0 {
+			statusPublished := int32(content.ContentStatus_PUBLISHED)
+			visibilityPublic := int32(content.Visibility_PUBLIC)
+			contentMap, qerr := l.contentRepo.BatchGetRecommendByIDs(statusPublished, visibilityPublic, ids)
+			if qerr != nil {
+				return nil, errorx.Wrap(l.ctx, qerr, errorx.NewMsg("查询关注内容失败"))
+			}
+			contents = make([]*model.RanFeedContent, 0, len(ids))
+			for _, id := range ids {
+				if row, ok := contentMap[id]; ok && row != nil {
+					contents = append(contents, row)
 				}
-			}()
-			l.rebuildInboxCacheBestEffort(l.ctx, userID, inboxKey)
+			}
 		}
-		return nil, errorx.NewMsg("查询失败请稍后重试")
-	}
+	} else {
+		// 2b. 缓存未命中：异步重建，同步走 DB 兜底返回首屏
+		threading.GoSafe(func() {
+			ctx, cancel := context.WithTimeout(context.Background(), followInboxRebuildTimeout)
+			defer cancel()
+			NewFollowFeedLogic(ctx, l.svcCtx).rebuildInboxWithLock(userID, inboxKey)
+		})
 
-	if len(ids) == 0 {
-		return &content.FollowFeedRes{
-			Items:      []*content.FollowFeedItem{},
-			NextCursor: "",
-			HasMore:    false,
-		}, nil
-	}
-
-	statusPublished := int32(content.ContentStatus_PUBLISHED)
-	visibilityPublic := int32(content.Visibility_PUBLIC)
-	contentMap, err := l.contentRepo.BatchGetRecommendByIDs(statusPublished, visibilityPublic, ids)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注内容失败"))
-	}
-
-	contents := make([]*model.RanFeedContent, 0, len(ids))
-	for _, id := range ids {
-		if row, ok := contentMap[id]; ok && row != nil {
-			contents = append(contents, row)
+		rows, more, cur, cerr := l.coldBackfill(userID, parseCursorID(in.Cursor), pageSize)
+		if cerr != nil {
+			return nil, cerr
 		}
+		contents = rows
+		nextCursor = cur
+		hasMore = more
 	}
+
 	if len(contents) == 0 {
-		return &content.FollowFeedRes{
-			Items:      []*content.FollowFeedItem{},
-			NextCursor: "",
-			HasMore:    false,
-		}, nil
+		return emptyFollowFeedRes(), nil
 	}
 
+	// 3. 并行拼装作者信息、点赞状态、文章/视频摘要
 	articleMap, videoMap, err := l.buildBriefMaps(contents)
 	if err != nil {
 		return nil, err
@@ -134,13 +119,52 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 		return nil, err
 	}
 
-	items := l.buildFollowItems(contents, articleMap, videoMap, userMap, likedMap, likeCountMap)
-
 	return &content.FollowFeedRes{
-		Items:      items,
+		Items:      l.buildFollowItems(contents, articleMap, videoMap, userMap, likedMap, likeCountMap),
 		NextCursor: nextCursor,
 		HasMore:    hasMore,
 	}, nil
+}
+
+func emptyFollowFeedRes() *content.FollowFeedRes {
+	return &content.FollowFeedRes{
+		Items:      []*content.FollowFeedItem{},
+		NextCursor: "",
+		HasMore:    false,
+	}
+}
+
+func parseCursorID(cursor string) int64 {
+	if cursor == "" || cursor == "0" {
+		return 0
+	}
+	id, err := strconv.ParseInt(cursor, 10, 64)
+	if err != nil || id < 0 {
+		return 0
+	}
+	return id
+}
+
+// rebuildInboxWithLock 加锁后重建 inbox 缓存，best-effort，错误只记日志
+func (l *FollowFeedLogic) rebuildInboxWithLock(userID int64, inboxKey string) {
+	lockKey := rediskey.BuildFollowInboxRebuildLockKey(userID)
+	redisLock := redis.NewRedisLock(l.svcCtx.Redis, lockKey)
+	redisLock.SetExpire(followInboxRebuildLockTTLSeconds)
+
+	locked, err := redisLock.AcquireCtx(l.ctx)
+	if err != nil {
+		l.Errorf("获取重建锁失败 userID=%d: %v", userID, err)
+		return
+	}
+	if !locked {
+		return
+	}
+	defer func() {
+		if ok, rerr := redisLock.ReleaseCtx(l.ctx); !ok || rerr != nil {
+			l.Errorf("释放重建锁失败 userID=%d: %v", userID, rerr)
+		}
+	}()
+	l.rebuildInboxCacheBestEffort(l.ctx, userID, inboxKey)
 }
 
 func (l *FollowFeedLogic) rebuildInboxCacheBestEffort(ctx context.Context, userID int64, inboxKey string) {
