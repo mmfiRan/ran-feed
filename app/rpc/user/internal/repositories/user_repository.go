@@ -100,6 +100,7 @@ func (r *userRepositoryImpl) GetByID(userID int64) (*do.UserDO, error) {
 	q := r.getQuery()
 	row, err := q.RanFeedUser.WithContext(r.ctx).
 		Where(q.RanFeedUser.ID.Eq(userID)).
+		Where(q.RanFeedUser.IsDeleted.Eq(0)).
 		First()
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -137,6 +138,7 @@ func (r *userRepositoryImpl) BatchGetByIDs(userIDs []int64) (map[int64]*do.UserD
 	q := r.getQuery()
 	rows, err := q.RanFeedUser.WithContext(r.ctx).
 		Where(q.RanFeedUser.ID.In(userIDs...)).
+		Where(q.RanFeedUser.IsDeleted.Eq(0)).
 		Find()
 	if err != nil {
 		return nil, err
