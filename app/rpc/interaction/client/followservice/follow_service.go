@@ -38,6 +38,8 @@ type (
 	LikeRes               = interaction.LikeRes
 	ListFolloweesReq      = interaction.ListFolloweesReq
 	ListFolloweesRes      = interaction.ListFolloweesRes
+	ListFollowersReq      = interaction.ListFollowersReq
+	ListFollowersRes      = interaction.ListFollowersRes
 	PageReq               = interaction.PageReq
 	PageRes               = interaction.PageRes
 	QueryCommentListReq   = interaction.QueryCommentListReq
@@ -63,6 +65,7 @@ type (
 		FollowUser(ctx context.Context, in *FollowUserReq, opts ...grpc.CallOption) (*FollowUserRes, error)
 		UnfollowUser(ctx context.Context, in *UnfollowUserReq, opts ...grpc.CallOption) (*UnfollowUserRes, error)
 		ListFollowees(ctx context.Context, in *ListFolloweesReq, opts ...grpc.CallOption) (*ListFolloweesRes, error)
+		ListFollowers(ctx context.Context, in *ListFollowersReq, opts ...grpc.CallOption) (*ListFollowersRes, error)
 		GetFollowSummary(ctx context.Context, in *GetFollowSummaryReq, opts ...grpc.CallOption) (*GetFollowSummaryRes, error)
 	}
 
@@ -90,6 +93,11 @@ func (m *defaultFollowService) UnfollowUser(ctx context.Context, in *UnfollowUse
 func (m *defaultFollowService) ListFollowees(ctx context.Context, in *ListFolloweesReq, opts ...grpc.CallOption) (*ListFolloweesRes, error) {
 	client := interaction.NewFollowServiceClient(m.cli.Conn())
 	return client.ListFollowees(ctx, in, opts...)
+}
+
+func (m *defaultFollowService) ListFollowers(ctx context.Context, in *ListFollowersReq, opts ...grpc.CallOption) (*ListFollowersRes, error) {
+	client := interaction.NewFollowServiceClient(m.cli.Conn())
+	return client.ListFollowers(ctx, in, opts...)
 }
 
 func (m *defaultFollowService) GetFollowSummary(ctx context.Context, in *GetFollowSummaryReq, opts ...grpc.CallOption) (*GetFollowSummaryRes, error) {

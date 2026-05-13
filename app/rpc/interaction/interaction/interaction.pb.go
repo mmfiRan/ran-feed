@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v3.19.4
-// source: proto/interaction.proto
+// source: app/rpc/interaction/proto/interaction.proto
 
 package interaction
 
@@ -57,11 +57,11 @@ func (x Scene) String() string {
 }
 
 func (Scene) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_interaction_proto_enumTypes[0].Descriptor()
+	return file_app_rpc_interaction_proto_interaction_proto_enumTypes[0].Descriptor()
 }
 
 func (Scene) Type() protoreflect.EnumType {
-	return &file_proto_interaction_proto_enumTypes[0]
+	return &file_app_rpc_interaction_proto_interaction_proto_enumTypes[0]
 }
 
 func (x Scene) Number() protoreflect.EnumNumber {
@@ -70,7 +70,7 @@ func (x Scene) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Scene.Descriptor instead.
 func (Scene) EnumDescriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{0}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{0}
 }
 
 type PageReq struct {
@@ -83,7 +83,7 @@ type PageReq struct {
 
 func (x *PageReq) Reset() {
 	*x = PageReq{}
-	mi := &file_proto_interaction_proto_msgTypes[0]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -95,7 +95,7 @@ func (x *PageReq) String() string {
 func (*PageReq) ProtoMessage() {}
 
 func (x *PageReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[0]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -108,7 +108,7 @@ func (x *PageReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PageReq.ProtoReflect.Descriptor instead.
 func (*PageReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{0}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *PageReq) GetPage() uint32 {
@@ -136,7 +136,7 @@ type PageRes struct {
 
 func (x *PageRes) Reset() {
 	*x = PageRes{}
-	mi := &file_proto_interaction_proto_msgTypes[1]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -148,7 +148,7 @@ func (x *PageRes) String() string {
 func (*PageRes) ProtoMessage() {}
 
 func (x *PageRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[1]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -161,7 +161,7 @@ func (x *PageRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PageRes.ProtoReflect.Descriptor instead.
 func (*PageRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{1}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *PageRes) GetPage() uint32 {
@@ -197,7 +197,7 @@ type LikeReq struct {
 
 func (x *LikeReq) Reset() {
 	*x = LikeReq{}
-	mi := &file_proto_interaction_proto_msgTypes[2]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -209,7 +209,7 @@ func (x *LikeReq) String() string {
 func (*LikeReq) ProtoMessage() {}
 
 func (x *LikeReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[2]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -222,7 +222,7 @@ func (x *LikeReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LikeReq.ProtoReflect.Descriptor instead.
 func (*LikeReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{2}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *LikeReq) GetUserId() int64 {
@@ -261,7 +261,7 @@ type LikeRes struct {
 
 func (x *LikeRes) Reset() {
 	*x = LikeRes{}
-	mi := &file_proto_interaction_proto_msgTypes[3]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -273,7 +273,7 @@ func (x *LikeRes) String() string {
 func (*LikeRes) ProtoMessage() {}
 
 func (x *LikeRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[3]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -286,7 +286,7 @@ func (x *LikeRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LikeRes.ProtoReflect.Descriptor instead.
 func (*LikeRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{3}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{3}
 }
 
 type UnlikeReq struct {
@@ -300,7 +300,7 @@ type UnlikeReq struct {
 
 func (x *UnlikeReq) Reset() {
 	*x = UnlikeReq{}
-	mi := &file_proto_interaction_proto_msgTypes[4]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -312,7 +312,7 @@ func (x *UnlikeReq) String() string {
 func (*UnlikeReq) ProtoMessage() {}
 
 func (x *UnlikeReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[4]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -325,7 +325,7 @@ func (x *UnlikeReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnlikeReq.ProtoReflect.Descriptor instead.
 func (*UnlikeReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{4}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *UnlikeReq) GetUserId() int64 {
@@ -357,7 +357,7 @@ type UnlikeRes struct {
 
 func (x *UnlikeRes) Reset() {
 	*x = UnlikeRes{}
-	mi := &file_proto_interaction_proto_msgTypes[5]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -369,7 +369,7 @@ func (x *UnlikeRes) String() string {
 func (*UnlikeRes) ProtoMessage() {}
 
 func (x *UnlikeRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[5]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -382,7 +382,7 @@ func (x *UnlikeRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnlikeRes.ProtoReflect.Descriptor instead.
 func (*UnlikeRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{5}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{5}
 }
 
 type QueryLikeInfoReq struct {
@@ -396,7 +396,7 @@ type QueryLikeInfoReq struct {
 
 func (x *QueryLikeInfoReq) Reset() {
 	*x = QueryLikeInfoReq{}
-	mi := &file_proto_interaction_proto_msgTypes[6]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -408,7 +408,7 @@ func (x *QueryLikeInfoReq) String() string {
 func (*QueryLikeInfoReq) ProtoMessage() {}
 
 func (x *QueryLikeInfoReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[6]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -421,7 +421,7 @@ func (x *QueryLikeInfoReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryLikeInfoReq.ProtoReflect.Descriptor instead.
 func (*QueryLikeInfoReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{6}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *QueryLikeInfoReq) GetUserId() int64 {
@@ -457,7 +457,7 @@ type QueryLikeInfoRes struct {
 
 func (x *QueryLikeInfoRes) Reset() {
 	*x = QueryLikeInfoRes{}
-	mi := &file_proto_interaction_proto_msgTypes[7]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -469,7 +469,7 @@ func (x *QueryLikeInfoRes) String() string {
 func (*QueryLikeInfoRes) ProtoMessage() {}
 
 func (x *QueryLikeInfoRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[7]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -482,7 +482,7 @@ func (x *QueryLikeInfoRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryLikeInfoRes.ProtoReflect.Descriptor instead.
 func (*QueryLikeInfoRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{7}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *QueryLikeInfoRes) GetLikeCount() int64 {
@@ -523,7 +523,7 @@ type BatchQueryLikeInfoReq struct {
 
 func (x *BatchQueryLikeInfoReq) Reset() {
 	*x = BatchQueryLikeInfoReq{}
-	mi := &file_proto_interaction_proto_msgTypes[8]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -535,7 +535,7 @@ func (x *BatchQueryLikeInfoReq) String() string {
 func (*BatchQueryLikeInfoReq) ProtoMessage() {}
 
 func (x *BatchQueryLikeInfoReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[8]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -548,7 +548,7 @@ func (x *BatchQueryLikeInfoReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchQueryLikeInfoReq.ProtoReflect.Descriptor instead.
 func (*BatchQueryLikeInfoReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{8}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *BatchQueryLikeInfoReq) GetUserId() int64 {
@@ -574,7 +574,7 @@ type BatchQueryLikeInfoRes struct {
 
 func (x *BatchQueryLikeInfoRes) Reset() {
 	*x = BatchQueryLikeInfoRes{}
-	mi := &file_proto_interaction_proto_msgTypes[9]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -586,7 +586,7 @@ func (x *BatchQueryLikeInfoRes) String() string {
 func (*BatchQueryLikeInfoRes) ProtoMessage() {}
 
 func (x *BatchQueryLikeInfoRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[9]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -599,7 +599,7 @@ func (x *BatchQueryLikeInfoRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchQueryLikeInfoRes.ProtoReflect.Descriptor instead.
 func (*BatchQueryLikeInfoRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{9}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *BatchQueryLikeInfoRes) GetLikeInfos() []*QueryLikeInfoRes {
@@ -619,7 +619,7 @@ type LikeInfo struct {
 
 func (x *LikeInfo) Reset() {
 	*x = LikeInfo{}
-	mi := &file_proto_interaction_proto_msgTypes[10]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -631,7 +631,7 @@ func (x *LikeInfo) String() string {
 func (*LikeInfo) ProtoMessage() {}
 
 func (x *LikeInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[10]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -644,7 +644,7 @@ func (x *LikeInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LikeInfo.ProtoReflect.Descriptor instead.
 func (*LikeInfo) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{10}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *LikeInfo) GetContentId() int64 {
@@ -672,7 +672,7 @@ type IsLikedInfo struct {
 
 func (x *IsLikedInfo) Reset() {
 	*x = IsLikedInfo{}
-	mi := &file_proto_interaction_proto_msgTypes[11]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -684,7 +684,7 @@ func (x *IsLikedInfo) String() string {
 func (*IsLikedInfo) ProtoMessage() {}
 
 func (x *IsLikedInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[11]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -697,7 +697,7 @@ func (x *IsLikedInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IsLikedInfo.ProtoReflect.Descriptor instead.
 func (*IsLikedInfo) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{11}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *IsLikedInfo) GetContentId() int64 {
@@ -731,7 +731,7 @@ type BatchQueryIsLikedReq struct {
 
 func (x *BatchQueryIsLikedReq) Reset() {
 	*x = BatchQueryIsLikedReq{}
-	mi := &file_proto_interaction_proto_msgTypes[12]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -743,7 +743,7 @@ func (x *BatchQueryIsLikedReq) String() string {
 func (*BatchQueryIsLikedReq) ProtoMessage() {}
 
 func (x *BatchQueryIsLikedReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[12]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -756,7 +756,7 @@ func (x *BatchQueryIsLikedReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchQueryIsLikedReq.ProtoReflect.Descriptor instead.
 func (*BatchQueryIsLikedReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{12}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *BatchQueryIsLikedReq) GetUserId() int64 {
@@ -782,7 +782,7 @@ type BatchQueryIsLikedRes struct {
 
 func (x *BatchQueryIsLikedRes) Reset() {
 	*x = BatchQueryIsLikedRes{}
-	mi := &file_proto_interaction_proto_msgTypes[13]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -794,7 +794,7 @@ func (x *BatchQueryIsLikedRes) String() string {
 func (*BatchQueryIsLikedRes) ProtoMessage() {}
 
 func (x *BatchQueryIsLikedRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[13]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -807,7 +807,7 @@ func (x *BatchQueryIsLikedRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchQueryIsLikedRes.ProtoReflect.Descriptor instead.
 func (*BatchQueryIsLikedRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{13}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *BatchQueryIsLikedRes) GetIsLikedInfos() []*IsLikedInfo {
@@ -829,7 +829,7 @@ type FavoriteReq struct {
 
 func (x *FavoriteReq) Reset() {
 	*x = FavoriteReq{}
-	mi := &file_proto_interaction_proto_msgTypes[14]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -841,7 +841,7 @@ func (x *FavoriteReq) String() string {
 func (*FavoriteReq) ProtoMessage() {}
 
 func (x *FavoriteReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[14]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -854,7 +854,7 @@ func (x *FavoriteReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FavoriteReq.ProtoReflect.Descriptor instead.
 func (*FavoriteReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{14}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *FavoriteReq) GetUserId() int64 {
@@ -893,7 +893,7 @@ type FavoriteRes struct {
 
 func (x *FavoriteRes) Reset() {
 	*x = FavoriteRes{}
-	mi := &file_proto_interaction_proto_msgTypes[15]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -905,7 +905,7 @@ func (x *FavoriteRes) String() string {
 func (*FavoriteRes) ProtoMessage() {}
 
 func (x *FavoriteRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[15]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -918,7 +918,7 @@ func (x *FavoriteRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FavoriteRes.ProtoReflect.Descriptor instead.
 func (*FavoriteRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{15}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{15}
 }
 
 type RemoveFavoriteReq struct {
@@ -932,7 +932,7 @@ type RemoveFavoriteReq struct {
 
 func (x *RemoveFavoriteReq) Reset() {
 	*x = RemoveFavoriteReq{}
-	mi := &file_proto_interaction_proto_msgTypes[16]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -944,7 +944,7 @@ func (x *RemoveFavoriteReq) String() string {
 func (*RemoveFavoriteReq) ProtoMessage() {}
 
 func (x *RemoveFavoriteReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[16]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -957,7 +957,7 @@ func (x *RemoveFavoriteReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveFavoriteReq.ProtoReflect.Descriptor instead.
 func (*RemoveFavoriteReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{16}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *RemoveFavoriteReq) GetUserId() int64 {
@@ -989,7 +989,7 @@ type RemoveFavoriteRes struct {
 
 func (x *RemoveFavoriteRes) Reset() {
 	*x = RemoveFavoriteRes{}
-	mi := &file_proto_interaction_proto_msgTypes[17]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1001,7 +1001,7 @@ func (x *RemoveFavoriteRes) String() string {
 func (*RemoveFavoriteRes) ProtoMessage() {}
 
 func (x *RemoveFavoriteRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[17]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1014,7 +1014,7 @@ func (x *RemoveFavoriteRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveFavoriteRes.ProtoReflect.Descriptor instead.
 func (*RemoveFavoriteRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{17}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{17}
 }
 
 type QueryFavoriteInfoReq struct {
@@ -1028,7 +1028,7 @@ type QueryFavoriteInfoReq struct {
 
 func (x *QueryFavoriteInfoReq) Reset() {
 	*x = QueryFavoriteInfoReq{}
-	mi := &file_proto_interaction_proto_msgTypes[18]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1040,7 +1040,7 @@ func (x *QueryFavoriteInfoReq) String() string {
 func (*QueryFavoriteInfoReq) ProtoMessage() {}
 
 func (x *QueryFavoriteInfoReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[18]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1053,7 +1053,7 @@ func (x *QueryFavoriteInfoReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryFavoriteInfoReq.ProtoReflect.Descriptor instead.
 func (*QueryFavoriteInfoReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{18}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *QueryFavoriteInfoReq) GetUserId() int64 {
@@ -1089,7 +1089,7 @@ type QueryFavoriteInfoRes struct {
 
 func (x *QueryFavoriteInfoRes) Reset() {
 	*x = QueryFavoriteInfoRes{}
-	mi := &file_proto_interaction_proto_msgTypes[19]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1101,7 +1101,7 @@ func (x *QueryFavoriteInfoRes) String() string {
 func (*QueryFavoriteInfoRes) ProtoMessage() {}
 
 func (x *QueryFavoriteInfoRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[19]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1114,7 +1114,7 @@ func (x *QueryFavoriteInfoRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryFavoriteInfoRes.ProtoReflect.Descriptor instead.
 func (*QueryFavoriteInfoRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{19}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *QueryFavoriteInfoRes) GetFavoriteCount() int64 {
@@ -1156,7 +1156,7 @@ type QueryFavoriteListReq struct {
 
 func (x *QueryFavoriteListReq) Reset() {
 	*x = QueryFavoriteListReq{}
-	mi := &file_proto_interaction_proto_msgTypes[20]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1168,7 +1168,7 @@ func (x *QueryFavoriteListReq) String() string {
 func (*QueryFavoriteListReq) ProtoMessage() {}
 
 func (x *QueryFavoriteListReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[20]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1181,7 +1181,7 @@ func (x *QueryFavoriteListReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryFavoriteListReq.ProtoReflect.Descriptor instead.
 func (*QueryFavoriteListReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{20}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *QueryFavoriteListReq) GetUserId() int64 {
@@ -1216,7 +1216,7 @@ type FavoriteItem struct {
 
 func (x *FavoriteItem) Reset() {
 	*x = FavoriteItem{}
-	mi := &file_proto_interaction_proto_msgTypes[21]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1228,7 +1228,7 @@ func (x *FavoriteItem) String() string {
 func (*FavoriteItem) ProtoMessage() {}
 
 func (x *FavoriteItem) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[21]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1241,7 +1241,7 @@ func (x *FavoriteItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FavoriteItem.ProtoReflect.Descriptor instead.
 func (*FavoriteItem) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{21}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *FavoriteItem) GetFavoriteId() int64 {
@@ -1276,7 +1276,7 @@ type QueryFavoriteListRes struct {
 
 func (x *QueryFavoriteListRes) Reset() {
 	*x = QueryFavoriteListRes{}
-	mi := &file_proto_interaction_proto_msgTypes[22]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1288,7 +1288,7 @@ func (x *QueryFavoriteListRes) String() string {
 func (*QueryFavoriteListRes) ProtoMessage() {}
 
 func (x *QueryFavoriteListRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[22]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1301,7 +1301,7 @@ func (x *QueryFavoriteListRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryFavoriteListRes.ProtoReflect.Descriptor instead.
 func (*QueryFavoriteListRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{22}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *QueryFavoriteListRes) GetItems() []*FavoriteItem {
@@ -1341,7 +1341,7 @@ type CommentReq struct {
 
 func (x *CommentReq) Reset() {
 	*x = CommentReq{}
-	mi := &file_proto_interaction_proto_msgTypes[23]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1353,7 +1353,7 @@ func (x *CommentReq) String() string {
 func (*CommentReq) ProtoMessage() {}
 
 func (x *CommentReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[23]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1366,7 +1366,7 @@ func (x *CommentReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommentReq.ProtoReflect.Descriptor instead.
 func (*CommentReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{23}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *CommentReq) GetUserId() int64 {
@@ -1434,7 +1434,7 @@ type CommentRes struct {
 
 func (x *CommentRes) Reset() {
 	*x = CommentRes{}
-	mi := &file_proto_interaction_proto_msgTypes[24]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1446,7 +1446,7 @@ func (x *CommentRes) String() string {
 func (*CommentRes) ProtoMessage() {}
 
 func (x *CommentRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[24]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1459,7 +1459,7 @@ func (x *CommentRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommentRes.ProtoReflect.Descriptor instead.
 func (*CommentRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{24}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *CommentRes) GetCommentId() int64 {
@@ -1483,7 +1483,7 @@ type DeleteCommentReq struct {
 
 func (x *DeleteCommentReq) Reset() {
 	*x = DeleteCommentReq{}
-	mi := &file_proto_interaction_proto_msgTypes[25]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1495,7 +1495,7 @@ func (x *DeleteCommentReq) String() string {
 func (*DeleteCommentReq) ProtoMessage() {}
 
 func (x *DeleteCommentReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[25]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1508,7 +1508,7 @@ func (x *DeleteCommentReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCommentReq.ProtoReflect.Descriptor instead.
 func (*DeleteCommentReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{25}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *DeleteCommentReq) GetUserId() int64 {
@@ -1561,7 +1561,7 @@ type DeleteCommentRes struct {
 
 func (x *DeleteCommentRes) Reset() {
 	*x = DeleteCommentRes{}
-	mi := &file_proto_interaction_proto_msgTypes[26]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1573,7 +1573,7 @@ func (x *DeleteCommentRes) String() string {
 func (*DeleteCommentRes) ProtoMessage() {}
 
 func (x *DeleteCommentRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[26]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1586,7 +1586,7 @@ func (x *DeleteCommentRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteCommentRes.ProtoReflect.Descriptor instead.
 func (*DeleteCommentRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{26}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{26}
 }
 
 type CommentItem struct {
@@ -1609,7 +1609,7 @@ type CommentItem struct {
 
 func (x *CommentItem) Reset() {
 	*x = CommentItem{}
-	mi := &file_proto_interaction_proto_msgTypes[27]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1621,7 +1621,7 @@ func (x *CommentItem) String() string {
 func (*CommentItem) ProtoMessage() {}
 
 func (x *CommentItem) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[27]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1634,7 +1634,7 @@ func (x *CommentItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommentItem.ProtoReflect.Descriptor instead.
 func (*CommentItem) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{27}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *CommentItem) GetCommentId() int64 {
@@ -1733,7 +1733,7 @@ type QueryCommentListReq struct {
 
 func (x *QueryCommentListReq) Reset() {
 	*x = QueryCommentListReq{}
-	mi := &file_proto_interaction_proto_msgTypes[28]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1745,7 +1745,7 @@ func (x *QueryCommentListReq) String() string {
 func (*QueryCommentListReq) ProtoMessage() {}
 
 func (x *QueryCommentListReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[28]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1758,7 +1758,7 @@ func (x *QueryCommentListReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryCommentListReq.ProtoReflect.Descriptor instead.
 func (*QueryCommentListReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{28}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *QueryCommentListReq) GetContentId() int64 {
@@ -1800,7 +1800,7 @@ type QueryCommentListRes struct {
 
 func (x *QueryCommentListRes) Reset() {
 	*x = QueryCommentListRes{}
-	mi := &file_proto_interaction_proto_msgTypes[29]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1812,7 +1812,7 @@ func (x *QueryCommentListRes) String() string {
 func (*QueryCommentListRes) ProtoMessage() {}
 
 func (x *QueryCommentListRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[29]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1825,7 +1825,7 @@ func (x *QueryCommentListRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryCommentListRes.ProtoReflect.Descriptor instead.
 func (*QueryCommentListRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{29}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *QueryCommentListRes) GetComments() []*CommentItem {
@@ -1860,7 +1860,7 @@ type QueryReplyListReq struct {
 
 func (x *QueryReplyListReq) Reset() {
 	*x = QueryReplyListReq{}
-	mi := &file_proto_interaction_proto_msgTypes[30]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1872,7 +1872,7 @@ func (x *QueryReplyListReq) String() string {
 func (*QueryReplyListReq) ProtoMessage() {}
 
 func (x *QueryReplyListReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[30]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1885,7 +1885,7 @@ func (x *QueryReplyListReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryReplyListReq.ProtoReflect.Descriptor instead.
 func (*QueryReplyListReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{30}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *QueryReplyListReq) GetRootId() int64 {
@@ -1921,7 +1921,7 @@ type QueryReplyListRes struct {
 
 func (x *QueryReplyListRes) Reset() {
 	*x = QueryReplyListRes{}
-	mi := &file_proto_interaction_proto_msgTypes[31]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1933,7 +1933,7 @@ func (x *QueryReplyListRes) String() string {
 func (*QueryReplyListRes) ProtoMessage() {}
 
 func (x *QueryReplyListRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[31]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1946,7 +1946,7 @@ func (x *QueryReplyListRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryReplyListRes.ProtoReflect.Descriptor instead.
 func (*QueryReplyListRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{31}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *QueryReplyListRes) GetRootId() int64 {
@@ -1986,7 +1986,7 @@ type BatchGetCommentsReq struct {
 
 func (x *BatchGetCommentsReq) Reset() {
 	*x = BatchGetCommentsReq{}
-	mi := &file_proto_interaction_proto_msgTypes[32]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1998,7 +1998,7 @@ func (x *BatchGetCommentsReq) String() string {
 func (*BatchGetCommentsReq) ProtoMessage() {}
 
 func (x *BatchGetCommentsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[32]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2011,7 +2011,7 @@ func (x *BatchGetCommentsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetCommentsReq.ProtoReflect.Descriptor instead.
 func (*BatchGetCommentsReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{32}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *BatchGetCommentsReq) GetCommentIds() []int64 {
@@ -2031,7 +2031,7 @@ type BatchGetCommentsRes struct {
 
 func (x *BatchGetCommentsRes) Reset() {
 	*x = BatchGetCommentsRes{}
-	mi := &file_proto_interaction_proto_msgTypes[33]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2043,7 +2043,7 @@ func (x *BatchGetCommentsRes) String() string {
 func (*BatchGetCommentsRes) ProtoMessage() {}
 
 func (x *BatchGetCommentsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[33]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2056,7 +2056,7 @@ func (x *BatchGetCommentsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetCommentsRes.ProtoReflect.Descriptor instead.
 func (*BatchGetCommentsRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{33}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *BatchGetCommentsRes) GetComments() []*CommentItem {
@@ -2082,7 +2082,7 @@ type RefillCommentCacheReq struct {
 
 func (x *RefillCommentCacheReq) Reset() {
 	*x = RefillCommentCacheReq{}
-	mi := &file_proto_interaction_proto_msgTypes[34]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2094,7 +2094,7 @@ func (x *RefillCommentCacheReq) String() string {
 func (*RefillCommentCacheReq) ProtoMessage() {}
 
 func (x *RefillCommentCacheReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[34]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2107,7 +2107,7 @@ func (x *RefillCommentCacheReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefillCommentCacheReq.ProtoReflect.Descriptor instead.
 func (*RefillCommentCacheReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{34}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *RefillCommentCacheReq) GetCommentIds() []int64 {
@@ -2126,7 +2126,7 @@ type RefillCommentCacheRes struct {
 
 func (x *RefillCommentCacheRes) Reset() {
 	*x = RefillCommentCacheRes{}
-	mi := &file_proto_interaction_proto_msgTypes[35]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2138,7 +2138,7 @@ func (x *RefillCommentCacheRes) String() string {
 func (*RefillCommentCacheRes) ProtoMessage() {}
 
 func (x *RefillCommentCacheRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[35]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2151,7 +2151,7 @@ func (x *RefillCommentCacheRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefillCommentCacheRes.ProtoReflect.Descriptor instead.
 func (*RefillCommentCacheRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{35}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *RefillCommentCacheRes) GetComments() []*CommentItem {
@@ -2171,7 +2171,7 @@ type FollowUserReq struct {
 
 func (x *FollowUserReq) Reset() {
 	*x = FollowUserReq{}
-	mi := &file_proto_interaction_proto_msgTypes[36]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2183,7 +2183,7 @@ func (x *FollowUserReq) String() string {
 func (*FollowUserReq) ProtoMessage() {}
 
 func (x *FollowUserReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[36]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2196,7 +2196,7 @@ func (x *FollowUserReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FollowUserReq.ProtoReflect.Descriptor instead.
 func (*FollowUserReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{36}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *FollowUserReq) GetUserId() int64 {
@@ -2222,7 +2222,7 @@ type FollowUserRes struct {
 
 func (x *FollowUserRes) Reset() {
 	*x = FollowUserRes{}
-	mi := &file_proto_interaction_proto_msgTypes[37]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2234,7 +2234,7 @@ func (x *FollowUserRes) String() string {
 func (*FollowUserRes) ProtoMessage() {}
 
 func (x *FollowUserRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[37]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2247,7 +2247,7 @@ func (x *FollowUserRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FollowUserRes.ProtoReflect.Descriptor instead.
 func (*FollowUserRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{37}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *FollowUserRes) GetIsFollowed() bool {
@@ -2267,7 +2267,7 @@ type UnfollowUserReq struct {
 
 func (x *UnfollowUserReq) Reset() {
 	*x = UnfollowUserReq{}
-	mi := &file_proto_interaction_proto_msgTypes[38]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2279,7 +2279,7 @@ func (x *UnfollowUserReq) String() string {
 func (*UnfollowUserReq) ProtoMessage() {}
 
 func (x *UnfollowUserReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[38]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2292,7 +2292,7 @@ func (x *UnfollowUserReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnfollowUserReq.ProtoReflect.Descriptor instead.
 func (*UnfollowUserReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{38}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *UnfollowUserReq) GetUserId() int64 {
@@ -2318,7 +2318,7 @@ type UnfollowUserRes struct {
 
 func (x *UnfollowUserRes) Reset() {
 	*x = UnfollowUserRes{}
-	mi := &file_proto_interaction_proto_msgTypes[39]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2330,7 +2330,7 @@ func (x *UnfollowUserRes) String() string {
 func (*UnfollowUserRes) ProtoMessage() {}
 
 func (x *UnfollowUserRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[39]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2343,7 +2343,7 @@ func (x *UnfollowUserRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnfollowUserRes.ProtoReflect.Descriptor instead.
 func (*UnfollowUserRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{39}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *UnfollowUserRes) GetIsFollowed() bool {
@@ -2364,7 +2364,7 @@ type ListFolloweesReq struct {
 
 func (x *ListFolloweesReq) Reset() {
 	*x = ListFolloweesReq{}
-	mi := &file_proto_interaction_proto_msgTypes[40]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2376,7 +2376,7 @@ func (x *ListFolloweesReq) String() string {
 func (*ListFolloweesReq) ProtoMessage() {}
 
 func (x *ListFolloweesReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[40]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2389,7 +2389,7 @@ func (x *ListFolloweesReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListFolloweesReq.ProtoReflect.Descriptor instead.
 func (*ListFolloweesReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{40}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *ListFolloweesReq) GetUserId() int64 {
@@ -2424,7 +2424,7 @@ type ListFolloweesRes struct {
 
 func (x *ListFolloweesRes) Reset() {
 	*x = ListFolloweesRes{}
-	mi := &file_proto_interaction_proto_msgTypes[41]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2436,7 +2436,7 @@ func (x *ListFolloweesRes) String() string {
 func (*ListFolloweesRes) ProtoMessage() {}
 
 func (x *ListFolloweesRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[41]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2449,7 +2449,7 @@ func (x *ListFolloweesRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListFolloweesRes.ProtoReflect.Descriptor instead.
 func (*ListFolloweesRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{41}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *ListFolloweesRes) GetFollowUserIds() []int64 {
@@ -2473,6 +2473,126 @@ func (x *ListFolloweesRes) GetHasMore() bool {
 	return false
 }
 
+type ListFollowersReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Cursor        int64                  `protobuf:"varint,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	PageSize      uint32                 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListFollowersReq) Reset() {
+	*x = ListFollowersReq{}
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[42]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListFollowersReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListFollowersReq) ProtoMessage() {}
+
+func (x *ListFollowersReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[42]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListFollowersReq.ProtoReflect.Descriptor instead.
+func (*ListFollowersReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *ListFollowersReq) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *ListFollowersReq) GetCursor() int64 {
+	if x != nil {
+		return x.Cursor
+	}
+	return 0
+}
+
+func (x *ListFollowersReq) GetPageSize() uint32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+type ListFollowersRes struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	FollowerUserIds []int64                `protobuf:"varint,1,rep,packed,name=follower_user_ids,json=followerUserIds,proto3" json:"follower_user_ids,omitempty"`
+	NextCursor      int64                  `protobuf:"varint,2,opt,name=next_cursor,json=nextCursor,proto3" json:"next_cursor,omitempty"`
+	HasMore         bool                   `protobuf:"varint,3,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ListFollowersRes) Reset() {
+	*x = ListFollowersRes{}
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[43]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListFollowersRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListFollowersRes) ProtoMessage() {}
+
+func (x *ListFollowersRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[43]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListFollowersRes.ProtoReflect.Descriptor instead.
+func (*ListFollowersRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *ListFollowersRes) GetFollowerUserIds() []int64 {
+	if x != nil {
+		return x.FollowerUserIds
+	}
+	return nil
+}
+
+func (x *ListFollowersRes) GetNextCursor() int64 {
+	if x != nil {
+		return x.NextCursor
+	}
+	return 0
+}
+
+func (x *ListFollowersRes) GetHasMore() bool {
+	if x != nil {
+		return x.HasMore
+	}
+	return false
+}
+
 type GetFollowSummaryReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -2483,7 +2603,7 @@ type GetFollowSummaryReq struct {
 
 func (x *GetFollowSummaryReq) Reset() {
 	*x = GetFollowSummaryReq{}
-	mi := &file_proto_interaction_proto_msgTypes[42]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2495,7 +2615,7 @@ func (x *GetFollowSummaryReq) String() string {
 func (*GetFollowSummaryReq) ProtoMessage() {}
 
 func (x *GetFollowSummaryReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[42]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2508,7 +2628,7 @@ func (x *GetFollowSummaryReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFollowSummaryReq.ProtoReflect.Descriptor instead.
 func (*GetFollowSummaryReq) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{42}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *GetFollowSummaryReq) GetUserId() int64 {
@@ -2536,7 +2656,7 @@ type GetFollowSummaryRes struct {
 
 func (x *GetFollowSummaryRes) Reset() {
 	*x = GetFollowSummaryRes{}
-	mi := &file_proto_interaction_proto_msgTypes[43]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2548,7 +2668,7 @@ func (x *GetFollowSummaryRes) String() string {
 func (*GetFollowSummaryRes) ProtoMessage() {}
 
 func (x *GetFollowSummaryRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_interaction_proto_msgTypes[43]
+	mi := &file_app_rpc_interaction_proto_interaction_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2561,7 +2681,7 @@ func (x *GetFollowSummaryRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFollowSummaryRes.ProtoReflect.Descriptor instead.
 func (*GetFollowSummaryRes) Descriptor() ([]byte, []int) {
-	return file_proto_interaction_proto_rawDescGZIP(), []int{43}
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *GetFollowSummaryRes) GetFolloweeCount() int64 {
@@ -2585,11 +2705,11 @@ func (x *GetFollowSummaryRes) GetIsFollowing() bool {
 	return false
 }
 
-var File_proto_interaction_proto protoreflect.FileDescriptor
+var File_app_rpc_interaction_proto_interaction_proto protoreflect.FileDescriptor
 
-const file_proto_interaction_proto_rawDesc = "" +
+const file_app_rpc_interaction_proto_interaction_proto_rawDesc = "" +
 	"\n" +
-	"\x17proto/interaction.proto\x12\vinteraction\":\n" +
+	"+app/rpc/interaction/proto/interaction.proto\x12\vinteraction\":\n" +
 	"\aPageReq\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\rR\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\rR\bpageSize\"P\n" +
@@ -2785,6 +2905,15 @@ const file_proto_interaction_proto_rawDesc = "" +
 	"\x0ffollow_user_ids\x18\x01 \x03(\x03R\rfollowUserIds\x12\x1f\n" +
 	"\vnext_cursor\x18\x02 \x01(\x03R\n" +
 	"nextCursor\x12\x19\n" +
+	"\bhas_more\x18\x03 \x01(\bR\ahasMore\"`\n" +
+	"\x10ListFollowersReq\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x16\n" +
+	"\x06cursor\x18\x02 \x01(\x03R\x06cursor\x12\x1b\n" +
+	"\tpage_size\x18\x03 \x01(\rR\bpageSize\"z\n" +
+	"\x10ListFollowersRes\x12*\n" +
+	"\x11follower_user_ids\x18\x01 \x03(\x03R\x0ffollowerUserIds\x12\x1f\n" +
+	"\vnext_cursor\x18\x02 \x01(\x03R\n" +
+	"nextCursor\x12\x19\n" +
 	"\bhas_more\x18\x03 \x01(\bR\ahasMore\"^\n" +
 	"\x13GetFollowSummaryReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12 \n" +
@@ -2818,29 +2947,30 @@ const file_proto_interaction_proto_rawDesc = "" +
 	"\x10QueryCommentList\x12 .interaction.QueryCommentListReq\x1a .interaction.QueryCommentListRes\x12P\n" +
 	"\x0eQueryReplyList\x12\x1e.interaction.QueryReplyListReq\x1a\x1e.interaction.QueryReplyListRes\x12V\n" +
 	"\x10BatchGetComments\x12 .interaction.BatchGetCommentsReq\x1a .interaction.BatchGetCommentsRes\x12\\\n" +
-	"\x12RefillCommentCache\x12\".interaction.RefillCommentCacheReq\x1a\".interaction.RefillCommentCacheRes2\xc8\x02\n" +
+	"\x12RefillCommentCache\x12\".interaction.RefillCommentCacheReq\x1a\".interaction.RefillCommentCacheRes2\x97\x03\n" +
 	"\rFollowService\x12D\n" +
 	"\n" +
 	"FollowUser\x12\x1a.interaction.FollowUserReq\x1a\x1a.interaction.FollowUserRes\x12J\n" +
 	"\fUnfollowUser\x12\x1c.interaction.UnfollowUserReq\x1a\x1c.interaction.UnfollowUserRes\x12M\n" +
-	"\rListFollowees\x12\x1d.interaction.ListFolloweesReq\x1a\x1d.interaction.ListFolloweesRes\x12V\n" +
+	"\rListFollowees\x12\x1d.interaction.ListFolloweesReq\x1a\x1d.interaction.ListFolloweesRes\x12M\n" +
+	"\rListFollowers\x12\x1d.interaction.ListFollowersReq\x1a\x1d.interaction.ListFollowersRes\x12V\n" +
 	"\x10GetFollowSummary\x12 .interaction.GetFollowSummaryReq\x1a .interaction.GetFollowSummaryResB\x0fZ\r./interactionb\x06proto3"
 
 var (
-	file_proto_interaction_proto_rawDescOnce sync.Once
-	file_proto_interaction_proto_rawDescData []byte
+	file_app_rpc_interaction_proto_interaction_proto_rawDescOnce sync.Once
+	file_app_rpc_interaction_proto_interaction_proto_rawDescData []byte
 )
 
-func file_proto_interaction_proto_rawDescGZIP() []byte {
-	file_proto_interaction_proto_rawDescOnce.Do(func() {
-		file_proto_interaction_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_interaction_proto_rawDesc), len(file_proto_interaction_proto_rawDesc)))
+func file_app_rpc_interaction_proto_interaction_proto_rawDescGZIP() []byte {
+	file_app_rpc_interaction_proto_interaction_proto_rawDescOnce.Do(func() {
+		file_app_rpc_interaction_proto_interaction_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_app_rpc_interaction_proto_interaction_proto_rawDesc), len(file_app_rpc_interaction_proto_interaction_proto_rawDesc)))
 	})
-	return file_proto_interaction_proto_rawDescData
+	return file_app_rpc_interaction_proto_interaction_proto_rawDescData
 }
 
-var file_proto_interaction_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_proto_interaction_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
-var file_proto_interaction_proto_goTypes = []any{
+var file_app_rpc_interaction_proto_interaction_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_app_rpc_interaction_proto_interaction_proto_msgTypes = make([]protoimpl.MessageInfo, 46)
+var file_app_rpc_interaction_proto_interaction_proto_goTypes = []any{
 	(Scene)(0),                    // 0: interaction.Scene
 	(*PageReq)(nil),               // 1: interaction.PageReq
 	(*PageRes)(nil),               // 2: interaction.PageRes
@@ -2884,10 +3014,12 @@ var file_proto_interaction_proto_goTypes = []any{
 	(*UnfollowUserRes)(nil),       // 40: interaction.UnfollowUserRes
 	(*ListFolloweesReq)(nil),      // 41: interaction.ListFolloweesReq
 	(*ListFolloweesRes)(nil),      // 42: interaction.ListFolloweesRes
-	(*GetFollowSummaryReq)(nil),   // 43: interaction.GetFollowSummaryReq
-	(*GetFollowSummaryRes)(nil),   // 44: interaction.GetFollowSummaryRes
+	(*ListFollowersReq)(nil),      // 43: interaction.ListFollowersReq
+	(*ListFollowersRes)(nil),      // 44: interaction.ListFollowersRes
+	(*GetFollowSummaryReq)(nil),   // 45: interaction.GetFollowSummaryReq
+	(*GetFollowSummaryRes)(nil),   // 46: interaction.GetFollowSummaryRes
 }
-var file_proto_interaction_proto_depIdxs = []int32{
+var file_app_rpc_interaction_proto_interaction_proto_depIdxs = []int32{
 	0,  // 0: interaction.LikeReq.scene:type_name -> interaction.Scene
 	0,  // 1: interaction.UnlikeReq.scene:type_name -> interaction.Scene
 	0,  // 2: interaction.QueryLikeInfoReq.scene:type_name -> interaction.Scene
@@ -2928,57 +3060,59 @@ var file_proto_interaction_proto_depIdxs = []int32{
 	37, // 37: interaction.FollowService.FollowUser:input_type -> interaction.FollowUserReq
 	39, // 38: interaction.FollowService.UnfollowUser:input_type -> interaction.UnfollowUserReq
 	41, // 39: interaction.FollowService.ListFollowees:input_type -> interaction.ListFolloweesReq
-	43, // 40: interaction.FollowService.GetFollowSummary:input_type -> interaction.GetFollowSummaryReq
-	4,  // 41: interaction.LikeService.Like:output_type -> interaction.LikeRes
-	6,  // 42: interaction.LikeService.Unlike:output_type -> interaction.UnlikeRes
-	8,  // 43: interaction.LikeService.QueryLikeInfo:output_type -> interaction.QueryLikeInfoRes
-	10, // 44: interaction.LikeService.BatchQueryLikeInfo:output_type -> interaction.BatchQueryLikeInfoRes
-	14, // 45: interaction.LikeService.BatchQueryIsLiked:output_type -> interaction.BatchQueryIsLikedRes
-	16, // 46: interaction.FavoriteService.Favorite:output_type -> interaction.FavoriteRes
-	18, // 47: interaction.FavoriteService.RemoveFavorite:output_type -> interaction.RemoveFavoriteRes
-	20, // 48: interaction.FavoriteService.QueryFavoriteInfo:output_type -> interaction.QueryFavoriteInfoRes
-	23, // 49: interaction.FavoriteService.QueryFavoriteList:output_type -> interaction.QueryFavoriteListRes
-	25, // 50: interaction.CommentService.Comment:output_type -> interaction.CommentRes
-	27, // 51: interaction.CommentService.DeleteComment:output_type -> interaction.DeleteCommentRes
-	30, // 52: interaction.CommentService.QueryCommentList:output_type -> interaction.QueryCommentListRes
-	32, // 53: interaction.CommentService.QueryReplyList:output_type -> interaction.QueryReplyListRes
-	34, // 54: interaction.CommentService.BatchGetComments:output_type -> interaction.BatchGetCommentsRes
-	36, // 55: interaction.CommentService.RefillCommentCache:output_type -> interaction.RefillCommentCacheRes
-	38, // 56: interaction.FollowService.FollowUser:output_type -> interaction.FollowUserRes
-	40, // 57: interaction.FollowService.UnfollowUser:output_type -> interaction.UnfollowUserRes
-	42, // 58: interaction.FollowService.ListFollowees:output_type -> interaction.ListFolloweesRes
-	44, // 59: interaction.FollowService.GetFollowSummary:output_type -> interaction.GetFollowSummaryRes
-	41, // [41:60] is the sub-list for method output_type
-	22, // [22:41] is the sub-list for method input_type
+	43, // 40: interaction.FollowService.ListFollowers:input_type -> interaction.ListFollowersReq
+	45, // 41: interaction.FollowService.GetFollowSummary:input_type -> interaction.GetFollowSummaryReq
+	4,  // 42: interaction.LikeService.Like:output_type -> interaction.LikeRes
+	6,  // 43: interaction.LikeService.Unlike:output_type -> interaction.UnlikeRes
+	8,  // 44: interaction.LikeService.QueryLikeInfo:output_type -> interaction.QueryLikeInfoRes
+	10, // 45: interaction.LikeService.BatchQueryLikeInfo:output_type -> interaction.BatchQueryLikeInfoRes
+	14, // 46: interaction.LikeService.BatchQueryIsLiked:output_type -> interaction.BatchQueryIsLikedRes
+	16, // 47: interaction.FavoriteService.Favorite:output_type -> interaction.FavoriteRes
+	18, // 48: interaction.FavoriteService.RemoveFavorite:output_type -> interaction.RemoveFavoriteRes
+	20, // 49: interaction.FavoriteService.QueryFavoriteInfo:output_type -> interaction.QueryFavoriteInfoRes
+	23, // 50: interaction.FavoriteService.QueryFavoriteList:output_type -> interaction.QueryFavoriteListRes
+	25, // 51: interaction.CommentService.Comment:output_type -> interaction.CommentRes
+	27, // 52: interaction.CommentService.DeleteComment:output_type -> interaction.DeleteCommentRes
+	30, // 53: interaction.CommentService.QueryCommentList:output_type -> interaction.QueryCommentListRes
+	32, // 54: interaction.CommentService.QueryReplyList:output_type -> interaction.QueryReplyListRes
+	34, // 55: interaction.CommentService.BatchGetComments:output_type -> interaction.BatchGetCommentsRes
+	36, // 56: interaction.CommentService.RefillCommentCache:output_type -> interaction.RefillCommentCacheRes
+	38, // 57: interaction.FollowService.FollowUser:output_type -> interaction.FollowUserRes
+	40, // 58: interaction.FollowService.UnfollowUser:output_type -> interaction.UnfollowUserRes
+	42, // 59: interaction.FollowService.ListFollowees:output_type -> interaction.ListFolloweesRes
+	44, // 60: interaction.FollowService.ListFollowers:output_type -> interaction.ListFollowersRes
+	46, // 61: interaction.FollowService.GetFollowSummary:output_type -> interaction.GetFollowSummaryRes
+	42, // [42:62] is the sub-list for method output_type
+	22, // [22:42] is the sub-list for method input_type
 	22, // [22:22] is the sub-list for extension type_name
 	22, // [22:22] is the sub-list for extension extendee
 	0,  // [0:22] is the sub-list for field type_name
 }
 
-func init() { file_proto_interaction_proto_init() }
-func file_proto_interaction_proto_init() {
-	if File_proto_interaction_proto != nil {
+func init() { file_app_rpc_interaction_proto_interaction_proto_init() }
+func file_app_rpc_interaction_proto_interaction_proto_init() {
+	if File_app_rpc_interaction_proto_interaction_proto != nil {
 		return
 	}
-	file_proto_interaction_proto_msgTypes[12].OneofWrappers = []any{}
-	file_proto_interaction_proto_msgTypes[25].OneofWrappers = []any{}
-	file_proto_interaction_proto_msgTypes[42].OneofWrappers = []any{}
+	file_app_rpc_interaction_proto_interaction_proto_msgTypes[12].OneofWrappers = []any{}
+	file_app_rpc_interaction_proto_interaction_proto_msgTypes[25].OneofWrappers = []any{}
+	file_app_rpc_interaction_proto_interaction_proto_msgTypes[44].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_interaction_proto_rawDesc), len(file_proto_interaction_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_app_rpc_interaction_proto_interaction_proto_rawDesc), len(file_app_rpc_interaction_proto_interaction_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   44,
+			NumMessages:   46,
 			NumExtensions: 0,
 			NumServices:   4,
 		},
-		GoTypes:           file_proto_interaction_proto_goTypes,
-		DependencyIndexes: file_proto_interaction_proto_depIdxs,
-		EnumInfos:         file_proto_interaction_proto_enumTypes,
-		MessageInfos:      file_proto_interaction_proto_msgTypes,
+		GoTypes:           file_app_rpc_interaction_proto_interaction_proto_goTypes,
+		DependencyIndexes: file_app_rpc_interaction_proto_interaction_proto_depIdxs,
+		EnumInfos:         file_app_rpc_interaction_proto_interaction_proto_enumTypes,
+		MessageInfos:      file_app_rpc_interaction_proto_interaction_proto_msgTypes,
 	}.Build()
-	File_proto_interaction_proto = out.File
-	file_proto_interaction_proto_goTypes = nil
-	file_proto_interaction_proto_depIdxs = nil
+	File_app_rpc_interaction_proto_interaction_proto = out.File
+	file_app_rpc_interaction_proto_interaction_proto_goTypes = nil
+	file_app_rpc_interaction_proto_interaction_proto_depIdxs = nil
 }

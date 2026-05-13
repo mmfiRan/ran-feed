@@ -28,6 +28,7 @@ type FollowRepository interface {
 	CountFollowees(userID int64) (int64, error)
 	CountFollowers(userID int64) (int64, error)
 	ListFolloweesByCursor(userID int64, cursorFollowUserID int64, limit int) ([]int64, error)
+	ListFollowersByCursor(userID int64, cursorFollowerID int64, limit int) ([]int64, error)
 }
 
 type followRepositoryImpl struct {
@@ -169,6 +170,42 @@ func (r *followRepositoryImpl) ListFolloweesByCursor(userID int64, cursorFollowU
 			continue
 		}
 		ids = append(ids, row.FollowUserID)
+	}
+	return ids, nil
+}
+
+// ListFollowersByCursor 分页查询 userID 的粉丝列表（关注了 userID 的用户）
+// cursorFollowerID 上一页最后一个粉丝的 user_id，传 0 表示首页；按 user_id DESC 排序
+func (r *followRepositoryImpl) ListFollowersByCursor(userID int64, cursorFollowerID int64, limit int) ([]int64, error) {
+	if userID <= 0 || limit <= 0 {
+		return []int64{}, nil
+	}
+
+	q := r.getQuery()
+	doQuery := q.RanFeedFollow.WithContext(r.ctx).
+		Select(q.RanFeedFollow.UserID).
+		Where(q.RanFeedFollow.FollowUserID.Eq(userID)).
+		Where(q.RanFeedFollow.Status.Eq(FollowStatusFollow)).
+		Where(q.RanFeedFollow.IsDeleted.Eq(0))
+
+	if cursorFollowerID > 0 {
+		doQuery = doQuery.Where(q.RanFeedFollow.UserID.Lt(cursorFollowerID))
+	}
+
+	rows, err := doQuery.
+		Order(q.RanFeedFollow.UserID.Desc()).
+		Limit(limit).
+		Find()
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]int64, 0, len(rows))
+	for _, row := range rows {
+		if row == nil {
+			continue
+		}
+		ids = append(ids, row.UserID)
 	}
 	return ids, nil
 }

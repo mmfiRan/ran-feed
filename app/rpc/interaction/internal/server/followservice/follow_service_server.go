@@ -38,6 +38,11 @@ func (s *FollowServiceServer) ListFollowees(ctx context.Context, in *interaction
 	return l.ListFollowees(in)
 }
 
+func (s *FollowServiceServer) ListFollowers(ctx context.Context, in *interaction.ListFollowersReq) (*interaction.ListFollowersRes, error) {
+	l := followservicelogic.NewListFollowersLogic(ctx, s.svcCtx)
+	return l.ListFollowers(in)
+}
+
 func (s *FollowServiceServer) GetFollowSummary(ctx context.Context, in *interaction.GetFollowSummaryReq) (*interaction.GetFollowSummaryRes, error) {
 	l := followservicelogic.NewGetFollowSummaryLogic(ctx, s.svcCtx)
 	return l.GetFollowSummary(in)

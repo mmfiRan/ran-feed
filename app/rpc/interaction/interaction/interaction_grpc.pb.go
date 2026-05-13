@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.19.4
-// source: proto/interaction.proto
+// source: app/rpc/interaction/proto/interaction.proto
 
 package interaction
 
@@ -269,7 +269,7 @@ var LikeService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/interaction.proto",
+	Metadata: "app/rpc/interaction/proto/interaction.proto",
 }
 
 const (
@@ -485,7 +485,7 @@ var FavoriteService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/interaction.proto",
+	Metadata: "app/rpc/interaction/proto/interaction.proto",
 }
 
 const (
@@ -777,13 +777,14 @@ var CommentService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/interaction.proto",
+	Metadata: "app/rpc/interaction/proto/interaction.proto",
 }
 
 const (
 	FollowService_FollowUser_FullMethodName       = "/interaction.FollowService/FollowUser"
 	FollowService_UnfollowUser_FullMethodName     = "/interaction.FollowService/UnfollowUser"
 	FollowService_ListFollowees_FullMethodName    = "/interaction.FollowService/ListFollowees"
+	FollowService_ListFollowers_FullMethodName    = "/interaction.FollowService/ListFollowers"
 	FollowService_GetFollowSummary_FullMethodName = "/interaction.FollowService/GetFollowSummary"
 )
 
@@ -794,6 +795,7 @@ type FollowServiceClient interface {
 	FollowUser(ctx context.Context, in *FollowUserReq, opts ...grpc.CallOption) (*FollowUserRes, error)
 	UnfollowUser(ctx context.Context, in *UnfollowUserReq, opts ...grpc.CallOption) (*UnfollowUserRes, error)
 	ListFollowees(ctx context.Context, in *ListFolloweesReq, opts ...grpc.CallOption) (*ListFolloweesRes, error)
+	ListFollowers(ctx context.Context, in *ListFollowersReq, opts ...grpc.CallOption) (*ListFollowersRes, error)
 	GetFollowSummary(ctx context.Context, in *GetFollowSummaryReq, opts ...grpc.CallOption) (*GetFollowSummaryRes, error)
 }
 
@@ -835,6 +837,16 @@ func (c *followServiceClient) ListFollowees(ctx context.Context, in *ListFollowe
 	return out, nil
 }
 
+func (c *followServiceClient) ListFollowers(ctx context.Context, in *ListFollowersReq, opts ...grpc.CallOption) (*ListFollowersRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListFollowersRes)
+	err := c.cc.Invoke(ctx, FollowService_ListFollowers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *followServiceClient) GetFollowSummary(ctx context.Context, in *GetFollowSummaryReq, opts ...grpc.CallOption) (*GetFollowSummaryRes, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetFollowSummaryRes)
@@ -852,6 +864,7 @@ type FollowServiceServer interface {
 	FollowUser(context.Context, *FollowUserReq) (*FollowUserRes, error)
 	UnfollowUser(context.Context, *UnfollowUserReq) (*UnfollowUserRes, error)
 	ListFollowees(context.Context, *ListFolloweesReq) (*ListFolloweesRes, error)
+	ListFollowers(context.Context, *ListFollowersReq) (*ListFollowersRes, error)
 	GetFollowSummary(context.Context, *GetFollowSummaryReq) (*GetFollowSummaryRes, error)
 	mustEmbedUnimplementedFollowServiceServer()
 }
@@ -871,6 +884,9 @@ func (UnimplementedFollowServiceServer) UnfollowUser(context.Context, *UnfollowU
 }
 func (UnimplementedFollowServiceServer) ListFollowees(context.Context, *ListFolloweesReq) (*ListFolloweesRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListFollowees not implemented")
+}
+func (UnimplementedFollowServiceServer) ListFollowers(context.Context, *ListFollowersReq) (*ListFollowersRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListFollowers not implemented")
 }
 func (UnimplementedFollowServiceServer) GetFollowSummary(context.Context, *GetFollowSummaryReq) (*GetFollowSummaryRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFollowSummary not implemented")
@@ -950,6 +966,24 @@ func _FollowService_ListFollowees_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FollowService_ListFollowers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListFollowersReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FollowServiceServer).ListFollowers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FollowService_ListFollowers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FollowServiceServer).ListFollowers(ctx, req.(*ListFollowersReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _FollowService_GetFollowSummary_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetFollowSummaryReq)
 	if err := dec(in); err != nil {
@@ -988,10 +1022,14 @@ var FollowService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _FollowService_ListFollowees_Handler,
 		},
 		{
+			MethodName: "ListFollowers",
+			Handler:    _FollowService_ListFollowers_Handler,
+		},
+		{
 			MethodName: "GetFollowSummary",
 			Handler:    _FollowService_GetFollowSummary_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/interaction.proto",
+	Metadata: "app/rpc/interaction/proto/interaction.proto",
 }

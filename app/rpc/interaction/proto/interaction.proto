@@ -236,6 +236,18 @@ message ListFolloweesRes{
   bool has_more = 3;
 }
 
+message ListFollowersReq{
+  int64 user_id = 1;
+  int64 cursor = 2;
+  uint32 page_size = 3;
+}
+
+message ListFollowersRes{
+  repeated int64 follower_user_ids = 1;
+  int64 next_cursor = 2;
+  bool has_more = 3;
+}
+
 message GetFollowSummaryReq{
   int64 user_id = 1;
   optional int64 viewer_id = 2;
@@ -273,5 +285,6 @@ service FollowService {
   rpc FollowUser(FollowUserReq) returns (FollowUserRes);
   rpc UnfollowUser(UnfollowUserReq) returns (UnfollowUserRes);
   rpc ListFollowees(ListFolloweesReq) returns (ListFolloweesRes);
+  rpc ListFollowers(ListFollowersReq) returns (ListFollowersRes);
   rpc GetFollowSummary(GetFollowSummaryReq) returns (GetFollowSummaryRes);
 }
