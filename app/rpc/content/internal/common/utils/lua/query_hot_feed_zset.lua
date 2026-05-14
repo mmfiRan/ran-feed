@@ -67,7 +67,8 @@ end
 
 local overscan = pageSize + 32
 
-local raw = redis.call('ZREVRANGEBYSCORE', key, '(' .. maxScore, '-inf', 'WITHSCORES', 'LIMIT', 0, overscan)
+-- 包含性上界：同分组进入扫描，由下方成员级过滤排除游标自身及已返回的同分项
+local raw = redis.call('ZREVRANGEBYSCORE', key, maxScore, '-inf', 'WITHSCORES', 'LIMIT', 0, overscan)
 local ids = {}
 
 for i = 1, #raw, 2 do

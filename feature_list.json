@@ -2,7 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-14",
-  "_meta_note": "fix-007 已完成，评论 RPC nil 保护；P0 全部清零，剩余 P1 fix-002/fix-004/fix-005/fix-006",
+  "_meta_note": "fix-005 已完成，热榜同分翻页修复；剩余 P1 fix-002/fix-004/fix-006",
   "features": [
     {
       "id": "feat-001",
@@ -137,8 +137,8 @@
       "name": "修复热榜同分内容翻页丢失（B-05）",
       "description": "query_hot_feed_zset.lua — 使用排除性上界 '(' .. maxScore 导致同分内容被跳过，成员级过滤变为死代码。改为包含性上界 + 严格 memberId < cursorId 过滤。",
       "dependencies": [],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "query_hot_feed_zset.lua:70 上界由 '(' .. maxScore 改为 maxScore（包含性）；现有成员级过滤 `memberId >= cursorId` 跳过游标自身 + 已返回的同分项，保留 memberId < cursorId 的同分新项；./init.sh 编译/vet 通过。"
     },
     {
       "id": "fix-006",
