@@ -4,7 +4,7 @@
 
 **最后更新：** 2026-05-14  
 **会话 ID：** session-004  
-**当前功能：** fix-002 JWT Issuer 修正（已完成）
+**当前功能：** fix-004 HTTP 状态码场景化（已完成；P1 全部清零）
 
 ---
 
@@ -30,6 +30,7 @@
 - [x] **fix-006**：关注前验证用户存在（B-11）— follow 加 UserRpc.GetUser 校验；unfollow 保持清理语义不验
 - [x] **fix-009**：杂项 Bug 打包（B-06~B-10）— TranscodeStatus 常量化 / Kafka 日志格式 / commentStatusDeleted 统一到 consts / Custome→Custom 拼写 / SQL 文件名
 - [x] **fix-002**：JWT Issuer 错误项目名（B-02）— `pkg/jwt/token.go:24` `"gomall"` → `"ran-feed"`
+- [x] **fix-004**：HTTP 错误状态码场景化（B-04）— 鉴权失败 401 / 系统未知错误 500；业务错误与校验错误保持 200 由前端按 body code 处理
 
 ### 进行中
 
@@ -37,11 +38,11 @@
 
 ### 下一步
 
-**剩余 P1 / 杂项：**
+**P0/P1 全部清零。**剩余为新增类条目：
 
-- 修复 `fix-004`：HTTP 状态码全 200（B-04）—— 多文件，按错误类型映射 401/422/500
 - 新增 `sec-002`：Nginx HTTPS + 安全响应头 + limit_req
 - 新增 `feat-013`：测试基础设施
+- 新增 `feat-014~018`：视频转码 / 搜索 / 通知 / 标签 / 个性化推荐
 
 ---
 
@@ -59,6 +60,8 @@
 
 ## 已做决策（本次新增）
 
+- **fix-004 校验错误也返回 200**：用户决策。CustomValidator 本质是"用户输入业务错"，让前端按 body code 走统一处理路径比 HTTP 422 更一致；只有非预期系统错误（default 分支）才升 500，监控/告警能识别真故障。
+- **fix-004 middleware 鉴权 401**：网关/前端拦截器靠 status 即可识别"跳登录"，无需解析 body；同时设置 Content-Type: application/json + WriteHeader 在 Write 之前调用，确保 status 真正生效。
 - **fix-009 五个子项一次性打包**：feature 描述本身就是"合并修复"，符合"一次提交对应一个 feature_list 条目"。每个子项体量都很小且互不耦合。
 - **commentStatusNormal 不一起迁**：只有 `commentStatusDeleted` 跨包使用（8 个文件），`commentStatusNormal` 只在 comment_logic.go 自己用。仅迁需要跨包共享的，最小变更面（rules.md "不扩大范围"）。
 - **TranscodeStatusPending 命名**：CLAUDE.md / feat-004 描述里写"占位为 10（未开始）"，故命名 Pending（待开始/排队）。当转码任务接入后可继续扩展 Running / Done / Failed。

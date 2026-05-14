@@ -11,6 +11,8 @@ import (
 func VerifyLoginStatus(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
 	userId := getUserIdFromCtx(r.Context())
 	if userId == 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
 		body, _ := json.Marshal(result.NewErrorResult(http.StatusOK, "用户未登录"))
 		w.Write(body)
 		return r, false
@@ -43,6 +45,8 @@ func getUserIdFromCtx(ctx context.Context) int64 {
 
 func BuildAuthFailHandler(w http.ResponseWriter, r *http.Request, err error) {
 	logx.Errorf("登录鉴权失败，err: %v", err)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusUnauthorized)
 	body, _ := json.Marshal(result.NewErrorResult(http.StatusOK, "用户未登录"))
 	w.Write(body)
 }
