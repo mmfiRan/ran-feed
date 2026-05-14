@@ -2,9 +2,9 @@
 
 ## 当前状态
 
-**最后更新：** 2026-05-13  
-**会话 ID：** session-003  
-**当前功能：** 关注流推拉结合 Feature C（feat-021）—— 读时大 V merge
+**最后更新：** 2026-05-14  
+**会话 ID：** session-004  
+**当前功能：** fix-001 JWT 密钥类型修复（已完成）
 
 ---
 
@@ -23,6 +23,7 @@
 - [x] **feat-019**：推拉结合 Feature A — interaction.proto 新增 ListFollowers RPC + repo 方法 ListFollowersByCursor
 - [x] **feat-020**：推拉结合 Feature B — content-rpc 发布时小账号 fan-out，大 V 跳过
 - [x] **feat-021**：推拉结合 Feature C — FollowFeed 读路径识别大 V，并 merge publish zset
+- [x] **fix-001**：JWT 密钥类型错误（B-01）— `pkg/jwt/token.go` SignedString 与 ParseWithClaims keyFunc 均改为 `[]byte(secret)`
 
 ### 进行中
 
@@ -30,11 +31,14 @@
 
 ### 下一步
 
-**推拉结合三件套（feat-019/020/021）全部完成。** 可推进的存量 Bug：
+**P0 剩余存量 Bug：**
 
-- 修复 `fix-001`：JWT 密钥类型错误（B-01）—— P0，JWT 功能完全失效
 - 修复 `fix-003`：gRPC 拦截器日志逻辑反转（B-03）—— P0，错误日志全失效
 - 修复 `fix-007`：评论 RPC 返回值无 nil 保护（B-12）—— P0，线上 panic 风险
+
+**P1：**
+
+- 修复 `fix-002`：JWT Issuer 错误项目名（B-02）—— 顺手在下次 JWT 相关改动时一起处理
 - 修复 `fix-006`：关注服务不验证被关注用户是否存在（B-11）
 - 修复 `fix-004`：HTTP 状态码全 200（B-04）
 - 修复 `fix-005`：热榜同分翻页丢失（B-05）
@@ -43,7 +47,8 @@
 
 ## 阻塞 / 风险
 
-- [ ] **大 V 缓存 TTL 滞后**：viewer 的"大 V 列表"缓存 TTL=300s，期间用户新关注的大 V 不会立即出现在 merge 中。可接受（5min 容忍）；如需即时一致可在 follow/unfollow 时主动 DEL 该 key（feature 可后续加）
+- [ ] **`pkg/jwt` 无调用方**：本次修复仅恢复包功能可用性，但实际登录流程使用的是 Session（Redis Lua），JWT 包目前是死代码。等接入 JWT 鉴权（如 feat-016 通知或后台管理）时才会用到。
+- [ ] **`fix-002` 未跟进**：Issuer 仍硬编码为 "gomall"，等下次 JWT 相关任务一起处理。
 - [ ] **OSS 未配置**：`deploy/.env` 中 OSS 相关字段为空，视频封面/头像上传功能不可用
 - [ ] **视频转码为占位**：`feat-004` 的 `transcode_status` 始终为 10，HLS 播放不可用
 - [ ] **无测试覆盖**：项目零测试，任何修复无法自动化验证
@@ -52,23 +57,15 @@
 
 ## 已做决策（本次新增）
 
-- **大 V 列表缓存**：用 Redis SET `feed:follow:bigv:{viewerId}`；空集用 sentinel 成员 `"0"` 标识"已计算且空"，避免反复 rebuild；不加分布式锁（thundering herd 多算一次成本可控，正确性不受影响）
-- **大 V 候选扫描**：仅扫描 viewer 最近关注的前 500 个（`BigVFolloweesScanLimit`），并行 `mr.WithWorkers(16)` 调 count-rpc.GetCount 筛选，避免 5000 关注 = 5000 RPC 的最坏情形
-- **per-request 拉取并发**：每个大 V 一次 Lua（复用 `QueryUserPublishZSetScript`），`mr.ForEach + WithWorkers(16)` 并发，硬上限 `BigVMergeMaxQuery=100`
-- **不动 coldBackfill**：缓存 miss 走 DB 已按 author 列表查全部，已天然覆盖大 V
-- **不抽公共 `getFollowerCount`**：避免 feedservice ↔ contentservice 跨包依赖，4 行调用本地复刻
-- **Merge 正确性**：contentID 是全局自增主键，inbox 与所有 publish zset 共用同一 score 轴；每源取 pageSize+1 个 → 并集去重后排序，全局 top pageSize 必然在并集内
+- **不一并修 fix-002**：用户明确选 fix-001，按 rules.md "每次只做一个功能 / 一次提交对应一个 feature_list 条目" 原则，Issuer 留到下次。
+- **不动 `interface{}` → `any` 的 lint 提示**：那是预先存在的代码风格提示，不在 fix-001 范围内（rules.md "不扩大范围"）。
 
 ---
 
 ## 本次会话修改的文件
 
-- `app/rpc/content/internal/logic/feedservice/bigv_merge_helper.go` — 新增。封装 `loadViewerBigVList` / `computeViewerBigVList` / `listFolloweesCapped` / `writeBigVCache` / `fetchBigVContentIDs` / `queryBigVPublishIDs` / `mergeContentIDs`（feat-021）
-- `app/rpc/content/internal/logic/feedservice/follow_feed_logic.go` — `cacheExists` 分支注入 merge 调用（feat-021）
-- `app/rpc/content/internal/config/config.go` — `FollowFanOutConfig` 增加 4 个字段（feat-021）
-- `app/rpc/content/etc/content.yaml` — 同步 4 个新字段及中文注释（feat-021）
-- `app/rpc/content/internal/common/consts/redis/redis_consts.go` — 新增 `RedisFeedFollowBigVPrefix` / `FollowBigVEmptySentinel` 常量 + `BuildFollowBigVKey` 函数（feat-021）
-- `feature_list.json` — feat-021 → done，evidence 填写
+- `pkg/jwt/token.go` — `SignedString` 与 `ParseWithClaims` 的 keyFunc 改为 `[]byte(secret)`（fix-001）
+- `feature_list.json` — fix-001 → done，evidence 填写；`last_updated` 与 `_meta_note` 更新
 - `progress.md` — 本次会话记录
 
 ---
@@ -85,8 +82,5 @@
 ## 下次会话注意事项
 
 1. 跑 `./init.sh` 确认仍干净
-2. **优先推进 P0/P1 存量 Bug**（fix-001 JWT、fix-003 拦截器、fix-007 评论 nil）—— CLAUDE.md 中明确高优先级
-3. 关注流推拉结合三件套已闭环：feat-019（ListFollowers RPC）+ feat-020（发布时小账号 fan-out）+ feat-021（读时大 V merge）。后续优化点：
-   - follow/unfollow 时主动 DEL viewer 大 V 缓存，让大 V 列表实时反映
-   - 大 V 阈值动态化（按时段或按 viewer 分群）
-   - 把 `getFollowerCount` 抽到 `internal/common` 让 feed/content 两侧共用（仅在被其他模块也需要时再做）
+2. **优先推进剩余 P0**：fix-003（gRPC 拦截器日志反转）、fix-007（评论 RPC nil 保护）
+3. fix-002（JWT Issuer="gomall"）建议与下一个 JWT 相关任务一起改，避免一行修改单独成 commit
