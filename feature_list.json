@@ -2,7 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-14",
-  "_meta_note": "fix-001 已完成，JWT 密钥类型修复；存量 P0 待办 fix-003/fix-007",
+  "_meta_note": "fix-003 已完成，gRPC 拦截器日志正向分支；存量 P0 待办 fix-007",
   "features": [
     {
       "id": "feat-001",
@@ -121,8 +121,8 @@
       "name": "修复 gRPC 拦截器日志逻辑反转（B-03）",
       "description": "pkg/interceptor/interceptor.go:54 — !errors.As 条件取反，bizErr 为 nil 时仍被打印，应改为正向判断分别处理业务错误与系统错误。",
       "dependencies": [],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "pkg/interceptor/interceptor.go ServerGrpcInterceptor 改为正向分支：业务错误 Info 级别打印 Code/Message，系统错误 Error 级别打印真实 err；./init.sh 编译/vet 通过。"
     },
     {
       "id": "fix-004",
