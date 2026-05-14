@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/interaction/interaction"
+	"ran-feed/app/rpc/interaction/internal/common/consts"
 	rediskey "ran-feed/app/rpc/interaction/internal/common/consts/redis"
 	luautils "ran-feed/app/rpc/interaction/internal/common/utils/lua"
 	"ran-feed/app/rpc/interaction/internal/svc"
@@ -25,7 +26,7 @@ func fillCommentUsers(ctx context.Context, svcCtx *svc.ServiceContext, logger lo
 		if c == nil || c.UserId <= 0 {
 			continue
 		}
-		if c.Status == commentStatusDeleted {
+		if c.Status == consts.CommentStatusDeleted {
 			continue
 		}
 		if _, ok := seen[c.UserId]; ok {

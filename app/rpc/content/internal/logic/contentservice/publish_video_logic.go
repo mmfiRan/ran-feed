@@ -2,6 +2,7 @@ package contentservicelogic
 
 import (
 	"context"
+	"ran-feed/app/rpc/content/internal/common/consts"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
 	"strconv"
@@ -65,7 +66,7 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 			OriginURL:       in.VideoUrl,
 			CoverURL:        in.CoverUrl,
 			Duration:        in.Duration,
-			TranscodeStatus: 10,
+			TranscodeStatus: consts.TranscodeStatusPending,
 		}
 		return videoRepo.CreateVideo(videoDO)
 	}); err != nil {

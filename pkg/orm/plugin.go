@@ -10,17 +10,17 @@ import (
 	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
-type CustomePlugin struct{}
+type CustomPlugin struct{}
 
-func NewCustomePlugin() *CustomePlugin {
-	return &CustomePlugin{}
+func NewCustomPlugin() *CustomPlugin {
+	return &CustomPlugin{}
 }
 
-func (p *CustomePlugin) Name() string {
-	return "CustomePlugin"
+func (p *CustomPlugin) Name() string {
+	return "CustomPlugin"
 }
 
-func (p *CustomePlugin) Initialize(db *gorm.DB) error {
+func (p *CustomPlugin) Initialize(db *gorm.DB) error {
 	// Before callbacks
 	if err := db.Callback().Create().Before("gorm:createBefore").Register("gorm:createBefore:metric:trace", func(db *gorm.DB) {
 		startTime := time.Now().Unix()

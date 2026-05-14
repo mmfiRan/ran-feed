@@ -61,7 +61,7 @@ func (p *LikeProducer) sendEventWithRetry(ctx context.Context, evt *event.LikeEv
 			return
 		} else {
 			lastErr = err
-			logx.WithContext(ctx).Errorf("发送事件失败，重试 %d次 %d: %v", i+1, p.maxRetries, err)
+			logx.WithContext(ctx).Errorf("发送事件失败，重试 %d/%d 次: %v", i+1, p.maxRetries, err)
 			time.Sleep(time.Millisecond * 100 * time.Duration(i+1)) // 指数退避
 		}
 	}

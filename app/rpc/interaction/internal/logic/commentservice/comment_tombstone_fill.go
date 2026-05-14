@@ -1,8 +1,9 @@
 package commentservicelogic
 
-import "ran-feed/app/rpc/interaction/interaction"
-
-const commentStatusDeleted int32 = 20
+import (
+	"ran-feed/app/rpc/interaction/interaction"
+	"ran-feed/app/rpc/interaction/internal/common/consts"
+)
 
 // fillCommentTombstones 给缓存缺失且无法回填的评论补墓碑占位
 func fillCommentTombstones(items []*interaction.CommentItem, missIDs []int64, defaultContentID int64) {
@@ -30,7 +31,7 @@ func fillCommentTombstones(items []*interaction.CommentItem, missIDs []int64, de
 		// 仅在无有效内容时补墓碑，避免覆盖正常数据
 		if c.Comment == "" && c.UserId == 0 && c.Status == 0 {
 			c.Comment = "该评论已删除"
-			c.Status = commentStatusDeleted
+			c.Status = consts.CommentStatusDeleted
 		}
 		if c.ContentId == 0 && defaultContentID > 0 {
 			c.ContentId = defaultContentID

@@ -2,7 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-14",
-  "_meta_note": "fix-006 已完成，关注前验存在；剩余 P1 fix-002/fix-004",
+  "_meta_note": "fix-009 杂项 5 项打包完成；剩余 P1 fix-002/fix-004",
   "features": [
     {
       "id": "feat-001",
@@ -169,8 +169,8 @@
       "name": "整理杂项低优先级 Bug（B-06/B-07/B-08/B-09/B-10）",
       "description": "合并修复：(B-06) TranscodeStatus 魔法数字提取为常量；(B-07) Kafka 格式字符串语义修正；(B-08) commentStatusDeleted 常量统一到 common/consts；(B-09) NewCustomePlugin 函数名拼写；(B-10) ran_feed_vidio.sql 文件名。",
       "dependencies": [],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "B-06: content/consts 新增 TranscodeStatusPending=10，publish_video_logic 使用常量；B-07: like_producer.go 重试日志格式 '重试 %d次 %d' → '重试 %d/%d 次'；B-08: 新建 interaction/common/consts/comment_consts.go 导出 CommentStatusDeleted=20，7 文件改为引用 consts.CommentStatusDeleted；B-09: pkg/orm Custome→Custom（类型/构造/方法/Name 字符串/orm.go 调用全部重命名）；B-10: git mv ran_feed_vidio.sql → ran_feed_video.sql；./init.sh 编译/vet 通过。"
     },
     {
       "id": "fix-010",

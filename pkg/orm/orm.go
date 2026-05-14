@@ -88,7 +88,7 @@ func NewMysql(conf *Config, plugins ...gorm.Plugin) (*DB, error) {
 			}
 		}
 	}
-	err = db.Use(NewCustomePlugin())
+	err = db.Use(NewCustomPlugin())
 	if err != nil {
 		return nil, err
 	}

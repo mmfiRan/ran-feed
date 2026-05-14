@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/interaction/interaction"
+	"ran-feed/app/rpc/interaction/internal/common/consts"
 	rediskey "ran-feed/app/rpc/interaction/internal/common/consts/redis"
 	luautils "ran-feed/app/rpc/interaction/internal/common/utils/lua"
 	"ran-feed/app/rpc/interaction/internal/repositories"
@@ -255,13 +256,13 @@ func (l *QueryReplyListLogic) queryFromDB(in *interaction.QueryReplyListReq) (*i
 			continue
 		}
 		parentIDs = append(parentIDs, row.ID)
-		isDeleted := row.IsDeleted == 1 || row.Status == commentStatusDeleted
+		isDeleted := row.IsDeleted == 1 || row.Status == consts.CommentStatusDeleted
 		commentText := row.Comment
 		status := row.Status
 		userID := row.UserID
 		if isDeleted {
 			commentText = "该评论已删除"
-			status = commentStatusDeleted
+			status = consts.CommentStatusDeleted
 			userID = 0
 		}
 		replies = append(replies, &interaction.CommentItem{

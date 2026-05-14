@@ -7,13 +7,12 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/gorm"
 
+	"ran-feed/app/rpc/interaction/internal/common/consts"
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/entity/model"
 	"ran-feed/app/rpc/interaction/internal/entity/query"
 	"ran-feed/pkg/orm"
 )
-
-const commentStatusDeleted = 20
 
 type CommentRepository interface {
 	WithTx(tx *query.Query) CommentRepository
@@ -242,7 +241,7 @@ func (r *commentRepositoryImpl) BatchCountByParentIDs(parentIDs []int64) (map[in
 	err := q.RanFeedComment.WithContext(r.ctx).
 		Select(q.RanFeedComment.ParentID, q.RanFeedComment.ID.Count().As("cnt")).
 		Where(q.RanFeedComment.IsDeleted.Eq(0)).
-		Where(q.RanFeedComment.Status.Neq(commentStatusDeleted)).
+		Where(q.RanFeedComment.Status.Neq(consts.CommentStatusDeleted)).
 		Where(q.RanFeedComment.ParentID.In(parentIDs...)).
 		Group(q.RanFeedComment.ParentID).
 		Scan(&rows)
@@ -270,7 +269,7 @@ func (r *commentRepositoryImpl) BatchCountByRootIDs(rootIDs []int64) (map[int64]
 	err := q.RanFeedComment.WithContext(r.ctx).
 		Select(q.RanFeedComment.RootID, q.RanFeedComment.ID.Count().As("cnt")).
 		Where(q.RanFeedComment.IsDeleted.Eq(0)).
-		Where(q.RanFeedComment.Status.Neq(commentStatusDeleted)).
+		Where(q.RanFeedComment.Status.Neq(consts.CommentStatusDeleted)).
 		Where(q.RanFeedComment.RootID.In(rootIDs...)).
 		Group(q.RanFeedComment.RootID).
 		Scan(&rows)

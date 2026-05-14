@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/interaction/interaction"
+	"ran-feed/app/rpc/interaction/internal/common/consts"
 	rediskey "ran-feed/app/rpc/interaction/internal/common/consts/redis"
 	luautils "ran-feed/app/rpc/interaction/internal/common/utils/lua"
 	"ran-feed/app/rpc/interaction/internal/repositories"
@@ -229,13 +230,13 @@ func (l *RefillCommentCacheLogic) queryFromDB(ids []int64) (map[int64]*interacti
 		if r == nil {
 			continue
 		}
-		isDeleted := r.IsDeleted == 1 || r.Status == commentStatusDeleted
+		isDeleted := r.IsDeleted == 1 || r.Status == consts.CommentStatusDeleted
 		commentText := r.Comment
 		status := r.Status
 		userID := r.UserID
 		if isDeleted {
 			commentText = "该评论已删除"
-			status = commentStatusDeleted
+			status = consts.CommentStatusDeleted
 			userID = 0
 		}
 		dbMap[r.ID] = &interaction.CommentItem{
