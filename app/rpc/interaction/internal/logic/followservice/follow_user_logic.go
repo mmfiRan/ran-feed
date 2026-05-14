@@ -9,6 +9,7 @@ import (
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/repositories"
 	"ran-feed/app/rpc/interaction/internal/svc"
+	"ran-feed/app/rpc/user/client/userservice"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -49,7 +50,14 @@ func (l *FollowUserLogic) FollowUser(in *interaction.FollowUserReq) (*interactio
 		return nil, errorx.NewMsg("不能关注自己")
 	}
 
-	// TODO: 调用 user 服务校验被关注用户是否存在
+	// 校验被关注用户存在（user-rpc.GetUser 已包含软删过滤）
+	resp, gerr := l.svcCtx.UserRpc.GetUser(l.ctx, &userservice.GetUserReq{UserId: in.FollowUserId})
+	if gerr != nil {
+		return nil, gerr
+	}
+	if resp == nil || resp.UserInfo == nil {
+		return nil, errorx.NewMsg("被关注用户不存在")
+	}
 
 	err := l.followRepo.Upsert(&do.FollowDO{
 		UserID:       in.UserId,

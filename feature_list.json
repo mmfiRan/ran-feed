@@ -2,7 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-14",
-  "_meta_note": "fix-005 已完成，热榜同分翻页修复；剩余 P1 fix-002/fix-004/fix-006",
+  "_meta_note": "fix-006 已完成，关注前验存在；剩余 P1 fix-002/fix-004",
   "features": [
     {
       "id": "feat-001",
@@ -145,8 +145,8 @@
       "name": "修复关注服务不验证用户存在（B-11）",
       "description": "follow_user_logic.go / unfollow_user_logic.go — TODO 未实现：关注前应查询 user-rpc 确认被关注用户存在，否则产生悬空引用。",
       "dependencies": [],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "follow_user_logic.go 替换 TODO 为 UserRpc.GetUser 调用，错误直接传递，并对 resp/UserInfo 加 nil 兜底；unfollow_user_logic.go 不引入新校验（取关为清理语义，被禁/删用户也应允许取关），将原 TODO 改为说明性注释；./init.sh 编译/vet 通过。"
     },
     {
       "id": "fix-007",

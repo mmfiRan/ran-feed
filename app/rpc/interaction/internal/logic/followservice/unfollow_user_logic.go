@@ -39,7 +39,7 @@ func (l *UnfollowUserLogic) UnfollowUser(in *interaction.UnfollowUserReq) (*inte
 		return nil, errorx.NewMsg("不能取关自己")
 	}
 
-	// TODO: 调用 user 服务校验被取关用户是否存在
+	// 取关为清理语义：即使被取关用户已被禁/删，也允许 viewer 清理关注关系，故不再校验存在性
 
 	err := l.followRepo.Upsert(&do.FollowDO{
 		UserID:       in.UserId,
