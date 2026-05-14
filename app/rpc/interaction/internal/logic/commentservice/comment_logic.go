@@ -109,8 +109,10 @@ func (l *CommentLogic) Comment(in *interaction.CommentReq) (*interaction.Comment
 		if uerr != nil {
 			l.Errorf("查询用户信息失败: %v, user_id=%d", uerr, in.UserId)
 		}
-		userName = resp.UserInfo.Nickname
-		userAvatar = resp.UserInfo.Avatar
+		if resp != nil && resp.UserInfo != nil {
+			userName = resp.UserInfo.Nickname
+			userAvatar = resp.UserInfo.Avatar
+		}
 		_, err = l.svcCtx.Redis.EvalCtx(
 			l.ctx,
 			luautils.UpdateCommentCacheScript,

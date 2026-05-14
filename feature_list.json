@@ -2,7 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-14",
-  "_meta_note": "fix-003 已完成，gRPC 拦截器日志正向分支；存量 P0 待办 fix-007",
+  "_meta_note": "fix-007 已完成，评论 RPC nil 保护；P0 全部清零，剩余 P1 fix-002/fix-004/fix-005/fix-006",
   "features": [
     {
       "id": "feat-001",
@@ -153,8 +153,8 @@
       "name": "修复评论 RPC 返回值无 nil 保护（B-12）",
       "description": "comment_logic.go:112 — GetUser RPC 出错时 resp 可能为 nil，直接访问 resp.UserInfo.Nickname 会 panic。加 nil 检查后再访问字段。",
       "dependencies": [],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "comment_logic.go GetUser 后加 `if resp != nil && resp.UserInfo != nil` 双重 nil 检查，缺失时 userName/userAvatar 保持空串，缓存仍写入由下次读路径回源补齐；./init.sh 编译/vet 通过。"
     },
     {
       "id": "fix-008",
