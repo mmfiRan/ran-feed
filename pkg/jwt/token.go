@@ -20,7 +20,7 @@ func GenerateToken(userId int64, expireDuration time.Duration, secret string) (s
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expireDuration)), // 过期时间
 			IssuedAt:  jwt.NewNumericDate(time.Now()),                     // 签发时间
 			NotBefore: jwt.NewNumericDate(time.Now()),                     // 生效时间
-			Issuer:    "gomall",                                           // 签发人
+			Issuer:    "ran-feed",                                         // 签发人
 			Subject:   "userToken",                                        // 主题
 		},
 	}

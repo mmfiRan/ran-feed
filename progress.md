@@ -4,7 +4,7 @@
 
 **最后更新：** 2026-05-14  
 **会话 ID：** session-004  
-**当前功能：** fix-009 杂项 Bug 打包修复（已完成）
+**当前功能：** fix-002 JWT Issuer 修正（已完成）
 
 ---
 
@@ -29,6 +29,7 @@
 - [x] **fix-005**：热榜同分翻页丢失（B-05）— `query_hot_feed_zset.lua` 上界改为包含性，成员级过滤生效
 - [x] **fix-006**：关注前验证用户存在（B-11）— follow 加 UserRpc.GetUser 校验；unfollow 保持清理语义不验
 - [x] **fix-009**：杂项 Bug 打包（B-06~B-10）— TranscodeStatus 常量化 / Kafka 日志格式 / commentStatusDeleted 统一到 consts / Custome→Custom 拼写 / SQL 文件名
+- [x] **fix-002**：JWT Issuer 错误项目名（B-02）— `pkg/jwt/token.go:24` `"gomall"` → `"ran-feed"`
 
 ### 进行中
 
@@ -38,7 +39,6 @@
 
 **剩余 P1 / 杂项：**
 
-- 修复 `fix-002`：JWT Issuer 错误项目名（B-02）—— 一行修改
 - 修复 `fix-004`：HTTP 状态码全 200（B-04）—— 多文件，按错误类型映射 401/422/500
 - 新增 `sec-002`：Nginx HTTPS + 安全响应头 + limit_req
 - 新增 `feat-013`：测试基础设施
@@ -48,7 +48,6 @@
 ## 阻塞 / 风险
 
 - [ ] **`pkg/jwt` 无调用方**：JWT 包目前是死代码；实际登录用 Session（Redis Lua）。fix-001 仅恢复包功能。
-- [ ] **`fix-002` 未跟进**：Issuer 仍为 "gomall"，留待下次 JWT 相关任务一起处理。
 - [ ] **评论缓存可能写入空 userName/userAvatar**：UserRpc 失败时缓存仍写入但 user 字段为空。下次读取需有"空则回源补齐"路径；当前读路径行为待确认。
 - [ ] **热榜同分过滤的 memberId 数字 vs 字典序**：当前过滤用 `tonumber(member) >= cursorId` 数字比较，但 Redis 同分内 ZREVRANGEBYSCORE 排序是字典序降序。content_id 长度不一时可能不一致。
 - [ ] **fix-006 关注路径增加了 user-rpc 同步依赖**：user-rpc 故障时关注接口连带不可用。

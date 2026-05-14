@@ -2,7 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-14",
-  "_meta_note": "fix-009 杂项 5 项打包完成；剩余 P1 fix-002/fix-004",
+  "_meta_note": "fix-002 JWT Issuer 修正；剩余 P1 仅 fix-004",
   "features": [
     {
       "id": "feat-001",
@@ -113,8 +113,8 @@
       "name": "修复 JWT Issuer 错误项目名（B-02）",
       "description": "pkg/jwt/token.go:24 — Issuer 硬编码为 \"gomall\"，应改为 \"ran-feed\"。",
       "dependencies": ["fix-001"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "pkg/jwt/token.go:24 Issuer 字面量 \"gomall\" → \"ran-feed\"；./init.sh 编译/vet 通过。"
     },
     {
       "id": "fix-003",
