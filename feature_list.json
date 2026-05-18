@@ -1,8 +1,8 @@
 {
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
-  "last_updated": "2026-05-14",
-  "_meta_note": "fix-004 HTTP 状态码场景化（鉴权 401/系统 500，业务+校验保持 200）；P1 清零",
+  "last_updated": "2026-05-18",
+  "_meta_note": "feat-013 测试基础设施：5 个测试文件，testify + miniredis；已完成 28/34",
   "features": [
     {
       "id": "feat-001",
@@ -209,8 +209,8 @@
       "name": "单元测试与集成测试基础设施",
       "description": "当前项目无任何测试文件。优先补充：pkg/hotrank/formula_test.go（热度公式边界条件）、pkg/jwt/token_test.go（Token 生成/解析）、user-rpc 登录注册集成测试、interaction-rpc 点赞幂等测试。",
       "dependencies": ["fix-001", "fix-003", "fix-004"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "新增 5 个测试文件（testify + miniredis 作为测试依赖）：pkg/hotrank/formula_test.go（9 个 case，覆盖 DeltaScore 零次数/未来时间/权重/衰减/未知动作/零半衰期）；pkg/jwt/token_test.go（7 个 case，roundtrip/错误密钥/过期/篡改 payload）；login_logic_test.go（5 个 case，成功/用户不存在/密码错误/禁用/nil 请求，白盒 mock + miniredis）；register_logic_test.go（4 个 case，成功/手机号已注册/nil 请求/默认昵称）；like_logic_test.go（5 个 case，首次点赞/幂等/Hash 验证/多用户/多内容，miniredis Lua 脚本验证）；./init.sh 编译/vet/test 全部通过。"
     },
     {
       "id": "feat-014",
