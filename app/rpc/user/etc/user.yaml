@@ -58,6 +58,10 @@ MySQL:
 
 SessionTTL: 86400
 
+LoginRateLimit:
+  WindowSeconds: 300
+  MaxAttempts: 5
+
 Oss:
   Provider:
   Region:

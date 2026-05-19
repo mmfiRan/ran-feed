@@ -43,6 +43,11 @@ func (m *mockUserRepository) Create(userDO *do.UserDO) (int64, error) {
 
 func newTestLoginLogic(t *testing.T, repo repositories.UserRepository) (*LoginLogic, *miniredis.Miniredis) {
 	t.Helper()
+	return newTestLoginLogicWithCfg(t, repo, config.Config{})
+}
+
+func newTestLoginLogicWithCfg(t *testing.T, repo repositories.UserRepository, cfg config.Config) (*LoginLogic, *miniredis.Miniredis) {
+	t.Helper()
 	mr, err := miniredis.Run()
 	require.NoError(t, err)
 	t.Cleanup(mr.Close)
@@ -51,7 +56,7 @@ func newTestLoginLogic(t *testing.T, repo repositories.UserRepository) (*LoginLo
 	ctx := context.Background()
 	return &LoginLogic{
 		ctx:      ctx,
-		svcCtx:   &svc.ServiceContext{Config: config.Config{}, Redis: r},
+		svcCtx:   &svc.ServiceContext{Config: cfg, Redis: r},
 		Logger:   logx.WithContext(ctx),
 		userRepo: repo,
 	}, mr
@@ -125,4 +130,44 @@ func TestLogin_NilRequest(t *testing.T) {
 	logic, _ := newTestLoginLogic(t, &mockUserRepository{})
 	_, err := logic.Login(nil)
 	assert.Error(t, err)
+}
+
+func TestLogin_RateLimited(t *testing.T) {
+	u := testActiveUser("correct-password")
+	repo := &mockUserRepository{
+		getByMobileFn: func(_ string) (*do.UserDO, error) { return u, nil },
+	}
+	cfg := config.Config{LoginRateLimit: config.LoginRateLimitConfig{WindowSeconds: 60, MaxAttempts: 3}}
+	logic, _ := newTestLoginLogicWithCfg(t, repo, cfg)
+
+	for i := 0; i < 3; i++ {
+		_, err := logic.Login(&user.LoginReq{Mobile: "13800138000", Password: "wrong"})
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "手机号或密码错误")
+	}
+
+	_, err := logic.Login(&user.LoginReq{Mobile: "13800138000", Password: "correct-password"})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "登录尝试过于频繁")
+}
+
+func TestLogin_SuccessClearsRateLimitCounter(t *testing.T) {
+	u := testActiveUser("correct-password")
+	repo := &mockUserRepository{
+		getByMobileFn: func(_ string) (*do.UserDO, error) { return u, nil },
+	}
+	cfg := config.Config{LoginRateLimit: config.LoginRateLimitConfig{WindowSeconds: 60, MaxAttempts: 3}}
+	logic, mr := newTestLoginLogicWithCfg(t, repo, cfg)
+
+	// 两次失败，未达上限
+	for i := 0; i < 2; i++ {
+		_, err := logic.Login(&user.LoginReq{Mobile: "13800138000", Password: "wrong"})
+		assert.Error(t, err)
+	}
+	assert.True(t, mr.Exists("user:login:fail:13800138000"))
+
+	// 第三次成功 → 计数清零
+	_, err := logic.Login(&user.LoginReq{Mobile: "13800138000", Password: "correct-password"})
+	require.NoError(t, err)
+	assert.False(t, mr.Exists("user:login:fail:13800138000"))
 }

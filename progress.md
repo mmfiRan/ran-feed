@@ -2,9 +2,9 @@
 
 ## 当前状态
 
-**最后更新：** 2026-05-18  
-**会话 ID：** session-005  
-**当前功能：** feat-013 单元测试与集成测试基础设施（已完成）
+**最后更新：** 2026-05-19  
+**会话 ID：** session-006  
+**当前功能：** sec-001 残留收口 — Redis 滑动窗口登录限频（已完成）
 
 ---
 
@@ -32,6 +32,7 @@
 - [x] **fix-002**：JWT Issuer 错误项目名（B-02）— `pkg/jwt/token.go:24` `"gomall"` → `"ran-feed"`
 - [x] **fix-004**：HTTP 错误状态码场景化（B-04）— 鉴权失败 401 / 系统未知错误 500；业务错误与校验错误保持 200 由前端按 body code 处理
 - [x] **feat-013**：测试基础设施 — 5 个测试文件，30 个 case；testify v1.11.1 + miniredis v2.38.0 作为测试依赖；init.sh 测试步骤从"跳过"改为真正执行
+- [x] **sec-001 收口**：登录限频 — ZSET 滑动日志，per-mobile；Check/Record/Clear 三段式；config 零值关闭；2 个新单测
 
 ### 进行中
 
@@ -39,10 +40,11 @@
 
 ### 下一步
 
-**P0/P1 全部清零，测试基础设施已建立。**剩余为新增类条目：
+**P0/P1 全部清零，测试基础设施已建立，sec-001 收口完毕。**剩余为新增类条目：
 
 - 新增 `sec-002`：Nginx HTTPS + 安全响应头 + limit_req
 - 新增 `feat-014~018`：视频转码 / 搜索 / 通知 / 标签 / 个性化推荐
+- 后续可补：登录限频 IP 维度（需 proto 增字段，列为新条目，不在 sec-001 范围）
 
 ---
 
@@ -60,6 +62,11 @@
 
 ## 已做决策（本次新增）
 
+- **sec-001 限频仅做 mobile 维度**：LoginReq 没有 client_ip 字段；要做 IP 维度需要改 proto + 前端透传。本轮聚焦"防单账号暴力破解"，IP 维度（防分布式撞库）作为后续独立条目。
+- **sec-001 限频默认 5 次/5 分钟**：与业界常见配置一致；零值视为关闭，避免破坏现有空 config 单测。
+- **sec-001 限频拒绝时返回独立错误信息**：不与"手机号或密码错误"混淆。理论上会泄漏"某账号当前是否被锁"，但锁本身就是限频后果，可接受；明确提示利于正常用户排错。
+- **sec-001 账号禁用路径不计入失败计数**：因为已经通过了密码校验，属于"凭据正确但账号状态异常"，不应触发限频；同时也避免给攻击者额外的状态枚举信号。
+
 - **fix-004 校验错误也返回 200**：用户决策。CustomValidator 本质是"用户输入业务错"，让前端按 body code 走统一处理路径比 HTTP 422 更一致；只有非预期系统错误（default 分支）才升 500，监控/告警能识别真故障。
 - **fix-004 middleware 鉴权 401**：网关/前端拦截器靠 status 即可识别"跳登录"，无需解析 body；同时设置 Content-Type: application/json + WriteHeader 在 Write 之前调用，确保 status 真正生效。
 - **fix-009 五个子项一次性打包**：feature 描述本身就是"合并修复"，符合"一次提交对应一个 feature_list 条目"。每个子项体量都很小且互不耦合。
@@ -70,7 +77,19 @@
 
 ---
 
-## 本次会话修改的文件
+## 本次会话修改的文件（session-006，sec-001）
+
+- `app/rpc/user/internal/config/config.go` — 新增 `LoginRateLimitConfig`
+- `app/rpc/user/etc/user.yaml` — 新增 `LoginRateLimit.WindowSeconds/MaxAttempts` 默认配置
+- `app/rpc/user/internal/common/consts/redis/redis_consts.go` — 新增 `RedisUserLoginFailPrefix` + `BuildUserLoginFailKey`
+- `app/rpc/user/internal/common/utils/lua/check_login_rate_limit.lua` — 新建
+- `app/rpc/user/internal/common/utils/lua/record_login_failure.lua` — 新建
+- `app/rpc/user/internal/common/utils/lua/redis_lua.go` — embed 两个新脚本
+- `app/rpc/user/internal/common/utils/ratelimit/login.go` — 新建（CheckLogin / RecordLoginFailure / ClearLoginFailures）
+- `app/rpc/user/internal/logic/userservice/login_logic.go` — 集成限频三段调用
+- `app/rpc/user/internal/logic/userservice/login_logic_test.go` — 抽出 `newTestLoginLogicWithCfg` + 2 个限频单测
+
+## 本次会话修改的文件（session-005，feat-013 及之前）
 
 - `pkg/jwt/token.go` — `SignedString` 与 keyFunc 改 `[]byte(secret)`（fix-001）
 - `pkg/interceptor/interceptor.go` — 错误日志正向分支（fix-003）
@@ -93,7 +112,7 @@
 
 ## 完成证据
 
-- [ ] 测试通过：`（尚无测试）`
+- [x] 测试通过：`go test ./...`（user-rpc 含 7 个 login case 全部通过）
 - [x] 编译检查：`go build ./...` 通过
 - [x] 静态分析：`go vet ./...` 通过
 - [x] `./init.sh` 全流程通过
