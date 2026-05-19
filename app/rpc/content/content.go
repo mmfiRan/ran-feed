@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
+	"os"
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/cron"
@@ -61,8 +63,13 @@ func main() {
 	cron.Register(xxlCtx, executor, ctx)
 	threading.GoSafe(func() {
 		if err := executor.Start(xxlCtx); err != nil {
-			logx.Errorf("xxl-job executor start failed: %v", err)
-			// todo 测试阶段暂时不管os.Exit(1)
+			// xxlCtx 取消属于正常停机路径
+			if errors.Is(err, context.Canceled) {
+				return
+			}
+			// 启动失败意味着热榜定时任务永久不可用，必须退出由 supervisor 拉起
+			logx.Errorf("xxl-job executor start failed, exiting for supervisor restart: %v", err)
+			os.Exit(1)
 		}
 	})
 

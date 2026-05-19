@@ -68,6 +68,38 @@ func TestQueryHotFeedZSet_TiedScoreCrossDigitPagination(t *testing.T) {
 	assert.Equal(t, int64(0), page2.hasMore, "second page hasMore")
 }
 
+// TestQueryHotFeedZSet_LatestMissedFallsThroughToGlobal
+// fix-015 回归：latestKey 不存在时 redis.call('GET') 返回 Lua false（不是 nil/""），
+// 旧代码 `latestId ~= nil and latestId ~= ""` 让 false 通过判断后在下一行 concat 崩溃。
+// 修复后应安全 fall through 到 globalKey，并返回 globalKey 上的内容。
+func TestQueryHotFeedZSet_LatestMissedFallsThroughToGlobal(t *testing.T) {
+	mr, err := miniredis.Run()
+	require.NoError(t, err)
+	t.Cleanup(mr.Close)
+
+	r := redis.MustNewRedis(redis.RedisConf{Host: mr.Addr(), Type: redis.NodeType})
+	globalKey := "feed:hot:global:zset"
+	_, err = r.ZaddCtx(context.Background(), globalKey, 5, "100")
+	require.NoError(t, err)
+	_, err = r.ZaddCtx(context.Background(), globalKey, 3, "200")
+	require.NoError(t, err)
+
+	// preferredKey 为空 + latestKey 不存在 → 走进 latest 分支但 GET 返回 false。
+	// 旧版本会在 line 33 concat 崩溃，新版本应识别 false 后 fall through 到 globalKey。
+	res, err := r.EvalCtx(
+		context.Background(),
+		QueryHotFeedZSetScript,
+		[]string{"", "feed:hot:global:latest:nonexistent", "feed:hot:global:snap", globalKey},
+		"",
+		"10",
+		"",
+	)
+	require.NoError(t, err, "latest 分支 false 不应再崩溃")
+	page := extractIDs(t, res)
+	assert.Equal(t, int64(1), page.exists)
+	assert.Equal(t, []string{"100", "200"}, page.ids)
+}
+
 type hotFeedPage struct {
 	exists     int64
 	hasMore    int64

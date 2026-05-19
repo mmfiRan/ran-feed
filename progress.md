@@ -4,7 +4,7 @@
 
 **最后更新：** 2026-05-19  
 **会话 ID：** session-006  
-**当前功能：** sec-001 + fix-012 + sec-002 + 审计 → fix-013 + fix-014（均完成）
+**当前功能：** sec-001 + fix-012 + sec-002 + 审计 → fix-013 + fix-014 + fix-015（均完成，审计 P0/P1/P2 全部清零）
 
 ---
 
@@ -37,6 +37,7 @@
 - [x] **sec-002**：Nginx HTTPS + 安全头 + limit_req — 默认启用 5 个安全响应头 + 分层限流（api 10r/s + login 1r/s）；HTTPS 走 ssl.conf.example 模板（含 80→443 重定向、HSTS、http2 on）默认禁用；证书目录 + .gitignore + README 启用 5 步流程；docker run nginx -t 语法验证通过
 - [x] **fix-013**：审计 P0 四点集中修复 — favorite Upsert WithResult 吞错（闭包 createErr 回传）/ like 与 unlike Kafka 发送从 l.ctx 改 bg + 5s timeout / follow 已定义但未接线的 3s timeout 终于用上 / query_favorite_info GetCount resp nil 检查与 like 模块对齐
 - [x] **fix-014**：审计 P1 三点集中修复 — unlike 解耦 content-rpc（失败降级 contentUserID=0 继续） / canal 延迟缓存清理换 bg ctx + 5s timeout / comment & reply 列表 nextCursor 用 parseInt64 + hasMore-with-zero-cursor 防御分支
+- [x] **fix-015**：审计 P2 三点集中修复 — content.go xxl-job 启动失败 os.Exit(1) 让 supervisor 拉起（ctx.Canceled 视为正常停机） / batch_get_comments fillObjCacheBestEffort 加 per-call 5s timeout 防 goroutine 微泄漏 / query_hot_feed_zset.lua latest 分支识别 Lua false（防 concat 崩溃）+ 新增 fall-through 回归测试
 
 ### 进行中
 
@@ -60,7 +61,7 @@
 - [ ] **`pkg/jwt` 无调用方**：JWT 包目前是死代码；实际登录用 Session（Redis Lua）。fix-001 仅恢复包功能。
 - [ ] **评论缓存可能写入空 userName/userAvatar**：UserRpc 失败时缓存仍写入但 user 字段为空。下次读取需有"空则回源补齐"路径；当前读路径行为待确认。
 - [x] ~~**热榜同分过滤的 memberId 数字 vs 字典序**~~：fix-012 已修复，改为字符串比较与 Redis 真实排序对齐；回归测试 query_hot_feed_zset_test.go
-- [ ] **query_hot_feed_zset.lua latest 分支 false 边界**：`redis.call('GET', latestKey)` 在 miss 时返回 Lua false，line 32 `latestId ~= nil and latestId ~= ""` 通过后第 33 行 concat 崩溃；需改为 `if latestId and latestId ~= ""`。仅在 latest 缓存未预先写入时触发。本次 fix-012 未扩范围处理。
+- [x] ~~**query_hot_feed_zset.lua latest 分支 false 边界**~~：fix-015 已修复，line 32 改为 `if latestId and latestId ~= ""`；新增回归测试 TestQueryHotFeedZSet_LatestMissedFallsThroughToGlobal 覆盖 fall-through 路径
 - [ ] **fix-006 关注路径增加了 user-rpc 同步依赖**：user-rpc 故障时关注接口连带不可用。
 - [ ] **OSS 未配置**：`deploy/.env` 中 OSS 相关字段为空
 - [ ] **视频转码为占位**：`feat-004` 的 `transcode_status` 始终为 TranscodeStatusPending(10)，HLS 播放不可用
@@ -84,6 +85,15 @@
 - **git mv 重命名 SQL 文件**：保留历史关联，对比 add+delete 更利于追踪。
 
 ---
+
+## 本次会话修改的文件（session-006，fix-015 审计 P2）
+
+- `app/rpc/content/content.go` — C1 xxl-job 启动失败 errors.Is(ctx.Canceled) 跳过、否则 logx.Errorf + os.Exit(1)；imports 增 errors/os
+- `app/rpc/interaction/internal/logic/commentservice/batch_get_comments_logic.go` — C2 新增 fillObjCacheTimeout=5s 常量，fillObjCacheBestEffort per-call WithTimeout/cancel
+- `app/rpc/content/internal/common/utils/lua/query_hot_feed_zset.lua` — C3 latest 分支用 `latestId and latestId ~= ""` truthiness 判断（防 Lua false-concat）
+- `app/rpc/content/internal/common/utils/lua/query_hot_feed_zset_test.go` — 新增 TestQueryHotFeedZSet_LatestMissedFallsThroughToGlobal 回归测试
+- `feature_list.json` — 新增 fix-015 条目 status=done
+- `progress.md` — 本次记录
 
 ## 本次会话修改的文件（session-006，fix-014 审计 P1）
 

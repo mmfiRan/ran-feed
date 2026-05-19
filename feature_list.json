@@ -2,7 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-19",
-  "_meta_note": "审计 P0 → fix-013 + P1 → fix-014（unlike 解耦 / canal 延迟清理 bg ctx / comment 游标死循环防御）；已完成 33/37",
+  "_meta_note": "审计 P0/P1/P2 全部清零：fix-013 + fix-014 + fix-015（xxl-job exit / fillObjCache timeout / Lua latest false-concat）；已完成 34/38",
   "features": [
     {
       "id": "feat-001",
@@ -261,6 +261,14 @@
       "status": "done",
       "evidence": "query_hot_feed_zset.lua:78 改为 `if cursorScore ~= nil and score == cursorScore and member >= cursor then`（删除 cursorId/tonumber(member) 两个无用变量）；新增回归测试 query_hot_feed_zset_test.go：在同分(score=1)三成员 ['9','20','100'] 场景下，pageSize=2 翻页应得 page1=['9','20'] + page2=['100']，旧数字比较下 page2 会返回 ['9']（重复）丢失 '100'；miniredis 跑通；./init.sh 编译/vet/test 全绿。同时发现脚本 latest 分支 `redis.call('GET') == false` 时 concat 崩溃的 pre-existing 边界 bug，记录为后续条目，本次不扩范围。",
       "_followup": "脚本 line 32 latestId ~= nil 检查无法识别 Lua 中 false，需补 if latestId and latestId ~= ''"
+    },
+    {
+      "id": "fix-015",
+      "name": "审计 P2 三点集中修复（xxl-job exit / fillObjCache timeout / Lua latest false）",
+      "description": "现有功能审计 P2 收尾，三个一行/几行小修打包。",
+      "dependencies": ["fix-014"],
+      "status": "done",
+      "evidence": "(C1) content.go xxl-job executor.Start 失败原仅 logx.Errorf + todo 注释，热榜定时任务永久失效但进程仍在跑→改为 errors.Is(err, context.Canceled) 视为正常停机 return，否则 logx.Errorf + os.Exit(1) 让 supervisor 拉起；imports 增 errors/os；(C2) batch_get_comments_logic.go fillObjCacheBestEffort 异步分支用 context.Background() 无 deadline，新增 fillObjCacheTimeout=5s 常量 + per-call WithTimeout/cancel，避免 Redis 卡住 goroutine 微泄漏；同模块 RefillCommentCacheLogic 同名函数为同步调用走 l.ctx 不动；(C3) query_hot_feed_zset.lua line 32 `latestId ~= nil and latestId ~= ''` 改为 `if latestId and latestId ~= ''` —— redis.call('GET') miss 时返回 Lua false 而非 nil/''，旧条件让 false 进入分支后第 33 行 concat 崩溃；同时新增 latest miss → fall through to globalKey 的回归测试 TestQueryHotFeedZSet_LatestMissedFallsThroughToGlobal。go build/vet/test 全绿（新增 1 个 Lua case）。"
     },
     {
       "id": "fix-014",

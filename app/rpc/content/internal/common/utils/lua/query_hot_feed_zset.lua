@@ -28,8 +28,10 @@ if preferredKey ~= nil and preferredKey ~= "" then
 end
 
 if key == "" then
+    -- redis.call('GET') 在 key 不存在时返回 Lua false（不是 nil 也不是 ""），
+    -- 故必须用 `if latestId` 做 truthiness 判断，否则 false 会进入分支引发 concat 崩溃。
     local latestId = redis.call('GET', latestKey)
-    if latestId ~= nil and latestId ~= "" then
+    if latestId and latestId ~= "" then
         local latestSnapshotKey = snapshotPrefix .. ":" .. latestId
         local existsLatest = redis.call('EXISTS', latestSnapshotKey)
         if existsLatest == 1 then

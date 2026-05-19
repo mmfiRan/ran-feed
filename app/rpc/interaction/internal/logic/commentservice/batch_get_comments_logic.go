@@ -17,6 +17,9 @@ import (
 	"github.com/zeromicro/go-zero/core/threading"
 )
 
+// fillObjCacheTimeout: 单条评论缓存回填的最大耗时，防止 Redis 卡住时 goroutine 泄漏。
+const fillObjCacheTimeout = 5 * time.Second
+
 type BatchGetCommentsLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
@@ -351,8 +354,10 @@ func (l *BatchGetCommentsLogic) fillObjCacheBestEffort(items []*interaction.Comm
 		if createdAt <= 0 {
 			createdAt = time.Now().Unix()
 		}
+		// bg ctx + per-call timeout：bg 避免请求 ctx 取消打断；timeout 避免 Redis 卡住 goroutine 泄漏。
+		ctx, cancel := context.WithTimeout(context.Background(), fillObjCacheTimeout)
 		_, err := l.svcCtx.Redis.EvalCtx(
-			context.Background(),
+			ctx,
 			luautils.UpdateCommentObjScript,
 			[]string{objKey},
 			strconv.FormatInt(int64(rediskey.RedisCommentObjExpireSeconds), 10),
@@ -369,6 +374,7 @@ func (l *BatchGetCommentsLogic) fillObjCacheBestEffort(items []*interaction.Comm
 			c.UserAvatar,
 			strconv.FormatInt(c.ReplyCount, 10),
 		)
+		cancel()
 		if err != nil {
 			l.Errorf("回填评论对象缓存失败: %v, comment_id=%d", err, c.CommentId)
 		}
