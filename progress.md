@@ -4,7 +4,7 @@
 
 **最后更新：** 2026-05-19  
 **会话 ID：** session-006  
-**当前功能：** sec-001 残留收口 — Redis 滑动窗口登录限频（已完成）
+**当前功能：** sec-001 收口 + fix-012 热榜同分翻页字典序修复（均完成）
 
 ---
 
@@ -33,6 +33,7 @@
 - [x] **fix-004**：HTTP 错误状态码场景化（B-04）— 鉴权失败 401 / 系统未知错误 500；业务错误与校验错误保持 200 由前端按 body code 处理
 - [x] **feat-013**：测试基础设施 — 5 个测试文件，30 个 case；testify v1.11.1 + miniredis v2.38.0 作为测试依赖；init.sh 测试步骤从"跳过"改为真正执行
 - [x] **sec-001 收口**：登录限频 — ZSET 滑动日志，per-mobile；Check/Record/Clear 三段式；config 零值关闭；2 个新单测
+- [x] **fix-012**：热榜 Lua 同分过滤改字典序 — `member >= cursor` 与 Redis 同分组真实排序对齐；删除 cursorId/tonumber(member) 无用变量；新增回归测试覆盖跨位数 content_id 场景；同步发现 latest 分支 false-concat 边界 bug 已记录为后续条目
 
 ### 进行中
 
@@ -52,7 +53,8 @@
 
 - [ ] **`pkg/jwt` 无调用方**：JWT 包目前是死代码；实际登录用 Session（Redis Lua）。fix-001 仅恢复包功能。
 - [ ] **评论缓存可能写入空 userName/userAvatar**：UserRpc 失败时缓存仍写入但 user 字段为空。下次读取需有"空则回源补齐"路径；当前读路径行为待确认。
-- [ ] **热榜同分过滤的 memberId 数字 vs 字典序**：当前过滤用 `tonumber(member) >= cursorId` 数字比较，但 Redis 同分内 ZREVRANGEBYSCORE 排序是字典序降序。content_id 长度不一时可能不一致。
+- [x] ~~**热榜同分过滤的 memberId 数字 vs 字典序**~~：fix-012 已修复，改为字符串比较与 Redis 真实排序对齐；回归测试 query_hot_feed_zset_test.go
+- [ ] **query_hot_feed_zset.lua latest 分支 false 边界**：`redis.call('GET', latestKey)` 在 miss 时返回 Lua false，line 32 `latestId ~= nil and latestId ~= ""` 通过后第 33 行 concat 崩溃；需改为 `if latestId and latestId ~= ""`。仅在 latest 缓存未预先写入时触发。本次 fix-012 未扩范围处理。
 - [ ] **fix-006 关注路径增加了 user-rpc 同步依赖**：user-rpc 故障时关注接口连带不可用。
 - [ ] **OSS 未配置**：`deploy/.env` 中 OSS 相关字段为空
 - [ ] **视频转码为占位**：`feat-004` 的 `transcode_status` 始终为 TranscodeStatusPending(10)，HLS 播放不可用
@@ -76,6 +78,13 @@
 - **git mv 重命名 SQL 文件**：保留历史关联，对比 add+delete 更利于追踪。
 
 ---
+
+## 本次会话修改的文件（session-006，fix-012）
+
+- `app/rpc/content/internal/common/utils/lua/query_hot_feed_zset.lua` — 同分过滤改字符串比较；注释说明字典序对齐
+- `app/rpc/content/internal/common/utils/lua/query_hot_feed_zset_test.go` — 新建，miniredis Lua 回归测试
+- `feature_list.json` — 新增 fix-012 条目 status=done
+- `progress.md` — 本会话第二段记录
 
 ## 本次会话修改的文件（session-006，sec-001）
 

@@ -54,10 +54,8 @@ if pageSize == nil then
 end
 
 local cursorScore = nil
-local cursorId = nil
 if cursor ~= nil and cursor ~= "" then
     cursorScore = redis.call('ZSCORE', key, cursor)
-    cursorId = tonumber(cursor)
 end
 
 local maxScore = "+inf"
@@ -67,7 +65,9 @@ end
 
 local overscan = pageSize + 32
 
--- 包含性上界：同分组进入扫描，由下方成员级过滤排除游标自身及已返回的同分项
+-- 包含性上界：同分组进入扫描，下方按字典序过滤排除游标自身及已返回的同分项
+-- 字典序比较与 ZREVRANGEBYSCORE 在同分组内的真实排序（lex 降序）对齐，
+-- 避免内容 ID（sonyflake，长度可变）跨位数边界时数字比较错位丢失。
 local raw = redis.call('ZREVRANGEBYSCORE', key, maxScore, '-inf', 'WITHSCORES', 'LIMIT', 0, overscan)
 local ids = {}
 
@@ -75,8 +75,7 @@ for i = 1, #raw, 2 do
     local member = raw[i]
     local score = raw[i + 1]
 
-    local memberId = tonumber(member)
-    if cursorScore ~= nil and score == cursorScore and memberId ~= nil and cursorId ~= nil and memberId >= cursorId then
+    if cursorScore ~= nil and score == cursorScore and member >= cursor then
     else
         ids[#ids + 1] = member
         if #ids >= (pageSize + 1) then
