@@ -4,7 +4,7 @@
 
 **最后更新：** 2026-05-19  
 **会话 ID：** session-006  
-**当前功能：** sec-001 收口 + fix-012 热榜同分翻页字典序修复（均完成）
+**当前功能：** sec-001 收口 + fix-012 + sec-002（均完成）
 
 ---
 
@@ -34,6 +34,7 @@
 - [x] **feat-013**：测试基础设施 — 5 个测试文件，30 个 case；testify v1.11.1 + miniredis v2.38.0 作为测试依赖；init.sh 测试步骤从"跳过"改为真正执行
 - [x] **sec-001 收口**：登录限频 — ZSET 滑动日志，per-mobile；Check/Record/Clear 三段式；config 零值关闭；2 个新单测
 - [x] **fix-012**：热榜 Lua 同分过滤改字典序 — `member >= cursor` 与 Redis 同分组真实排序对齐；删除 cursorId/tonumber(member) 无用变量；新增回归测试覆盖跨位数 content_id 场景；同步发现 latest 分支 false-concat 边界 bug 已记录为后续条目
+- [x] **sec-002**：Nginx HTTPS + 安全头 + limit_req — 默认启用 5 个安全响应头 + 分层限流（api 10r/s + login 1r/s）；HTTPS 走 ssl.conf.example 模板（含 80→443 重定向、HSTS、http2 on）默认禁用；证书目录 + .gitignore + README 启用 5 步流程；docker run nginx -t 语法验证通过
 
 ### 进行中
 
@@ -41,11 +42,14 @@
 
 ### 下一步
 
-**P0/P1 全部清零，测试基础设施已建立，sec-001 收口完毕。**剩余为新增类条目：
+**安全条线已收完（sec-001 + sec-002）+ P0/P1 + fix-012。**剩余 4 项纯新功能 + 几个小后续：
 
-- 新增 `sec-002`：Nginx HTTPS + 安全响应头 + limit_req
-- 新增 `feat-014~018`：视频转码 / 搜索 / 通知 / 标签 / 个性化推荐
-- 后续可补：登录限频 IP 维度（需 proto 增字段，列为新条目，不在 sec-001 范围）
+- `feat-014`：视频转码（需 OSS + 阿里云媒体处理基建）
+- `feat-015`：内容全文搜索（需 Canal→Kafka→ES 链路）
+- `feat-016`：消息通知系统（内部，无外部基建依赖，推荐优先做）
+- `feat-017`：内容标签与话题（feat-018 前置）
+- `feat-018`：个性化推荐（依赖 feat-017）
+- 小后续：CSP Report-Only → 强制策略（待前端审计）；登录限频 IP 维度；query_hot_feed_zset.lua latest 分支 false-concat 边界
 
 ---
 
@@ -78,6 +82,16 @@
 - **git mv 重命名 SQL 文件**：保留历史关联，对比 add+delete 更利于追踪。
 
 ---
+
+## 本次会话修改的文件（session-006，sec-002）
+
+- `deploy/nginx/nginx.conf` — server_tokens off + 两个 limit_req_zone（api/login）
+- `deploy/nginx/conf.d/default.conf` — 5 个安全响应头 + /v1/login、/v1/users 精确匹配套 login zone、/v1/ 套 api zone
+- `deploy/nginx/conf.d/ssl.conf.example` — 新建，HTTP→HTTPS 301 + 443 server 块（TLSv1.2/1.3、HSTS、http2 on）
+- `deploy/nginx/certs/.gitignore` — 新建，*.crt/*.key/*.pem 永不入库
+- `deploy/nginx/README.md` — 新建，启用 HTTPS 5 步流程 + 自签命令 + 验证命令 + 与 sec-001 关系
+- `deploy/docker-compose.yml` — nginx 服务加 443 端口与 certs volume（注释，启用时解除）
+- `deploy/.env` — 新增 NGINX_HTTPS_PORT=443
 
 ## 本次会话修改的文件（session-006，fix-012）
 

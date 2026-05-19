@@ -2,7 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-19",
-  "_meta_note": "sec-001 收口 + fix-012 热榜同分翻页字典序修复；已完成 30/35",
+  "_meta_note": "sec-001 收口 + fix-012 + sec-002 Nginx HTTPS/安全头/limit_req；已完成 31/35",
   "features": [
     {
       "id": "feat-001",
@@ -201,8 +201,9 @@
       "name": "Nginx 添加 HTTPS 与安全响应头（S-03）",
       "description": "deploy/nginx/conf.d/default.conf — 配置 SSL/TLS 证书、HSTS、X-Frame-Options、X-Content-Type-Options、CSP 响应头，以及 limit_req 频率限制。",
       "dependencies": [],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "(1) nginx.conf 增加 server_tokens off + 两个 limit_req_zone（api 10r/s / login 1r/s）；(2) default.conf 增 5 个安全响应头（X-Content-Type-Options/X-Frame-Options/Referrer-Policy/Permissions-Policy/CSP-Report-Only）+ /v1/login 与 /v1/users 精确匹配套 login zone（burst=5 nodelay），/v1/ 套 api zone（burst=20 nodelay）；(3) 新建 ssl.conf.example 模板：80→443 重定向 + 443 server 块（TLSv1.2/1.3、HSTS 1 年、http2 on 新语法），默认 .example 后缀 nginx include 忽略；(4) 新建 deploy/nginx/certs/.gitignore（拒绝 *.crt/*.key/*.pem 入库）+ deploy/nginx/README.md（启用 HTTPS 5 步流程 + 自签命令 + 验证命令 + 与 sec-001 应用层限频关系表）；(5) docker-compose.yml nginx 服务加 443 端口与 certs volume（注释，启用时解除）；.env 新增 NGINX_HTTPS_PORT=443；(6) docker run nginx:latest -t 验证 default.conf 与 ssl.conf 语法均通过；./init.sh Go 编译/vet/test 全绿（无 Go 代码改动）。CSP 采用 Report-Only 观察模式，前端审计后切强制由后续条目处理。",
+      "_followup": "前端审计后将 Content-Security-Policy-Report-Only 切为强制 Content-Security-Policy；评估是否补 client IP 维度的应用层限频（sec-001 IP 维度）"
     },
     {
       "id": "feat-013",

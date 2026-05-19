@@ -177,9 +177,13 @@ services:
     container_name: nginx
     ports:
       - "${NGINX_HTTP_PORT}:80"
+      # sec-002: 启用 HTTPS 时解除以下注释（同时按 deploy/nginx/README.md 切换 conf.d）
+      # - "${NGINX_HTTPS_PORT}:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      # sec-002: 启用 HTTPS 时解除以下注释，证书放置到 deploy/nginx/certs/
+      # - ./nginx/certs:/etc/nginx/certs:ro
     depends_on:
       - front-web
       - front-api
