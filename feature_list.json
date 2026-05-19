@@ -2,7 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-19",
-  "_meta_note": "审计后补 fix-013 P0（favorite 吞错 / Kafka 用请求 ctx / follow timeout 未接线 / count-rpc nil 漂移）；已完成 32/36",
+  "_meta_note": "审计 P0 → fix-013 + P1 → fix-014（unlike 解耦 / canal 延迟清理 bg ctx / comment 游标死循环防御）；已完成 33/37",
   "features": [
     {
       "id": "feat-001",
@@ -261,6 +261,14 @@
       "status": "done",
       "evidence": "query_hot_feed_zset.lua:78 改为 `if cursorScore ~= nil and score == cursorScore and member >= cursor then`（删除 cursorId/tonumber(member) 两个无用变量）；新增回归测试 query_hot_feed_zset_test.go：在同分(score=1)三成员 ['9','20','100'] 场景下，pageSize=2 翻页应得 page1=['9','20'] + page2=['100']，旧数字比较下 page2 会返回 ['9']（重复）丢失 '100'；miniredis 跑通；./init.sh 编译/vet/test 全绿。同时发现脚本 latest 分支 `redis.call('GET') == false` 时 concat 崩溃的 pre-existing 边界 bug，记录为后续条目，本次不扩范围。",
       "_followup": "脚本 line 32 latestId ~= nil 检查无法识别 Lua 中 false，需补 if latestId and latestId ~= ''"
+    },
+    {
+      "id": "fix-014",
+      "name": "审计 P1 集中修复（unlike/canal/comment 三点）",
+      "description": "现有功能审计 P1 集中一次清掉，全部低风险小改动。",
+      "dependencies": ["fix-013"],
+      "status": "done",
+      "evidence": "(B1) unlike_logic.go 取消点赞不再因 content-rpc 故障/内容删除而失败：GetContentDetail 错误时改为 log + contentUserID=0 继续清 Redis 点赞态，删除原 '内容作者不存在' 硬失败分支。事件下游可识别 contentUserID=0 跳过作者级获赞数变更，content 级点赞数仍可由 contentID 维度独立更新；(B2) canal_count_consumer.go invalidateUserProfileCaches 延迟分支原用 c.ctx（consumer 关停被 cancel 后清理直接失败、加剧缓存与 DB 漂移），改为 context.WithTimeout(context.Background(), userProfileCacheInvalidateTimeout=5s)；常量集中到 const 块；(B3) query_comment_list_logic.go 与 query_reply_list_logic.go Lua 返回 nextCursor/hasMore 原用 _ 静默断言，改用 parseInt64（与文件内其他字段一致），并新增 `hasMore=true 但 nextCursor<=0` 防御分支：log + 强制 hasMore=false 终止分页，避免客户端死循环回首页。go build/vet 全绿，like 包既有单测仍通过。"
     },
     {
       "id": "fix-013",

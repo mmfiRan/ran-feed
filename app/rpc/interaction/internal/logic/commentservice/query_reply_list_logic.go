@@ -97,9 +97,14 @@ func (l *QueryReplyListLogic) queryFromRedis(in *interaction.QueryReplyListReq) 
 		return nil, 0, false, nil, CacheMiss
 	}
 
-	nextCursor, _ = arr[1].(int64)
-	hasMoreVal, _ := arr[2].(int64)
-	hasMore = hasMoreVal == 1
+	// 同 query_comment_list_logic：用 parseInt64 兼容 Lua 返回类型，
+	// 并防御 hasMore=true 但 nextCursor=0 死循环。
+	nextCursor = parseInt64(arr[1])
+	hasMore = parseInt64(arr[2]) == 1
+	if hasMore && nextCursor <= 0 {
+		l.Errorf("回复列表 Lua 返回异常：hasMore=true 但 nextCursor=%d，强制 hasMore=false 终止分页", nextCursor)
+		hasMore = false
+	}
 
 	const chunkSize = 12
 	if (len(arr)-3)%chunkSize != 0 {

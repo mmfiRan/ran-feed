@@ -44,7 +44,10 @@ type CanalCountConsumer struct {
 	strategies    *strategy.Registry
 }
 
-const userProfileCacheInvalidateDelay = 200 * time.Millisecond
+const (
+	userProfileCacheInvalidateDelay   = 200 * time.Millisecond
+	userProfileCacheInvalidateTimeout = 5 * time.Second
+)
 
 func NewCanalCountConsumer(ctx context.Context, svcContext *svc.ServiceContext) *CanalCountConsumer {
 	return &CanalCountConsumer{
@@ -331,7 +334,11 @@ func (c *CanalCountConsumer) invalidateUserProfileCaches(userIDs map[int64]struc
 		threading.GoSafe(func() {
 			func(cacheKey string, userID int64) {
 				time.Sleep(userProfileCacheInvalidateDelay)
-				if _, err := c.svcContext.Redis.DelCtx(c.ctx, cacheKey); err != nil {
+				// 用 bg ctx + timeout：consumer 关停时 c.ctx 被 cancel 会让残留延迟清理直接失败，
+				// 进一步加大缓存与 DB 漂移。bg ctx 保证清理一定有机会跑完。
+				ctx, cancel := context.WithTimeout(context.Background(), userProfileCacheInvalidateTimeout)
+				defer cancel()
+				if _, err := c.svcContext.Redis.DelCtx(ctx, cacheKey); err != nil {
 					c.Errorf("延迟删除用户主页计数缓存失败: key=%s, user_id=%d, err=%v", cacheKey, userID, err)
 				}
 			}(cacheKey, userID)

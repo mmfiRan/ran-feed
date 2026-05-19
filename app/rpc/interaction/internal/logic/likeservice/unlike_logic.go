@@ -32,18 +32,17 @@ func NewUnlikeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UnlikeLogi
 func (l *UnlikeLogic) Unlike(in *interaction.UnlikeReq) (*interaction.UnlikeRes, error) {
 	scene := in.Scene.String()
 
+	// 解耦 content-rpc：content-rpc 故障或内容已删除时，仍允许用户清理本地点赞态。
+	// contentUserID=0 由 Kafka 下游识别为"作者未知"，跳过用户级获赞数变更，
+	// content 级点赞数仍可由 contentID 维度独立更新。
 	contentUserID := int64(0)
-	contentDetail, err := l.svcCtx.ContentRpc.GetContentDetail(l.ctx, &content.GetContentDetailReq{
+	contentDetail, cerr := l.svcCtx.ContentRpc.GetContentDetail(l.ctx, &content.GetContentDetailReq{
 		ContentId: in.ContentId,
 	})
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
-	}
-	if contentDetail != nil && contentDetail.Detail != nil {
+	if cerr != nil {
+		l.Errorf("取消点赞时查询内容详情失败，降级 contentUserID=0 继续: content_id=%d, err=%v", in.ContentId, cerr)
+	} else if contentDetail != nil && contentDetail.Detail != nil {
 		contentUserID = contentDetail.Detail.AuthorId
-	}
-	if contentUserID <= 0 {
-		return nil, errorx.NewMsg("内容作者不存在")
 	}
 
 	changed, err := l.processUnlike(in.UserId, in.ContentId)

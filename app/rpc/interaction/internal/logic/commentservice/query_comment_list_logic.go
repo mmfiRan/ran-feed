@@ -110,9 +110,14 @@ func (l *QueryCommentListLogic) queryFromRedis(in *interaction.QueryCommentListR
 		return nil, 0, false, nil, CacheMiss
 	}
 
-	nextCursor, _ = arr[1].(int64)
-	hasMoreVal, _ := arr[2].(int64)
-	hasMore = hasMoreVal == 1
+	// 用 parseInt64 兼容 int64 / 字符串两种 Lua 返回；
+	// 防御 Lua 异常时 hasMore=true 但 nextCursor=0 让客户端死循环回首页。
+	nextCursor = parseInt64(arr[1])
+	hasMore = parseInt64(arr[2]) == 1
+	if hasMore && nextCursor <= 0 {
+		l.Errorf("评论列表 Lua 返回异常：hasMore=true 但 nextCursor=%d，强制 hasMore=false 终止分页", nextCursor)
+		hasMore = false
+	}
 
 	// 每条记录返回 12 个元素：id + 11个字段
 	const chunkSize = 12

@@ -4,7 +4,7 @@
 
 **最后更新：** 2026-05-19  
 **会话 ID：** session-006  
-**当前功能：** sec-001 + fix-012 + sec-002 + 审计 → fix-013（均完成）
+**当前功能：** sec-001 + fix-012 + sec-002 + 审计 → fix-013 + fix-014（均完成）
 
 ---
 
@@ -36,6 +36,7 @@
 - [x] **fix-012**：热榜 Lua 同分过滤改字典序 — `member >= cursor` 与 Redis 同分组真实排序对齐；删除 cursorId/tonumber(member) 无用变量；新增回归测试覆盖跨位数 content_id 场景；同步发现 latest 分支 false-concat 边界 bug 已记录为后续条目
 - [x] **sec-002**：Nginx HTTPS + 安全头 + limit_req — 默认启用 5 个安全响应头 + 分层限流（api 10r/s + login 1r/s）；HTTPS 走 ssl.conf.example 模板（含 80→443 重定向、HSTS、http2 on）默认禁用；证书目录 + .gitignore + README 启用 5 步流程；docker run nginx -t 语法验证通过
 - [x] **fix-013**：审计 P0 四点集中修复 — favorite Upsert WithResult 吞错（闭包 createErr 回传）/ like 与 unlike Kafka 发送从 l.ctx 改 bg + 5s timeout / follow 已定义但未接线的 3s timeout 终于用上 / query_favorite_info GetCount resp nil 检查与 like 模块对齐
+- [x] **fix-014**：审计 P1 三点集中修复 — unlike 解耦 content-rpc（失败降级 contentUserID=0 继续） / canal 延迟缓存清理换 bg ctx + 5s timeout / comment & reply 列表 nextCursor 用 parseInt64 + hasMore-with-zero-cursor 防御分支
 
 ### 进行中
 
@@ -83,6 +84,15 @@
 - **git mv 重命名 SQL 文件**：保留历史关联，对比 add+delete 更利于追踪。
 
 ---
+
+## 本次会话修改的文件（session-006，fix-014 审计 P1）
+
+- `app/rpc/interaction/internal/logic/likeservice/unlike_logic.go` — B1 解耦 content-rpc，错误降级 contentUserID=0
+- `app/rpc/count/internal/mq/consumer/canal_count_consumer.go` — B2 延迟清理换 bg ctx + 新增 userProfileCacheInvalidateTimeout=5s 常量
+- `app/rpc/interaction/internal/logic/commentservice/query_comment_list_logic.go` — B3 cursor/hasMore 用 parseInt64 + 死循环防御
+- `app/rpc/interaction/internal/logic/commentservice/query_reply_list_logic.go` — B3 同上对称
+- `feature_list.json` — 新增 fix-014 条目 status=done
+- `progress.md` — 本次记录
 
 ## 本次会话修改的文件（session-006，fix-013 审计 P0）
 
