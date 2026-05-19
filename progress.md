@@ -4,7 +4,7 @@
 
 **最后更新：** 2026-05-19  
 **会话 ID：** session-006  
-**当前功能：** sec-001 收口 + fix-012 + sec-002（均完成）
+**当前功能：** sec-001 + fix-012 + sec-002 + 审计 → fix-013（均完成）
 
 ---
 
@@ -35,6 +35,7 @@
 - [x] **sec-001 收口**：登录限频 — ZSET 滑动日志，per-mobile；Check/Record/Clear 三段式；config 零值关闭；2 个新单测
 - [x] **fix-012**：热榜 Lua 同分过滤改字典序 — `member >= cursor` 与 Redis 同分组真实排序对齐；删除 cursorId/tonumber(member) 无用变量；新增回归测试覆盖跨位数 content_id 场景；同步发现 latest 分支 false-concat 边界 bug 已记录为后续条目
 - [x] **sec-002**：Nginx HTTPS + 安全头 + limit_req — 默认启用 5 个安全响应头 + 分层限流（api 10r/s + login 1r/s）；HTTPS 走 ssl.conf.example 模板（含 80→443 重定向、HSTS、http2 on）默认禁用；证书目录 + .gitignore + README 启用 5 步流程；docker run nginx -t 语法验证通过
+- [x] **fix-013**：审计 P0 四点集中修复 — favorite Upsert WithResult 吞错（闭包 createErr 回传）/ like 与 unlike Kafka 发送从 l.ctx 改 bg + 5s timeout / follow 已定义但未接线的 3s timeout 终于用上 / query_favorite_info GetCount resp nil 检查与 like 模块对齐
 
 ### 进行中
 
@@ -82,6 +83,16 @@
 - **git mv 重命名 SQL 文件**：保留历史关联，对比 add+delete 更利于追踪。
 
 ---
+
+## 本次会话修改的文件（session-006，fix-013 审计 P0）
+
+- `app/rpc/interaction/internal/repositories/favorite_repository.go` — WithResult 用 createErr 捕获并回传
+- `app/rpc/interaction/internal/logic/likeservice/like_logic.go` — 新增 likeEventPublishTimeout 常量；publishLikeEvent 加 ctx 参数；goroutine 内 bg+timeout
+- `app/rpc/interaction/internal/logic/likeservice/unlike_logic.go` — 同上对称改造；publishCancelLikeEvent 加 ctx
+- `app/rpc/interaction/internal/logic/followservice/follow_user_logic.go` — 接线 backfillFollowInboxTimeout（原本死代码常量）
+- `app/rpc/interaction/internal/logic/favoriteservice/query_favorite_info_logic.go` — GetCount resp nil 检查
+- `feature_list.json` — 新增 fix-013 条目 status=done
+- `progress.md` — 审计与本次修复记录
 
 ## 本次会话修改的文件（session-006，sec-002）
 

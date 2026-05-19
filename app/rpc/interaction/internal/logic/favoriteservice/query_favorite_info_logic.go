@@ -91,6 +91,9 @@ func (l *QueryFavoriteInfoLogic) queryFavoriteCountFromCountRPC(contentID int64)
 	if err != nil {
 		return 0, err
 	}
+	if resp == nil {
+		return 0, nil
+	}
 	return resp.Value, nil
 }
 

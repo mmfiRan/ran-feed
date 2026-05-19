@@ -51,9 +51,12 @@ func (l *UnlikeLogic) Unlike(in *interaction.UnlikeReq) (*interaction.UnlikeRes,
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("取消点赞失败"))
 	}
 
+	// 请求 ctx 在 handler 返回后会被 cancel，Kafka 异步发送必须用独立 bg ctx + timeout。
 	if changed {
 		threading.GoSafe(func() {
-			l.publishCancelLikeEvent(in.UserId, in.ContentId, contentUserID, scene)
+			ctx, cancel := context.WithTimeout(context.Background(), likeEventPublishTimeout)
+			defer cancel()
+			l.publishCancelLikeEvent(ctx, in.UserId, in.ContentId, contentUserID, scene)
 		})
 	}
 
@@ -90,6 +93,6 @@ func (l *UnlikeLogic) processUnlike(userID, contentID int64) (changed bool, err 
 	return true, nil
 }
 
-func (l *UnlikeLogic) publishCancelLikeEvent(userID, contentID, contentUserID int64, scene string) {
-	l.svcCtx.LikeProducer.SendCancelLikeEvent(l.ctx, userID, contentID, contentUserID, scene)
+func (l *UnlikeLogic) publishCancelLikeEvent(ctx context.Context, userID, contentID, contentUserID int64, scene string) {
+	l.svcCtx.LikeProducer.SendCancelLikeEvent(ctx, userID, contentID, contentUserID, scene)
 }

@@ -5,6 +5,7 @@ import (
 	rediskey "ran-feed/app/rpc/interaction/internal/common/consts/redis"
 	luautils "ran-feed/app/rpc/interaction/internal/common/utils/lua"
 	"strconv"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
@@ -13,6 +14,8 @@ import (
 	"ran-feed/app/rpc/interaction/internal/svc"
 	"ran-feed/pkg/errorx"
 )
+
+const likeEventPublishTimeout = 5 * time.Second
 
 type LikeLogic struct {
 	ctx    context.Context
@@ -40,10 +43,13 @@ func (l *LikeLogic) Like(in *interaction.LikeReq) (*interaction.LikeRes, error) 
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("点赞处理失败"))
 	}
 
-	// 状态变化时发送事件
+	// 状态变化时发送事件。请求 ctx 在 handler 返回后会被 cancel，
+	// Kafka 异步发送必须用独立 bg ctx + timeout，避免事件中途丢失导致计数不一致。
 	if changed {
 		threading.GoSafe(func() {
-			l.publishLikeEvent(in.UserId, in.ContentId, in.ContentUserId, scene)
+			ctx, cancel := context.WithTimeout(context.Background(), likeEventPublishTimeout)
+			defer cancel()
+			l.publishLikeEvent(ctx, in.UserId, in.ContentId, in.ContentUserId, scene)
 		})
 	}
 
@@ -76,6 +82,6 @@ func (l *LikeLogic) processLike(userID, contentID int64) (changed bool, err erro
 }
 
 // publishLikeEvent 发布点赞事件
-func (l *LikeLogic) publishLikeEvent(userID, contentID, contentUserID int64, scene string) {
-	l.svcCtx.LikeProducer.SendLikeEvent(l.ctx, userID, contentID, contentUserID, scene)
+func (l *LikeLogic) publishLikeEvent(ctx context.Context, userID, contentID, contentUserID int64, scene string) {
+	l.svcCtx.LikeProducer.SendLikeEvent(ctx, userID, contentID, contentUserID, scene)
 }

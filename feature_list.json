@@ -2,7 +2,7 @@
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
   "last_updated": "2026-05-19",
-  "_meta_note": "sec-001 收口 + fix-012 + sec-002 Nginx HTTPS/安全头/limit_req；已完成 31/35",
+  "_meta_note": "审计后补 fix-013 P0（favorite 吞错 / Kafka 用请求 ctx / follow timeout 未接线 / count-rpc nil 漂移）；已完成 32/36",
   "features": [
     {
       "id": "feat-001",
@@ -261,6 +261,14 @@
       "status": "done",
       "evidence": "query_hot_feed_zset.lua:78 改为 `if cursorScore ~= nil and score == cursorScore and member >= cursor then`（删除 cursorId/tonumber(member) 两个无用变量）；新增回归测试 query_hot_feed_zset_test.go：在同分(score=1)三成员 ['9','20','100'] 场景下，pageSize=2 翻页应得 page1=['9','20'] + page2=['100']，旧数字比较下 page2 会返回 ['9']（重复）丢失 '100'；miniredis 跑通；./init.sh 编译/vet/test 全绿。同时发现脚本 latest 分支 `redis.call('GET') == false` 时 concat 崩溃的 pre-existing 边界 bug，记录为后续条目，本次不扩范围。",
       "_followup": "脚本 line 32 latestId ~= nil 检查无法识别 Lua 中 false，需补 if latestId and latestId ~= ''"
+    },
+    {
+      "id": "fix-013",
+      "name": "审计 P0 集中修复（favorite/like/follow/favorite-info 四点）",
+      "description": "现有功能审计发现 4 个高置信度 P0 问题，集中一次修复。",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "(A1) favorite_repository.go Upsert WithResult 回调 _ = tx.Create(...) 静默吞错 → 用闭包 var createErr 捕获，外层 info.Error 之后回传 createErr；(A2) like_logic.go / unlike_logic.go threading.GoSafe 内 Kafka 发送原用 l.ctx（handler 返回后被 cancel，事件丢失计数漂移）→ goroutine 内 context.WithTimeout(context.Background(), likeEventPublishTimeout=5s)，publishLikeEvent/publishCancelLikeEvent 增 ctx 参数；(A3) follow_user_logic.go 已有 backfillFollowInboxTimeout=3s 常量但完全未接线（context.Background() 直传 BackfillFollowInbox 无 deadline）→ goroutine 内 context.WithTimeout(bg, backfillFollowInboxTimeout)；(A4) query_favorite_info_logic.go queryFavoriteCountFromCountRPC 缺 resp==nil 检查（与同模块 query_like_info_logic.go 不对称）→ 加 if resp == nil { return 0, nil }。go build/vet/test 全绿，like 包既有单测仍通过。"
     },
     {
       "id": "feat-019",

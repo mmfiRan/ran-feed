@@ -74,6 +74,7 @@ func (r *favoriteRepositoryImpl) Upsert(favoriteDO *do.FavoriteDO) (bool, error)
 		UpdatedBy:     favoriteDO.UpdatedBy,
 	}
 
+	var createErr error
 	dao := q.RanFeedFavorite.WithContext(r.ctx)
 	info := dao.
 		Clauses(clause.OnConflict{
@@ -85,10 +86,13 @@ func (r *favoriteRepositoryImpl) Upsert(favoriteDO *do.FavoriteDO) (bool, error)
 			}),
 		}).
 		WithResult(func(tx gen.Dao) {
-			_ = tx.Create(favoriteModel)
+			createErr = tx.Create(favoriteModel)
 		})
 	if info.Error != nil {
 		return false, info.Error
+	}
+	if createErr != nil {
+		return false, createErr
 	}
 	return info.RowsAffected > 0, nil
 }

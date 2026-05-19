@@ -70,8 +70,11 @@ func (l *FollowUserLogic) FollowUser(in *interaction.FollowUserReq) (*interactio
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("关注失败"))
 	}
 
+	// 异步回填收件箱：必须用独立 bg ctx + timeout，避免 content-rpc 卡住造成 goroutine 泄漏。
 	threading.GoSafe(func() {
-		_, callErr := l.svcCtx.ContentRpc.BackfillFollowInbox(context.Background(), &content.BackfillFollowInboxReq{
+		ctx, cancel := context.WithTimeout(context.Background(), backfillFollowInboxTimeout)
+		defer cancel()
+		_, callErr := l.svcCtx.ContentRpc.BackfillFollowInbox(ctx, &content.BackfillFollowInboxReq{
 			FollowerId: in.UserId,
 			FolloweeId: in.FollowUserId,
 			Limit:      backfillFollowInboxLimit,
