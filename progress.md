@@ -2,9 +2,9 @@
 
 ## 当前状态
 
-**最后更新：** 2026-05-19  
-**会话 ID：** session-006  
-**当前功能：** sec-001 + fix-012 + sec-002 + 审计 → fix-013 + fix-014 + fix-015（均完成，审计 P0/P1/P2 全部清零）
+**最后更新：** 2026-05-20  
+**会话 ID：** session-007  
+**当前功能：** opt-001 — user-rpc 旁路缓存（GetUser/BatchGetUser/GetUserProfile）落地，10 个单测全绿，init.sh 通过
 
 ---
 
@@ -83,6 +83,32 @@
 - **TranscodeStatusPending 命名**：CLAUDE.md / feat-004 描述里写"占位为 10（未开始）"，故命名 Pending（待开始/排队）。当转码任务接入后可继续扩展 Running / Done / Failed。
 - **B-09 顺带改 Name() 返回值**：`Name()` 返回 "CustomePlugin" 字符串，是 GORM Plugin 注册标识。同步改为 "CustomPlugin"，避免外部代码若已按错误拼写访问会断（当前仓库内无依赖此字符串值）。
 - **git mv 重命名 SQL 文件**：保留历史关联，对比 add+delete 更利于追踪。
+
+---
+
+## 本次会话修改的文件（session-007，opt-001 user-rpc 旁路缓存）
+
+- `app/rpc/user/internal/common/consts/redis/redis_consts.go` — 新增 `RedisUserInfoPrefix` / `RedisUserInfoMissingSentinel` 常量 + `BuildUserInfoKey(userID)`
+- `app/rpc/user/internal/config/config.go` — `Config` 新增 `UserCache UserCacheConfig`（TTL/NegativeTTL/Jitter 四字段，全部带 json default）
+- `app/rpc/user/etc/user.yaml` — 新增 `UserCache:` 段（默认值兜底，YAML 可省略）
+- `app/rpc/user/internal/common/utils/usercache/cache.go` — 新建。`UserCacheDO` 仅含公开字段（剔除 PasswordHash/Salt/Email）；`Get`/`BatchGet`/`Invalidate`；BatchGet 回写用 `PipelinedCtx`；正负 TTL 均带 jitter；负值哨兵 `"-"`
+- `app/rpc/user/internal/common/utils/usercache/cache_test.go` — 新建，10 个 case（4 单查 + 4 批查 + 2 边界）全绿
+- `app/rpc/user/internal/logic/userservice/get_user_logic.go` — `userRepo.GetByID` → `usercache.Get`
+- `app/rpc/user/internal/logic/userservice/batch_get_user_logic.go` — `userRepo.BatchGetByIDs` → `usercache.BatchGet`
+- `app/rpc/user/internal/logic/userservice/get_user_profile_logic.go` — `userRepo.GetByID` → `usercache.Get`
+- `feature_list.json` — 新增 `opt-001` 条目 status=done；total 39，done 34
+- `progress.md` — 本次记录
+
+**设计要点：**
+
+- 三个接口共用同一 `*do.UserDO` 来源，cache 层统一收敛，不为每个 logic 各写一份缓存逻辑
+- `GetMe` 未纳入缓存（敏感字段 + 低频）；`Register` 不预热，懒填即可
+- DB miss 写 `"-"` 哨兵，TTL 短（60s），防止穿透；命中哨兵不再回源 DB
+- BatchGet 部分命中时仅对 miss 集合调用 `repo.BatchGetByIDs`，结合 `PipelinedCtx` 回写一次 RTT
+- Redis 任何错误均降级直接打 DB，只记日志不冒泡——保证可用性优先
+- 未引入 singleflight（user 维度分布相对均匀、击穿风险低，等监控显示问题再加）
+
+**受益范围：** feed 推荐/关注流/内容详情/评论填充/关注操作校验 等所有依赖 user-rpc 的读路径，调用方零改动。
 
 ---
 

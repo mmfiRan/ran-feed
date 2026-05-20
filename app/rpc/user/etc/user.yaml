@@ -62,6 +62,12 @@ LoginRateLimit:
   WindowSeconds: 300
   MaxAttempts: 5
 
+UserCache:
+  TTLSeconds: 600
+  NegativeTTLSeconds: 60
+  JitterMaxSeconds: 600
+  NegativeJitterMaxSeconds: 60
+
 Oss:
   Provider:
   Region:

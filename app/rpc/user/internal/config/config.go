@@ -12,6 +12,7 @@ type Config struct {
 	MySQL                    MySQLConfig
 	SessionTTL               int64
 	LoginRateLimit           LoginRateLimitConfig
+	UserCache                UserCacheConfig
 	InteractionRpcClientConf zrpc.RpcClientConf
 	CountRpcClientConf       zrpc.RpcClientConf
 }
@@ -21,6 +22,15 @@ type Config struct {
 type LoginRateLimitConfig struct {
 	WindowSeconds int64 `json:",default=300"`
 	MaxAttempts   int64 `json:",default=5"`
+}
+
+// UserCacheConfig 用户信息缓存配置。TTLSeconds<=0 时整体关闭缓存。
+// 正负 TTL 均叠加 [0, JitterMaxSeconds] 抖动以抗雪崩。
+type UserCacheConfig struct {
+	TTLSeconds               int64 `json:",default=600"`
+	NegativeTTLSeconds       int64 `json:",default=60"`
+	JitterMaxSeconds         int64 `json:",default=600"`
+	NegativeJitterMaxSeconds int64 `json:",default=60"`
 }
 
 type OssConfig struct {

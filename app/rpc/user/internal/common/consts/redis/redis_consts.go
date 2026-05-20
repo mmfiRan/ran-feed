@@ -11,6 +11,10 @@ const (
 	RedisUserSessionExpireSecondsDefault = 7 * 24 * 60 * 60
 	// RedisUserLoginFailPrefix 登录失败滑动窗口 zset 前缀 user:login:fail:{mobile}
 	RedisUserLoginFailPrefix = "user:login:fail"
+	// RedisUserInfoPrefix 用户信息缓存 string 前缀 user:info:{userId}
+	RedisUserInfoPrefix = "user:info"
+	// RedisUserInfoMissingSentinel DB 已确认不存在用户的哨兵值，避免缓存穿透
+	RedisUserInfoMissingSentinel = "-"
 )
 
 func GetRedisPrefixKey(prefix string, id string) string {
@@ -27,4 +31,8 @@ func BuildUserSessionUserKey(userID int64) string {
 
 func BuildUserLoginFailKey(mobile string) string {
 	return GetRedisPrefixKey(RedisUserLoginFailPrefix, mobile)
+}
+
+func BuildUserInfoKey(userID int64) string {
+	return GetRedisPrefixKey(RedisUserInfoPrefix, strconv.FormatInt(userID, 10))
 }

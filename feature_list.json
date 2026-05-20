@@ -1,8 +1,8 @@
 {
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
-  "last_updated": "2026-05-19",
-  "_meta_note": "审计 P0/P1/P2 全部清零：fix-013 + fix-014 + fix-015（xxl-job exit / fillObjCache timeout / Lua latest false-concat）；已完成 34/38",
+  "last_updated": "2026-05-20",
+  "_meta_note": "新增 opt-001（user-rpc 旁路缓存）；总数 39，已完成 34，剩 5 项均为新功能 feat-014~018",
   "features": [
     {
       "id": "feat-001",
@@ -16,7 +16,9 @@
       "id": "feat-002",
       "name": "用户个人主页与资料",
       "description": "获取当前登录用户信息、查询他人主页、头像上传（阿里云 OSS STS 临时凭证）",
-      "dependencies": ["feat-001"],
+      "dependencies": [
+        "feat-001"
+      ],
       "status": "done",
       "evidence": "初始发布已完成"
     },
@@ -24,7 +26,9 @@
       "id": "feat-003",
       "name": "文章发布与删除",
       "description": "发布图文内容（标题/封面/正文），删除自己的内容（软删除），获取内容详情",
-      "dependencies": ["feat-001"],
+      "dependencies": [
+        "feat-001"
+      ],
       "status": "done",
       "evidence": "初始发布已完成"
     },
@@ -32,7 +36,9 @@
       "id": "feat-004",
       "name": "视频发布（基础）",
       "description": "发布视频内容（origin_url/封面/时长），transcode_status 占位为 10（未开始），HLS 地址待转码后填充",
-      "dependencies": ["feat-001"],
+      "dependencies": [
+        "feat-001"
+      ],
       "status": "done",
       "evidence": "初始发布已完成，转码流程为占位状态"
     },
@@ -40,7 +46,9 @@
       "id": "feat-005",
       "name": "点赞与取消点赞",
       "description": "点赞/取消点赞内容，通过 Kafka 事件异步更新计数，Redis Lua 原子操作防重复",
-      "dependencies": ["feat-003"],
+      "dependencies": [
+        "feat-003"
+      ],
       "status": "done",
       "evidence": "初始发布已完成"
     },
@@ -48,7 +56,9 @@
       "id": "feat-006",
       "name": "评论与回复",
       "description": "发表评论/回复，删除自己的评论（墓碑软删除），分页查询评论列表与回复列表，Redis 缓存",
-      "dependencies": ["feat-003"],
+      "dependencies": [
+        "feat-003"
+      ],
       "status": "done",
       "evidence": "初始发布已完成"
     },
@@ -56,7 +66,9 @@
       "id": "feat-007",
       "name": "收藏与取消收藏",
       "description": "收藏内容，取消收藏，查询收藏信息，Redis zset 缓存收藏列表",
-      "dependencies": ["feat-003"],
+      "dependencies": [
+        "feat-003"
+      ],
       "status": "done",
       "evidence": "初始发布已完成"
     },
@@ -64,7 +76,9 @@
       "id": "feat-008",
       "name": "关注与取关",
       "description": "关注/取关用户，查询关注状态与关注粉丝数",
-      "dependencies": ["feat-001"],
+      "dependencies": [
+        "feat-001"
+      ],
       "status": "done",
       "evidence": "初始发布已完成，但存在 B-11（被关注用户不验证存在性）"
     },
@@ -72,7 +86,9 @@
       "id": "feat-009",
       "name": "推荐流（热榜 Feed）",
       "description": "全站热榜 zset，基于时间衰减热度公式，XXL-JOB 定时快速/冷更新，游标翻页",
-      "dependencies": ["feat-003"],
+      "dependencies": [
+        "feat-003"
+      ],
       "status": "done",
       "evidence": "初始发布已完成，存在 B-05（同分翻页丢失）"
     },
@@ -80,7 +96,10 @@
       "id": "feat-010",
       "name": "关注流（Follow Inbox）",
       "description": "关注用户的内容推送到收件箱 zset，大 V 触发拉模式回填，游标翻页",
-      "dependencies": ["feat-008", "feat-003"],
+      "dependencies": [
+        "feat-008",
+        "feat-003"
+      ],
       "status": "done",
       "evidence": "初始发布已完成"
     },
@@ -88,7 +107,10 @@
       "id": "feat-011",
       "name": "用户发布列表与收藏列表",
       "description": "按用户 ID 分页查询其发布内容、收藏内容，Redis zset 懒加载缓存",
-      "dependencies": ["feat-003", "feat-007"],
+      "dependencies": [
+        "feat-003",
+        "feat-007"
+      ],
       "status": "done",
       "evidence": "初始发布已完成"
     },
@@ -96,7 +118,11 @@
       "id": "feat-012",
       "name": "计数统计（Canal CDC 驱动）",
       "description": "count-rpc 通过 Canal 监听互动表 binlog，异步维护点赞/收藏/评论计数及用户获赞统计",
-      "dependencies": ["feat-005", "feat-006", "feat-007"],
+      "dependencies": [
+        "feat-005",
+        "feat-006",
+        "feat-007"
+      ],
       "status": "done",
       "evidence": "初始发布已完成"
     },
@@ -112,7 +138,9 @@
       "id": "fix-002",
       "name": "修复 JWT Issuer 错误项目名（B-02）",
       "description": "pkg/jwt/token.go:24 — Issuer 硬编码为 \"gomall\"，应改为 \"ran-feed\"。",
-      "dependencies": ["fix-001"],
+      "dependencies": [
+        "fix-001"
+      ],
       "status": "done",
       "evidence": "pkg/jwt/token.go:24 Issuer 字面量 \"gomall\" → \"ran-feed\"；./init.sh 编译/vet 通过。"
     },
@@ -209,7 +237,11 @@
       "id": "feat-013",
       "name": "单元测试与集成测试基础设施",
       "description": "当前项目无任何测试文件。优先补充：pkg/hotrank/formula_test.go（热度公式边界条件）、pkg/jwt/token_test.go（Token 生成/解析）、user-rpc 登录注册集成测试、interaction-rpc 点赞幂等测试。",
-      "dependencies": ["fix-001", "fix-003", "fix-004"],
+      "dependencies": [
+        "fix-001",
+        "fix-003",
+        "fix-004"
+      ],
       "status": "done",
       "evidence": "新增 5 个测试文件（testify + miniredis 作为测试依赖）：pkg/hotrank/formula_test.go（9 个 case，覆盖 DeltaScore 零次数/未来时间/权重/衰减/未知动作/零半衰期）；pkg/jwt/token_test.go（7 个 case，roundtrip/错误密钥/过期/篡改 payload）；login_logic_test.go（5 个 case，成功/用户不存在/密码错误/禁用/nil 请求，白盒 mock + miniredis）；register_logic_test.go（4 个 case，成功/手机号已注册/nil 请求/默认昵称）；like_logic_test.go（5 个 case，首次点赞/幂等/Hash 验证/多用户/多内容，miniredis Lua 脚本验证）；./init.sh 编译/vet/test 全部通过。"
     },
@@ -217,7 +249,9 @@
       "id": "feat-014",
       "name": "视频转码完整流程（F-01）",
       "description": "当前 transcode_status 仅有占位值。接入阿里云媒体处理（或 FFmpeg 方案），通过 Webhook 回调更新 transcode_status/hls_url/duration，GetContentDetail 返回转码进度。",
-      "dependencies": ["feat-004"],
+      "dependencies": [
+        "feat-004"
+      ],
       "status": "not-started",
       "evidence": ""
     },
@@ -225,7 +259,9 @@
       "id": "feat-015",
       "name": "内容全文搜索（F-02）",
       "description": "基础设施已有 Elasticsearch。实现 Canal → Kafka → ES Indexer 链路，新增搜索接口（关键词/标签过滤/时间排序/高亮）。",
-      "dependencies": ["feat-003"],
+      "dependencies": [
+        "feat-003"
+      ],
       "status": "not-started",
       "evidence": ""
     },
@@ -233,7 +269,11 @@
       "id": "feat-016",
       "name": "消息通知系统（F-03）",
       "description": "新增 notify-rpc（或在 interaction-rpc 扩展）：通知类型（点赞/评论/@提及/关注/系统），ran_feed_notification 表 + Redis 未读数，支持轮询或 WebSocket 推送。",
-      "dependencies": ["feat-005", "feat-006", "feat-008"],
+      "dependencies": [
+        "feat-005",
+        "feat-006",
+        "feat-008"
+      ],
       "status": "not-started",
       "evidence": ""
     },
@@ -241,7 +281,9 @@
       "id": "feat-017",
       "name": "内容标签与话题系统（F-04）",
       "description": "新增 ran_feed_tag / ran_feed_content_tag 表，支持内容打标，话题页聚合同 tag 内容，为个性化推荐提供兴趣维度输入。",
-      "dependencies": ["feat-003"],
+      "dependencies": [
+        "feat-003"
+      ],
       "status": "not-started",
       "evidence": ""
     },
@@ -249,7 +291,10 @@
       "id": "feat-018",
       "name": "个性化推荐（F-05）",
       "description": "当前推荐为纯全站热榜。第一阶段：已看过内容去重降权。第二阶段：基于点赞/收藏历史的协同过滤或内容向量匹配。",
-      "dependencies": ["feat-009", "feat-017"],
+      "dependencies": [
+        "feat-009",
+        "feat-017"
+      ],
       "status": "not-started",
       "evidence": ""
     },
@@ -257,7 +302,9 @@
       "id": "fix-012",
       "name": "热榜 Lua 同分过滤字典序修复（fix-005 二次修复）",
       "description": "query_hot_feed_zset.lua 同分组成员级过滤原使用 tonumber(member) >= cursorId 数字比较，与 Redis ZREVRANGEBYSCORE 同分组内字典序降序排序错位。当 content_id（sonyflake 生成，位数可变）跨位数边界时会错误跳过 lex 在 cursor 之后但数字更大的成员（如 cursor='9' 时 '20'/'100' 被错跳）。改为 member >= cursor 字符串比较，与 Redis 排序对齐。",
-      "dependencies": ["fix-005"],
+      "dependencies": [
+        "fix-005"
+      ],
       "status": "done",
       "evidence": "query_hot_feed_zset.lua:78 改为 `if cursorScore ~= nil and score == cursorScore and member >= cursor then`（删除 cursorId/tonumber(member) 两个无用变量）；新增回归测试 query_hot_feed_zset_test.go：在同分(score=1)三成员 ['9','20','100'] 场景下，pageSize=2 翻页应得 page1=['9','20'] + page2=['100']，旧数字比较下 page2 会返回 ['9']（重复）丢失 '100'；miniredis 跑通；./init.sh 编译/vet/test 全绿。同时发现脚本 latest 分支 `redis.call('GET') == false` 时 concat 崩溃的 pre-existing 边界 bug，记录为后续条目，本次不扩范围。",
       "_followup": "脚本 line 32 latestId ~= nil 检查无法识别 Lua 中 false，需补 if latestId and latestId ~= ''"
@@ -266,7 +313,9 @@
       "id": "fix-015",
       "name": "审计 P2 三点集中修复（xxl-job exit / fillObjCache timeout / Lua latest false）",
       "description": "现有功能审计 P2 收尾，三个一行/几行小修打包。",
-      "dependencies": ["fix-014"],
+      "dependencies": [
+        "fix-014"
+      ],
       "status": "done",
       "evidence": "(C1) content.go xxl-job executor.Start 失败原仅 logx.Errorf + todo 注释，热榜定时任务永久失效但进程仍在跑→改为 errors.Is(err, context.Canceled) 视为正常停机 return，否则 logx.Errorf + os.Exit(1) 让 supervisor 拉起；imports 增 errors/os；(C2) batch_get_comments_logic.go fillObjCacheBestEffort 异步分支用 context.Background() 无 deadline，新增 fillObjCacheTimeout=5s 常量 + per-call WithTimeout/cancel，避免 Redis 卡住 goroutine 微泄漏；同模块 RefillCommentCacheLogic 同名函数为同步调用走 l.ctx 不动；(C3) query_hot_feed_zset.lua line 32 `latestId ~= nil and latestId ~= ''` 改为 `if latestId and latestId ~= ''` —— redis.call('GET') miss 时返回 Lua false 而非 nil/''，旧条件让 false 进入分支后第 33 行 concat 崩溃；同时新增 latest miss → fall through to globalKey 的回归测试 TestQueryHotFeedZSet_LatestMissedFallsThroughToGlobal。go build/vet/test 全绿（新增 1 个 Lua case）。"
     },
@@ -274,7 +323,9 @@
       "id": "fix-014",
       "name": "审计 P1 集中修复（unlike/canal/comment 三点）",
       "description": "现有功能审计 P1 集中一次清掉，全部低风险小改动。",
-      "dependencies": ["fix-013"],
+      "dependencies": [
+        "fix-013"
+      ],
       "status": "done",
       "evidence": "(B1) unlike_logic.go 取消点赞不再因 content-rpc 故障/内容删除而失败：GetContentDetail 错误时改为 log + contentUserID=0 继续清 Redis 点赞态，删除原 '内容作者不存在' 硬失败分支。事件下游可识别 contentUserID=0 跳过作者级获赞数变更，content 级点赞数仍可由 contentID 维度独立更新；(B2) canal_count_consumer.go invalidateUserProfileCaches 延迟分支原用 c.ctx（consumer 关停被 cancel 后清理直接失败、加剧缓存与 DB 漂移），改为 context.WithTimeout(context.Background(), userProfileCacheInvalidateTimeout=5s)；常量集中到 const 块；(B3) query_comment_list_logic.go 与 query_reply_list_logic.go Lua 返回 nextCursor/hasMore 原用 _ 静默断言，改用 parseInt64（与文件内其他字段一致），并新增 `hasMore=true 但 nextCursor<=0` 防御分支：log + 强制 hasMore=false 终止分页，避免客户端死循环回首页。go build/vet 全绿，like 包既有单测仍通过。"
     },
@@ -298,7 +349,9 @@
       "id": "feat-020",
       "name": "关注流推拉结合改造 - Feature B：发布时小账号 fan-out",
       "description": "publish_article_logic.go / publish_video_logic.go afterPublish：查 author 粉丝数（count-rpc FOLLOWED:USER），< 阈值则 goroutine 异步推送到每个 follower 的 inbox。阈值通过 config.yaml 配置（默认 5000）。复用 update_follow_inbox_zset.lua 写入。",
-      "dependencies": ["feat-019"],
+      "dependencies": [
+        "feat-019"
+      ],
       "status": "done",
       "evidence": "新增 FollowFanOutConfig（阈值/批大小/inbox 容量）+ etc/content.yaml；新增 fanout_helper.go 封装异步 fan-out（threading.GoSafe + bg ctx + 30s 超时）；两个 publish logic 的 afterPublish 接入 fanOutToFollowersAsync；./init.sh 编译/vet 通过。"
     },
@@ -306,9 +359,20 @@
       "id": "feat-021",
       "name": "关注流推拉结合改造 - Feature C：读时大 V merge",
       "description": "FollowFeed 读路径：识别 viewer 关注列表中粉丝数 >= 阈值的大 V，单独查每个大 V 的 publish zset 最近 N 条，与 inbox 结果按 score 合并、去重、分页。cursor 设计需兼容两种数据源。",
-      "dependencies": ["feat-019", "feat-020"],
+      "dependencies": [
+        "feat-019",
+        "feat-020"
+      ],
       "status": "done",
       "evidence": "新增 bigv_merge_helper.go（loadViewerBigVList 缓存读 + computeViewerBigVList 并行 GetCount + fetchBigVContentIDs 并行 Lua + mergeContentIDs 合并算法）；新增 Redis key feed:follow:bigv:{userId} SET 缓存 viewer 大 V 列表（TTL 默认 300s，空集用 sentinel='0'）；复用现有 QueryUserPublishZSetScript，contentID 全局自增保证 inbox/publish zset 共用同一根 score 轴；FollowFeed cacheExists 分支注入 merge，cold backfill 路径不动；FollowFanOut 配置扩展 4 项（BigVMergeMaxQuery/BigVCacheTTLSeconds/BigVFolloweesScanLimit/BigVCountConcurrency）；./init.sh 编译/vet 通过。"
+    },
+    {
+      "id": "opt-001",
+      "name": "user-rpc 加 Redis 旁路缓存",
+      "description": "GetUser/BatchGetUser/GetUserProfile 三个核心读接口接入 cache-aside；JSON 序列化 *do.UserDO 公开字段子集；正负 TTL 均带 jitter 抗雪崩；负值哨兵 '-' 防穿透；BatchGet 回写用 PipelinedCtx 一次 RTT。",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "新增 usercache 包（cache.go + cache_test.go 10 个 case 全绿）；redis_consts 加 RedisUserInfoPrefix/MissingSentinel/BuildUserInfoKey；config 加 UserCacheConfig；user.yaml 加默认值（TTL=600s, NegTTL=60s, Jitter±）；三个 logic 改走 usercache.Get/BatchGet；./init.sh 编译/vet/测试通过。受益范围：feed 推荐/关注/内容详情/评论填充/关注校验等所有依赖 user-rpc 的读路径。"
     }
   ]
 }

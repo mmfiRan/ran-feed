@@ -2,6 +2,8 @@ package userservicelogic
 
 import (
 	"context"
+
+	"ran-feed/app/rpc/user/internal/common/utils/usercache"
 	"ran-feed/app/rpc/user/internal/repositories"
 	"ran-feed/app/rpc/user/internal/svc"
 	"ran-feed/app/rpc/user/user"
@@ -34,7 +36,7 @@ func (l *GetUserProfileLogic) GetUserProfile(in *user.GetUserProfileReq) (*user.
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	u, err := l.userRepo.GetByID(in.UserId)
+	u, err := usercache.Get(l.ctx, l.svcCtx.Redis, l.userRepo, l.svcCtx.Config.UserCache, in.UserId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询用户失败"))
 	}
