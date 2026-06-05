@@ -2,9 +2,9 @@
 
 ## 当前状态
 
-**最后更新：** 2026-05-20  
-**会话 ID：** session-007  
-**当前功能：** opt-001 — user-rpc 旁路缓存（GetUser/BatchGetUser/GetUserProfile）落地，10 个单测全绿，init.sh 通过
+**最后更新：** 2026-06-XX  
+**会话 ID：** session-008  
+**当前功能：** feat-009 热榜算分模型重构 — 按 HOT_FEED_DESIGN 切到方案A（log10 加法时间项 + Set 脏集合 + 回查 count 总量），init.sh 全绿
 
 ---
 
@@ -38,6 +38,8 @@
 - [x] **fix-013**：审计 P0 四点集中修复 — favorite Upsert WithResult 吞错（闭包 createErr 回传）/ like 与 unlike Kafka 发送从 l.ctx 改 bg + 5s timeout / follow 已定义但未接线的 3s timeout 终于用上 / query_favorite_info GetCount resp nil 检查与 like 模块对齐
 - [x] **fix-014**：审计 P1 三点集中修复 — unlike 解耦 content-rpc（失败降级 contentUserID=0 继续） / canal 延迟缓存清理换 bg ctx + 5s timeout / comment & reply 列表 nextCursor 用 parseInt64 + hasMore-with-zero-cursor 防御分支
 - [x] **fix-015**：审计 P2 三点集中修复 — content.go xxl-job 启动失败 os.Exit(1) 让 supervisor 拉起（ctx.Canceled 视为正常停机） / batch_get_comments fillObjCacheBestEffort 加 per-call 5s timeout 防 goroutine 微泄漏 / query_hot_feed_zset.lua latest 分支识别 Lua false（防 concat 崩溃）+ 新增 fall-through 回归测试
+- [x] **feat-009 重构（热榜算分模型切方案A）**：按 HOT_FEED_DESIGN 把乘法指数衰减公式换为加法时间项。(1) pkg/hotrank 新增 AdditiveTime：score=log10(max(加权,1))+发布秒/S，S=半衰期秒/log10(2)，抗霸榜抗刷量、0互动靠时间项进TopN、ZADD时点覆盖自愈漂移（修复旧版「对增量取log再累加」的 Σlog(Δ)≠log(ΣΔ) 数学缺陷）+ 8 个单测；(2) 记账解耦：count-rpc canal 消费者由 HINCRBY 加权delta 改 SADD feed:hot:dirty:{id%64}（删 heatScoreDeltaByBiz/writeHotIncrement→markHotDirty），发布种子改 SAdd；(3) 快更重写：FreezeHotDirtyScript 原子 RENAME 活跃桶→proc桶（双缓冲根治边读边写丢事件）→SSCAN→BatchGetRecommendByIDs过滤删/私有(ZREM)→count BatchGetCount回查总量→算全分ZADD覆盖→裁剪TopN→切快照→DEL proc；(4) 冷更 calcScore 改 AdditiveTime 同口径，清理扩展 dirty+proc+旧inc 桶。读路径/proto/front 端点不变。./init.sh 全绿。
+- [x] **B-05 复核（不改）**：计划原拟把 query_hot_feed_zset.lua 同分切分改数值比较，复核 fix-012 测试后确认现状 lex 字典序与 ZREVRANGEBYSCORE 同分组真实排序一致才是正确的；改数值会重现「第二页重复+丢内容」的 fix-012 bug。故保留现状，作废该步。设计 §7「ID 严格数值递减」需 R-05 统一 cursor 编码（定长补零/score 编入 ID），不在本次范围。
 
 ### 进行中
 

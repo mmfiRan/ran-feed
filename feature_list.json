@@ -85,12 +85,12 @@
     {
       "id": "feat-009",
       "name": "推荐流（热榜 Feed）",
-      "description": "全站热榜 zset，基于时间衰减热度公式，XXL-JOB 定时快速/冷更新，游标翻页",
+      "description": "全站热榜 zset，基于 log10(加权互动)+发布时间加法时间项的热度公式，XXL-JOB 定时快速/冷更新，游标翻页",
       "dependencies": [
         "feat-003"
       ],
       "status": "done",
-      "evidence": "初始发布已完成，存在 B-05（同分翻页丢失）"
+      "evidence": "算分模型按 HOT_FEED_DESIGN 切到方案A：(1) pkg/hotrank 新增 AdditiveTime，score=log10(max(加权,1))+发布秒/S，S=半衰期秒/log10(2)，抗霸榜抗刷量、0互动靠时间项进TopN、ZADD时点覆盖自愈漂移；(2) 记账改 Set 脏集合——count-rpc canal 消费者由 HINCRBY 加权delta 改为 SADD feed:hot:dirty:{id%64}（删 heatScoreDeltaByBiz/writeHotIncrement→markHotDirty），发布种子 publish_hot_seed_helper 由 HincrbyFloat 改 SAdd；(3) 快更 hot_fast_update 重写：FreezeHotDirtyScript 原子 RENAME 活跃桶→proc桶(双缓冲防边读边写)→SSCAN分批→BatchGetRecommendByIDs拿published_at+过滤删/私有(ZREM)→count-rpc BatchGetCount拿总量→算全分ZADD覆盖→ZREMRANGEBYRANK裁剪TopN→RebuildHotSnapshotScript切快照→DEL proc桶；(4) 冷更 calcScore 改 AdditiveTime 同口径，清理扩展为 dirty+proc+旧inc 桶。读路径(直查DB)、proto RecommendFeed、front /recommend 端点不变。./init.sh 编译/vet/test 全绿，新增 pkg/hotrank/additive_time_test.go。"
     },
     {
       "id": "feat-010",

@@ -275,6 +275,29 @@ user, err := repo.GetByID(ctx, id)
 
 - 不写 TODO 后就消失；写了 TODO 就在 `feature_list.json` 中登记
 
+**注释默认不带任何标点符号**：用空格分隔短语，运算符写成中文词。
+
+- 去掉散文标点：`，。、：；（）「」§·` 以及 `= + / *` 这类符号
+- 保留代码字面量：redis key（如 `feed:hot:dirty`）函数名 `log10` `TopN` `ZADD` 这类 token 照写
+- 运算符用中文词代替：等于 加 减 乘 除以
+
+```go
+// ✅ 算分 log10 加权互动 加 发布秒 除以 S
+// ✅ ZADD 覆盖非 ZINCRBY 分值是按总量重算的时点值 自愈漂移
+
+// ❌ 算分：log10(加权互动) + 发布秒/S（抗刷量、自愈）
+```
+
+**日志通俗易懂且精简**：一句话说清是什么操作出了什么问题，不堆术语不带长串符号。
+
+```go
+// ✅
+l.Errorf("热榜快照切换失败 snapshotID=%s err=%v", id, err)
+
+// ❌
+l.Errorf("RebuildHotSnapshotScript EvalCtx 执行异常, 详见: %+v", err)
+```
+
 ### 其他
 
 - 单文件不超过 **400 行**；超出说明职责不单一，考虑拆分

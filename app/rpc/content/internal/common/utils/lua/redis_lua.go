@@ -17,6 +17,11 @@ var RebuildHotFeedZSetScript string
 //go:embed merge_hot_inc.lua
 var MergeHotIncScript string
 
+// FreezeHotDirtyScript 热榜脏集合冻结Lua脚本（活跃桶原子搬到处理中桶）
+//
+//go:embed freeze_hot_dirty.lua
+var FreezeHotDirtyScript string
+
 // RebuildHotSnapshotScript 热榜快照重建Lua脚本
 //
 //go:embed rebuild_hot_snapshot.lua

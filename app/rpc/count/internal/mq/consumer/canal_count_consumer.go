@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -88,7 +87,7 @@ func (c *CanalCountConsumer) Consume(ctx context.Context, key, val string) error
 
 	changedKeys := make(map[string]struct{})
 	changedUserIDs := make(map[int64]struct{})
-	hotIncrements := make(map[int64]int64)
+	dirtyContentIDs := make(map[int64]struct{})
 	err := query.Q.Transaction(func(tx *query.Query) error {
 		for i, row := range msg.Data {
 			if row == nil {
@@ -159,11 +158,10 @@ func (c *CanalCountConsumer) Consume(ctx context.Context, key, val string) error
 				if u.TargetType == count.TargetType_USER && u.TargetID > 0 {
 					changedUserIDs[u.TargetID] = struct{}{}
 				}
-				// 热度增量不区分增减方向：点赞/取消点赞、收藏/取消收藏、评论相关动作都视作活跃行为。
-				if u.TargetType == count.TargetType_CONTENT {
-					if scoreDelta := heatScoreDeltaByBiz(u.BizType, u.Delta); scoreDelta > 0 {
-						hotIncrements[u.TargetID] += scoreDelta
-					}
+				// 内容互动 点赞取消 收藏取消 评论相关 只登记谁脏了
+				// 算分由 content 快更任务回查计数总量批量完成 见 HOT_FEED_DESIGN 第0节和第4节
+				if u.TargetType == count.TargetType_CONTENT && u.TargetID > 0 {
+					dirtyContentIDs[u.TargetID] = struct{}{}
 				}
 			}
 		}
@@ -187,7 +185,7 @@ func (c *CanalCountConsumer) Consume(ctx context.Context, key, val string) error
 		c.deltaOperator.InvalidateCountCache(count.BizType(bizType), count.TargetType(targetType), targetID)
 	}
 	c.invalidateUserProfileCaches(changedUserIDs)
-	if err = c.writeHotIncrement(ctx, hotIncrements); err != nil {
+	if err = c.markHotDirty(ctx, dirtyContentIDs); err != nil {
 		return err
 	}
 
@@ -302,23 +300,6 @@ func canalTsToTime(ts int64) time.Time {
 	return time.Unix(ts, 0)
 }
 
-func heatScoreDeltaByBiz(bizType count.BizType, delta int64) int64 {
-	if delta == 0 {
-		return 0
-	}
-	absDelta := int64(math.Abs(float64(delta)))
-	switch bizType {
-	case count.BizType_LIKE:
-		return absDelta * 1
-	case count.BizType_COMMENT:
-		return absDelta * 3
-	case count.BizType_FAVORITE:
-		return absDelta * 4
-	default:
-		return 0
-	}
-}
-
 func (c *CanalCountConsumer) invalidateUserProfileCaches(userIDs map[int64]struct{}) {
 	if len(userIDs) == 0 {
 		return
@@ -346,23 +327,31 @@ func (c *CanalCountConsumer) invalidateUserProfileCaches(userIDs map[int64]struc
 	}
 }
 
-func hotIncShard(contentID int64) int {
+func hotDirtyShard(contentID int64) int {
 	if contentID <= 0 {
 		return 0
 	}
 	return int(contentID % int64(rediskey.RedisFeedHotIncDefaultShards))
 }
 
-func (c *CanalCountConsumer) writeHotIncrement(ctx context.Context, increments map[int64]int64) error {
-	if len(increments) == 0 {
+// markHotDirty 把发生互动的内容登记进热榜脏集合 Set 去重 按取模分片
+// 只记谁脏了 不算分 算分由 content 快更任务回查计数总量批量完成
+func (c *CanalCountConsumer) markHotDirty(ctx context.Context, contentIDs map[int64]struct{}) error {
+	if len(contentIDs) == 0 {
 		return nil
 	}
-	for contentID, delta := range increments {
-		if contentID <= 0 || delta <= 0 {
+	// 按分片聚合 每片一次 SADD 批量写入 减少往返
+	byShard := make(map[int][]any, rediskey.RedisFeedHotIncDefaultShards)
+	for contentID := range contentIDs {
+		if contentID <= 0 {
 			continue
 		}
-		incKey := rediskey.BuildHotFeedIncKey(hotIncShard(contentID))
-		if _, err := c.svcContext.Redis.HincrbyCtx(ctx, incKey, strconv.FormatInt(contentID, 10), int(delta)); err != nil {
+		shard := hotDirtyShard(contentID)
+		byShard[shard] = append(byShard[shard], strconv.FormatInt(contentID, 10))
+	}
+	for shard, members := range byShard {
+		dirtyKey := rediskey.BuildHotFeedDirtyKey(shard)
+		if _, err := c.svcContext.Redis.SaddCtx(ctx, dirtyKey, members...); err != nil {
 			return err
 		}
 	}

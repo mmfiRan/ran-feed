@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"strconv"
 	"time"
 
@@ -25,8 +24,10 @@ const HandlerName = "hot.cold.update"
 const (
 	// 冷更新窗口：只重算最近 windowDays 的内容，避免全库扫描
 	defaultWindowDays = 15
-	// 重建后保留 TopN 作为对外可查询快照
-	defaultTopN      = 5000
+	// 主榜候选池大小 裁剪线 远大于对外快照 留候补垫扛删除侵蚀 与 fast_update 统一
+	defaultMainN = 5000
+	// 重建后取前 TopN 作为对外可查询快照
+	defaultTopN      = 2000
 	defaultLockTTL   = 3600 // 1 小时
 	defaultBatchSize = 500
 	defaultPageSize  = 1000
@@ -41,6 +42,7 @@ const (
 
 type Params struct {
 	WindowDays    int              `json:"windowDays"`
+	MainN         int              `json:"mainN"`
 	TopN          int              `json:"topN"`
 	LockTTL       int              `json:"lockTtl"`
 	HalfLifeHours float64          `json:"halfLifeHours"`
@@ -73,6 +75,13 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 	if p.TopN <= 0 {
 		p.TopN = defaultTopN
 	}
+	if p.MainN <= 0 {
+		p.MainN = defaultMainN
+	}
+	// 主榜候选池必须 >= 对外快照 否则没有候补垫 退化成主榜=快照
+	if p.MainN < p.TopN {
+		p.MainN = p.TopN
+	}
 	if p.LockTTL <= 0 {
 		p.LockTTL = defaultLockTTL
 	}
@@ -89,7 +98,7 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 		p.HalfLifeHours = defaultHalfLife
 	}
 
-	calculator := hotrank.ExpDecay{
+	calculator := hotrank.AdditiveTime{
 		Weights:       mergeWeights(p.Weights),
 		HalfLifeHours: p.HalfLifeHours,
 	}
@@ -119,29 +128,36 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 		return "", err
 	}
 
-	// 重建完成后生成最新快照
-	pairs, err := j.svc.Redis.ZrevrangeWithScoresByFloatCtx(ctx, rediskey.RedisFeedHotGlobalKey, 0, int64(p.TopN-1))
+	// 重建完成后裁剪主榜到 MainN 候选池 取前 TopN 生成最新快照
+	card, err := j.svc.Redis.ZcardCtx(ctx, rediskey.RedisFeedHotGlobalKey)
 	if err != nil {
 		return "", err
 	}
 
-	if len(pairs) > 0 {
+	if card > 0 {
 		snapshotID := now.Format(snapshotIDLayout)
 		snapshotKey := rediskey.BuildHotFeedSnapshotKey(snapshotID)
 		if _, err := j.svc.Redis.EvalCtx(ctx, luautils.RebuildHotSnapshotScript, []string{
 			rediskey.RedisFeedHotGlobalKey,
 			snapshotKey,
 			rediskey.RedisFeedHotGlobalLatestKey,
-		}, strconv.FormatInt(int64(p.TopN), 10), snapshotID, strconv.Itoa(defaultSnapshotTTL)); err != nil {
+		}, strconv.Itoa(p.MainN), strconv.Itoa(p.TopN), snapshotID, strconv.Itoa(defaultSnapshotTTL)); err != nil {
 			return "", err
 		}
 	}
 
-	// 清理所有增量桶，避免冷更新后把旧增量再次合并
+	// 清理所有脏集合桶 活跃和冻结 与旧版增量桶 避免冷更新后把旧脏数据再次合并
+	// 冷更新是全量重算覆盖主榜的对账 完成后脏集合应清零 由快更在干净基础上重新积累
 	for shard := 0; shard < p.Shards; shard++ {
-		incKey := rediskey.BuildHotFeedIncKey(shard)
-		if _, err := j.svc.Redis.DelCtx(ctx, incKey); err != nil {
-			return "", err
+		keys := []string{
+			rediskey.BuildHotFeedDirtyKey(shard),
+			rediskey.BuildHotFeedDirtyProcKey(shard),
+			rediskey.BuildHotFeedIncKey(shard), // 旧记账格式 过渡期一并清理
+		}
+		for _, k := range keys {
+			if _, err := j.svc.Redis.DelCtx(ctx, k); err != nil {
+				return "", err
+			}
 		}
 	}
 
@@ -176,7 +192,7 @@ func mergeWeights(w *hotrank.Weights) hotrank.Weights {
 	return base
 }
 
-func (j *HotColdUpdateJob) rebuildFromDB(ctx context.Context, calculator hotrank.ExpDecay, startTime, now time.Time, p Params) error {
+func (j *HotColdUpdateJob) rebuildFromDB(ctx context.Context, calculator hotrank.AdditiveTime, startTime, now time.Time, p Params) error {
 	// 基于内容ID倒序游标分页，全量扫描窗口内“已发布且公开”的内容
 	cursorID := int64(0)
 	for {
@@ -228,37 +244,18 @@ func (j *HotColdUpdateJob) rebuildFromDB(ctx context.Context, calculator hotrank
 	}
 }
 
-func calcScore(calculator hotrank.Calculator, row *model.RanFeedContent, now time.Time) float64 {
+func calcScore(calculator hotrank.AdditiveTime, row *model.RanFeedContent, now time.Time) float64 {
 	publishedAt := now
 	if row.PublishedAt != nil {
 		publishedAt = row.PublishedAt.UTC()
 	}
 
-	// 这里保留 Calculator 接口入参，便于未来替换公式实现
-	exp, ok := calculator.(hotrank.ExpDecay)
-	if !ok {
-		return 0
-	}
+	// 冷更新读 ran_feed_content 冗余计数 已是聚合值 非 COUNT 明细 符合设计 3.2.4
+	// 口径与 fast_update 回查 count-rpc 的统一性见 R-04 信源收敛后两者应一致
+	weighted := calculator.Weighted(row.LikeCount, row.CommentCount, row.FavoriteCount)
 
-	// 与 fast_update 完全一致的基础公式，保证快慢任务口径统一
-	weighted := float64(row.LikeCount)*exp.Weights.Like +
-		float64(row.CommentCount)*exp.Weights.Comment +
-		float64(row.FavoriteCount)*exp.Weights.Favorite
-	if weighted <= 0 {
-		return 0
-	}
-
-	ageHours := now.Sub(publishedAt).Hours()
-	if ageHours < 0 {
-		ageHours = 0
-	}
-	decay := 1.0
-	if exp.HalfLifeHours > 0 {
-		decay = math.Exp(-math.Ln2 * ageHours / exp.HalfLifeHours)
-	}
-
-	score := math.Log1p(weighted) * decay
-	return math.Round(score*1000) / 1000
+	// 与 fast_update 完全一致的加法时间项公式 保证快慢任务口径统一
+	return calculator.Score(weighted, publishedAt)
 }
 
 func (j *HotColdUpdateJob) batchUpdateHotScore(ctx context.Context, ids []int64, scores []float64, batchSize int) error {
