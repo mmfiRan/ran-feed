@@ -36,8 +36,7 @@ const (
 	// 回查计数和落库批大小
 	defaultBatchSize = 500
 
-	snapshotIDLayout    = "20060102150405"
-	defaultBucketLayout = "200601021504"
+	snapshotIDLayout = "20060102150405"
 )
 
 type Params struct {
@@ -72,9 +71,17 @@ func (j *HotFastUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 		HalfLifeHours: p.HalfLifeHours,
 	}
 
-	// 分钟桶加分布式锁防重 同一分钟只允许一个实例合并
-	bucket := time.Now().UTC().Format(defaultBucketLayout)
-	lockKey := rediskey.BuildHotFeedFastLockKey(bucket)
+	// 冷更优先 见到冷更预约标志主动让路 不去抢写锁 避免快更连续抢锁把冷更饿死
+	// 让掉的这轮互动原样留在活跃脏桶 冷更跑完或下一轮快更照常处理 不丢
+	pending, err := j.svc.Redis.ExistsCtx(ctx, rediskey.RedisFeedHotColdPendingKey)
+	if err != nil {
+		return "", err
+	}
+	if pending {
+		return "yield", nil
+	}
+
+	lockKey := rediskey.BuildHotFeedWriteLockKey()
 	redisLock := redis.NewRedisLock(j.svc.Redis, lockKey)
 	redisLock.SetExpire(p.LockTTL)
 	locked, err := redisLock.AcquireCtx(ctx)
@@ -87,7 +94,7 @@ func (j *HotFastUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 	defer redisLock.ReleaseCtx(context.Background())
 
 	// 逐分片冻结脏集合并收集脏 ID 双缓冲 处理期间新互动堆进活跃桶
-	dirtyIDs, err := j.collectDirtyIDs(ctx, p.Shards, p.TopN)
+	dirtyIDs, err := j.collectDirtyIDs(ctx, p.Shards)
 	if err != nil {
 		return "", err
 	}
@@ -100,11 +107,11 @@ func (j *HotFastUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 	}
 
 	// 裁剪主榜到 MainN 候选池 取前 TopN 建快照 切 latest 指针
-	if err := j.refreshSnapshot(ctx, p.MainN, p.TopN); err != nil {
+	if err = j.refreshSnapshot(ctx, p.MainN, p.TopN); err != nil {
 		return "", err
 	}
 	// 清理已处理的冻结桶
-	if err := j.cleanupProcShards(ctx, p.Shards); err != nil {
+	if err = j.cleanupProcShards(ctx, p.Shards); err != nil {
 		return "", err
 	}
 

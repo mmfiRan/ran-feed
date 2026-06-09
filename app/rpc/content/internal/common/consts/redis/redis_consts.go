@@ -5,6 +5,9 @@ import "strconv"
 const (
 	// RedisFeedHotGlobalKey 全站热榜索引key feed:hot:global
 	RedisFeedHotGlobalKey = "feed:hot:global"
+	// RedisFeedHotGlobalRebuildKey 冷更重建影子 key feed:hot:global:rebuilding
+	// 冷更先写满影子再 RENAME 覆盖主榜 重建期间主榜不空 消除对外读空窗及空结果白删
+	RedisFeedHotGlobalRebuildKey = "feed:hot:global:rebuilding"
 	// RedisFeedHotGlobalLatestKey 最新热榜快照key feed:hot:global:latest
 	RedisFeedHotGlobalLatestKey = "feed:hot:global:latest"
 	// RedisFeedHotGlobalSnapshotPrefix 热榜快照前缀 feed:hot:global:snap
@@ -21,9 +24,14 @@ const (
 	// RedisFeedHotDirtyProcPrefix 热榜脏集合冻结处理前缀 feed:hot:dirty:proc 加 shard
 	// 快更开始时把活跃桶 RENAME 到冻结桶 处理期间新互动安全堆进活跃桶 根治边读边写丢事件
 	RedisFeedHotDirtyProcPrefix = "feed:hot:dirty:proc"
-	// RedisFeedHotFastLockPrefix 快速更新锁前缀 feed:hot:global:lock:fast
-	RedisFeedHotFastLockPrefix = "feed:hot:global:lock:fast"
-	// RedisFeedHotColdLockPrefix 冷更新锁前缀 feed:hot:global:lock:cold
+	// RedisFeedHotWriteLockPrefix 主榜写互斥锁 快更冷更共享 固定 key
+	// 任一任务持锁期间另一任务拿不到锁直接退出 防止并发写同一主榜及并发删脏桶丢互动
+	RedisFeedHotWriteLockPrefix = "feed:hot:global:lock:write"
+	// RedisFeedHotColdPendingKey 冷更预约标志 固定 key 带 TTL
+	// 冷更开工前置位 快更见到则主动让路不抢写锁 保证冷更每日必跑不被快更饿死
+	// 带 TTL 防冷更异常退出未清标志导致快更被永久挡住
+	RedisFeedHotColdPendingKey = "feed:hot:global:cold:pending"
+	// RedisFeedHotColdLockPrefix 冷更新每日幂等锁前缀 feed:hot:global:lock:cold 加日期
 	RedisFeedHotColdLockPrefix = "feed:hot:global:lock:cold"
 	// RedisFeedFollowInboxPrefix 关注收件箱前缀 feed:follow:inbox
 	RedisFeedFollowInboxPrefix = "feed:follow:inbox"
@@ -67,8 +75,10 @@ func BuildHotFeedDirtyProcKey(shard int) string {
 	return GetRedisPrefixKey(RedisFeedHotDirtyProcPrefix, strconv.Itoa(shard))
 }
 
-func BuildHotFeedFastLockKey(bucket string) string {
-	return GetRedisPrefixKey(RedisFeedHotFastLockPrefix, bucket)
+// BuildHotFeedWriteLockKey 主榜写互斥锁 固定 key 快更冷更共享
+// 整轮全程持有 防止两类任务并发写主榜及并发删脏桶丢互动
+func BuildHotFeedWriteLockKey() string {
+	return RedisFeedHotWriteLockPrefix
 }
 
 func BuildHotFeedColdLockKey(date string) string {

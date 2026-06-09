@@ -14,7 +14,7 @@ import (
 
 // collectDirtyIDs 逐分片冻结脏集合并 SSCAN 收集脏 contentID
 // 冻结脚本把活跃桶原子搬到处理中桶 处理期间新互动安全堆进活跃桶 双缓冲
-func (j *HotFastUpdateJob) collectDirtyIDs(ctx context.Context, shards, topN int) ([]int64, error) {
+func (j *HotFastUpdateJob) collectDirtyIDs(ctx context.Context, shards int) ([]int64, error) {
 	seen := make(map[int64]struct{})
 	ids := make([]int64, 0)
 	for shard := 0; shard < shards; shard++ {
