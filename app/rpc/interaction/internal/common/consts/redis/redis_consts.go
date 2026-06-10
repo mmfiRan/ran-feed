@@ -9,15 +9,11 @@ const (
 	RedisInteractionLikeCountPrefix = "like:count"
 
 	// RedisLikeUserHashCapacity 用户维度点赞热数据容量上限（超过则进入冷数据，回源DB）
-	RedisLikeUserHashCapacity = 10000
+	RedisLikeUserHashCapacity = 5000
 	// RedisLikeUserHashMetaFieldMinCid 用户维度点赞HASH元信息：热区最小content_id（小于该值视为冷数据）
 	RedisLikeUserHashMetaFieldMinCid = "_mincid"
-	// RedisLikeUserHashMetaFieldExpireAt 用户维度点赞HASH元信息：逻辑过期时间戳（本期保留字段，不做过期重建）
-	RedisLikeUserHashMetaFieldExpireAt = "_expire_at"
-	// RedisLikeUserHashMetaFieldSize 用户维度点赞HASH元信息：热区当前容量（可选，用于快速判断是否达到上限）
-	RedisLikeUserHashMetaFieldSize = "_size"
-	// RedisLikeUserHashMetaFieldVersion 用户维度点赞HASH元信息：版本号（预留，便于后续结构演进）
-	RedisLikeUserHashMetaFieldVersion = "_ver"
+	// RedisLikeUserHashMetaFieldFull 用户维度点赞HASH元信息：完整性标记（"1"=完整热区，可信；缺失=残缺，需回源/交下游）
+	RedisLikeUserHashMetaFieldFull = "_full"
 	// RedisLikeUserHashMetaPrefix 用户维度点赞HASH元信息field前缀（避免与content_id冲突）
 	RedisLikeUserHashMetaPrefix = "_"
 	// RedisLikeExpireSeconds 点赞缓存过期时间（秒）；0 表示不过期

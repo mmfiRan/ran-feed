@@ -42,9 +42,10 @@ func (l *UnlikeLogic) Unlike(req *types.UnlikeReq) (resp *types.UnlikeRes, err e
 	}
 
 	_, err = l.svcCtx.LikeRpc.Unlike(l.ctx, &interaction.UnlikeReq{
-		UserId:    userID,
-		ContentId: *req.ContentId,
-		Scene:     scene,
+		UserId:        userID,
+		ContentId:     *req.ContentId,
+		ContentUserId: *req.ContentUserId,
+		Scene:         scene,
 	})
 	if err != nil {
 		return nil, err

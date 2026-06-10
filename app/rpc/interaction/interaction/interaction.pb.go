@@ -293,7 +293,8 @@ type UnlikeReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	ContentId     int64                  `protobuf:"varint,2,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
-	Scene         Scene                  `protobuf:"varint,3,opt,name=scene,proto3,enum=interaction.Scene" json:"scene,omitempty"`
+	ContentUserId int64                  `protobuf:"varint,3,opt,name=content_user_id,json=contentUserId,proto3" json:"content_user_id,omitempty"`
+	Scene         Scene                  `protobuf:"varint,4,opt,name=scene,proto3,enum=interaction.Scene" json:"scene,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -338,6 +339,13 @@ func (x *UnlikeReq) GetUserId() int64 {
 func (x *UnlikeReq) GetContentId() int64 {
 	if x != nil {
 		return x.ContentId
+	}
+	return 0
+}
+
+func (x *UnlikeReq) GetContentUserId() int64 {
+	if x != nil {
+		return x.ContentUserId
 	}
 	return 0
 }
@@ -2723,12 +2731,13 @@ const file_app_rpc_interaction_proto_interaction_proto_rawDesc = "" +
 	"content_id\x18\x02 \x01(\x03R\tcontentId\x12&\n" +
 	"\x0fcontent_user_id\x18\x03 \x01(\x03R\rcontentUserId\x12(\n" +
 	"\x05scene\x18\x04 \x01(\x0e2\x12.interaction.SceneR\x05scene\"\t\n" +
-	"\aLikeRes\"m\n" +
+	"\aLikeRes\"\x95\x01\n" +
 	"\tUnlikeReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x02 \x01(\x03R\tcontentId\x12(\n" +
-	"\x05scene\x18\x03 \x01(\x0e2\x12.interaction.SceneR\x05scene\"\v\n" +
+	"content_id\x18\x02 \x01(\x03R\tcontentId\x12&\n" +
+	"\x0fcontent_user_id\x18\x03 \x01(\x03R\rcontentUserId\x12(\n" +
+	"\x05scene\x18\x04 \x01(\x0e2\x12.interaction.SceneR\x05scene\"\v\n" +
 	"\tUnlikeRes\"t\n" +
 	"\x10QueryLikeInfoReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1d\n" +

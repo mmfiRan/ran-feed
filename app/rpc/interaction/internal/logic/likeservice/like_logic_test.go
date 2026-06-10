@@ -108,3 +108,37 @@ func TestLike_SameUserDifferentContent(t *testing.T) {
 	assert.Equal(t, "1", field401)
 	assert.Equal(t, "1", field402)
 }
+
+// TestProcessLike_UntrustedWhenNotFull 残缺缓存（无 _full 标记）：
+// 无论首次还是重复点赞，trusted 恒为 false，调用方应一律发事件交下游兜底
+func TestProcessLike_UntrustedWhenNotFull(t *testing.T) {
+	logic, _ := newTestLikeLogic(t)
+
+	changed, trusted, err := logic.processLike(1, 100)
+	require.NoError(t, err)
+	assert.True(t, changed, "首次点赞 changed=true")
+	assert.False(t, trusted, "无 _full 标记，缓存不可信")
+
+	changed, trusted, err = logic.processLike(1, 100)
+	require.NoError(t, err)
+	assert.False(t, changed, "重复点赞 changed=false")
+	assert.False(t, trusted, "无 _full 标记，仍不可信")
+}
+
+// TestProcessLike_TrustedWhenFull 完整缓存（_full=1）：
+// 重复点赞应被识别为未变更且可信，从而可省去事件投递
+func TestProcessLike_TrustedWhenFull(t *testing.T) {
+	logic, mr := newTestLikeLogic(t)
+	userLikeKey := "like:user:7"
+	mr.HSet(userLikeKey, "_full", "1")
+
+	changed, trusted, err := logic.processLike(7, 500)
+	require.NoError(t, err)
+	assert.True(t, changed, "热区内首次点赞 changed=true")
+	assert.True(t, trusted, "_full=1 且热区内，可信")
+
+	changed, trusted, err = logic.processLike(7, 500)
+	require.NoError(t, err)
+	assert.False(t, changed, "重复点赞 changed=false")
+	assert.True(t, trusted, "可信 → 可省投递")
+}

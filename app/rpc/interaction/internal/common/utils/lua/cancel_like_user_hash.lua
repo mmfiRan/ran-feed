@@ -1,42 +1,56 @@
 ---@diagnostic disable: undefined-global
--- 用户维度取消点赞 HASH 脚本（TTL，原子性）
--- KEYS[1]=userLikeKey (like:user:{user_id})
--- ARGV[1]=content_id
--- ARGV[2]=expire_seconds
--- 返回: {changed(0/1), existed(0/1)}
+-- 用户维度取消点赞 HASH 脚本（mincid + TTL，单次原子）
+-- KEYS[1] = userLikeKey (like:user:{user_id})
+-- ARGV[1] = content_id
+-- ARGV[2] = expire_seconds TTL（0=不过期）
+--
+-- 返回 {changed, trusted}
+--   changed: 1=本次确实删除了点赞态；0=缓存中本就没有该 cid
+--   trusted: 1=缓存完整(_full=1)且该 cid 落在热区，changed 可信；
+--            0=缓存残缺或冷数据，changed 不可信，调用方应交由下游兜底
 
-local expireTime = tonumber(ARGV[2]) or 0
+local key = KEYS[1]
+local cid = tonumber(ARGV[1])
+local expire = tonumber(ARGV[2]) or 0
 
-local removed = redis.call('HDEL', KEYS[1], ARGV[1])
-if expireTime > 0 then
-    redis.call('EXPIRE', KEYS[1], expireTime)
-end
-
-if removed == 0 then
+if not cid then
     return {0, 0}
 end
 
--- 若删除的是当前 mincid，则需要重算新的 mincid（扫描所有业务 field）
-local minCidStr = redis.call('HGET', KEYS[1], '_mincid')
-if minCidStr ~= false and minCidStr == ARGV[1] then
-    local fields = redis.call('HKEYS', KEYS[1])
-    local newMin = nil
+local META = {_mincid = true, _full = true}
+
+local function recalcMinCid()
+    local fields = redis.call('HKEYS', key)
+    local min = nil
     for i = 1, #fields do
         local f = fields[i]
-        if string.sub(f, 1, 1) ~= '_' then
+        if not META[f] then
             local n = tonumber(f)
-            if n ~= nil then
-                if newMin == nil or n < newMin then
-                    newMin = n
-                end
-            end
+            if n and (not min or n < min) then min = n end
         end
     end
+    return min
+end
+
+local full = redis.call('HGET', key, '_full') == '1'
+local minCid = tonumber(redis.call('HGET', key, '_mincid'))
+local trusted = full and (minCid == nil or cid >= minCid)
+
+local removed = redis.call('HDEL', key, ARGV[1])
+if expire > 0 then redis.call('EXPIRE', key, expire) end
+
+if removed == 0 then
+    return {0, trusted and 1 or 0}
+end
+
+-- 删除的恰好是热区最小 cid，重算 mincid
+if minCid ~= nil and cid == minCid then
+    local newMin = recalcMinCid()
     if newMin ~= nil then
-        redis.call('HSET', KEYS[1], '_mincid', tostring(newMin))
+        redis.call('HSET', key, '_mincid', tostring(newMin))
     else
-        redis.call('HDEL', KEYS[1], '_mincid')
+        redis.call('HDEL', key, '_mincid')
     end
 end
 
-return {1, 1}
+return {1, trusted and 1 or 0}

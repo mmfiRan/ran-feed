@@ -1,98 +1,79 @@
 ---@diagnostic disable: undefined-global
--- 用户维度点赞 HASH 写入脚本（容量+mincid+TTL，原子性）
--- KEYS[1]=userLikeKey (like:user:{user_id})
--- ARGV[1]=content_id
--- ARGV[2]=capacity (e.g. 10000)
--- ARGV[3]=expire_seconds
--- 返回: {changed(0/1), cached(0/1)}
---   changed: 1=本次确实从未点赞->已点赞；0=重复点赞
---   cached: 1=写入了缓存；0=未写入缓存（容量满且 cid < mincid）
+-- 用户维度点赞 HASH 写入脚本（容量 + mincid + TTL，单次原子）
+-- KEYS[1] = userLikeKey (like:user:{user_id})
+-- ARGV[1] = content_id
+-- ARGV[2] = capacity      热区容量上限
+-- ARGV[3] = expire_seconds TTL（0=不过期）
+--
+-- 返回 {changed, trusted}
+--   changed: 1=本次由"未点赞"变为"已点赞"；0=已是点赞态（重复点赞）
+--   trusted: 1=缓存完整(_full=1)且该 cid 落在热区，changed 可信；
+--            0=缓存残缺或冷数据，changed 不可信，调用方应交由下游兜底
+--
+-- 注意：本脚本只维护"已存在的完整热区"或"残缺态"，不负责从 DB 全量重建
+-- 重建（写入业务字段并置 _full=1）由读路径完成
 
+local key = KEYS[1]
 local cid = tonumber(ARGV[1])
-local capacity = tonumber(ARGV[2]) or 10000
-local expireTime = tonumber(ARGV[3]) or 0
+local capacity = tonumber(ARGV[2]) or 0
+local expire = tonumber(ARGV[3]) or 0
 
 if not cid then
     return {0, 0}
 end
 
--- 读取元信息
-local minCidStr = redis.call('HGET', KEYS[1], '_mincid')
-local minCid = tonumber(minCidStr)
+local META = {_mincid = true, _full = true}
 
--- 用 HLEN 做容量判定
-local hlen = redis.call('HLEN', KEYS[1])
-local metaCount = 0
-if redis.call('HEXISTS', KEYS[1], '_mincid') == 1 then metaCount = metaCount + 1 end
-if redis.call('HEXISTS', KEYS[1], '_expire_at') == 1 then metaCount = metaCount + 1 end
-if redis.call('HEXISTS', KEYS[1], '_ver') == 1 then metaCount = metaCount + 1 end
-
-local realSize = hlen - metaCount
-if realSize < 0 then realSize = 0 end
-
--- 当容量已满且当前 cid 比 mincid 还小，说明是冷数据，不入缓存
-if minCid ~= nil and realSize >= capacity and cid < minCid then
-    if expireTime > 0 then
-        redis.call('EXPIRE', KEYS[1], expireTime)
-    end
-    return {1, 0}
-end
-
--- 正常写入缓存（HSETNX）
-local added = redis.call('HSETNX', KEYS[1], ARGV[1], '1')
-if expireTime > 0 then
-    redis.call('EXPIRE', KEYS[1], expireTime)
-end
-
-if added == 0 then
-    return {0, 1}
-end
-
--- added==1，首次点赞
-
--- 若容量已满，且本次写入的 cid 不小于 mincid，则淘汰当前最小 cid
--- 注意：这里的容量基于写入前 realSize 判定，写入后会 +1，因此用 "realSize >= capacity" 判断是否需要淘汰
-if minCid ~= nil and realSize >= capacity and cid >= minCid then
-    redis.call('HDEL', KEYS[1], tostring(minCid))
-
-    -- 重新计算新的 mincid：遍历所有 field，挑出最小的数字 field（忽略 '_' 前缀元字段）
-    local fields = redis.call('HKEYS', KEYS[1])
-    local newMin = nil
+-- 重算热区最小 cid（仅淘汰时调用，遍历业务字段）
+local function recalcMinCid()
+    local fields = redis.call('HKEYS', key)
+    local min = nil
     for i = 1, #fields do
         local f = fields[i]
-        if string.sub(f, 1, 1) ~= '_' then
+        if not META[f] then
             local n = tonumber(f)
-            if n ~= nil then
-                if newMin == nil or n < newMin then
-                    newMin = n
-                end
-            end
+            if n and (not min or n < min) then min = n end
         end
     end
-    if newMin ~= nil then
-        redis.call('HSET', KEYS[1], '_mincid', tostring(newMin))
-        minCid = newMin
-    else
-        redis.call('HDEL', KEYS[1], '_mincid')
-        minCid = nil
-    end
+    return min
 end
 
--- 初始化/更新 mincid
-if minCid == nil then
-    redis.call('HSET', KEYS[1], '_mincid', ARGV[1])
-else
-    if cid < minCid then
-        redis.call('HSET', KEYS[1], '_mincid', ARGV[1])
-    end
+local function touchTTL()
+    if expire > 0 then redis.call('EXPIRE', key, expire) end
 end
 
--- 预留字段
-if redis.call('HEXISTS', KEYS[1], '_expire_at') == 0 then
-    redis.call('HSET', KEYS[1], '_expire_at', '0')
-end
-if redis.call('HEXISTS', KEYS[1], '_ver') == 0 then
-    redis.call('HSET', KEYS[1], '_ver', '1')
+local full = redis.call('HGET', key, '_full') == '1'
+local minCid = tonumber(redis.call('HGET', key, '_mincid'))
+local hotSize = redis.call('HLEN', key)
+if minCid ~= nil then hotSize = hotSize - 1 end
+if full then hotSize = hotSize - 1 end
+if hotSize < 0 then hotSize = 0 end
+
+-- 冷数据：热区已满且 cid 比热区最小值还小 —— 不入缓存，交下游兜底
+if minCid ~= nil and hotSize >= capacity and cid < minCid then
+    touchTTL()
+    return {0, 0}
 end
 
-return {1, 1}
+local added = redis.call('HSETNX', key, ARGV[1], '1')
+touchTTL()
+
+-- trusted 仅在"缓存完整 且 cid 在热区(>= mincid)"时成立
+local trusted = full and (minCid == nil or cid >= minCid)
+
+if added == 0 then
+    return {0, trusted and 1 or 0}
+end
+
+-- 首次写入：维护容量与 mincid
+if minCid ~= nil and hotSize >= capacity and cid >= minCid then
+    -- 热区已满，淘汰当前最小 cid 后重算
+    redis.call('HDEL', key, tostring(minCid))
+    minCid = recalcMinCid()
+end
+
+if minCid == nil or cid < minCid then
+    redis.call('HSET', key, '_mincid', ARGV[1])
+end
+
+return {1, trusted and 1 or 0}

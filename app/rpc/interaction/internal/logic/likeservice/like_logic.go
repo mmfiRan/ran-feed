@@ -32,23 +32,17 @@ func NewLikeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LikeLogic {
 }
 
 func (l *LikeLogic) Like(in *interaction.LikeReq) (*interaction.LikeRes, error) {
-
 	scene := in.Scene.String()
 
-	var changed bool
-
-	// 通过redis处理点赞(用户维度缓存，避免content维度大key)
-	changed, err := l.processLike(in.UserId, in.ContentId)
+	// 用户维度缓存：避免 content 维度大 key，用 _mincid 区分冷热数据
+	// 返回 trusted 表示缓存是否完整可信：可信则按 changed 决定是否发事件（重复点赞可省投递）
+	changed, trusted, err := l.processLike(in.UserId, in.ContentId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("点赞处理失败"))
 	}
 
-	// 状态变化时发送事件。请求 ctx 在 handler 返回后会被 cancel，
-	// Kafka 异步发送必须用独立 bg ctx + timeout，避免事件中途丢失导致计数不一致。
-	if changed {
-		threading.GoSafe(func() {
-			ctx, cancel := context.WithTimeout(context.Background(), likeEventPublishTimeout)
-			defer cancel()
+	if !trusted || changed {
+		l.asyncPublish(func(ctx context.Context) {
 			l.publishLikeEvent(ctx, in.UserId, in.ContentId, in.ContentUserId, scene)
 		})
 	}
@@ -56,32 +50,45 @@ func (l *LikeLogic) Like(in *interaction.LikeReq) (*interaction.LikeRes, error) 
 	return &interaction.LikeRes{}, nil
 }
 
-func (l *LikeLogic) processLike(userID, contentID int64) (changed bool, err error) {
+func (l *LikeLogic) processLike(userID, contentID int64) (changed, trusted bool, err error) {
+	userLikeKey := rediskey.BuildLikeUserKey(strconv.FormatInt(userID, 10))
 
-	contentIdStr := strconv.FormatInt(contentID, 10)
-	userIdStr := strconv.FormatInt(userID, 10)
-	userLikeKey := rediskey.BuildLikeUserKey(userIdStr)
-
-	resultVal, err := l.svcCtx.Redis.EvalCtx(
+	result, err := l.svcCtx.Redis.EvalCtx(
 		l.ctx,
 		luautils.LikeUserHashScript,
 		[]string{userLikeKey},
-		contentIdStr,
+		strconv.FormatInt(contentID, 10),
 		strconv.FormatInt(rediskey.RedisLikeUserHashCapacity, 10),
 		strconv.FormatInt(rediskey.RedisLikeExpireSeconds, 10),
 	)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
-	arr, ok := resultVal.([]interface{})
-	if !ok || len(arr) < 2 {
-		return false, errorx.NewMsg("解析点赞脚本返回值失败")
-	}
-	changedVal, _ := arr[0].(int64)
-	return changedVal == 1, nil
+	return parseChangedTrusted(result)
 }
 
 // publishLikeEvent 发布点赞事件
 func (l *LikeLogic) publishLikeEvent(ctx context.Context, userID, contentID, contentUserID int64, scene string) {
 	l.svcCtx.LikeProducer.SendLikeEvent(ctx, userID, contentID, contentUserID, scene)
+}
+
+// asyncPublish 在独立后台 ctx 中异步投递事件
+func (l *LikeLogic) asyncPublish(publish func(ctx context.Context)) {
+	bgCtx := context.WithoutCancel(l.ctx)
+	threading.GoSafe(func() {
+		ctx, cancel := context.WithTimeout(bgCtx, likeEventPublishTimeout)
+		defer cancel()
+		publish(ctx)
+	})
+}
+
+// parseChangedTrusted 解析点赞脚本返回的 {changed, trusted}
+func parseChangedTrusted(result interface{}) (changed, trusted bool, err error) {
+	arr, ok := result.([]interface{})
+	if !ok || len(arr) < 2 {
+		return false, false, errorx.NewMsg("解析点赞脚本返回值失败")
+	}
+	changedVal, _ := arr[0].(int64)
+	trustedVal, _ := arr[1].(int64)
+	return changedVal == 1, trustedVal == 1, nil
 }
