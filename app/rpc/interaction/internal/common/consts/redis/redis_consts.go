@@ -14,8 +14,6 @@ const (
 	RedisLikeUserHashMetaFieldMinCid = "_mincid"
 	// RedisLikeUserHashMetaFieldFull 用户维度点赞HASH元信息：完整性标记（"1"=完整热区，可信；缺失=残缺，需回源/交下游）
 	RedisLikeUserHashMetaFieldFull = "_full"
-	// RedisLikeUserHashMetaPrefix 用户维度点赞HASH元信息field前缀（避免与content_id冲突）
-	RedisLikeUserHashMetaPrefix = "_"
 	// RedisLikeExpireSeconds 点赞缓存过期时间（秒）；0 表示不过期
 	RedisLikeExpireSeconds                = 5 * 24 * 60 * 60
 	RedisFavoriteRelExpireSeconds         = 24 * 60 * 60

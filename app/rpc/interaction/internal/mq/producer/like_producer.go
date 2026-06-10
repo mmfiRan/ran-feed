@@ -80,11 +80,12 @@ func (p *LikeProducer) sendEvent(ctx context.Context, evt *event.LikeEvent) erro
 		return err
 	}
 
-	if err = p.pusher.Push(ctx, body); err != nil {
+	key := fmt.Sprintf("%d:%d", evt.UserID, evt.ContentID)
+	if err = p.pusher.PushWithKey(ctx, key, body); err != nil {
 		logx.WithContext(ctx).Errorf("发送点赞事件到Kafka失败: %v, event=%+v", err, evt)
 		return err
 	}
 
-	logx.WithContext(ctx).Infof("发送点赞事件成功: eventId=%s, type=%s", evt.EventID, evt.EventType)
+	logx.WithContext(ctx).Infof("发送点赞事件成功: eventId=%s, type=%s, key=%s", evt.EventID, evt.EventType, key)
 	return nil
 }

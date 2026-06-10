@@ -53,18 +53,17 @@ func (c *LikeConsumer) Consume(ctx context.Context, key, val string) error {
 			return nil
 		}
 
-		status := repositories.LikeStatusCancel
-		if likeEvent.EventType == event.EventTypeLike {
-			status = repositories.LikeStatusLike
-		}
 		likeDO := &do.LikeDO{
 			UserID:        likeEvent.UserID,
 			ContentID:     likeEvent.ContentID,
 			ContentUserID: likeEvent.ContentUserID,
-			Status:        status,
 			CreatedBy:     likeEvent.UserID,
 			UpdatedBy:     likeEvent.UserID,
 		}
-		return c.likeRepo.WithTx(tx).Upsert(likeDO)
+		repo := c.likeRepo.WithTx(tx)
+		if likeEvent.EventType == event.EventTypeLike {
+			return repo.ApplyLike(likeDO)
+		}
+		return repo.CancelLike(likeDO)
 	})
 }

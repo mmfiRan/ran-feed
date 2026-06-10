@@ -2,14 +2,15 @@ package likeservicelogic
 
 import (
 	"context"
-	luautils "ran-feed/app/rpc/interaction/internal/common/utils/lua"
 	"strconv"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
 
 	"ran-feed/app/rpc/interaction/interaction"
+	"ran-feed/app/rpc/interaction/internal/common/consts"
 	rediskey "ran-feed/app/rpc/interaction/internal/common/consts/redis"
+	luautils "ran-feed/app/rpc/interaction/internal/common/utils/lua"
 	"ran-feed/app/rpc/interaction/internal/svc"
 	"ran-feed/pkg/errorx"
 )
@@ -73,7 +74,7 @@ func (l *UnlikeLogic) publishCancelLikeEvent(ctx context.Context, userID, conten
 func (l *UnlikeLogic) asyncPublish(publish func(ctx context.Context)) {
 	bgCtx := context.WithoutCancel(l.ctx)
 	threading.GoSafe(func() {
-		ctx, cancel := context.WithTimeout(bgCtx, likeEventPublishTimeout)
+		ctx, cancel := context.WithTimeout(bgCtx, consts.LikeEventPublishTimeout)
 		defer cancel()
 		publish(ctx)
 	})

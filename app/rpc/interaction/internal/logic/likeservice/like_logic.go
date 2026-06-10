@@ -2,20 +2,18 @@ package likeservicelogic
 
 import (
 	"context"
-	rediskey "ran-feed/app/rpc/interaction/internal/common/consts/redis"
-	luautils "ran-feed/app/rpc/interaction/internal/common/utils/lua"
 	"strconv"
-	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
 
 	"ran-feed/app/rpc/interaction/interaction"
+	"ran-feed/app/rpc/interaction/internal/common/consts"
+	rediskey "ran-feed/app/rpc/interaction/internal/common/consts/redis"
+	luautils "ran-feed/app/rpc/interaction/internal/common/utils/lua"
 	"ran-feed/app/rpc/interaction/internal/svc"
 	"ran-feed/pkg/errorx"
 )
-
-const likeEventPublishTimeout = 5 * time.Second
 
 type LikeLogic struct {
 	ctx    context.Context
@@ -76,7 +74,7 @@ func (l *LikeLogic) publishLikeEvent(ctx context.Context, userID, contentID, con
 func (l *LikeLogic) asyncPublish(publish func(ctx context.Context)) {
 	bgCtx := context.WithoutCancel(l.ctx)
 	threading.GoSafe(func() {
-		ctx, cancel := context.WithTimeout(bgCtx, likeEventPublishTimeout)
+		ctx, cancel := context.WithTimeout(bgCtx, consts.LikeEventPublishTimeout)
 		defer cancel()
 		publish(ctx)
 	})

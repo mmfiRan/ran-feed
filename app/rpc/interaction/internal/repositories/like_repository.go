@@ -11,19 +11,17 @@ import (
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/entity/model"
 	"ran-feed/app/rpc/interaction/internal/entity/query"
+	"ran-feed/app/rpc/interaction/internal/enums"
 	"ran-feed/pkg/orm"
 	"ran-feed/pkg/snowflake"
 )
 
-const (
-	LikeStatusLike   int32 = 10 // 点赞
-	LikeStatusCancel int32 = 20 // 取消
-)
-
 type LikeRepository interface {
 	WithTx(tx *query.Query) LikeRepository
-	// Upsert 插入或更新点赞记录
-	Upsert(likeDO *do.LikeDO) error
+	// ApplyLike 写入点赞记录 已存在则置为点赞态
+	ApplyLike(likeDO *do.LikeDO) error
+	// CancelLike 取消点赞 仅当存在且为点赞态时翻转 否则 no-op
+	CancelLike(likeDO *do.LikeDO) error
 	// BatchUpsert 批量插入或更新点赞记录
 	BatchUpsert(likeDOs []*do.LikeDO) error
 	// GetByUserAndContent 根据用户ID和内容ID查询点赞记录
@@ -32,6 +30,8 @@ type LikeRepository interface {
 	IsLiked(userID, contentID int64) (bool, error)
 	// BatchIsLiked 批量判断用户是否已点赞（返回 content_id -> is_liked）
 	BatchIsLiked(userID int64, contentIDs []int64) (map[int64]bool, error)
+	// QueryUserLikedTopN 查询用户最新 N 条有效点赞 按 content_id 降序 用于缓存重建
+	QueryUserLikedTopN(userID int64, limit int) ([]int64, error)
 	// GetLikedUserIDs 获取内容的所有点赞用户ID列表
 	GetLikedUserIDs(contentID int64) ([]int64, error)
 }
@@ -67,23 +67,18 @@ func (r *likeRepositoryImpl) WithTx(tx *query.Query) LikeRepository {
 	}
 }
 
-func (r *likeRepositoryImpl) Upsert(likeDO *do.LikeDO) error {
+// ApplyLike 写入点赞记录 已存在则置为点赞态
+// 重复点赞时 status 值未变 InnoDB 不写 binlog updated_by 也仅在状态翻转时更新
+func (r *likeRepositoryImpl) ApplyLike(likeDO *do.LikeDO) error {
 	q := r.getQuery()
 	db := q.RanFeedLike.WithContext(r.ctx).UnderlyingDB()
 	sql := `
 INSERT INTO ran_feed_like
 	(id, user_id, content_id, content_user_id, status, created_by, updated_by)
-SELECT ?, ?, ?, ?, ?, ?, ?
-FROM dual
-WHERE ? = ?
-   OR EXISTS (
-	   SELECT 1
-	   FROM ran_feed_like
-	   WHERE user_id = ? AND content_id = ?
-   )
+VALUES (?, ?, ?, ?, ?, ?, ?)
 ON DUPLICATE KEY UPDATE
-	status = IF(status <> VALUES(status), VALUES(status), status),
-	updated_by = IF(status <> VALUES(status), VALUES(updated_by), updated_by),
+	status          = VALUES(status),
+	updated_by      = IF(status <> VALUES(status), VALUES(updated_by), updated_by),
 	content_user_id = IF(content_user_id = 0, VALUES(content_user_id), content_user_id)
 `
 	res := db.WithContext(r.ctx).Exec(
@@ -92,18 +87,31 @@ ON DUPLICATE KEY UPDATE
 		likeDO.UserID,
 		likeDO.ContentID,
 		likeDO.ContentUserID,
-		likeDO.Status,
+		enums.LikeStatusLike.Int32(),
 		likeDO.CreatedBy,
 		likeDO.UpdatedBy,
-		likeDO.Status,
-		LikeStatusLike,
+	)
+	return res.Error
+}
+
+// CancelLike 取消点赞 仅当 (user_id, content_id) 已存在且当前为点赞态时翻转
+func (r *likeRepositoryImpl) CancelLike(likeDO *do.LikeDO) error {
+	q := r.getQuery()
+	db := q.RanFeedLike.WithContext(r.ctx).UnderlyingDB()
+	sql := `
+UPDATE ran_feed_like
+SET status = ?, updated_by = ?
+WHERE user_id = ? AND content_id = ? AND status = ?
+`
+	res := db.WithContext(r.ctx).Exec(
+		sql,
+		enums.LikeStatusCancel.Int32(),
+		likeDO.UpdatedBy,
 		likeDO.UserID,
 		likeDO.ContentID,
+		enums.LikeStatusLike.Int32(),
 	)
-	if res.Error != nil {
-		return res.Error
-	}
-	return nil
+	return res.Error
 }
 
 func (r *likeRepositoryImpl) GetByUserAndContent(userID, contentID int64) (*do.LikeDO, error) {
@@ -125,7 +133,7 @@ func (r *likeRepositoryImpl) GetByUserAndContent(userID, contentID int64) (*do.L
 		UserID:        likeModel.UserID,
 		ContentID:     likeModel.ContentID,
 		ContentUserID: likeModel.ContentUserID,
-		Status:        likeModel.Status,
+		Status:        enums.LikeStatus(likeModel.Status),
 		CreatedBy:     likeModel.CreatedBy,
 		UpdatedBy:     likeModel.UpdatedBy,
 	}, nil
@@ -137,7 +145,7 @@ func (r *likeRepositoryImpl) IsLiked(userID, contentID int64) (bool, error) {
 	count, err := q.RanFeedLike.WithContext(r.ctx).
 		Where(q.RanFeedLike.UserID.Eq(userID)).
 		Where(q.RanFeedLike.ContentID.Eq(contentID)).
-		Where(q.RanFeedLike.Status.Eq(LikeStatusLike)).
+		Where(q.RanFeedLike.Status.Eq(enums.LikeStatusLike.Int32())).
 		Count()
 	if err != nil {
 		return false, err
@@ -174,7 +182,7 @@ func (r *likeRepositoryImpl) BatchIsLiked(userID int64, contentIDs []int64) (map
 		Select(q.RanFeedLike.ContentID).
 		Where(q.RanFeedLike.UserID.Eq(userID)).
 		Where(q.RanFeedLike.ContentID.In(unique...)).
-		Where(q.RanFeedLike.Status.Eq(LikeStatusLike)).
+		Where(q.RanFeedLike.Status.Eq(enums.LikeStatusLike.Int32())).
 		Pluck(q.RanFeedLike.ContentID, &likedContentIDs)
 	if err != nil {
 		return nil, err
@@ -200,7 +208,7 @@ func (r *likeRepositoryImpl) BatchUpsert(likeDOs []*do.LikeDO) error {
 			UserID:        likeDO.UserID,
 			ContentID:     likeDO.ContentID,
 			ContentUserID: likeDO.ContentUserID,
-			Status:        likeDO.Status,
+			Status:        likeDO.Status.Int32(),
 			CreatedBy:     likeDO.CreatedBy,
 			UpdatedBy:     likeDO.UpdatedBy,
 		})
@@ -215,6 +223,27 @@ func (r *likeRepositoryImpl) BatchUpsert(likeDOs []*do.LikeDO) error {
 		CreateInBatches(likeModels, len(likeModels))
 }
 
+// QueryUserLikedTopN 查询用户最新 N 条有效点赞 按 content_id 降序
+func (r *likeRepositoryImpl) QueryUserLikedTopN(userID int64, limit int) ([]int64, error) {
+	if userID <= 0 || limit <= 0 {
+		return []int64{}, nil
+	}
+
+	q := r.getQuery()
+	var contentIDs []int64
+	err := q.RanFeedLike.WithContext(r.ctx).
+		Select(q.RanFeedLike.ContentID).
+		Where(q.RanFeedLike.UserID.Eq(userID)).
+		Where(q.RanFeedLike.Status.Eq(enums.LikeStatusLike.Int32())).
+		Order(q.RanFeedLike.ContentID.Desc()).
+		Limit(limit).
+		Pluck(q.RanFeedLike.ContentID, &contentIDs)
+	if err != nil {
+		return nil, err
+	}
+	return contentIDs, nil
+}
+
 // GetLikedUserIDs 获取内容的所有点赞用户ID列表
 func (r *likeRepositoryImpl) GetLikedUserIDs(contentID int64) ([]int64, error) {
 	q := r.getQuery()
@@ -224,7 +253,7 @@ func (r *likeRepositoryImpl) GetLikedUserIDs(contentID int64) ([]int64, error) {
 	err := q.RanFeedLike.WithContext(r.ctx).
 		Select(q.RanFeedLike.UserID).
 		Where(q.RanFeedLike.ContentID.Eq(contentID)).
-		Where(q.RanFeedLike.Status.Eq(LikeStatusLike)).
+		Where(q.RanFeedLike.Status.Eq(enums.LikeStatusLike.Int32())).
 		Pluck(q.RanFeedLike.UserID, &userIDs)
 
 	if err != nil {

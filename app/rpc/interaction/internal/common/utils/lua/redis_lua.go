@@ -12,15 +12,10 @@ var LikeUserHashScript string
 //go:embed cancel_like_user_hash.lua
 var CancelLikeUserHashScript string
 
-// QueryIsLikedUserHashScript 用户维度查询是否点赞HASH脚本
+// RebuildLikeUserHashScript 用户维度点赞HASH原子重建脚本
 //
-//go:embed query_is_liked_user_hash.lua
-var QueryIsLikedUserHashScript string
-
-// QueryIsLikedUserHashBatchScript 用户维度批量查询是否点赞HASH脚本
-//
-//go:embed query_is_liked_user_hash_batch.lua
-var QueryIsLikedUserHashBatchScript string
+//go:embed rebuild_like_user_hash.lua
+var RebuildLikeUserHashScript string
 
 // UpdateCommentCacheScript 评论缓存更新脚本
 //

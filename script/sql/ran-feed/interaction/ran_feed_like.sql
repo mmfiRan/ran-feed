@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS ran_feed_like
         ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     unique index uk_user_content (user_id, content_id),
     index idx_content (content_id),
-    index idx_user (user_id),
+    -- 重建用户点赞 hash 的 topN 查询走该索引 user_id+status 过滤后按 content_id 反向扫描
+    index idx_user_status_cid (user_id, status, content_id),
     index idx_content_user (content_user_id)
 )
     ENGINE = InnoDB
