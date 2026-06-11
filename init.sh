@@ -75,6 +75,6 @@ echo "  1. 阅读 feature_list.json，选取一个 not-started 或 in-progress �
 echo "  2. 只做一个功能/修复，完成后更新 progress.md 和 feature_list.json"
 echo "  3. 修复完成后再次运行 ./init.sh 确认验证通过"
 echo ""
-echo "提示：已知高优先级修复项 → fix-001（JWT）、fix-003（拦截器）、fix-007（评论 nil）
+echo "提示：P0/P1 历史 Bug 已全部修复，剩余待办为新功能 feat-014~018（not-started）"
 echo ""
-echo "规则提醒：每次会话前请完整阅读 CLAUDE.md""
+echo "规则提醒：每次会话前请完整阅读 CLAUDE.md"
