@@ -9,6 +9,7 @@ import (
 	"ran-feed/app/rpc/count/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/threading"
 )
 
 // CountDeltaOperator 封装计数增减与缓存失效的通用逻辑。
@@ -88,11 +89,12 @@ func (o *CountDeltaOperator) InvalidateCountCache(bizType count.BizType, targetT
 			cacheKey, bizType, targetType, targetID, err)
 	}
 
-	go func(cacheKey string, bizType count.BizType, targetType count.TargetType, targetID int64) {
+	// 延迟双删兜住删缓存后到 DB 提交可见前的回填窗口 用 GoSafe 防 panic 逃逸
+	threading.GoSafe(func() {
 		time.Sleep(delayedCacheInvalidateDelay)
 		if _, err := o.svcCtx.Redis.DelCtx(context.Background(), cacheKey); err != nil {
 			o.Errorf("延迟删除计数缓存失败: key=%s, biz_type=%d, target_type=%d, target_id=%d, err=%v",
 				cacheKey, bizType, targetType, targetID, err)
 		}
-	}(cacheKey, bizType, targetType, targetID)
+	})
 }

@@ -4,12 +4,21 @@
   "last_updated": "2026-06-11",
   "_meta_note": "重构起点 从零跟踪功能状态",
   "_field_guide": {
-    "id": "feat-XXX 新功能 / fix-XXX 修复 / sec-XXX 安全 / opt-XXX 优化",
+    "id": "feat-XXX 新功能 / fix-XXX 修复 / sec-XXX 安全 / opt-XXX 优化 / refactor-XXX 重构",
     "name": "简短名称",
     "description": "做什么",
     "dependencies": ["前置条目 id"],
     "status": "not-started | in-progress | done",
     "evidence": "完成证据 验证如何通过"
   },
-  "features": []
+  "features": [
+    {
+      "id": "refactor-001",
+      "name": "count canal 消费者重构与策略重抽象",
+      "description": "Consume 拆成解析/路由/去重/落库/派发五步管道 消息标识与累积器与副作用各自成文件 落库分支收口 applyUpdate；strategy 按判活谓词加目标映射重抽象为 presence 与 reset 两族并拆子包 删除 followCountTableStrategy 等重复；新增服务级 RecordStatus 枚举 复用 pkg/enum.IsDeleted；补单测",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "./init.sh 通过 build 加 vet 加 test 全绿；新增单测覆盖 presence 各表 INSERT/DELETE/UPDATE 翻转 reset 级联清零 去重幂等 ParseInt64 RecordStatus；纯结构重构对外行为不变"
+    }
+  ]
 }
