@@ -19,6 +19,14 @@
       "dependencies": [],
       "status": "done",
       "evidence": "./init.sh 通过 build 加 vet 加 test 全绿；新增单测覆盖 presence 各表 INSERT/DELETE/UPDATE 翻转 reset 级联清零 去重幂等 ParseInt64 RecordStatus；纯结构重构对外行为不变"
+    },
+    {
+      "id": "refactor-002",
+      "name": "收藏链路去 Lua 化",
+      "description": "interaction 侧已完成：删除 favorite:rel 关系缓存与负缓存及 BuildFavoriteRelKey 删 add_user_favorite_if_exists.lua；QueryFavoriteInfo 改直接回源 DB(favoriteRepo.IsFavorited) 去掉关系缓存与分布式锁重建；Favorite/RemoveFavorite 改纯 cache-aside 仅删用户收藏 feed 头部缓存。content 侧待决：新增常量 RedisUserFavoriteFeedCapacity=300 RedisUserFavoriteFeedExpireSeconds=24h 尚未接入 user_favorite_feed_logic 仍走 QueryUserFavoriteZSetScript Lua",
+      "dependencies": [],
+      "status": "in-progress",
+      "evidence": "本会话止血 还原 content query_user_favorite_zset.lua 及 Go 变量令 ./init.sh 通过 build vet test 全绿；content feed 去 Lua 化方向待用户决定后再做"
     }
   ]
 }

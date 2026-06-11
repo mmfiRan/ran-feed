@@ -57,7 +57,3 @@ var QueryUserFavoriteZSetScript string
 //go:embed update_user_publish_zset.lua
 var UpdateUserPublishZSetScript string
 
-// AddUserFavoriteIfExistsScript 用户收藏列表ZSET存在时追加Lua脚本
-//
-//go:embed add_user_favorite_if_exists.lua
-var AddUserFavoriteIfExistsScript string

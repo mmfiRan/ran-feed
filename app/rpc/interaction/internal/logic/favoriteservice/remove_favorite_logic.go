@@ -35,21 +35,10 @@ func (l *RemoveFavoriteLogic) RemoveFavorite(in *interaction.RemoveFavoriteReq) 
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("取消收藏失败"))
 	}
 
-	scene := in.Scene.String()
-	contentIDStr := strconv.FormatInt(in.ContentId, 10)
-	userIDStr := strconv.FormatInt(in.UserId, 10)
-
-	relKey := rediskey.BuildFavoriteRelKey(scene, userIDStr, contentIDStr)
-
-	// 取消收藏时删除关系缓存（计数由 count rpc 提供，不在 interaction 侧维护）
-	if _, delErr := l.svcCtx.Redis.DelCtx(l.ctx, relKey); delErr != nil {
-		l.Errorf("删除收藏缓存失败: %v", delErr)
-	}
-
-	// 取消收藏时移除列表缓存（不存在也不会报错）
-	favKey := rediskey.BuildUserFavoriteFeedKey(userIDStr)
-	if _, uerr := l.svcCtx.Redis.ZremCtx(l.ctx, favKey, contentIDStr); uerr != nil {
-		l.Errorf("更新收藏列表缓存失败: %v, user_id=%d, content_id=%d", uerr, in.UserId, in.ContentId)
+	// 旁路缓存 取消后删除头部缓存 下次读重建
+	favKey := rediskey.BuildUserFavoriteFeedKey(strconv.FormatInt(in.UserId, 10))
+	if _, delErr := l.svcCtx.Redis.DelCtx(l.ctx, favKey); delErr != nil {
+		l.Errorf("删除收藏列表缓存失败: %v, user_id=%d", delErr, in.UserId)
 	}
 
 	return &interaction.RemoveFavoriteRes{}, nil

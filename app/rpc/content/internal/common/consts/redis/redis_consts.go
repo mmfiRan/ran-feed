@@ -47,6 +47,10 @@ const (
 	RedisFeedUserFavoritePrefix = "feed:user:favorite"
 	// RedisFeedUserFavoriteLockPrefix 用户收藏列表锁前缀 feed:user:favorite:lock
 	RedisFeedUserFavoriteLockPrefix = "feed:user:favorite:lock"
+	// RedisUserFavoriteFeedCapacity 用户收藏列表热头部容量 须与 interaction 侧保持一致
+	RedisUserFavoriteFeedCapacity = 300
+	// RedisUserFavoriteFeedExpireSeconds 用户收藏列表头部过期时间 一天 须与 interaction 侧保持一致
+	RedisUserFavoriteFeedExpireSeconds = 24 * 60 * 60
 )
 
 func GetRedisPrefixKey(prefix string, id string) string {

@@ -36,8 +36,3 @@ var BatchGetCommentObjsScript string
 //
 //go:embed update_comment_obj.lua
 var UpdateCommentObjScript string
-
-// AddUserFavoriteIfExistsScript 用户收藏列表ZSET存在时追加Lua脚本
-//
-//go:embed add_user_favorite_if_exists.lua
-var AddUserFavoriteIfExistsScript string

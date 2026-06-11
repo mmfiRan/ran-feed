@@ -226,7 +226,7 @@ func (l *BatchQueryIsLikedLogic) fillAllFromDB(out *interaction.BatchQueryIsLike
 	return out, nil
 }
 
-// buildDefaultOut 入参翻译成默认未点赞的结果集 保留 nil 过滤后顺序
+// buildDefaultOut 入参默认未点赞的结果集 保留 nil 过滤后顺序
 func buildDefaultOut(infos []*interaction.LikeInfo) *interaction.BatchQueryIsLikedRes {
 	out := &interaction.BatchQueryIsLikedRes{
 		IsLikedInfos: make([]*interaction.IsLikedInfo, 0, len(infos)),
@@ -244,7 +244,7 @@ func buildDefaultOut(infos []*interaction.LikeInfo) *interaction.BatchQueryIsLik
 	return out
 }
 
-// extractContentIDs 抽取所有 cid（保留重复 因为入参可能有重复条目 由 dedupContentIDs 在 lua 入口去重）
+// extractContentIDs 抽取所有 cid
 func extractContentIDs(infos []*interaction.IsLikedInfo) []int64 {
 	cids := make([]int64, 0, len(infos))
 	for _, item := range infos {

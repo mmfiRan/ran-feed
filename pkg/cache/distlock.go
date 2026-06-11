@@ -88,10 +88,11 @@ func BuildLockKey(resourceKey string) string {
 //   - rebuild: 真正的重建逻辑 在持有锁期间执行
 //
 // 行为
-//  1. 尝试拿锁 成功 → 双检 checkCache 未就绪则 rebuild → 释放锁
-//  2. 未拿到锁 → 立刻+定时轮询 checkCache 等别人重建好
-//  3. 等待超过 waitTimeout 返回 ErrLockBusy
-//  4. ctx 取消立即返回 ctx.Err()
+//
+//	尝试拿锁 成功 → 双检 checkCache 未就绪则 rebuild → 释放锁
+//	未拿到锁 → 立刻+定时轮询 checkCache 等别人重建好
+//	等待超过 waitTimeout 返回 ErrLockBusy
+//	ctx 取消立即返回 ctx.Err()
 //
 // 锁释放使用独立 ctx 防止请求 ctx 提前取消导致锁无法释放
 func DoWithLock[T any](

@@ -15,11 +15,8 @@ const (
 	// RedisLikeUserHashMetaFieldFull 用户维度点赞HASH元信息：完整性标记（"1"=完整热区，可信；缺失=残缺，需回源/交下游）
 	RedisLikeUserHashMetaFieldFull = "_full"
 	// RedisLikeExpireSeconds 点赞缓存过期时间（秒）；0 表示不过期
-	RedisLikeExpireSeconds                = 5 * 24 * 60 * 60
-	RedisFavoriteRelExpireSeconds         = 24 * 60 * 60
-	RedisFavoriteRelNegativeExpireSeconds = 10 * 60
-	RedisFavoriteRelPrefix                = "favorite:rel"
-	RedisFeedUserFavoritePrefix           = "feed:user:favorite"
+	RedisLikeExpireSeconds      = 5 * 24 * 60 * 60
+	RedisFeedUserFavoritePrefix = "feed:user:favorite"
 
 	// RedisCommentObjPrefix 评论对象缓存前缀 comment:obj:{comment_id}
 	RedisCommentObjPrefix = "comment:obj"
@@ -49,10 +46,6 @@ func BuildLikeUserKey(userId string) string {
 
 func BuildLikeCountKey(scene string, contentId string) string {
 	return GetRedisPrefixKey(GetRedisPrefixKey(RedisInteractionLikeCountPrefix, scene), contentId)
-}
-
-func BuildFavoriteRelKey(scene string, userId string, contentId string) string {
-	return GetRedisPrefixKey(GetRedisPrefixKey(RedisFavoriteRelPrefix, scene), userId+":"+contentId)
 }
 
 func BuildUserFavoriteFeedKey(userId string) string {
