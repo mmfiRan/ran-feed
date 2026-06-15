@@ -51,10 +51,19 @@ const (
 	RedisUserFavoriteFeedCapacity = 300
 	// RedisUserFavoriteFeedExpireSeconds 用户收藏列表头部过期时间 一天 须与 interaction 侧保持一致
 	RedisUserFavoriteFeedExpireSeconds = 24 * 60 * 60
+	// RedisContentDetailPrefix feed 二级缓存内容详情前缀 content:detail 加 content_id 全 feed 共享
+	RedisContentDetailPrefix = "content:detail"
+	// RedisContentDetailMissingSentinel 内容详情负哨兵 已删/未发布回源查不到时写入防穿透
+	RedisContentDetailMissingSentinel = "-"
 )
 
 func GetRedisPrefixKey(prefix string, id string) string {
 	return prefix + ":" + id
+}
+
+// BuildContentDetailKey 构造内容详情二级缓存 key content:detail 加 content_id
+func BuildContentDetailKey(contentID int64) string {
+	return GetRedisPrefixKey(RedisContentDetailPrefix, strconv.FormatInt(contentID, 10))
 }
 
 func BuildHotFeedSnapshotKey(snapshotID string) string {

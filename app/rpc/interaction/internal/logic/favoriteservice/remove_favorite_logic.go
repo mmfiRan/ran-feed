@@ -35,7 +35,6 @@ func (l *RemoveFavoriteLogic) RemoveFavorite(in *interaction.RemoveFavoriteReq) 
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("取消收藏失败"))
 	}
 
-	// 旁路缓存 取消后删除头部缓存 下次读重建
 	favKey := rediskey.BuildUserFavoriteFeedKey(strconv.FormatInt(in.UserId, 10))
 	if _, delErr := l.svcCtx.Redis.DelCtx(l.ctx, favKey); delErr != nil {
 		l.Errorf("删除收藏列表缓存失败: %v, user_id=%d", delErr, in.UserId)

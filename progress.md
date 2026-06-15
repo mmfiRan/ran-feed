@@ -2,23 +2,32 @@
 
 ## 当前状态
 
-**最后更新：** 2026-06-11
-**当前功能：** refactor-002 收藏链路去 Lua 化（in-progress 待决 content 侧方向）
+**最后更新：** 2026-06-15
+**当前功能：** refactor-003 feed 二级缓存内容详情统一（done）+ refactor-002 收藏链路去 Lua 化（done）
 
 ---
 
-## 进行中（refactor-002 收藏链路去 Lua 化）
+## 已完成（refactor-003 feed 二级缓存内容详情统一）
 
-- interaction 侧已完成（未提交 工作区）
-  - 删 favorite:rel 关系缓存与负缓存 及 BuildFavoriteRelKey 删 add_user_favorite_if_exists.lua 及 Go 变量
-  - QueryFavoriteInfo 去掉关系缓存与分布式锁重建 改直接回源 DB favoriteRepo.IsFavorited
-  - Favorite/RemoveFavorite 改纯 cache-aside 仅删用户收藏 feed 头部缓存
-  - 顺带精简 batch_query_is_liked 注释 distlock.go 注释
-- content 侧本会话止血
-  - 还原 query_user_favorite_zset.lua 及 QueryUserFavoriteZSetScript 修复编译 ./init.sh 通过
-  - 删无人引用的 add_user_favorite_if_exists.lua 及变量
-  - 新增常量 RedisUserFavoriteFeedCapacity=300 RedisUserFavoriteFeedExpireSeconds=24h 尚未接入
-- 待用户决定 content user_favorite_feed_logic 是否去 Lua 化接入新常量
+- 设计 L1 排序 ZSET 各 feed 自管不动 新增 L2 按 content_id 缓存内容本征详情 与观察者无关 author 名头像走 user usercache like 读时旁挂不缓存
+- 模型 do.ContentDetailDO 六字段加 visibility 存储 String 加 JSON 加 MGET key content:detail:{id} 与 usercache 同构
+- 新增 contentcache 包 BatchGet(ids loader) miss==过期单分支 批量回源 TTL 叠 jitter 负哨兵防穿透 只降级不阻断 不做击穿防护 L2 重建廉价 锁留给 L1 配 ContentCacheConfig 走 default 不写 yaml
+- 共享 contentDetailResolver loadDetails 回源 content 行加 brief resolveDetails 加 publicOnly 过滤 loadAuthorsAndLikes 并行查作者点赞 assembleItems 出 ContentItem
+- 四条 feed 接入各删一份重复 buildBriefMaps 加 buildUserAndLikeMaps 加 buildItems recommend/follow 读时过滤 PUBLIC follow 因返回 FollowFeedItem 用 resolveDetails 加 buildFollowItems 自组装 冷备份路径改走 ids 经 L2
+- delete_content 写路径接 contentcache.Invalidate
+- contentcache 单测全绿 ./init.sh 通过
+
+---
+
+## 已完成（refactor-002 收藏链路去 Lua 化）
+
+- interaction 侧（已提交 bf5ca5a）删 favorite:rel 关系缓存与负缓存 QueryFavoriteInfo 直接回源 DB Favorite/RemoveFavorite 纯 cache-aside
+- content 侧本会话完成 收藏流 L1 改热头部旁路缓存
+  - 只缓存最新 capacity=300 条 TTL=24h 页在头部内走 ZrevrangebyscoreWithScoresAndLimit 翻过头部回 DB QueryFavoriteList 单页
+  - ensureHotHead 用 Zadds 加 Zremrangebyrank 加 Expire 去 Lua 重建
+  - 删 QueryUserFavoriteZSetScript 及 query_user_favorite_zset.lua 删分布式锁/轮询/listAllFavorites/内存分页/keepN=5000
+  - 接入 capacity/expire 常量 个人流无并发同 key 故不加锁
+- ./init.sh 全绿
 
 ---
 
@@ -35,8 +44,14 @@
 
 ## 下一步
 
-1. 确定 content 侧收藏 feed 去 Lua 化方向 完成 refactor-002 或回退
-2. refactor-002 收尾后 从 feature_list.json 选 feat-014~018 中一条新功能开工
+1. 工作区未提交 待提交 refactor-003 与 refactor-002 两条（各对应一个提交）
+2. 之后从 feature_list.json 选 feat-014~018 中一条新功能开工
+
+## 遗留风险（refactor-003）
+
+- follow 冷备份路径 coldBackfill 查 DB 拿 rows 后只取 ids 再经 L2 resolveDetails 二次回表 仅缓存未命中的冷路径发生 可接受且顺带回填 L2
+- 内容本仓无编辑/改可见性写路径 仅 delete 需失效 已接 Invalidate 若后续新增内容编辑须补 Invalidate
+- visibility 变更目前不存在 若将来支持 改私密后 L2 仍返回旧 PUBLIC 直到 TTL 收敛 须在该写路径补 Invalidate
 
 ---
 

@@ -47,11 +47,6 @@ var BackfillFollowInboxZSetScript string
 //go:embed query_user_publish_zset.lua
 var QueryUserPublishZSetScript string
 
-// QueryUserFavoriteZSetScript 用户收藏列表ZSET查询Lua脚本
-//
-//go:embed query_user_favorite_zset.lua
-var QueryUserFavoriteZSetScript string
-
 // UpdateUserPublishZSetScript 用户发布列表ZSET回填/裁剪Lua脚本
 //
 //go:embed update_user_publish_zset.lua

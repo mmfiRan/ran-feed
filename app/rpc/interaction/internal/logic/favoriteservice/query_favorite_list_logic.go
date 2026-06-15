@@ -35,9 +35,6 @@ func (l *QueryFavoriteListLogic) QueryFavoriteList(in *interaction.QueryFavorite
 	if pageSize <= 0 {
 		pageSize = 20
 	}
-	if pageSize > 100 {
-		pageSize = 100
-	}
 
 	rows, err := l.favoriteRepo.ListByUserCursor(in.UserId, in.Cursor, pageSize+1)
 	if err != nil {

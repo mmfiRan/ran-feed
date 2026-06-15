@@ -2,14 +2,12 @@ package feedservicelogic
 
 import (
 	"context"
+	"math"
 	"strconv"
 	"time"
 
 	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
-	"ran-feed/app/rpc/content/internal/entity/model"
-	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/app/rpc/interaction/client/favoriteservice"
 	"ran-feed/pkg/errorx"
@@ -22,17 +20,15 @@ type UserFavoriteFeedLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
-	contentRepo      repositories.ContentRepository
-	publishFeedLogic *UserPublishFeedLogic
+	resolver *contentDetailResolver
 }
 
 func NewUserFavoriteFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserFavoriteFeedLogic {
 	return &UserFavoriteFeedLogic{
-		ctx:              ctx,
-		svcCtx:           svcCtx,
-		Logger:           logx.WithContext(ctx),
-		contentRepo:      repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		publishFeedLogic: NewUserPublishFeedLogic(ctx, svcCtx),
+		ctx:      ctx,
+		svcCtx:   svcCtx,
+		Logger:   logx.WithContext(ctx),
+		resolver: newContentDetailResolver(ctx, svcCtx),
 	}
 }
 
@@ -41,7 +37,7 @@ func (l *UserFavoriteFeedLogic) UserFavoriteFeed(in *content.UserFavoriteFeedReq
 		return emptyUserFavoriteFeedRes(), nil
 	}
 	if in.UserId <= 0 {
-		return nil, errorx.NewMsg("参数错误")
+		return nil, errorx.NewMsg("用户id不能<=0")
 	}
 	pageSize := int(in.PageSize)
 	if pageSize <= 0 {
@@ -60,25 +56,20 @@ func (l *UserFavoriteFeedLogic) UserFavoriteFeed(in *content.UserFavoriteFeedReq
 		return emptyUserFavoriteFeedRes(), nil
 	}
 
-	contents, err := l.loadContents(ids)
+	items, err := l.resolver.assembleItems(ids, in.UserId, true)
 	if err != nil {
 		return nil, err
 	}
-	if len(contents) == 0 {
+	if len(items) == 0 {
 		return emptyUserFavoriteFeedRes(), nil
 	}
 
-	return l.assembleResponse(l.publishFeedLogic, contents, nextCursor, hasMore, in.UserId)
-
+	return &content.UserFavoriteFeedRes{
+		Items:      items,
+		NextCursor: nextCursor,
+		HasMore:    hasMore,
+	}, nil
 }
-
-const (
-	userFavoriteFeedKeepN = 5000
-
-	userFavoriteFeedRebuildLockTTLSeconds = 30
-	userFavoriteFeedRebuildRetryTimes     = 3
-	userFavoriteFeedRebuildRetryInterval  = 80 * time.Millisecond
-)
 
 func emptyUserFavoriteFeedRes() *content.UserFavoriteFeedRes {
 	return &content.UserFavoriteFeedRes{
@@ -92,235 +83,138 @@ func buildUserFavoriteFeedKey(userID int64) string {
 	return rediskey.BuildUserFavoriteFeedKey(userID)
 }
 
-func buildUserFavoriteFeedRebuildLockKey(userID int64) string {
-	return rediskey.GetRedisPrefixKey("feed:user:favorite:lock", strconv.FormatInt(userID, 10))
-}
-
+// loadPageIDs 收藏流 L1 热头部旁路缓存 页落在最新 capacity 条内走缓存 翻过头部回 DB
 func (l *UserFavoriteFeedLogic) loadPageIDs(feedKey string, userID int64, cursor string, pageSize int) ([]int64, string, bool, error) {
-	ids, nextCursor, hasMore, cacheExists, err := l.queryUserFavoriteIDs(feedKey, cursor, pageSize)
+	cursorScore := parseFavoriteCursor(cursor)
+
+	if err := l.ensureHotHead(feedKey, userID); err != nil {
+		// 热头部重建失败 降级直接回源 DB 不阻断
+		l.Errorf("重建收藏热头部失败 降级回源 userID=%d err=%v", userID, err)
+		return l.pageFromDB(userID, cursorScore, pageSize)
+	}
+
+	// 雪花 id 唯一 start 减一即排除游标本身实现 score < cursor
+	start := int64(math.MaxInt64)
+	if cursorScore > 0 {
+		start = cursorScore - 1
+	}
+	pairs, err := l.svcCtx.Redis.ZrevrangebyscoreWithScoresAndLimitCtx(l.ctx, feedKey, start, 0, 0, pageSize+1)
 	if err != nil {
-		return nil, "", false, err
-	}
-	if cacheExists {
-		return ids, nextCursor, hasMore, nil
+		l.Errorf("查询收藏热头部失败 降级回源 userID=%d err=%v", userID, err)
+		return l.pageFromDB(userID, cursorScore, pageSize)
 	}
 
-	lockKey := buildUserFavoriteFeedRebuildLockKey(userID)
-	rebuildLock := redis.NewRedisLock(l.svcCtx.Redis, lockKey)
-	rebuildLock.SetExpire(userFavoriteFeedRebuildLockTTLSeconds)
-	locked, lockErr := rebuildLock.AcquireCtx(l.ctx)
-	if lockErr != nil {
-		return nil, "", false, errorx.Wrap(l.ctx, lockErr, errorx.NewMsg("查询失败请稍后重试"))
-	}
-	if locked {
-		defer func() {
-			if releaseOk, releaseErr := rebuildLock.ReleaseCtx(context.Background()); !releaseOk || releaseErr != nil {
-				l.Errorf("释放分布式锁失败: %v", releaseErr)
-			}
-		}()
-
-		allRows, qerr := l.listAllFavorites(userID)
-		if qerr != nil {
-			return nil, "", false, errorx.Wrap(l.ctx, qerr, errorx.NewMsg("查询收藏列表失败"))
-		}
-		if len(allRows) == 0 {
-			return nil, "", false, nil
-		}
-		if uerr := l.updateUserFavoriteCache(feedKey, allRows); uerr != nil {
-			l.Errorf("回填用户收藏列表缓存失败:%v", uerr)
-		}
-
-		pageRows := l.pageFavoriteRows(allRows, cursor, pageSize)
-		if len(pageRows) > pageSize {
-			hasMore = true
-			nextCursor = strconv.FormatInt(pageRows[pageSize-1].FavoriteId, 10)
-			pageRows = pageRows[:pageSize]
-		} else {
-			hasMore = false
-			nextCursor = ""
-		}
-
-		res := make([]int64, 0, len(pageRows))
-		for _, row := range pageRows {
-			if row == nil || row.ContentId <= 0 {
-				continue
-			}
-			res = append(res, row.ContentId)
-		}
-		return res, nextCursor, hasMore, nil
+	// 整页落在热头部内 直接走缓存
+	if len(pairs) == pageSize+1 {
+		ids := favoritePairsToIDs(pairs[:pageSize])
+		return ids, strconv.FormatInt(pairs[pageSize-1].Score, 10), true, nil
 	}
 
-	for i := 0; i < userFavoriteFeedRebuildRetryTimes; i++ {
-		time.Sleep(userFavoriteFeedRebuildRetryInterval)
-		ids, nextCursor, hasMore, cacheExists, err = l.queryUserFavoriteIDs(feedKey, cursor, pageSize)
-		if err != nil {
-			return nil, "", false, err
-		}
-		if cacheExists {
-			return ids, nextCursor, hasMore, nil
-		}
+	// 取到热头部尾部 判断是真末页还是越界需回 DB
+	card, err := l.svcCtx.Redis.ZcardCtx(l.ctx, feedKey)
+	if err != nil {
+		l.Errorf("查询收藏热头部容量失败 降级回源 userID=%d err=%v", userID, err)
+		return l.pageFromDB(userID, cursorScore, pageSize)
 	}
-	return nil, "", false, errorx.NewMsg("查询失败请稍后重试")
+	if card < rediskey.RedisUserFavoriteFeedCapacity {
+		// 热头部即全部收藏 这是真末页
+		return favoritePairsToIDs(pairs), "", false, nil
+	}
+	// 热头部已满 更老的收藏在 DB 整页回源
+	return l.pageFromDB(userID, cursorScore, pageSize)
 }
 
-func (l *UserFavoriteFeedLogic) queryUserFavoriteIDs(feedKey, cursor string, pageSize int) ([]int64, string, bool, bool, error) {
-	res, err := l.svcCtx.Redis.EvalCtx(
-		l.ctx,
-		luautils.QueryUserFavoriteZSetScript,
-		[]string{feedKey},
-		cursor,
-		strconv.FormatInt(int64(pageSize), 10),
-	)
+// ensureHotHead 热头部缺失则重建最新 capacity
+func (l *UserFavoriteFeedLogic) ensureHotHead(feedKey string, userID int64) error {
+	exists, err := l.svcCtx.Redis.ExistsCtx(l.ctx, feedKey)
 	if err != nil {
-		return nil, "", false, false, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询收藏列表失败"))
+		return err
 	}
-	arr, ok := res.([]interface{})
-	if !ok || len(arr) < 3 {
-		return nil, "", false, false, errorx.NewMsg("查询收藏列表失败")
-	}
-
-	existsVal, _ := luaReplyInt64(arr[0])
-	cacheExists := existsVal == 1
-	if !cacheExists {
-		return nil, "", false, false, nil
+	if exists {
+		return nil
 	}
 
-	hasMoreVal, _ := luaReplyInt64(arr[1])
-	hasMore := hasMoreVal == 1
-	nextCursor := ""
-	if hasMore {
-		if s, ok := luaReplyString(arr[2]); ok {
-			nextCursor = s
-		}
+	resp, err := l.svcCtx.FavoriteRpc.QueryFavoriteList(l.ctx, &favoriteservice.QueryFavoriteListReq{
+		UserId:   userID,
+		Cursor:   0,
+		PageSize: uint32(rediskey.RedisUserFavoriteFeedCapacity),
+	})
+	if err != nil {
+		return err
+	}
+	if resp == nil || len(resp.Items) == 0 {
+		return nil
 	}
 
-	ids := make([]int64, 0, len(arr)-3)
-	for i := 3; i < len(arr); i++ {
-		s, _ := luaReplyString(arr[i])
-		if s == "" {
+	members := make([]redis.Z, 0, len(resp.Items))
+	for _, it := range resp.Items {
+		if it == nil || it.ContentId <= 0 {
 			continue
 		}
-		id, parseErr := strconv.ParseInt(s, 10, 64)
-		if parseErr != nil || id <= 0 {
+		members = append(members, redis.Z{
+			Score:  float64(it.FavoriteId),
+			Member: strconv.FormatInt(it.ContentId, 10),
+		})
+	}
+	if len(members) == 0 {
+		return nil
+	}
+
+	return l.svcCtx.Redis.PipelinedCtx(l.ctx, func(pipe redis.Pipeliner) error {
+		pipe.ZAdd(l.ctx, feedKey, members...)
+		pipe.ZRemRangeByRank(l.ctx, feedKey, 0, -int64(rediskey.RedisUserFavoriteFeedCapacity)-1)
+		pipe.Expire(l.ctx, feedKey, time.Duration(rediskey.RedisUserFavoriteFeedExpireSeconds)*time.Second)
+		return nil
+	})
+}
+
+// pageFromDB 越过热头部时按游标直接回源收藏 RPC 单页查询
+func (l *UserFavoriteFeedLogic) pageFromDB(userID int64, cursorScore int64, pageSize int) ([]int64, string, bool, error) {
+	resp, err := l.svcCtx.FavoriteRpc.QueryFavoriteList(l.ctx, &favoriteservice.QueryFavoriteListReq{
+		UserId:   userID,
+		Cursor:   cursorScore,
+		PageSize: uint32(pageSize),
+	})
+	if err != nil {
+		return nil, "", false, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询收藏列表失败"))
+	}
+	if resp == nil {
+		return nil, "", false, nil
+	}
+
+	ids := make([]int64, 0, len(resp.Items))
+	for _, it := range resp.Items {
+		if it == nil || it.ContentId <= 0 {
+			continue
+		}
+		ids = append(ids, it.ContentId)
+	}
+	nextCursor := ""
+	if resp.HasMore && resp.NextCursor > 0 {
+		nextCursor = strconv.FormatInt(resp.NextCursor, 10)
+	}
+	return ids, nextCursor, resp.HasMore, nil
+}
+
+func parseFavoriteCursor(cursor string) int64 {
+	if cursor == "" {
+		return 0
+	}
+	v, err := strconv.ParseInt(cursor, 10, 64)
+	if err != nil || v < 0 {
+		return 0
+	}
+	return v
+}
+
+func favoritePairsToIDs(pairs []redis.Pair) []int64 {
+	ids := make([]int64, 0, len(pairs))
+	for _, p := range pairs {
+		id, err := strconv.ParseInt(p.Key, 10, 64)
+		if err != nil || id <= 0 {
 			continue
 		}
 		ids = append(ids, id)
 	}
-	return ids, nextCursor, hasMore, true, nil
-}
-
-func (l *UserFavoriteFeedLogic) updateUserFavoriteCache(feedKey string, rows []*favoriteservice.FavoriteItem) error {
-	if len(rows) == 0 {
-		return nil
-	}
-	args := make([]interface{}, 0, 1+len(rows)*2)
-	args = append(args, strconv.FormatInt(int64(userFavoriteFeedKeepN), 10))
-	for _, r := range rows {
-		if r == nil || r.ContentId <= 0 {
-			continue
-		}
-		score := strconv.FormatInt(r.FavoriteId, 10)
-		member := strconv.FormatInt(r.ContentId, 10)
-		args = append(args, score, member)
-	}
-	_, err := l.svcCtx.Redis.EvalCtx(
-		l.ctx,
-		luautils.UpdateUserPublishZSetScript,
-		[]string{feedKey},
-		args...,
-	)
-	return err
-}
-
-func (l *UserFavoriteFeedLogic) pageFavoriteRows(allRows []*favoriteservice.FavoriteItem, cursor string, pageSize int) []*favoriteservice.FavoriteItem {
-	if len(allRows) == 0 {
-		return allRows
-	}
-
-	cursorScore := int64(0)
-	if cursor != "" {
-		v, err := strconv.ParseInt(cursor, 10, 64)
-		if err == nil && v > 0 {
-			cursorScore = v
-		}
-	}
-
-	res := make([]*favoriteservice.FavoriteItem, 0, pageSize+1)
-	for _, r := range allRows {
-		if r == nil {
-			continue
-		}
-		score := r.FavoriteId
-		if cursorScore > 0 && score >= cursorScore {
-			continue
-		}
-		res = append(res, r)
-		if len(res) >= pageSize+1 {
-			break
-		}
-	}
-	return res
-}
-
-func (l *UserFavoriteFeedLogic) listAllFavorites(userID int64) ([]*favoriteservice.FavoriteItem, error) {
-	cursor := int64(0)
-	pageSize := uint32(500)
-	out := make([]*favoriteservice.FavoriteItem, 0)
-	for {
-		resp, err := l.svcCtx.FavoriteRpc.QueryFavoriteList(l.ctx, &favoriteservice.QueryFavoriteListReq{
-			UserId:   userID,
-			Cursor:   cursor,
-			PageSize: pageSize,
-		})
-		logx.Infof("QueryFavoriteList: cursor=%d, pageSize=%d, resp=%v, err=%v", cursor, pageSize, resp, err)
-		if err != nil {
-			return nil, err
-		}
-		if resp != nil && len(resp.Items) > 0 {
-			out = append(out, resp.Items...)
-		}
-		if resp == nil || !resp.HasMore || resp.NextCursor <= 0 {
-			break
-		}
-		cursor = resp.NextCursor
-		if len(out) >= userFavoriteFeedKeepN {
-			break
-		}
-	}
-	if len(out) > userFavoriteFeedKeepN {
-		out = out[:userFavoriteFeedKeepN]
-	}
-	return out, nil
-}
-
-func (l *UserFavoriteFeedLogic) loadContents(ids []int64) ([]*model.RanFeedContent, error) {
-	contentMap, err := l.contentRepo.BatchGetPublishedByIDs(ids)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询收藏内容失败"))
-	}
-
-	contents := make([]*model.RanFeedContent, 0, len(ids))
-	for _, id := range ids {
-		if row, ok := contentMap[id]; ok && row != nil {
-			contents = append(contents, row)
-		}
-	}
-	return contents, nil
-}
-
-func (l *UserFavoriteFeedLogic) assembleResponse(helper *UserPublishFeedLogic, contents []*model.RanFeedContent, nextCursor string, hasMore bool, userID int64) (*content.UserFavoriteFeedRes, error) {
-	userMap, likedMap, likeCountMap, err := helper.buildUserAndLikeMaps(contents, userID)
-	if err != nil {
-		return nil, err
-	}
-	articleMap, videoMap, err := helper.buildBriefMaps(contents)
-	if err != nil {
-		return nil, err
-	}
-	items := helper.buildItems(contents, articleMap, videoMap, userMap, likedMap, likeCountMap)
-	return &content.UserFavoriteFeedRes{
-		Items:      items,
-		NextCursor: nextCursor,
-		HasMore:    hasMore,
-	}, nil
+	return ids
 }
