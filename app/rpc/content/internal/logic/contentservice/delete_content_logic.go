@@ -6,6 +6,7 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
+	"ran-feed/app/rpc/content/internal/common/utils/contentcache"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -79,6 +80,11 @@ func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*conte
 		return nil
 	}); err != nil {
 		l.Logger.Errorf("删除内容缓存失败: %v", err)
+	}
+
+	// 失效内容详情二级缓存 防止删后仍命中旧详情
+	if err := contentcache.Invalidate(l.ctx, l.svcCtx.Redis, in.ContentId); err != nil {
+		l.Logger.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
 	return &content.DeleteContentRes{}, nil

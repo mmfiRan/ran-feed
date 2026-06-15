@@ -35,3 +35,14 @@ type VideoDO struct {
 	Duration        int32
 	TranscodeStatus int32
 }
+
+// ContentDetailDO feed 二级缓存按 content_id 存的内容本征详情
+type ContentDetailDO struct {
+	ContentID   int64  `json:"content_id"`
+	ContentType int32  `json:"content_type"`
+	AuthorID    int64  `json:"author_id"`
+	Title       string `json:"title"`
+	CoverURL    string `json:"cover_url"`
+	PublishedAt int64  `json:"published_at"`
+	Visibility  int32  `json:"visibility"`
+}

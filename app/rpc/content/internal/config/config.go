@@ -17,6 +17,16 @@ type Config struct {
 	InteractionRpcClientConf zrpc.RpcClientConf
 	CountRpcClientConf       zrpc.RpcClientConf
 	FollowFanOut             FollowFanOutConfig
+	ContentCache             ContentCacheConfig
+}
+
+// ContentCacheConfig feed 二级缓存内容详情配置 TTLSeconds<=0 时整体关闭缓存
+// 正负 TTL 均叠加 [0 JitterMaxSeconds] 抖动抗雪崩
+type ContentCacheConfig struct {
+	TTLSeconds               int64 `json:",default=600"`
+	NegativeTTLSeconds       int64 `json:",default=60"`
+	JitterMaxSeconds         int64 `json:",default=600"`
+	NegativeJitterMaxSeconds int64 `json:",default=60"`
 }
 
 // FollowFanOutConfig 关注流推送配置（推拉结合）

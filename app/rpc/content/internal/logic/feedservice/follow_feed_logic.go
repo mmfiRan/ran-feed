@@ -8,17 +8,15 @@ import (
 	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
+	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/app/rpc/interaction/client/followservice"
-	"ran-feed/app/rpc/interaction/client/likeservice"
-	"ran-feed/app/rpc/interaction/interaction"
 	"ran-feed/app/rpc/user/client/userservice"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/mr"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/core/threading"
 )
@@ -35,8 +33,7 @@ type FollowFeedLogic struct {
 	svcCtx *svc.ServiceContext
 	logx.Logger
 	contentRepo repositories.ContentRepository
-	articleRepo repositories.ArticleRepository
-	videoRepo   repositories.VideoRepository
+	resolver    *contentDetailResolver
 }
 
 func NewFollowFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *FollowFeedLogic {
@@ -45,8 +42,7 @@ func NewFollowFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Follow
 		svcCtx:      svcCtx,
 		Logger:      logx.WithContext(ctx),
 		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		articleRepo: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
-		videoRepo:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
+		resolver:    newContentDetailResolver(ctx, svcCtx),
 	}
 }
 
@@ -71,29 +67,12 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 		return nil, err
 	}
 
-	var contents []*model.RanFeedContent
 	if cacheExists {
 		// 2a. 缓存命中：先 merge 大 V publish zset（推拉结合读时拉）
 		bigVIDs := l.loadViewerBigVList(userID)
 		if len(bigVIDs) > 0 {
 			pool, anyMore := l.fetchBigVContentIDs(bigVIDs, in.Cursor, pageSize)
 			ids, hasMore, nextCursor = mergeContentIDs(ids, hasMore, pool, anyMore, pageSize)
-		}
-
-		// 2a. 缓存命中：按合并后顺序取内容详情
-		if len(ids) > 0 {
-			statusPublished := int32(content.ContentStatus_PUBLISHED)
-			visibilityPublic := int32(content.Visibility_PUBLIC)
-			contentMap, qerr := l.contentRepo.BatchGetRecommendByIDs(statusPublished, visibilityPublic, ids)
-			if qerr != nil {
-				return nil, errorx.Wrap(l.ctx, qerr, errorx.NewMsg("查询关注内容失败"))
-			}
-			contents = make([]*model.RanFeedContent, 0, len(ids))
-			for _, id := range ids {
-				if row, ok := contentMap[id]; ok && row != nil {
-					contents = append(contents, row)
-				}
-			}
 		}
 	} else {
 		// 2b. 缓存未命中：异步重建，同步走 DB 兜底返回首屏
@@ -107,27 +86,35 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 		if cerr != nil {
 			return nil, cerr
 		}
-		contents = rows
+		ids = make([]int64, 0, len(rows))
+		for _, r := range rows {
+			if r != nil {
+				ids = append(ids, r.ID)
+			}
+		}
 		nextCursor = cur
 		hasMore = more
 	}
 
-	if len(contents) == 0 {
+	if len(ids) == 0 {
 		return emptyFollowFeedRes(), nil
 	}
 
-	// 3. 并行拼装作者信息、点赞状态、文章/视频摘要
-	articleMap, videoMap, err := l.buildBriefMaps(contents)
+	// 3. 走统一二级缓存取详情 关注流只读 PUBLIC 再旁挂作者与点赞
+	details, err := l.resolver.resolveDetails(ids, true)
 	if err != nil {
 		return nil, err
 	}
-	userMap, likedMap, likeCountMap, err := l.buildUserAndLikeMaps(contents, userID)
+	if len(details) == 0 {
+		return emptyFollowFeedRes(), nil
+	}
+	userMap, likedMap, likeCountMap, err := l.resolver.loadAuthorsAndLikes(details, userID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &content.FollowFeedRes{
-		Items:      l.buildFollowItems(contents, articleMap, videoMap, userMap, likedMap, likeCountMap),
+		Items:      buildFollowItems(details, userMap, likedMap, likeCountMap),
 		NextCursor: nextCursor,
 		HasMore:    hasMore,
 	}, nil
@@ -337,155 +324,27 @@ func (l *FollowFeedLogic) updateInboxCache(inboxKey string, rows []*model.RanFee
 	return err
 }
 
-func (l *FollowFeedLogic) buildBriefMaps(contents []*model.RanFeedContent) (map[int64]*model.RanFeedArticle, map[int64]*model.RanFeedVideo, error) {
-	articleIDs := make([]int64, 0)
-	videoIDs := make([]int64, 0)
-	for _, r := range contents {
-		switch content.ContentType(r.ContentType) {
-		case content.ContentType_ARTICLE:
-			articleIDs = append(articleIDs, r.ID)
-		case content.ContentType_VIDEO:
-			videoIDs = append(videoIDs, r.ID)
-		}
-	}
-
-	articleMap, err := l.articleRepo.BatchGetBriefByContentIDs(articleIDs)
-	if err != nil {
-		return nil, nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询文章摘要失败"))
-	}
-
-	videoMap, err := l.videoRepo.BatchGetBriefByContentIDs(videoIDs)
-	if err != nil {
-		return nil, nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询视频摘要失败"))
-	}
-
-	return articleMap, videoMap, nil
-}
-
-func (l *FollowFeedLogic) buildUserAndLikeMaps(contents []*model.RanFeedContent, userID int64) (map[int64]*userservice.UserInfo, map[int64]bool, map[int64]int64, error) {
-	authorIDs := make([]int64, 0, len(contents))
-	authorSeen := make(map[int64]struct{}, len(contents))
-	likeInfos := make([]*likeservice.LikeInfo, 0, len(contents))
-
-	for _, r := range contents {
-		if _, ok := authorSeen[r.UserID]; !ok {
-			authorSeen[r.UserID] = struct{}{}
-			authorIDs = append(authorIDs, r.UserID)
-		}
-
-		switch content.ContentType(r.ContentType) {
-		case content.ContentType_ARTICLE:
-			likeInfos = append(likeInfos, &likeservice.LikeInfo{
-				ContentId: r.ID,
-				Scene:     interaction.Scene_ARTICLE,
-			})
-		case content.ContentType_VIDEO:
-			likeInfos = append(likeInfos, &likeservice.LikeInfo{
-				ContentId: r.ID,
-				Scene:     interaction.Scene_VIDEO,
-			})
-		}
-	}
-
-	var (
-		userMap      map[int64]*userservice.UserInfo
-		likedMap     map[int64]bool
-		likeCountMap map[int64]int64
-	)
-
-	err := mr.Finish(
-		func() error {
-			if len(authorIDs) == 0 {
-				userMap = map[int64]*userservice.UserInfo{}
-				return nil
-			}
-			resp, err := l.svcCtx.UserRpc.BatchGetUser(l.ctx, &userservice.BatchGetUserReq{UserIds: authorIDs})
-			if err != nil {
-				return err
-			}
-			userMap = make(map[int64]*userservice.UserInfo, len(resp.Users))
-			for _, u := range resp.Users {
-				if u == nil {
-					continue
-				}
-				userMap[u.UserId] = u
-			}
-			return nil
-		},
-		func() error {
-			likedMap = map[int64]bool{}
-			likeCountMap = map[int64]int64{}
-			if len(likeInfos) == 0 {
-				return nil
-			}
-			resp, err := l.svcCtx.LikesRpc.BatchQueryLikeInfo(l.ctx, &likeservice.BatchQueryLikeInfoReq{
-				UserId:    userID,
-				LikeInfos: likeInfos,
-			})
-			if err != nil {
-				return err
-			}
-			for _, info := range resp.LikeInfos {
-				if info == nil {
-					continue
-				}
-				likeCountMap[info.ContentId] = info.LikeCount
-				if info.IsLiked {
-					likedMap[info.ContentId] = true
-				}
-			}
-			return nil
-		},
-	)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	return userMap, likedMap, likeCountMap, nil
-}
-
-func (l *FollowFeedLogic) buildFollowItems(contents []*model.RanFeedContent, articleMap map[int64]*model.RanFeedArticle, videoMap map[int64]*model.RanFeedVideo, userMap map[int64]*userservice.UserInfo, likedMap map[int64]bool, likeCountMap map[int64]int64) []*content.FollowFeedItem {
-	items := make([]*content.FollowFeedItem, 0, len(contents))
-	for _, r := range contents {
-		title := ""
-		coverURL := ""
-		switch content.ContentType(r.ContentType) {
-		case content.ContentType_ARTICLE:
-			if a, ok := articleMap[r.ID]; ok && a != nil {
-				title = a.Title
-				coverURL = a.Cover
-			}
-		case content.ContentType_VIDEO:
-			if v, ok := videoMap[r.ID]; ok && v != nil {
-				title = v.Title
-				coverURL = v.CoverURL
-			}
-		}
-
+// buildFollowItems 按 details 顺序把 L2 详情加作者加点赞组装成 FollowFeedItem
+func buildFollowItems(details []*do.ContentDetailDO, userMap map[int64]*userservice.UserInfo, likedMap map[int64]bool, likeCountMap map[int64]int64) []*content.FollowFeedItem {
+	items := make([]*content.FollowFeedItem, 0, len(details))
+	for _, d := range details {
 		authorName := ""
 		authorAvatar := ""
-		if u, ok := userMap[r.UserID]; ok && u != nil {
+		if u, ok := userMap[d.AuthorID]; ok && u != nil {
 			authorName = u.Nickname
 			authorAvatar = u.Avatar
 		}
-
-		publishedAt := int64(0)
-		if r.PublishedAt != nil {
-			publishedAt = r.PublishedAt.Unix()
-		} else {
-			publishedAt = time.Now().Unix()
-		}
-
 		items = append(items, &content.FollowFeedItem{
-			ContentId:    r.ID,
-			ContentType:  content.ContentType(r.ContentType),
-			AuthorId:     r.UserID,
+			ContentId:    d.ContentID,
+			ContentType:  content.ContentType(d.ContentType),
+			AuthorId:     d.AuthorID,
 			AuthorName:   authorName,
 			AuthorAvatar: authorAvatar,
-			Title:        title,
-			CoverUrl:     coverURL,
-			PublishedAt:  publishedAt,
-			IsLiked:      likedMap[r.ID],
-			LikeCount:    likeCountMap[r.ID],
+			Title:        d.Title,
+			CoverUrl:     d.CoverURL,
+			PublishedAt:  d.PublishedAt,
+			IsLiked:      likedMap[d.ContentID],
+			LikeCount:    likeCountMap[d.ContentID],
 		})
 	}
 	return items
