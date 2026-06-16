@@ -2,8 +2,6 @@ package followservicelogic
 
 import (
 	"context"
-	"time"
-
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/interaction/interaction"
 	"ran-feed/app/rpc/interaction/internal/do"
@@ -14,11 +12,6 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
-)
-
-const (
-	backfillFollowInboxLimit   = 20
-	backfillFollowInboxTimeout = 3 * time.Second
 )
 
 type FollowUserLogic struct {
@@ -50,13 +43,23 @@ func (l *FollowUserLogic) FollowUser(in *interaction.FollowUserReq) (*interactio
 		return nil, errorx.NewMsg("不能关注自己")
 	}
 
-	// 校验被关注用户存在（user-rpc.GetUser 已包含软删过滤）
-	resp, gerr := l.svcCtx.UserRpc.GetUser(l.ctx, &userservice.GetUserReq{UserId: in.FollowUserId})
+	// 校验被关注用户存在
+	resp, gerr := l.svcCtx.UserRpc.GetUser(l.ctx, &userservice.GetUserReq{
+		UserId: in.FollowUserId,
+	})
 	if gerr != nil {
 		return nil, gerr
 	}
 	if resp == nil || resp.UserInfo == nil {
 		return nil, errorx.NewMsg("被关注用户不存在")
+	}
+
+	// 读前置状态判断是否真正翻转为关注 读失败默认按翻转处理回填幂等无害
+	transitioned := true
+	if prior, perr := l.followRepo.GetByUserAndFollow(in.UserId, in.FollowUserId); perr != nil {
+		l.Errorf("查关注前置状态失败 默认回填 userID=%d followUserID=%d err=%v", in.UserId, in.FollowUserId, perr)
+	} else if prior != nil && prior.Status == repositories.FollowStatusFollow {
+		transitioned = false
 	}
 
 	err := l.followRepo.Upsert(&do.FollowDO{
@@ -70,19 +73,20 @@ func (l *FollowUserLogic) FollowUser(in *interaction.FollowUserReq) (*interactio
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("关注失败"))
 	}
 
-	// 异步回填收件箱：必须用独立 bg ctx + timeout，避免 content-rpc 卡住造成 goroutine 泄漏。
-	threading.GoSafe(func() {
-		ctx, cancel := context.WithTimeout(context.Background(), backfillFollowInboxTimeout)
-		defer cancel()
-		_, callErr := l.svcCtx.ContentRpc.BackfillFollowInbox(ctx, &content.BackfillFollowInboxReq{
-			FollowerId: in.UserId,
-			FolloweeId: in.FollowUserId,
-			Limit:      backfillFollowInboxLimit,
+	// 仅真正翻转为关注才回填 重复关注不触发 大 V 跳过与缓存失效由 content 侧统一处理
+	if transitioned {
+		threading.GoSafe(func() {
+			ctx := context.WithoutCancel(l.ctx)
+			// Limit 留 0 由 content 侧按 deadline 窗口与上限决定回填量
+			_, callErr := l.svcCtx.ContentRpc.BackfillFollowInbox(ctx, &content.BackfillFollowInboxReq{
+				FollowerId: in.UserId,
+				FolloweeId: in.FollowUserId,
+			})
+			if callErr != nil {
+				l.Errorf("关注回填收件箱失败: %v", callErr)
+			}
 		})
-		if callErr != nil {
-			l.Errorf("关注回填收件箱失败: %v", callErr)
-		}
-	})
+	}
 
 	return &interaction.FollowUserRes{
 		IsFollowed: true,

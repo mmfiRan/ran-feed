@@ -2,14 +2,13 @@ package contentservicelogic
 
 import (
 	"context"
-	"strconv"
 	"time"
 
 	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
+	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
 	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
 	"ran-feed/app/rpc/content/internal/svc"
-	"ran-feed/app/rpc/count/count"
 	"ran-feed/app/rpc/interaction/client/followservice"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -17,16 +16,24 @@ import (
 )
 
 const (
-	defaultBigVThreshold     int64 = 5000
-	defaultFanOutBatchSize   int   = 500
-	defaultFanOutInboxKeepN  int64 = 5000
-	fanOutBackgroundTimeout        = 30 * time.Second
+	defaultFanOutBatchSize  int   = 500
+	defaultFanOutInboxKeepN int64 = 5000
+	fanOutBackgroundTimeout       = 30 * time.Second
 )
+
+// writeUserPublishZSet 写单条内容到作者 publish zset score=published_at
+// publish zset 承载作者全量发布历史 不按时间裁剪 cutoff=0 仅 keepN 与 TTL 控量
+func writeUserPublishZSet(ctx context.Context, svcCtx *svc.ServiceContext, feedKey string, contentID, publishedAtMillis int64) error {
+	days := svcCtx.Config.FollowFanOut.DeadlineWindowDays
+	args := followwindow.WriteArgs(userPublishFeedKeepN, 0, followwindow.TTLSeconds(days), publishedAtMillis, contentID)
+	_, err := svcCtx.Redis.EvalCtx(ctx, luautils.UpdateUserPublishZSetScript, []string{feedKey}, args...)
+	return err
+}
 
 // fanOutToFollowersAsync 发布后异步推送到 follower 收件箱
 // 小账号（粉丝数 < 阈值）走推；大 V 跳过，由读路径 merge
 // 与 publish 主流程解耦，错误只记日志
-func fanOutToFollowersAsync(svcCtx *svc.ServiceContext, authorID, contentID int64, visibility content.Visibility) {
+func fanOutToFollowersAsync(svcCtx *svc.ServiceContext, authorID, contentID, publishedAtMillis int64, visibility content.Visibility) {
 	// 仅 PUBLIC 内容才推（PRIVATE 不进 feed）
 	if visibility != content.Visibility_PUBLIC {
 		return
@@ -40,18 +47,13 @@ func fanOutToFollowersAsync(svcCtx *svc.ServiceContext, authorID, contentID int6
 		defer cancel()
 		logger := logx.WithContext(ctx)
 
-		// 1. 查粉丝数，判断是否大 V
-		threshold := svcCtx.Config.FollowFanOut.BigVFollowerThreshold
-		if threshold <= 0 {
-			threshold = defaultBigVThreshold
-		}
-		followerCount, err := getFollowerCount(ctx, svcCtx, authorID)
+		// 1. 命中全局大 V 集合则跳过推送 由读路径 merge 查询失败保守跳过避免误发扩散风暴
+		isBig, err := isBigVAuthor(ctx, svcCtx, authorID)
 		if err != nil {
-			logger.Errorf("fan-out 查粉丝数失败 authorID=%d: %v", authorID, err)
+			logger.Errorf("fan-out 查大 V 集合失败 authorID=%d: %v", authorID, err)
 			return
 		}
-		if followerCount >= threshold {
-			// 大 V：跳过推送，由读路径 merge
+		if isBig {
 			return
 		}
 
@@ -65,27 +67,13 @@ func fanOutToFollowersAsync(svcCtx *svc.ServiceContext, authorID, contentID int6
 			keepN = defaultFanOutInboxKeepN
 		}
 
-		pushToFollowers(ctx, svcCtx, authorID, contentID, batchSize, keepN, logger)
+		pushToFollowers(ctx, svcCtx, authorID, contentID, publishedAtMillis, batchSize, keepN, logger)
 	})
 }
 
-func getFollowerCount(ctx context.Context, svcCtx *svc.ServiceContext, authorID int64) (int64, error) {
-	resp, err := svcCtx.CountRpc.GetCount(ctx, &count.GetCountReq{
-		BizType:    count.BizType_FOLLOWED,
-		TargetType: count.TargetType_USER,
-		TargetId:   authorID,
-	})
-	if err != nil {
-		return 0, err
-	}
-	if resp == nil {
-		return 0, nil
-	}
-	return resp.Value, nil
-}
-
-func pushToFollowers(ctx context.Context, svcCtx *svc.ServiceContext, authorID, contentID int64, batchSize int, keepN int64, logger logx.Logger) {
-	contentIDStr := strconv.FormatInt(contentID, 10)
+func pushToFollowers(ctx context.Context, svcCtx *svc.ServiceContext, authorID, contentID, publishedAtMillis int64, batchSize int, keepN int64, logger logx.Logger) {
+	days := svcCtx.Config.FollowFanOut.DeadlineWindowDays
+	inboxArgs := followwindow.WriteArgs(keepN, followwindow.CutoffMillis(days), followwindow.TTLSeconds(days), publishedAtMillis, contentID)
 	cursor := int64(0)
 	totalPushed := 0
 
@@ -112,8 +100,7 @@ func pushToFollowers(ctx context.Context, svcCtx *svc.ServiceContext, authorID, 
 				ctx,
 				luautils.UpdateFollowInboxZSetScript,
 				[]string{inboxKey},
-				strconv.FormatInt(keepN, 10),
-				contentIDStr, contentIDStr,
+				inboxArgs...,
 			); err != nil {
 				// 单个 follower 失败不影响其他人，只记日志
 				logger.Errorf("fan-out 写 inbox 失败 followerID=%d contentID=%d: %v", followerID, contentID, err)

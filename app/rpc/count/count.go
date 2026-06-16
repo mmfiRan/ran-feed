@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ran-feed/app/rpc/count/count"
 	"ran-feed/app/rpc/count/internal/config"
+	"ran-feed/app/rpc/count/internal/job"
 	"ran-feed/app/rpc/count/internal/mq/consumer"
 	counterserviceServer "ran-feed/app/rpc/count/internal/server/counterservice"
 	"ran-feed/app/rpc/count/internal/svc"
@@ -46,6 +47,8 @@ func main() {
 	for _, mq := range mqs {
 		serviceGroup.Add(mq)
 	}
+	// 全局大 V 集合周期重建 预热存量并兜底 CDC 漂移
+	serviceGroup.Add(job.NewBigVRebuildJob(ctx))
 	serviceGroup.Add(s)
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)

@@ -191,6 +191,15 @@ message BackfillFollowInboxRes {
   int32 added_count = 1;
 }
 
+message PurgeFolloweeFromInboxReq {
+  int64 follower_id = 1;
+  int64 followee_id = 2;
+}
+
+message PurgeFolloweeFromInboxRes {
+  int32 removed_count = 1;
+}
+
 message UserPublishFeedReq {
   int64 author_id = 1;
   optional int64 viewer_id = 2;
@@ -251,6 +260,7 @@ service ContentService{
   rpc DeleteContent(DeleteContentReq) returns (DeleteContentRes);
   rpc GetContentDetail(GetContentDetailReq) returns (GetContentDetailRes);
   rpc BackfillFollowInbox(BackfillFollowInboxReq) returns (BackfillFollowInboxRes);
+  rpc PurgeFolloweeFromInbox(PurgeFolloweeFromInboxReq) returns (PurgeFolloweeFromInboxRes);
 }
 
 service FeedService{

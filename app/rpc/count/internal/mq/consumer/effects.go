@@ -7,6 +7,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/threading"
 
+	"ran-feed/app/rpc/count/count"
 	rediskey "ran-feed/app/rpc/count/internal/common/consts/redis"
 )
 
@@ -22,7 +23,44 @@ func (c *CanalCountConsumer) dispatch(ctx context.Context, cs *changeSet) error 
 	}
 	c.invalidateCountCaches(cs)
 	c.invalidateUserProfileCaches(cs)
+	c.reconcileBigVSet(ctx, cs)
 	return c.markHotDirty(ctx, cs)
+}
+
+// reconcileBigVSet 粉丝数变更后按阈值增量维护全局大 V 集合 best-effort 失败只记日志不阻断管线
+func (c *CanalCountConsumer) reconcileBigVSet(ctx context.Context, cs *changeSet) {
+	for key := range cs.counts {
+		if key.bizType != count.BizType_FOLLOWED || key.targetType != count.TargetType_USER {
+			continue
+		}
+		c.syncBigVMember(ctx, key.targetID)
+	}
+}
+
+// syncBigVMember 读当前粉丝数与阈值比对 幂等 SADD 或 SREM 大 V 集合
+func (c *CanalCountConsumer) syncBigVMember(ctx context.Context, userID int64) {
+	if userID <= 0 {
+		return
+	}
+	row, err := c.countRepo.Get(int32(count.BizType_FOLLOWED), int32(count.TargetType_USER), userID)
+	if err != nil {
+		c.Errorf("大 V 集合读粉丝数失败 userID=%d err=%v", userID, err)
+		return
+	}
+	value := int64(0)
+	if row != nil {
+		value = row.Value
+	}
+	member := strconv.FormatInt(userID, 10)
+	if value >= rediskey.BigVFollowerThreshold {
+		if _, err := c.svcContext.Redis.SaddCtx(ctx, rediskey.RedisFeedBigVGlobalKey, member); err != nil {
+			c.Errorf("大 V 集合 SADD 失败 userID=%d err=%v", userID, err)
+		}
+		return
+	}
+	if _, err := c.svcContext.Redis.SremCtx(ctx, rediskey.RedisFeedBigVGlobalKey, member); err != nil {
+		c.Errorf("大 V 集合 SREM 失败 userID=%d err=%v", userID, err)
+	}
 }
 
 // invalidateCountCaches 旁路缓存 写成功后删计数缓存 即时加延迟双删由 operator 内部完成

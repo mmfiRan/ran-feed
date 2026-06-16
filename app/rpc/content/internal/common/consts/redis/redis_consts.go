@@ -41,6 +41,8 @@ const (
 	RedisFeedFollowBigVPrefix = "feed:follow:bigv"
 	// FollowBigVEmptySentinel 已计算且为空的占位成员，避免 miss 时反复 rebuild
 	FollowBigVEmptySentinel = "0"
+	// RedisFeedBigVGlobalKey 全局大 V 集合 由 count 服务跨阈值维护 本服务读写关注流时命中判推拉
+	RedisFeedBigVGlobalKey = "feed:bigv:global"
 	// RedisFeedUserPublishPrefix 用户发布列表前缀 feed:user:publish
 	RedisFeedUserPublishPrefix = "feed:user:publish"
 	// RedisFeedUserFavoritePrefix 用户收藏列表前缀 feed:user:favoriteBuildUserFavoriteFeedKey

@@ -2,8 +2,21 @@
 
 ## 当前状态
 
-**最后更新：** 2026-06-15
-**当前功能：** refactor-003 feed 二级缓存内容详情统一（done）+ refactor-002 收藏链路去 Lua 化（done）
+**最后更新：** 2026-06-16
+**当前功能：** refactor-004 关注流重构为基于 deadline 的时间窗口推拉流（done）
+
+---
+
+## 已完成（refactor-004 关注流 deadline 时间窗口重构）
+
+分 5 个 Phase 落地 各自 ./init.sh 全绿：
+
+- **Phase 1 大 V 模型 → 全局集合 feed:bigv:global**：count CanalCountConsumer.reconcileBigVSet 按 FOLLOWED 阈值 SADD/SREM 增量维护；新增 count internal/job/BigVRebuildJob 启动预热+每小时全量重建(临时 key SADD 后 RENAME 原子切换)兜底漂移与 Redis 丢失；content 写扩散 fanout 与读路径 bigv_merge 改 SISMEMBER/SMEMBERS∩关注 去 count-rpc 扫描与 500 截断漏读 cap 提 5000。Part B 认证号业务标记需加 schema 字段 后置未做。
+- **Phase 2 deadline 地基**：inbox/publish zset score content_id→published_at 毫秒；写 lua 加 ZREMRANGEBYSCORE 窗口裁剪+EXPIRE；query lua 游标改时间戳+min=cutoff+WITHSCORES 返回(member,score)；新增 followwindow(CutoffMillis/TTLSeconds/WriteArgs) 与 lua_reply.parseZSetReply/scoredID/mergeScored 按 published_at 归并；冷路径 ListFollowByAuthorsCursor 与 user_publish 全改 published_at 游标。inbox 窗口裁剪 publish 不裁剪(承载 user_publish 全量历史 窗口只读时施加)。
+- **Phase 3 关注 backfill**：FollowUser 翻转判定只在 unfollow→follow 触发；content BackfillFollowInbox 失效 viewer bigv 缓存+大 V 跳过+窗口对齐(冷则回源 DB ListPublishedByAuthorWithinWindow 取 PUBLIC)。
+- **Phase 4 取关清理**：新增 RPC PurgeFolloweeFromInbox(改 proto goctl 生成) 失效 bigv 缓存+大 V 跳过+ZREM followee 窗口内 content_id；UnfollowUser 翻转判定+异步调用。
+- **Phase 5 收尾**：listFollowees 三合一 listFolloweesCapped；backfill/purge/fanout 取数与大 V 判定去重收口 follow_inbox_source(loadFolloweeWindowContent/isBigVAuthor)。
+- 项目未上线 不考虑存量迁移。
 
 ---
 

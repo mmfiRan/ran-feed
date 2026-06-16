@@ -25,8 +25,9 @@ type ContentRepository interface {
 	GetHotScoreByID(contentID int64) (float64, error)
 	CountByAuthor(status int32, visibility int32, authorID int64) (int64, error)
 	ListRecommendByHotScoreCursor(status int32, visibility int32, cursorScore float64, cursorID int64, limit int) ([]*model.RanFeedContent, error)
-	ListFollowByAuthorsCursor(status int32, visibility int32, authorIDs []int64, cursorID int64, limit int) ([]*model.RanFeedContent, error)
+	ListFollowByAuthorsCursor(status int32, visibility int32, authorIDs []int64, cursorMillis int64, limit int) ([]*model.RanFeedContent, error)
 	ListPublishedByAuthor(authorID int64) ([]*model.RanFeedContent, error)
+	ListPublishedByAuthorWithinWindow(authorID int64, sinceMillis int64, limit int) ([]*model.RanFeedContent, error)
 	ListColdUpdateContents(status int32, visibility int32, start time.Time, cursorID int64, limit int) ([]*model.RanFeedContent, error)
 	BatchGetRecommendByIDs(status int32, visibility int32, contentIDs []int64) (map[int64]*model.RanFeedContent, error)
 	BatchGetPublishedByIDs(contentIDs []int64) (map[int64]*model.RanFeedContent, error)
@@ -201,7 +202,7 @@ func (r *ContentRepositoryImpl) ListRecommendByHotScoreCursor(status int32, visi
 	return rows, nil
 }
 
-func (r *ContentRepositoryImpl) ListFollowByAuthorsCursor(status int32, visibility int32, authorIDs []int64, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
+func (r *ContentRepositoryImpl) ListFollowByAuthorsCursor(status int32, visibility int32, authorIDs []int64, cursorMillis int64, limit int) ([]*model.RanFeedContent, error) {
 	if limit <= 0 {
 		return nil, nil
 	}
@@ -218,11 +219,13 @@ func (r *ContentRepositoryImpl) ListFollowByAuthorsCursor(status int32, visibili
 		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
 		Where(q.RanFeedContent.UserID.In(authorIDs...))
 
-	if cursorID > 0 {
-		doQuery = doQuery.Where(q.RanFeedContent.ID.Lt(cursorID))
+	// 游标按 published_at 毫秒 取早于游标的内容 与 inbox/publish zset 时间序对齐
+	if cursorMillis > 0 {
+		doQuery = doQuery.Where(q.RanFeedContent.PublishedAt.Lt(time.UnixMilli(cursorMillis)))
 	}
 
 	rows, err := doQuery.
+		Order(q.RanFeedContent.PublishedAt.Desc()).
 		Order(q.RanFeedContent.ID.Desc()).
 		Limit(limit).
 		Find()
@@ -244,7 +247,32 @@ func (r *ContentRepositoryImpl) ListPublishedByAuthor(authorID int64) ([]*model.
 		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PUBLISHED))).
 		Where(q.RanFeedContent.IsDeleted.Eq(0)).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
+		Order(q.RanFeedContent.PublishedAt.Desc()).
 		Order(q.RanFeedContent.ID.Desc()).
+		Find()
+}
+
+// ListPublishedByAuthorWithinWindow 取作者在 sinceMillis 之后发布的 PUBLIC 内容 按 published_at 倒序 capped limit
+// 供关注 backfill 在 publish zset 冷时回源 只取 PUBLIC 与写扩散口径一致
+func (r *ContentRepositoryImpl) ListPublishedByAuthorWithinWindow(authorID int64, sinceMillis int64, limit int) ([]*model.RanFeedContent, error) {
+	if authorID <= 0 || limit <= 0 {
+		return nil, nil
+	}
+	q := r.getQuery()
+	doQuery := q.RanFeedContent.WithContext(r.ctx).
+		Select(q.RanFeedContent.ID, q.RanFeedContent.ContentType, q.RanFeedContent.UserID, q.RanFeedContent.PublishedAt).
+		Where(q.RanFeedContent.UserID.Eq(authorID)).
+		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PUBLISHED))).
+		Where(q.RanFeedContent.Visibility.Eq(int32(content.Visibility_PUBLIC))).
+		Where(q.RanFeedContent.IsDeleted.Eq(0)).
+		Where(q.RanFeedContent.PublishedAt.IsNotNull())
+	if sinceMillis > 0 {
+		doQuery = doQuery.Where(q.RanFeedContent.PublishedAt.Gte(time.UnixMilli(sinceMillis)))
+	}
+	return doQuery.
+		Order(q.RanFeedContent.PublishedAt.Desc()).
+		Order(q.RanFeedContent.ID.Desc()).
+		Limit(limit).
 		Find()
 }
 

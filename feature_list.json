@@ -1,7 +1,7 @@
 {
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
-  "last_updated": "2026-06-15",
+  "last_updated": "2026-06-16",
   "_meta_note": "重构起点 从零跟踪功能状态",
   "_field_guide": {
     "id": "feat-XXX 新功能 / fix-XXX 修复 / sec-XXX 安全 / opt-XXX 优化 / refactor-XXX 重构",
@@ -35,6 +35,14 @@
       "dependencies": [],
       "status": "done",
       "evidence": "./init.sh 通过 build vet test 全绿；新增 contentcache 包单测覆盖全命中/部分命中/去重跳 id<=0/miss 回填正值与 TTL/负哨兵写入与命中跳 loader/关缓存直回源/loader 错误透传/Invalidate 删 key；四条 feed 各删一份重复 buildBriefMaps+buildUserAndLikeMaps+buildItems 收口共享 resolver；纯重构对外行为不变 publish/favorite 不过滤可见性 recommend/follow 保持 PUBLIC 过滤"
+    },
+    {
+      "id": "refactor-004",
+      "name": "关注流重构为基于 deadline 的时间窗口推拉流",
+      "description": "把关注流从'按条数截断的永久收件箱'重构为'最近 T=14 天时间窗口缓存'(T 可配 FollowFanOut.DeadlineWindowDays 默认 14)。①大 V 模型：viewer 侧逐个 count-rpc 扫描(≤500次/5min)+500 截断漏读 改为全局集合 feed:bigv:global——count 的 CanalCountConsumer 在 FOLLOWED 计数变更后按阈值 SADD/SREM 增量维护(effects.go reconcileBigVSet)，count 新增 BigVRebuildJob(internal/job)启动预热+每小时全量重建(临时 key 批量 SADD 后 RENAME 原子切换)兜底漂移与 Redis 丢失；content 写扩散 fanout 与读路径 bigv_merge 改 SISMEMBER/SMEMBERS∩关注(去 500 截断 cap 提 5000)。②deadline 地基：inbox/publish zset score 由 content_id 改 published_at 毫秒；写 lua 加 ZREMRANGEBYSCORE 窗口裁剪+EXPIRE 续期；query lua 游标改时间戳+min=cutoff+WITHSCORES 返回(member,score)；新增 followwindow helper(CutoffMillis/TTLSeconds/WriteArgs)与 lua_reply.parseZSetReply/scoredID/mergeScored 按 published_at 归并；冷路径 ListFollowByAuthorsCursor 与 user_publish 全改 published_at 游标。inbox 窗口裁剪 publish 不裁剪(承载 user_publish_feed 全量历史 窗口只读时施加)。③关注 backfill：FollowUser 加翻转判定只在 unfollow→follow 触发；content BackfillFollowInbox 失效 viewer bigv 缓存+大 V 跳过+窗口对齐(publish zset 冷则回源 DB ListPublishedByAuthorWithinWindow 只取 PUBLIC)。④取关清理：新增 RPC PurgeFolloweeFromInbox(改 proto goctl 生成)失效 bigv 缓存+大 V 跳过+ZREM followee 窗口内 content_id；UnfollowUser 翻转判定+异步调用。⑤大 key：inbox 窗口裁剪+keepN+整 key TTL 冷用户自动回收。⑥收尾：listFollowees 三合一 listFolloweesCapped；backfill/purge/fanout 取数与大 V 判定去重收口 follow_inbox_source(loadFolloweeWindowContent/isBigVAuthor)。Part B 业务标记(认证号)需加 schema 字段 后置未做。",
+      "dependencies": ["refactor-001", "refactor-003"],
+      "status": "done",
+      "evidence": "./init.sh 通过 build vet test 全绿(content/count/interaction 三服务+proto goctl 重新生成)；大 V 判定读写统一全局集合 CDC 增量+周期重建双保障 消除 N 次 count-rpc 与 500 截断漏读；inbox/publish 全切 published_at 时间游标 inbox 带窗口裁剪与 TTL publish 仅 keepN+TTL 保留全量历史；关注 backfill/取关 purge 与写扩散推拉边界对称(大 V 一律跳过 推/回填/清理 由读时 merge 覆盖)；取关主动 ZREM 清理脏数据+follow/unfollow 均失效 viewer bigv 缓存；listFollowees 与窗口取数/大 V 判定去重无残留。项目未上线无存量迁移负担。"
     }
   ]
 }

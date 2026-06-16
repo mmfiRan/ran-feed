@@ -56,6 +56,9 @@ func (m *mockCountRepo) BatchGet(int32, int32, []int64) (map[int64]*model.RanFee
 }
 
 func (m *mockCountRepo) SumByOwner(int32, int32, int64) (int64, error) { return 0, nil }
+func (m *mockCountRepo) ListTargetIDsByValueGte(int32, int32, int64) ([]int64, error) {
+	return nil, nil
+}
 
 func (m *mockCountRepo) UpsertValue(int32, int32, int64, int64, time.Time) error { return nil }
 

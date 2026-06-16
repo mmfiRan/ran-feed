@@ -4,8 +4,6 @@ import (
 	"context"
 	"ran-feed/app/rpc/content/internal/common/consts"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
-	"strconv"
 	"time"
 
 	"ran-feed/app/rpc/content/content"
@@ -38,13 +36,13 @@ func NewPublishVideoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Publ
 }
 
 func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.VideoPublishRes, error) {
+	now := time.Now()
 	var contentId int64
 	if err := query.Q.Transaction(func(tx *query.Query) error {
 		contentRepo := l.contentRepository.WithTx(tx)
 		videoRepo := l.videoRepository.WithTx(tx)
 
 		contentId = snowflake.GenID()
-		now := time.Now()
 		contentDO := &do.ContentDO{
 			ID:          contentId,
 			UserID:      in.UserId,
@@ -73,23 +71,16 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("发布视频失败"))
 	}
 
-	l.afterPublish(contentId, in.UserId, in.Visibility)
+	l.afterPublish(contentId, in.UserId, now.UnixMilli(), in.Visibility)
 
 	return &content.VideoPublishRes{
 		ContentId: contentId,
 	}, nil
 }
 
-func (l *PublishVideoLogic) afterPublish(contentId, userID int64, visibility content.Visibility) {
+func (l *PublishVideoLogic) afterPublish(contentId, userID, publishedAtMillis int64, visibility content.Visibility) {
 	feedKey := rediskey.BuildUserPublishFeedKey(userID)
-	contentIDStr := strconv.FormatInt(contentId, 10)
-	if _, err := l.svcCtx.Redis.EvalCtx(
-		l.ctx,
-		luautils.UpdateUserPublishZSetScript,
-		[]string{feedKey},
-		strconv.FormatInt(userPublishFeedKeepN, 10),
-		contentIDStr, contentIDStr,
-	); err != nil {
+	if err := writeUserPublishZSet(l.ctx, l.svcCtx, feedKey, contentId, publishedAtMillis); err != nil {
 		l.Logger.Errorf("更新用户发布列表缓存失败 contentId=%d: %v", contentId, err)
 	}
 	if shouldSeedHotIncrement(visibility) {
@@ -98,5 +89,5 @@ func (l *PublishVideoLogic) afterPublish(contentId, userID int64, visibility con
 		}
 	}
 	// 推拉结合：小账号 fan-out 到 follower inbox，大 V 跳过
-	fanOutToFollowersAsync(l.svcCtx, userID, contentId, visibility)
+	fanOutToFollowersAsync(l.svcCtx, userID, contentId, publishedAtMillis, visibility)
 }

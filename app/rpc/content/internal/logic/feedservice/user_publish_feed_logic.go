@@ -7,6 +7,7 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
+	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
 	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -136,7 +137,9 @@ func (l *UserPublishFeedLogic) loadPageIDs(feedKey string, authorID int64, curso
 		pageRows := l.pageUserPublishRows(allRows, cursor, pageSize)
 		if len(pageRows) > pageSize {
 			hasMore = true
-			nextCursor = strconv.FormatInt(pageRows[pageSize-1].ID, 10)
+			if last := pageRows[pageSize-1]; last.PublishedAt != nil {
+				nextCursor = strconv.FormatInt(last.PublishedAt.UnixMilli(), 10)
+			}
 			pageRows = pageRows[:pageSize]
 		} else {
 			hasMore = false
@@ -176,50 +179,28 @@ func buildUserPublishFeedRebuildLockKey(authorID int64) string {
 }
 
 func (l *UserPublishFeedLogic) queryUserPublishIDs(feedKey, cursor string, pageSize int) ([]int64, string, bool, bool, error) {
-	// Lua 返回: [keyExists, hasMore, nextCursor, id1, id2, ...]
+	// publish zset 承载全量历史 不按时间裁剪 cutoff=0 读时续期整 key TTL
+	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
 	res, err := l.svcCtx.Redis.EvalCtx(
 		l.ctx,
 		luautils.QueryUserPublishZSetScript,
 		[]string{feedKey},
 		cursor,
 		strconv.FormatInt(int64(pageSize), 10),
+		"0",
+		strconv.Itoa(followwindow.TTLSeconds(days)),
 	)
 	if err != nil {
 		return nil, "", false, false, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询发布列表失败"))
 	}
-	arr, ok := res.([]interface{})
-	if !ok || len(arr) < 3 {
+	items, nextCursor, hasMore, exists, ok := parseZSetReply(res)
+	if !ok {
 		return nil, "", false, false, errorx.NewMsg("查询发布列表失败")
 	}
-
-	existsVal, _ := luaReplyInt64(arr[0])
-	cacheExists := existsVal == 1
-	if !cacheExists {
+	if !exists {
 		return nil, "", false, false, nil
 	}
-
-	hasMoreVal, _ := luaReplyInt64(arr[1])
-	hasMore := hasMoreVal == 1
-	nextCursor := ""
-	if hasMore {
-		if s, ok := luaReplyString(arr[2]); ok {
-			nextCursor = s
-		}
-	}
-
-	ids := make([]int64, 0, len(arr)-3)
-	for i := 3; i < len(arr); i++ {
-		s, _ := luaReplyString(arr[i])
-		if s == "" {
-			continue
-		}
-		id, parseErr := strconv.ParseInt(s, 10, 64)
-		if parseErr != nil || id <= 0 {
-			continue
-		}
-		ids = append(ids, id)
-	}
-	return ids, nextCursor, hasMore, true, nil
+	return scoredIDsToIDs(items), nextCursor, hasMore, true, nil
 }
 
 func (l *UserPublishFeedLogic) queryUserPublishAllFromDB(authorID int64) ([]*model.RanFeedContent, error) {
@@ -231,26 +212,20 @@ func (l *UserPublishFeedLogic) queryUserPublishAllFromDB(authorID int64) ([]*mod
 }
 
 func (l *UserPublishFeedLogic) updateUserPublishCache(feedKey string, rows []*model.RanFeedContent) error {
-	if len(rows) == 0 {
-		return nil
-	}
-	args := make([]interface{}, 0, 1+len(rows)*2)
-	args = append(args, strconv.FormatInt(int64(userPublishFeedKeepN), 10))
-	// UpdateUserPublishZSetScript 参数约定: [keep_latest_n, member, score, ...]
-	// 这里使用 content_id 作为 member 和 score，天然可做时间倒序游标分页。
+	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
+	pairs := make([]int64, 0, len(rows)*2)
 	for _, r := range rows {
-		if r == nil {
+		if r == nil || r.PublishedAt == nil {
 			continue
 		}
-		idStr := strconv.FormatInt(r.ID, 10)
-		args = append(args, idStr, idStr)
+		pairs = append(pairs, r.PublishedAt.UnixMilli(), r.ID)
 	}
-	_, err := l.svcCtx.Redis.EvalCtx(
-		l.ctx,
-		luautils.UpdateUserPublishZSetScript,
-		[]string{feedKey},
-		args...,
-	)
+	if len(pairs) == 0 {
+		return nil
+	}
+	// publish zset 承载全量历史 不按时间裁剪 cutoff=0
+	args := followwindow.WriteArgs(int64(userPublishFeedKeepN), 0, followwindow.TTLSeconds(days), pairs...)
+	_, err := l.svcCtx.Redis.EvalCtx(l.ctx, luautils.UpdateUserPublishZSetScript, []string{feedKey}, args...)
 	return err
 }
 
@@ -259,21 +234,22 @@ func (l *UserPublishFeedLogic) pageUserPublishRows(allRows []*model.RanFeedConte
 		return allRows
 	}
 
-	cursorID := int64(0)
+	// 游标按 published_at 毫秒 与 zset score 对齐 allRows 已按 published_at 倒序
+	cursorMillis := int64(0)
 	if cursor != "" {
 		v, err := strconv.ParseInt(cursor, 10, 64)
 		if err == nil && v > 0 {
-			cursorID = v
+			cursorMillis = v
 		}
 	}
 
 	res := make([]*model.RanFeedContent, 0, pageSize+1)
 	// 多取 1 条用于判断 hasMore，避免额外 count 查询。
 	for _, r := range allRows {
-		if r == nil {
+		if r == nil || r.PublishedAt == nil {
 			continue
 		}
-		if cursorID > 0 && r.ID >= cursorID {
+		if cursorMillis > 0 && r.PublishedAt.UnixMilli() >= cursorMillis {
 			continue
 		}
 		res = append(res, r)

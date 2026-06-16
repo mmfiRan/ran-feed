@@ -20,6 +20,12 @@ const (
 	// RedisFeedHotDirtyPrefix 热榜脏集合活跃分片前缀 feed:hot:dirty 加 id 取模 shards
 	// 互动只记谁脏了 Set 去重 算分由 content 快更任务回查计数总量批量完成
 	RedisFeedHotDirtyPrefix = "feed:hot:dirty"
+	// RedisFeedBigVGlobalKey 全局大 V 集合 粉丝数跨阈值由本消费者增量维护 content 读写关注流时命中判推拉
+	RedisFeedBigVGlobalKey = "feed:bigv:global"
+	// RedisFeedBigVGlobalRebuildKey 大 V 集合周期重建临时 key 建好后 RENAME 原子换到正式 key
+	RedisFeedBigVGlobalRebuildKey = "feed:bigv:global:rebuild"
+	// BigVFollowerThreshold 大 V 粉丝数阈值 与 content 服务 FollowFanOut.BigVFollowerThreshold 默认值约定一致
+	BigVFollowerThreshold int64 = 5000
 )
 
 func GetRedisPrefixKey(prefix string, id string) string {

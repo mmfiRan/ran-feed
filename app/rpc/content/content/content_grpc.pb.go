@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.19.4
-// source: proto/content.proto
+// source: app/rpc/content/proto/content.proto
 
 package content
 
@@ -19,13 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ContentService_Uploads_FullMethodName             = "/content.ContentService/Uploads"
-	ContentService_PublishArticle_FullMethodName      = "/content.ContentService/PublishArticle"
-	ContentService_PublishVideo_FullMethodName        = "/content.ContentService/PublishVideo"
-	ContentService_GetUserContentCount_FullMethodName = "/content.ContentService/GetUserContentCount"
-	ContentService_DeleteContent_FullMethodName       = "/content.ContentService/DeleteContent"
-	ContentService_GetContentDetail_FullMethodName    = "/content.ContentService/GetContentDetail"
-	ContentService_BackfillFollowInbox_FullMethodName = "/content.ContentService/BackfillFollowInbox"
+	ContentService_Uploads_FullMethodName                = "/content.ContentService/Uploads"
+	ContentService_PublishArticle_FullMethodName         = "/content.ContentService/PublishArticle"
+	ContentService_PublishVideo_FullMethodName           = "/content.ContentService/PublishVideo"
+	ContentService_GetUserContentCount_FullMethodName    = "/content.ContentService/GetUserContentCount"
+	ContentService_DeleteContent_FullMethodName          = "/content.ContentService/DeleteContent"
+	ContentService_GetContentDetail_FullMethodName       = "/content.ContentService/GetContentDetail"
+	ContentService_BackfillFollowInbox_FullMethodName    = "/content.ContentService/BackfillFollowInbox"
+	ContentService_PurgeFolloweeFromInbox_FullMethodName = "/content.ContentService/PurgeFolloweeFromInbox"
 )
 
 // ContentServiceClient is the client API for ContentService service.
@@ -39,6 +40,7 @@ type ContentServiceClient interface {
 	DeleteContent(ctx context.Context, in *DeleteContentReq, opts ...grpc.CallOption) (*DeleteContentRes, error)
 	GetContentDetail(ctx context.Context, in *GetContentDetailReq, opts ...grpc.CallOption) (*GetContentDetailRes, error)
 	BackfillFollowInbox(ctx context.Context, in *BackfillFollowInboxReq, opts ...grpc.CallOption) (*BackfillFollowInboxRes, error)
+	PurgeFolloweeFromInbox(ctx context.Context, in *PurgeFolloweeFromInboxReq, opts ...grpc.CallOption) (*PurgeFolloweeFromInboxRes, error)
 }
 
 type contentServiceClient struct {
@@ -119,6 +121,16 @@ func (c *contentServiceClient) BackfillFollowInbox(ctx context.Context, in *Back
 	return out, nil
 }
 
+func (c *contentServiceClient) PurgeFolloweeFromInbox(ctx context.Context, in *PurgeFolloweeFromInboxReq, opts ...grpc.CallOption) (*PurgeFolloweeFromInboxRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PurgeFolloweeFromInboxRes)
+	err := c.cc.Invoke(ctx, ContentService_PurgeFolloweeFromInbox_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ContentServiceServer is the server API for ContentService service.
 // All implementations must embed UnimplementedContentServiceServer
 // for forward compatibility.
@@ -130,6 +142,7 @@ type ContentServiceServer interface {
 	DeleteContent(context.Context, *DeleteContentReq) (*DeleteContentRes, error)
 	GetContentDetail(context.Context, *GetContentDetailReq) (*GetContentDetailRes, error)
 	BackfillFollowInbox(context.Context, *BackfillFollowInboxReq) (*BackfillFollowInboxRes, error)
+	PurgeFolloweeFromInbox(context.Context, *PurgeFolloweeFromInboxReq) (*PurgeFolloweeFromInboxRes, error)
 	mustEmbedUnimplementedContentServiceServer()
 }
 
@@ -160,6 +173,9 @@ func (UnimplementedContentServiceServer) GetContentDetail(context.Context, *GetC
 }
 func (UnimplementedContentServiceServer) BackfillFollowInbox(context.Context, *BackfillFollowInboxReq) (*BackfillFollowInboxRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BackfillFollowInbox not implemented")
+}
+func (UnimplementedContentServiceServer) PurgeFolloweeFromInbox(context.Context, *PurgeFolloweeFromInboxReq) (*PurgeFolloweeFromInboxRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PurgeFolloweeFromInbox not implemented")
 }
 func (UnimplementedContentServiceServer) mustEmbedUnimplementedContentServiceServer() {}
 func (UnimplementedContentServiceServer) testEmbeddedByValue()                        {}
@@ -308,6 +324,24 @@ func _ContentService_BackfillFollowInbox_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ContentService_PurgeFolloweeFromInbox_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PurgeFolloweeFromInboxReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContentServiceServer).PurgeFolloweeFromInbox(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ContentService_PurgeFolloweeFromInbox_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContentServiceServer).PurgeFolloweeFromInbox(ctx, req.(*PurgeFolloweeFromInboxReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ContentService_ServiceDesc is the grpc.ServiceDesc for ContentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -343,9 +377,13 @@ var ContentService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "BackfillFollowInbox",
 			Handler:    _ContentService_BackfillFollowInbox_Handler,
 		},
+		{
+			MethodName: "PurgeFolloweeFromInbox",
+			Handler:    _ContentService_PurgeFolloweeFromInbox_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/content.proto",
+	Metadata: "app/rpc/content/proto/content.proto",
 }
 
 const (
@@ -561,5 +599,5 @@ var FeedService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/content.proto",
+	Metadata: "app/rpc/content/proto/content.proto",
 }

@@ -7,12 +7,12 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
+	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
 	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
-	"ran-feed/app/rpc/interaction/client/followservice"
 	"ran-feed/app/rpc/user/client/userservice"
 	"ran-feed/pkg/errorx"
 
@@ -26,6 +26,11 @@ const (
 	followInboxRebuildTimeout        = 20 * time.Second
 
 	followInboxKeepN = 5000
+
+	// rebuildFolloweesScanCap 异步重建 inbox 时扫描关注的上限
+	rebuildFolloweesScanCap = 5000
+	// coldBackfillFolloweesScanCap 同步冷兜底首屏扫描关注的上限
+	coldBackfillFolloweesScanCap = 2000
 )
 
 type FollowFeedLogic struct {
@@ -62,17 +67,21 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 
 	// 1. 先查 inbox 缓存
 	inboxKey := rediskey.BuildFollowInboxKey(userID)
-	ids, nextCursor, hasMore, cacheExists, err := l.queryInboxIDs(inboxKey, in.Cursor, pageSize)
+	items, nextCursor, hasMore, cacheExists, err := l.queryInboxIDs(inboxKey, in.Cursor, pageSize)
 	if err != nil {
 		return nil, err
 	}
 
+	var ids []int64
 	if cacheExists {
 		// 2a. 缓存命中：先 merge 大 V publish zset（推拉结合读时拉）
+		ids = scoredIDsToIDs(items)
 		bigVIDs := l.loadViewerBigVList(userID)
 		if len(bigVIDs) > 0 {
 			pool, anyMore := l.fetchBigVContentIDs(bigVIDs, in.Cursor, pageSize)
-			ids, hasMore, nextCursor = mergeContentIDs(ids, hasMore, pool, anyMore, pageSize)
+			if len(pool) > 0 {
+				ids, hasMore, nextCursor = mergeScored(items, hasMore, pool, anyMore, pageSize)
+			}
 		}
 	} else {
 		// 2b. 缓存未命中：异步重建，同步走 DB 兜底返回首屏
@@ -158,11 +167,11 @@ func (l *FollowFeedLogic) rebuildInboxWithLock(userID int64, inboxKey string) {
 			l.Errorf("释放重建锁失败 userID=%d: %v", userID, rerr)
 		}
 	}()
-	l.rebuildInboxCacheBestEffort(l.ctx, userID, inboxKey)
+	l.rebuildInboxCacheBestEffort(userID, inboxKey)
 }
 
-func (l *FollowFeedLogic) rebuildInboxCacheBestEffort(ctx context.Context, userID int64, inboxKey string) {
-	followees, err := l.listFollowees(ctx, userID)
+func (l *FollowFeedLogic) rebuildInboxCacheBestEffort(userID int64, inboxKey string) {
+	followees, err := l.listFolloweesCapped(userID, rebuildFolloweesScanCap)
 	if err != nil {
 		l.Errorf("查询关注列表失败: %v", err)
 		return
@@ -186,108 +195,39 @@ func (l *FollowFeedLogic) rebuildInboxCacheBestEffort(ctx context.Context, userI
 	}
 }
 
-func (l *FollowFeedLogic) listFollowees(ctx context.Context, userID int64) ([]int64, error) {
-	followees := make([]int64, 0)
-	followCursor := int64(0)
-	for {
-		resp, err := l.svcCtx.FollowRpc.ListFollowees(ctx, &followservice.ListFolloweesReq{
-			UserId:   userID,
-			Cursor:   followCursor,
-			PageSize: 500,
-		})
-		if err != nil {
-			return nil, err
-		}
-		if resp != nil && len(resp.FollowUserIds) > 0 {
-			followees = append(followees, resp.FollowUserIds...)
-		}
-		if resp == nil || !resp.HasMore || resp.NextCursor <= 0 {
-			break
-		}
-		followCursor = resp.NextCursor
-		if len(followees) >= 5000 {
-			break
-		}
-	}
-	return followees, nil
-}
-
-func (l *FollowFeedLogic) queryInboxIDs(inboxKey, cursor string, pageSize int) ([]int64, string, bool, bool, error) {
+func (l *FollowFeedLogic) queryInboxIDs(inboxKey, cursor string, pageSize int) ([]scoredID, string, bool, bool, error) {
+	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
 	res, err := l.svcCtx.Redis.EvalCtx(
 		l.ctx,
 		luautils.QueryFollowInboxZSetScript,
 		[]string{inboxKey},
 		cursor,
 		strconv.FormatInt(int64(pageSize), 10),
+		strconv.FormatInt(followwindow.CutoffMillis(days), 10),
+		strconv.Itoa(followwindow.TTLSeconds(days)),
 	)
 	if err != nil {
 		return nil, "", false, false, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注收件箱失败"))
 	}
-	arr, ok := res.([]interface{})
-	if !ok || len(arr) < 3 {
+	items, nextCursor, hasMore, exists, ok := parseZSetReply(res)
+	if !ok {
 		return nil, "", false, false, errorx.NewMsg("查询关注收件箱失败")
 	}
-
-	existsVal, _ := luaReplyInt64(arr[0])
-	exists := existsVal == 1
-	hasMoreVal, _ := luaReplyInt64(arr[1])
-	hasMore := hasMoreVal == 1
-
-	nextCursor := ""
-	if hasMore {
-		if s, ok := luaReplyString(arr[2]); ok {
-			nextCursor = s
-		}
-	}
-
-	ids := make([]int64, 0, len(arr)-3)
-	for i := 3; i < len(arr); i++ {
-		s, _ := luaReplyString(arr[i])
-		if s == "" {
-			continue
-		}
-		id, parseErr := strconv.ParseInt(s, 10, 64)
-		if parseErr != nil || id <= 0 {
-			continue
-		}
-		ids = append(ids, id)
-	}
-	return ids, nextCursor, hasMore, exists, nil
+	return items, nextCursor, hasMore, exists, nil
 }
 
-func (l *FollowFeedLogic) coldBackfill(userID int64, cursorID int64, limit int) ([]*model.RanFeedContent, bool, string, error) {
-
-	// 获取关注列表（分页拉取，避免一次返回过多）
-	followees := make([]int64, 0)
-	followCursor := int64(0)
-	for {
-		resp, err := l.svcCtx.FollowRpc.ListFollowees(l.ctx, &followservice.ListFolloweesReq{
-			UserId:   userID,
-			Cursor:   followCursor,
-			PageSize: 200,
-		})
-		if err != nil {
-			return nil, false, "", errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注列表失败"))
-		}
-		if resp != nil && len(resp.FollowUserIds) > 0 {
-			followees = append(followees, resp.FollowUserIds...)
-		}
-		if resp == nil || !resp.HasMore || resp.NextCursor <= 0 {
-			break
-		}
-		followCursor = resp.NextCursor
-		if len(followees) >= 2000 {
-			break
-		}
+func (l *FollowFeedLogic) coldBackfill(userID int64, cursorMillis int64, limit int) ([]*model.RanFeedContent, bool, string, error) {
+	followees, err := l.listFolloweesCapped(userID, coldBackfillFolloweesScanCap)
+	if err != nil {
+		return nil, false, "", errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注列表失败"))
 	}
-
 	if len(followees) == 0 {
 		return nil, false, "", nil
 	}
 
 	statusPublished := int32(content.ContentStatus_PUBLISHED)
 	visibilityPublic := int32(content.Visibility_PUBLIC)
-	rows, err := l.contentRepo.ListFollowByAuthorsCursor(statusPublished, visibilityPublic, followees, cursorID, limit+1)
+	rows, err := l.contentRepo.ListFollowByAuthorsCursor(statusPublished, visibilityPublic, followees, cursorMillis, limit+1)
 	if err != nil {
 		return nil, false, "", errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注内容失败"))
 	}
@@ -300,27 +240,28 @@ func (l *FollowFeedLogic) coldBackfill(userID int64, cursorID int64, limit int) 
 
 	nextCursor := ""
 	if hasMore && len(rows) > 0 {
-		nextCursor = strconv.FormatInt(rows[len(rows)-1].ID, 10)
+		last := rows[len(rows)-1]
+		if last.PublishedAt != nil {
+			nextCursor = strconv.FormatInt(last.PublishedAt.UnixMilli(), 10)
+		}
 	}
 	return rows, hasMore, nextCursor, nil
 }
 
 func (l *FollowFeedLogic) updateInboxCache(inboxKey string, rows []*model.RanFeedContent) error {
-	keepN := int64(followInboxKeepN)
-	args := make([]string, 0, 1+len(rows)*2)
-	args = append(args, strconv.FormatInt(keepN, 10))
+	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
+	pairs := make([]int64, 0, len(rows)*2)
 	for _, r := range rows {
-		if r == nil {
+		if r == nil || r.PublishedAt == nil {
 			continue
 		}
-		idStr := strconv.FormatInt(r.ID, 10)
-		args = append(args, idStr, idStr)
+		pairs = append(pairs, r.PublishedAt.UnixMilli(), r.ID)
 	}
-	argsAny := make([]any, 0, len(args))
-	for _, a := range args {
-		argsAny = append(argsAny, a)
+	if len(pairs) == 0 {
+		return nil
 	}
-	_, err := l.svcCtx.Redis.EvalCtx(l.ctx, luautils.UpdateFollowInboxZSetScript, []string{inboxKey}, argsAny...)
+	args := followwindow.WriteArgs(int64(followInboxKeepN), followwindow.CutoffMillis(days), followwindow.TTLSeconds(days), pairs...)
+	_, err := l.svcCtx.Redis.EvalCtx(l.ctx, luautils.UpdateFollowInboxZSetScript, []string{inboxKey}, args...)
 	return err
 }
 
