@@ -38,7 +38,9 @@ func NewBackfillFollowInboxLogic(ctx context.Context, svcCtx *svc.ServiceContext
 
 func (l *BackfillFollowInboxLogic) BackfillFollowInbox(in *content.BackfillFollowInboxReq) (*content.BackfillFollowInboxRes, error) {
 	if in == nil {
-		return &content.BackfillFollowInboxRes{AddedCount: 0}, nil
+		return &content.BackfillFollowInboxRes{
+			AddedCount: 0,
+		}, nil
 	}
 	if in.FollowerId <= 0 || in.FolloweeId <= 0 {
 		return nil, errorx.NewMsg("参数错误")
@@ -53,7 +55,9 @@ func (l *BackfillFollowInboxLogic) BackfillFollowInbox(in *content.BackfillFollo
 	if isBig, berr := isBigVAuthor(l.ctx, l.svcCtx, in.FolloweeId); berr != nil {
 		l.Errorf("查询大 V 集合失败 followeeID=%d err=%v", in.FolloweeId, berr)
 	} else if isBig {
-		return &content.BackfillFollowInboxRes{AddedCount: 0}, nil
+		return &content.BackfillFollowInboxRes{
+			AddedCount: 0,
+		}, nil
 	}
 
 	limit := int(in.Limit)
@@ -75,7 +79,9 @@ func (l *BackfillFollowInboxLogic) BackfillFollowInbox(in *content.BackfillFollo
 		return nil, err
 	}
 
-	return &content.BackfillFollowInboxRes{AddedCount: int32(addedCount)}, nil
+	return &content.BackfillFollowInboxRes{
+		AddedCount: int32(addedCount),
+	}, nil
 }
 
 func (l *BackfillFollowInboxLogic) updateInbox(inboxKey string, contents []followeeContent) (int, error) {

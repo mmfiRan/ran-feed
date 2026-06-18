@@ -25,7 +25,7 @@ const (
 	// RedisFeedBigVGlobalRebuildKey 大 V 集合周期重建临时 key 建好后 RENAME 原子换到正式 key
 	RedisFeedBigVGlobalRebuildKey = "feed:bigv:global:rebuild"
 	// BigVFollowerThreshold 大 V 粉丝数阈值 与 content 服务 FollowFanOut.BigVFollowerThreshold 默认值约定一致
-	BigVFollowerThreshold int64 = 5000
+	BigVFollowerThreshold int64 = 50000
 )
 
 func GetRedisPrefixKey(prefix string, id string) string {

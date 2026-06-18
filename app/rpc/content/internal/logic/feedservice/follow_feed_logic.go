@@ -65,7 +65,7 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 		pageSize = 50
 	}
 
-	// 1. 先查 inbox 缓存
+	// 查 inbox 缓存
 	inboxKey := rediskey.BuildFollowInboxKey(userID)
 	items, nextCursor, hasMore, cacheExists, err := l.queryInboxIDs(inboxKey, in.Cursor, pageSize)
 	if err != nil {
@@ -74,7 +74,7 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 
 	var ids []int64
 	if cacheExists {
-		// 2a. 缓存命中：先 merge 大 V publish zset（推拉结合读时拉）
+		// 缓存命中：先 merge 大 V publish zset（推拉结合读时拉）
 		ids = scoredIDsToIDs(items)
 		bigVIDs := l.loadViewerBigVList(userID)
 		if len(bigVIDs) > 0 {
@@ -84,7 +84,7 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 			}
 		}
 	} else {
-		// 2b. 缓存未命中：异步重建，同步走 DB 兜底返回首屏
+		// 缓存未命中：异步重建，同步走 DB 兜底返回首屏
 		threading.GoSafe(func() {
 			ctx, cancel := context.WithTimeout(context.Background(), followInboxRebuildTimeout)
 			defer cancel()
@@ -109,7 +109,7 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 		return emptyFollowFeedRes(), nil
 	}
 
-	// 3. 走统一二级缓存取详情 关注流只读 PUBLIC 再旁挂作者与点赞
+	// 走统一二级缓存取详情 关注流只读 PUBLIC 再旁挂作者与点赞
 	details, err := l.resolver.resolveDetails(ids, true)
 	if err != nil {
 		return nil, err

@@ -19,7 +19,7 @@ type CountValueRepository interface {
 	WithTx(tx *query.Query) CountValueRepository
 	Get(bizType int32, targetType int32, targetID int64) (*model.RanFeedCountValue, error)
 	BatchGet(bizType int32, targetType int32, targetIDs []int64) (map[int64]*model.RanFeedCountValue, error)
-	ListTargetIDsByValueGte(bizType int32, targetType int32, minValue int64) ([]int64, error)
+	ListTargetValuesByValueGte(bizType int32, targetType int32, minValue int64) ([]*model.RanFeedCountValue, error)
 	SumByOwner(bizType int32, targetType int32, ownerID int64) (int64, error)
 	UpsertValue(bizType int32, targetType int32, targetID int64, value int64, updatedAt time.Time) error
 	UpdateDelta(bizType int32, targetType int32, targetID int64, delta int64, updatedAt time.Time) (int64, error)
@@ -101,14 +101,14 @@ func (r *countValueRepositoryImpl) BatchGet(bizType int32, targetType int32, tar
 	return res, nil
 }
 
-// ListTargetIDsByValueGte 取 value 不小于阈值的 target_id 供大 V 集合周期重建 集合体量小一次取回
-func (r *countValueRepositoryImpl) ListTargetIDsByValueGte(bizType int32, targetType int32, minValue int64) ([]int64, error) {
+// ListTargetValuesByValueGte 取 value 不小于阈值的 target_id 与 value 供大 V 定时修正补晋升 集合体量小一次取回
+func (r *countValueRepositoryImpl) ListTargetValuesByValueGte(bizType int32, targetType int32, minValue int64) ([]*model.RanFeedCountValue, error) {
 	if bizType <= 0 || targetType <= 0 {
 		return nil, nil
 	}
 	q := r.getQuery()
 	rows, err := q.RanFeedCountValue.WithContext(r.ctx).
-		Select(q.RanFeedCountValue.TargetID).
+		Select(q.RanFeedCountValue.TargetID, q.RanFeedCountValue.Value).
 		Where(q.RanFeedCountValue.BizType.Eq(bizType)).
 		Where(q.RanFeedCountValue.TargetType.Eq(targetType)).
 		Where(q.RanFeedCountValue.Value.Gte(minValue)).
@@ -116,13 +116,7 @@ func (r *countValueRepositoryImpl) ListTargetIDsByValueGte(bizType int32, target
 	if err != nil {
 		return nil, err
 	}
-	ids := make([]int64, 0, len(rows))
-	for _, row := range rows {
-		if row != nil && row.TargetID > 0 {
-			ids = append(ids, row.TargetID)
-		}
-	}
-	return ids, nil
+	return rows, nil
 }
 
 func (r *countValueRepositoryImpl) SumByOwner(bizType int32, targetType int32, ownerID int64) (int64, error) {

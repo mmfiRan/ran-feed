@@ -27,7 +27,7 @@ func (c *CanalCountConsumer) dispatch(ctx context.Context, cs *changeSet) error 
 	return c.markHotDirty(ctx, cs)
 }
 
-// reconcileBigVSet 粉丝数变更后按阈值增量维护全局大 V 集合 best-effort 失败只记日志不阻断管线
+// reconcileBigVSet 粉丝数变更后按阈值晋升大 V best-effort 失败只记日志不阻断管线
 func (c *CanalCountConsumer) reconcileBigVSet(ctx context.Context, cs *changeSet) {
 	for key := range cs.counts {
 		if key.bizType != count.BizType_FOLLOWED || key.targetType != count.TargetType_USER {
@@ -37,29 +37,32 @@ func (c *CanalCountConsumer) reconcileBigVSet(ctx context.Context, cs *changeSet
 	}
 }
 
-// syncBigVMember 读当前粉丝数与阈值比对 幂等 SADD 或 SREM 大 V 集合
+// syncBigVMember 粉丝数跨阈值即晋升大 V sticky 只增不降 未达阈值不处理
+// 先落表作真相源 再写 Redis 全局集合 表失败不写集合 由周期重建兜底
 func (c *CanalCountConsumer) syncBigVMember(ctx context.Context, userID int64) {
 	if userID <= 0 {
 		return
 	}
 	row, err := c.countRepo.Get(int32(count.BizType_FOLLOWED), int32(count.TargetType_USER), userID)
 	if err != nil {
-		c.Errorf("大 V 集合读粉丝数失败 userID=%d err=%v", userID, err)
+		c.Errorf("大 V 晋升读粉丝数失败 userID=%d err=%v", userID, err)
 		return
 	}
 	value := int64(0)
 	if row != nil {
 		value = row.Value
 	}
-	member := strconv.FormatInt(userID, 10)
-	if value >= rediskey.BigVFollowerThreshold {
-		if _, err := c.svcContext.Redis.SaddCtx(ctx, rediskey.RedisFeedBigVGlobalKey, member); err != nil {
-			c.Errorf("大 V 集合 SADD 失败 userID=%d err=%v", userID, err)
-		}
+	if value < rediskey.BigVFollowerThreshold {
 		return
 	}
-	if _, err := c.svcContext.Redis.SremCtx(ctx, rediskey.RedisFeedBigVGlobalKey, member); err != nil {
-		c.Errorf("大 V 集合 SREM 失败 userID=%d err=%v", userID, err)
+
+	if err := c.bigVRepo.Promote(userID, value); err != nil {
+		c.Errorf("大 V 晋升落表失败 userID=%d err=%v", userID, err)
+		return
+	}
+	member := strconv.FormatInt(userID, 10)
+	if _, err := c.svcContext.Redis.SaddCtx(ctx, rediskey.RedisFeedBigVGlobalKey, member); err != nil {
+		c.Errorf("大 V 集合 SADD 失败 userID=%d err=%v", userID, err)
 	}
 }
 

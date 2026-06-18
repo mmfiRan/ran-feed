@@ -51,3 +51,15 @@ KqConsumerConf:
   Offset: last
   Consumers: 8
   Processors: 8
+
+# xxl-job 执行器配置 大 V 定时修正任务
+XxlJob:
+  AppName: ran-feed-count-cron
+  Address: ${XXL_EXECUTOR_ADDRESS}
+  IP: ${XXL_EXECUTOR_IP}
+  Port: ${XXL_EXECUTOR_PORT}
+  AccessToken: ${XXL_JOB_ACCESS_TOKEN}
+  AdminAddresses:
+    - ${XXL_JOB_ADMIN_ADDR}
+  RegistryInterval: 30s
+  HTTPTimeout: 10s

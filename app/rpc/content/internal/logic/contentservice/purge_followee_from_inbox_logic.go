@@ -36,7 +36,9 @@ func NewPurgeFolloweeFromInboxLogic(ctx context.Context, svcCtx *svc.ServiceCont
 // PurgeFolloweeFromInbox 取关后从 follower 收件箱清理 followee 窗口内已扩散内容 对称于 BackfillFollowInbox
 func (l *PurgeFolloweeFromInboxLogic) PurgeFolloweeFromInbox(in *content.PurgeFolloweeFromInboxReq) (*content.PurgeFolloweeFromInboxRes, error) {
 	if in == nil {
-		return &content.PurgeFolloweeFromInboxRes{RemovedCount: 0}, nil
+		return &content.PurgeFolloweeFromInboxRes{
+			RemovedCount: 0,
+		}, nil
 	}
 	if in.FollowerId <= 0 || in.FolloweeId <= 0 {
 		return nil, errorx.NewMsg("参数错误")
@@ -51,7 +53,9 @@ func (l *PurgeFolloweeFromInboxLogic) PurgeFolloweeFromInbox(in *content.PurgeFo
 	if isBig, err := isBigVAuthor(l.ctx, l.svcCtx, in.FolloweeId); err != nil {
 		l.Errorf("查询大 V 集合失败 followeeID=%d err=%v", in.FolloweeId, err)
 	} else if isBig {
-		return &content.PurgeFolloweeFromInboxRes{RemovedCount: 0}, nil
+		return &content.PurgeFolloweeFromInboxRes{
+			RemovedCount: 0,
+		}, nil
 	}
 
 	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
@@ -60,7 +64,9 @@ func (l *PurgeFolloweeFromInboxLogic) PurgeFolloweeFromInbox(in *content.PurgeFo
 		return nil, err
 	}
 	if len(contents) == 0 {
-		return &content.PurgeFolloweeFromInboxRes{RemovedCount: 0}, nil
+		return &content.PurgeFolloweeFromInboxRes{
+			RemovedCount: 0,
+		}, nil
 	}
 
 	members := make([]any, 0, len(contents))
@@ -73,5 +79,7 @@ func (l *PurgeFolloweeFromInboxLogic) PurgeFolloweeFromInbox(in *content.PurgeFo
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("清理关注收件箱失败"))
 	}
-	return &content.PurgeFolloweeFromInboxRes{RemovedCount: int32(removed)}, nil
+	return &content.PurgeFolloweeFromInboxRes{
+		RemovedCount: int32(removed),
+	}, nil
 }

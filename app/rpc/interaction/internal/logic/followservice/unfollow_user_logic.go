@@ -32,7 +32,9 @@ func NewUnfollowUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Unfo
 
 func (l *UnfollowUserLogic) UnfollowUser(in *interaction.UnfollowUserReq) (*interaction.UnfollowUserRes, error) {
 	if in == nil {
-		return &interaction.UnfollowUserRes{IsFollowed: false}, nil
+		return &interaction.UnfollowUserRes{
+			IsFollowed: false,
+		}, nil
 	}
 	if in.UserId <= 0 || in.FollowUserId <= 0 {
 		return nil, errorx.NewMsg("参数错误")
@@ -42,7 +44,6 @@ func (l *UnfollowUserLogic) UnfollowUser(in *interaction.UnfollowUserReq) (*inte
 	}
 
 	// 取关为清理语义：即使被取关用户已被禁/删，也允许 viewer 清理关注关系，故不再校验存在性
-
 	// 读前置状态判断是否真正从关注翻转为取关 读失败默认按翻转处理清理幂等无害
 	transitioned := true
 	if prior, perr := l.followRepo.GetByUserAndFollow(in.UserId, in.FollowUserId); perr != nil {

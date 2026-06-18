@@ -24,6 +24,7 @@ type CanalCountConsumer struct {
 	svcContext *svc.ServiceContext
 	logx.Logger
 	countRepo     repositories.CountValueRepository
+	bigVRepo      repositories.BigVRepository
 	dedupRepo     repositories.MqConsumeDedupRepository
 	deltaOperator *counterservicelogic.CountDeltaOperator
 	consumerName  string
@@ -36,6 +37,7 @@ func NewCanalCountConsumer(ctx context.Context, svcContext *svc.ServiceContext) 
 		svcContext:    svcContext,
 		Logger:        logx.WithContext(ctx),
 		countRepo:     repositories.NewCountValueRepository(ctx, svcContext.MysqlDb),
+		bigVRepo:      repositories.NewBigVRepository(ctx, svcContext.MysqlDb),
 		dedupRepo:     repositories.NewMqConsumeDedupRepository(ctx, svcContext.MysqlDb),
 		deltaOperator: counterservicelogic.NewCountDeltaOperator(ctx, svcContext),
 		consumerName:  "count.canal_consumer",

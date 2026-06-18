@@ -34,6 +34,7 @@ func main() {
 	g.ApplyBasic(
 		g.GenerateModel("ran_feed_count_value"),
 		g.GenerateModel("ran_feed_mq_consume_dedup"),
+		g.GenerateModel("ran_feed_big_v"),
 	)
 
 	g.Execute()

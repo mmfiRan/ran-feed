@@ -41,7 +41,10 @@ func loadFolloweeWindowContent(ctx context.Context, svcCtx *svc.ServiceContext, 
 			if e != nil || id <= 0 {
 				continue
 			}
-			res = append(res, followeeContent{id: id, publishedAt: int64(p.Score)})
+			res = append(res, followeeContent{
+				id:          id,
+				publishedAt: int64(p.Score),
+			})
 		}
 		return res, nil
 	}
@@ -55,7 +58,10 @@ func loadFolloweeWindowContent(ctx context.Context, svcCtx *svc.ServiceContext, 
 		if r == nil || r.PublishedAt == nil {
 			continue
 		}
-		res = append(res, followeeContent{id: r.ID, publishedAt: r.PublishedAt.UnixMilli()})
+		res = append(res, followeeContent{
+			id:          r.ID,
+			publishedAt: r.PublishedAt.UnixMilli(),
+		})
 	}
 	return res, nil
 }
