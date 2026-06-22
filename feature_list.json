@@ -43,6 +43,14 @@
       "dependencies": ["refactor-001", "refactor-003"],
       "status": "done",
       "evidence": "./init.sh 通过 build vet test 全绿(content/count/interaction 三服务+proto goctl 重新生成)；大 V 判定读写统一全局集合 CDC 增量+周期重建双保障 消除 N 次 count-rpc 与 500 截断漏读；inbox/publish 全切 published_at 时间游标 inbox 带窗口裁剪与 TTL publish 仅 keepN+TTL 保留全量历史；关注 backfill/取关 purge 与写扩散推拉边界对称(大 V 一律跳过 推/回填/清理 由读时 merge 覆盖)；取关主动 ZREM 清理脏数据+follow/unfollow 均失效 viewer bigv 缓存；listFollowees 与窗口取数/大 V 判定去重无残留。项目未上线无存量迁移负担。"
+    },
+    {
+      "id": "refactor-005",
+      "name": "关注流推拉模型加固 大V sticky 落库 读路径统一 复合游标 查询去 Lua",
+      "description": "对照 docs/follow-feed-design.md 共识方案在 refactor-004 基础上加固关注流。①大 V 改 sticky 永不降级：新增 count 服务 ran_feed_big_v 表(只增不删 真相源)+BigVRepository；CDC effects.go syncBigVMember 跨阈值只 INSERT IGNORE 落表+SADD 去掉 SREM 降级分支 消除降级空档与阈值抖动；阈值提到 50000。②重建任务由 time.Ticker 自循环改 xxl-job 触发定时修正 BigVReconcileJob(internal/cron/bigv_reconcile)：先复查 count_value≥阈值补 CDC 漏网晋升(ListTargetValuesByValueGte) 再以大 V 表为真相源 RENAME 重灌全局集合兜底 Redis 丢失；count.go 接 xxljob executor+XxlJob 配置 删旧 internal/job。③inbox 口径统一只装小号：重建/冷兜底用 loadGlobalBigVSet 过滤大 V(filterSmallFollowees) 大 V 永远读时 merge 不进 inbox。④读路径冷热统一：FollowFeed 结果=merge(inbox 来源,大V publish) 大 V merge 提到分支外永远执行 消除只关注大V用户首屏空白；异步重建+coldBackfill 合并为同步 buildInboxSync(一次查询既填缓存又出首屏 删 goroutine/bg ctx/重建锁)；空结果写不可见哨兵(id<=0)负缓存 杜绝空用户反复扫库。⑤复合游标 score:id：mergeScored/pageScoredFromRows 按(score,id)双键过滤排序出游标 修同毫秒翻页 skip/重复 兼容旧纯 millis 游标。⑥查询去 Lua(读不用 Lua 原则)：inbox 与大 V publish 查询退成原生 ZrevrangebyscoreWithScoresByFloatAndLimit+Exists+Expire 删 query_follow_inbox_zset.lua；backfill lua 删末尾 N 次 ZSCORE 改累加 ZADD 返回值；update lua 因 rebuild 批量大 unpack 有栈溢出风险保留循环。⑦升级 go-zero v1.10.2 用其 DoCtx 通用命令口 大 V 修正 RENAME 由 Eval 改原生 DoCtx。作者主页流 user_publish_feed 仍用 QueryUserPublishZSetScript 待后续统一。",
+      "dependencies": ["refactor-004"],
+      "status": "done",
+      "evidence": "./init.sh 通过 build vet test 全绿；大 V 改 sticky+DB 表真相源 CDC 只晋升 xxl-job 定时修正(补漏+RENAME 重灌)兜底 Redis 丢失；inbox 只装小号 读路径冷热统一永远 merge 大 V 消除首屏空白 同步构建合并双查询删锁；空哨兵负缓存挡住空用户重扫；复合游标 score:id 修同分翻页 inbox/publish 查询原生化删一支 query lua backfill 去 ZSCORE 循环；go-zero v1.10.2 RENAME 改 DoCtx。作者主页流统一留作后续。"
     }
   ]
 }

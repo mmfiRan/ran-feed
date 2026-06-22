@@ -2,8 +2,9 @@ package feedservicelogic
 
 import (
 	"context"
+	"math"
 	"strconv"
-	"time"
+	"strings"
 
 	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
@@ -17,20 +18,16 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/stores/redis"
-	"github.com/zeromicro/go-zero/core/threading"
 )
 
 const (
-	followInboxRebuildLockTTLSeconds = 30
-	followInboxRebuildTimeout        = 20 * time.Second
-
 	followInboxKeepN = 5000
 
-	// rebuildFolloweesScanCap 异步重建 inbox 时扫描关注的上限
-	rebuildFolloweesScanCap = 5000
-	// coldBackfillFolloweesScanCap 同步冷兜底首屏扫描关注的上限
-	coldBackfillFolloweesScanCap = 2000
+	// followInboxBuildFolloweesScanCap 同步构建 inbox 时扫描关注的上限
+	followInboxBuildFolloweesScanCap = 5000
+
+	// followInboxEmptySentinelID 空 inbox 负缓存哨兵成员 读时按 id<=0 过滤不可见
+	followInboxEmptySentinelID int64 = 0
 )
 
 type FollowFeedLogic struct {
@@ -65,45 +62,23 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 		pageSize = 50
 	}
 
-	// 查 inbox 缓存
+	// 复合游标 score:id 同毫秒翻页不漏不重
+	cursorScore, cursorID := parseCursor(in.Cursor)
+
+	// inbox 只装小号 命中走 Redis 未命中同步构建 都只含小号
 	inboxKey := rediskey.BuildFollowInboxKey(userID)
-	items, nextCursor, hasMore, cacheExists, err := l.queryInboxIDs(inboxKey, in.Cursor, pageSize)
+	inboxItems, inboxHasMore, err := l.loadInboxSource(inboxKey, userID, cursorScore, cursorID, pageSize)
 	if err != nil {
 		return nil, err
 	}
 
-	var ids []int64
-	if cacheExists {
-		// 缓存命中：先 merge 大 V publish zset（推拉结合读时拉）
-		ids = scoredIDsToIDs(items)
-		bigVIDs := l.loadViewerBigVList(userID)
-		if len(bigVIDs) > 0 {
-			pool, anyMore := l.fetchBigVContentIDs(bigVIDs, in.Cursor, pageSize)
-			if len(pool) > 0 {
-				ids, hasMore, nextCursor = mergeScored(items, hasMore, pool, anyMore, pageSize)
-			}
-		}
-	} else {
-		// 缓存未命中：异步重建，同步走 DB 兜底返回首屏
-		threading.GoSafe(func() {
-			ctx, cancel := context.WithTimeout(context.Background(), followInboxRebuildTimeout)
-			defer cancel()
-			NewFollowFeedLogic(ctx, l.svcCtx).rebuildInboxWithLock(userID, inboxKey)
-		})
-
-		rows, more, cur, cerr := l.coldBackfill(userID, parseCursorID(in.Cursor), pageSize)
-		if cerr != nil {
-			return nil, cerr
-		}
-		ids = make([]int64, 0, len(rows))
-		for _, r := range rows {
-			if r != nil {
-				ids = append(ids, r.ID)
-			}
-		}
-		nextCursor = cur
-		hasMore = more
+	// 大 V 永远读时 merge 推拉结合的拉 冷热路径统一
+	var pool []scoredID
+	var poolHasMore bool
+	if bigVIDs := l.loadViewerBigVList(userID); len(bigVIDs) > 0 {
+		pool, poolHasMore = l.fetchBigVContentIDs(bigVIDs, cursorScore, pageSize)
 	}
+	ids, hasMore, nextCursor := mergeScored(inboxItems, inboxHasMore, pool, poolHasMore, cursorScore, cursorID, pageSize)
 
 	if len(ids) == 0 {
 		return emptyFollowFeedRes(), nil
@@ -137,115 +112,154 @@ func emptyFollowFeedRes() *content.FollowFeedRes {
 	}
 }
 
-func parseCursorID(cursor string) int64 {
+// parseCursor 解析复合游标 score:id 兼容旧的纯 score(id 取 0 退化为旧的开区间行为)
+func parseCursor(cursor string) (int64, int64) {
 	if cursor == "" || cursor == "0" {
-		return 0
+		return 0, 0
 	}
-	id, err := strconv.ParseInt(cursor, 10, 64)
-	if err != nil || id < 0 {
-		return 0
-	}
-	return id
-}
-
-// rebuildInboxWithLock 加锁后重建 inbox 缓存，best-effort，错误只记日志
-func (l *FollowFeedLogic) rebuildInboxWithLock(userID int64, inboxKey string) {
-	lockKey := rediskey.BuildFollowInboxRebuildLockKey(userID)
-	redisLock := redis.NewRedisLock(l.svcCtx.Redis, lockKey)
-	redisLock.SetExpire(followInboxRebuildLockTTLSeconds)
-
-	locked, err := redisLock.AcquireCtx(l.ctx)
-	if err != nil {
-		l.Errorf("获取重建锁失败 userID=%d: %v", userID, err)
-		return
-	}
-	if !locked {
-		return
-	}
-	defer func() {
-		if ok, rerr := redisLock.ReleaseCtx(l.ctx); !ok || rerr != nil {
-			l.Errorf("释放重建锁失败 userID=%d: %v", userID, rerr)
+	if i := strings.IndexByte(cursor, ':'); i >= 0 {
+		score, e1 := strconv.ParseInt(cursor[:i], 10, 64)
+		id, e2 := strconv.ParseInt(cursor[i+1:], 10, 64)
+		if e1 != nil || e2 != nil || score <= 0 {
+			return 0, 0
 		}
-	}()
-	l.rebuildInboxCacheBestEffort(userID, inboxKey)
+		if id < 0 {
+			id = 0
+		}
+		return score, id
+	}
+	score, err := strconv.ParseInt(cursor, 10, 64)
+	if err != nil || score <= 0 {
+		return 0, 0
+	}
+	return score, 0
 }
 
-func (l *FollowFeedLogic) rebuildInboxCacheBestEffort(userID int64, inboxKey string) {
-	followees, err := l.listFolloweesCapped(userID, rebuildFolloweesScanCap)
-	if err != nil {
-		l.Errorf("查询关注列表失败: %v", err)
-		return
+// formatCursor 组装复合游标 score:id
+func formatCursor(score, id int64) string {
+	return strconv.FormatInt(score, 10) + ":" + strconv.FormatInt(id, 10)
+}
+
+// afterCursor 判断 s 是否严格排在游标之后 按 published_at desc 加 content_id desc 总序
+func afterCursor(s scoredID, cursorScore, cursorID int64) bool {
+	if cursorScore <= 0 {
+		return true
 	}
-	if len(followees) == 0 {
-		return
+	if s.score != cursorScore {
+		return s.score < cursorScore
+	}
+	return s.id < cursorID
+}
+
+// loadInboxSource 取 inbox 小号来源 命中走 Redis 未命中同步构建并返回首屏
+func (l *FollowFeedLogic) loadInboxSource(inboxKey string, userID, cursorScore, cursorID int64, pageSize int) ([]scoredID, bool, error) {
+	items, hasMore, cacheExists, err := l.queryInboxIDs(inboxKey, cursorScore, pageSize)
+	if err != nil {
+		return nil, false, err
+	}
+	if cacheExists {
+		return items, hasMore, nil
+	}
+	return l.buildInboxSync(inboxKey, userID, cursorScore, cursorID, pageSize)
+}
+
+// queryInboxIDs 原生读 inbox 窗口内当前页 候选 复合游标精确过滤交给 mergeScored
+// 返回 候选 是否还有更多 缓存是否存在 空结果再 EXISTS 区分 key 不存在与窗口内无内容
+func (l *FollowFeedLogic) queryInboxIDs(inboxKey string, cursorScore int64, pageSize int) ([]scoredID, bool, bool, error) {
+	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
+	maxScore := math.MaxFloat64
+	if cursorScore > 0 {
+		// inclusive 取到游标分 边界同分由 mergeScored 过滤
+		maxScore = float64(cursorScore)
+	}
+	pairs, err := l.svcCtx.Redis.ZrevrangebyscoreWithScoresByFloatAndLimitCtx(
+		l.ctx, inboxKey, float64(followwindow.CutoffMillis(days)), maxScore, 0, pageSize+1)
+	if err != nil {
+		return nil, false, false, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注收件箱失败"))
+	}
+	if len(pairs) == 0 {
+		exists, eerr := l.svcCtx.Redis.ExistsCtx(l.ctx, inboxKey)
+		if eerr != nil {
+			return nil, false, false, errorx.Wrap(l.ctx, eerr, errorx.NewMsg("查询关注收件箱失败"))
+		}
+		return nil, false, exists, nil
+	}
+	hasMore := len(pairs) > pageSize
+	if err := l.svcCtx.Redis.ExpireCtx(l.ctx, inboxKey, followwindow.TTLSeconds(days)); err != nil {
+		l.Errorf("续期 inbox TTL 失败 inboxKey=%s: %v", inboxKey, err)
+	}
+	return scoredPairsToItems(pairs), hasMore, true, nil
+}
+
+// buildInboxSync 同步构建 inbox 只取小号窗口内容 写缓存或空哨兵 返回本次首屏来源
+// per-user 流并发极低 不做异步与防击穿锁 一次查询既填缓存又出首屏
+func (l *FollowFeedLogic) buildInboxSync(inboxKey string, userID, cursorScore, cursorID int64, pageSize int) ([]scoredID, bool, error) {
+	followees, err := l.listFolloweesCapped(userID, followInboxBuildFolloweesScanCap)
+	if err != nil {
+		return nil, false, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注列表失败"))
+	}
+	small := l.filterSmallFollowees(followees)
+	if len(small) == 0 {
+		l.writeEmptyInboxSentinel(inboxKey)
+		return nil, false, nil
 	}
 
 	statusPublished := int32(content.ContentStatus_PUBLISHED)
 	visibilityPublic := int32(content.Visibility_PUBLIC)
-	rows, qerr := l.contentRepo.ListFollowByAuthorsCursor(statusPublished, visibilityPublic, followees, 0, followInboxKeepN)
-	if qerr != nil {
-		l.Errorf("查询关注内容失败: %v", qerr)
-		return
+	rows, err := l.contentRepo.ListFollowByAuthorsCursor(statusPublished, visibilityPublic, small, 0, followInboxKeepN)
+	if err != nil {
+		return nil, false, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注内容失败"))
 	}
 	if len(rows) == 0 {
-		return
+		l.writeEmptyInboxSentinel(inboxKey)
+		return nil, false, nil
 	}
-	if err = l.updateInboxCache(inboxKey, rows); err != nil {
-		l.Errorf("回填缓存失败:%v", err)
+
+	// 全窗口回填缓存 后续翻页与读直接命中
+	if werr := l.updateInboxCache(inboxKey, rows); werr != nil {
+		l.Errorf("回填 inbox 缓存失败: %v", werr)
 	}
+
+	items, hasMore := pageScoredFromRows(rows, cursorScore, cursorID, pageSize)
+	return items, hasMore, nil
 }
 
-func (l *FollowFeedLogic) queryInboxIDs(inboxKey, cursor string, pageSize int) ([]scoredID, string, bool, bool, error) {
-	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
-	res, err := l.svcCtx.Redis.EvalCtx(
-		l.ctx,
-		luautils.QueryFollowInboxZSetScript,
-		[]string{inboxKey},
-		cursor,
-		strconv.FormatInt(int64(pageSize), 10),
-		strconv.FormatInt(followwindow.CutoffMillis(days), 10),
-		strconv.Itoa(followwindow.TTLSeconds(days)),
-	)
-	if err != nil {
-		return nil, "", false, false, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注收件箱失败"))
-	}
-	items, nextCursor, hasMore, exists, ok := parseZSetReply(res)
-	if !ok {
-		return nil, "", false, false, errorx.NewMsg("查询关注收件箱失败")
-	}
-	return items, nextCursor, hasMore, exists, nil
-}
-
-func (l *FollowFeedLogic) coldBackfill(userID int64, cursorMillis int64, limit int) ([]*model.RanFeedContent, bool, string, error) {
-	followees, err := l.listFolloweesCapped(userID, coldBackfillFolloweesScanCap)
-	if err != nil {
-		return nil, false, "", errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注列表失败"))
-	}
-	if len(followees) == 0 {
-		return nil, false, "", nil
-	}
-
-	statusPublished := int32(content.ContentStatus_PUBLISHED)
-	visibilityPublic := int32(content.Visibility_PUBLIC)
-	rows, err := l.contentRepo.ListFollowByAuthorsCursor(statusPublished, visibilityPublic, followees, cursorMillis, limit+1)
-	if err != nil {
-		return nil, false, "", errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注内容失败"))
-	}
-
-	hasMore := false
-	if len(rows) > limit {
-		hasMore = true
-		rows = rows[:limit]
-	}
-
-	nextCursor := ""
-	if hasMore && len(rows) > 0 {
-		last := rows[len(rows)-1]
-		if last.PublishedAt != nil {
-			nextCursor = strconv.FormatInt(last.PublishedAt.UnixMilli(), 10)
+// pageScoredFromRows 在已按 published_at desc 加 id desc 排好的行内 按复合游标取一页 多取 1 条判 hasMore
+func pageScoredFromRows(rows []*model.RanFeedContent, cursorScore, cursorID int64, pageSize int) ([]scoredID, bool) {
+	items := make([]scoredID, 0, pageSize+1)
+	for _, r := range rows {
+		if r == nil || r.PublishedAt == nil {
+			continue
+		}
+		s := scoredID{id: r.ID, score: r.PublishedAt.UnixMilli()}
+		if !afterCursor(s, cursorScore, cursorID) {
+			continue
+		}
+		items = append(items, s)
+		if len(items) > pageSize {
+			break
 		}
 	}
-	return rows, hasMore, nextCursor, nil
+	hasMore := len(items) > pageSize
+	if hasMore {
+		items = items[:pageSize]
+	}
+	return items, hasMore
+}
+
+// writeEmptyInboxSentinel 写不可见哨兵成员做空 inbox 负缓存 避免空用户每次读都重扫库
+func (l *FollowFeedLogic) writeEmptyInboxSentinel(inboxKey string) {
+	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
+	args := followwindow.WriteArgs(
+		int64(followInboxKeepN),
+		followwindow.CutoffMillis(days),
+		followwindow.TTLSeconds(days),
+		followwindow.NowMillis(),
+		followInboxEmptySentinelID,
+	)
+	if _, err := l.svcCtx.Redis.EvalCtx(l.ctx, luautils.UpdateFollowInboxZSetScript, []string{inboxKey}, args...); err != nil {
+		l.Errorf("写空 inbox 哨兵失败 inboxKey=%s: %v", inboxKey, err)
+	}
 }
 
 func (l *FollowFeedLogic) updateInboxCache(inboxKey string, rows []*model.RanFeedContent) error {

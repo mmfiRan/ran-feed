@@ -35,8 +35,6 @@ const (
 	RedisFeedHotColdLockPrefix = "feed:hot:global:lock:cold"
 	// RedisFeedFollowInboxPrefix 关注收件箱前缀 feed:follow:inbox
 	RedisFeedFollowInboxPrefix = "feed:follow:inbox"
-	// RedisFeedFollowInboxRebuildLockPrefix 关注收件箱重建锁前缀 feed:follow:inbox:lock
-	RedisFeedFollowInboxRebuildLockPrefix = "feed:follow:inbox:lock"
 	// RedisFeedFollowBigVPrefix viewer 大 V 关注列表缓存前缀 feed:follow:bigv
 	RedisFeedFollowBigVPrefix = "feed:follow:bigv"
 	// FollowBigVEmptySentinel 已计算且为空的占位成员，避免 miss 时反复 rebuild
@@ -102,10 +100,6 @@ func BuildHotFeedColdLockKey(date string) string {
 
 func BuildFollowInboxKey(userID int64) string {
 	return GetRedisPrefixKey(RedisFeedFollowInboxPrefix, strconv.FormatInt(userID, 10))
-}
-
-func BuildFollowInboxRebuildLockKey(userID int64) string {
-	return GetRedisPrefixKey(RedisFeedFollowInboxRebuildLockPrefix, strconv.FormatInt(userID, 10))
 }
 
 func BuildFollowBigVKey(userID int64) string {

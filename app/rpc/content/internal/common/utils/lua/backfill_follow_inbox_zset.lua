@@ -12,11 +12,13 @@ local keepN = tonumber(ARGV[1])
 local cutoff = tonumber(ARGV[2])
 local ttl = tonumber(ARGV[3])
 
+-- ZADD 返回新增成员数 累加即实际新增 省去末尾 N 次 ZSCORE 回查
+local added = 0
 for i = 4, #ARGV, 2 do
     local score = ARGV[i]
     local member = ARGV[i + 1]
     if score ~= nil and member ~= nil and member ~= '' then
-        redis.call('ZADD', key, score, member)
+        added = added + redis.call('ZADD', key, score, member)
     end
 end
 
@@ -36,17 +38,6 @@ end
 -- 整 key 续期 活跃读写存活 冷用户整 key 过期回收
 if ttl ~= nil and ttl > 0 then
     redis.call('EXPIRE', key, ttl)
-end
-
-local added = 0
-for i = 4, #ARGV, 2 do
-    local member = ARGV[i + 1]
-    if member ~= nil and member ~= '' then
-        local score = redis.call('ZSCORE', key, member)
-        if score ~= false and score ~= nil then
-            added = added + 1
-        end
-    end
 end
 
 return added

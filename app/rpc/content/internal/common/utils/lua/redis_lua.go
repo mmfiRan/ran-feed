@@ -27,11 +27,6 @@ var FreezeHotDirtyScript string
 //go:embed rebuild_hot_snapshot.lua
 var RebuildHotSnapshotScript string
 
-// QueryFollowInboxZSetScript 关注收件箱ZSET查询Lua脚本
-//
-//go:embed query_follow_inbox_zset.lua
-var QueryFollowInboxZSetScript string
-
 // UpdateFollowInboxZSetScript 关注收件箱ZSET回填/裁剪Lua脚本
 //
 //go:embed update_follow_inbox_zset.lua

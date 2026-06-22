@@ -2,8 +2,23 @@
 
 ## 当前状态
 
-**最后更新：** 2026-06-16
-**当前功能：** refactor-004 关注流重构为基于 deadline 的时间窗口推拉流（done）
+**最后更新：** 2026-06-22
+**当前功能：** refactor-005 关注流推拉模型加固（done）
+
+---
+
+## 已完成（refactor-005 关注流推拉模型加固）
+
+对照 `docs/follow-feed-design.md` 共识方案，在 refactor-004 上加固。各步 ./init.sh 全绿。
+
+- **大 V 改 sticky 落库**：新增 count `ran_feed_big_v` 表(只增不删 真相源)+BigVRepository；CDC `syncBigVMember` 跨阈值只 INSERT IGNORE+SADD 去掉 SREM 降级分支，消除降级空档与阈值抖动；阈值提到 50000。
+- **重建任务迁 xxl-job**：`time.Ticker` 自循环改 xxl-job 触发的 `BigVReconcileJob`(internal/cron/bigv_reconcile)：复查 count_value≥阈值补漏晋升 + 以表为真相源 RENAME 重灌全局集合兜底 Redis 丢失；count.go 接 executor+XxlJob 配置，删旧 internal/job。
+- **inbox 口径统一只装小号**：重建/冷兜底用 `loadGlobalBigVSet` 过滤大 V(`filterSmallFollowees`)，大 V 永远读时 merge 不进 inbox。
+- **读路径冷热统一**：FollowFeed 结果=merge(inbox 来源, 大V publish)，大 V merge 永远执行消除只关注大V用户首屏空白；异步重建+coldBackfill 合并为同步 `buildInboxSync`(一次查询既填缓存又出首屏 删 goroutine/锁)；空结果写不可见哨兵(id<=0)负缓存。
+- **复合游标 score:id**：`mergeScored`/`pageScoredFromRows` 按(score,id)双键修同毫秒翻页 skip/重复，兼容旧纯 millis 游标。
+- **查询去 Lua**：inbox 与大 V publish 查询退成原生 `ZrevrangebyscoreWithScoresByFloatAndLimit`+`Exists`+`Expire`，删 `query_follow_inbox_zset.lua`；backfill lua 去末尾 ZSCORE 循环改累加 ZADD 返回值；update lua 因 rebuild 批量大保留循环。
+- **go-zero v1.10.2**：用其 `DoCtx` 通用命令口，大 V 修正 RENAME 由 Eval 改原生 DoCtx。
+- **后续**：作者主页流 user_publish_feed 仍用 publish 查询 Lua，待统一。
 
 ---
 

@@ -1,17 +1,18 @@
 package feedservicelogic
 
 import (
+	"math"
 	"sort"
 	"strconv"
 	"sync"
 
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
-	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/interaction/client/followservice"
 
 	"github.com/zeromicro/go-zero/core/mr"
+	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 const (
@@ -142,6 +143,28 @@ func (l *FollowFeedLogic) loadGlobalBigVSet() (map[int64]struct{}, error) {
 	return set, nil
 }
 
+// filterSmallFollowees 剔除大 V 只留小号关注 用于 inbox 来源 全局集合读失败保守全留由读时 merge 去重兜底
+func (l *FollowFeedLogic) filterSmallFollowees(followees []int64) []int64 {
+	if len(followees) == 0 {
+		return followees
+	}
+	globalSet, err := l.loadGlobalBigVSet()
+	if err != nil {
+		l.Errorf("读全局大 V 集合失败 inbox 暂不剔除大 V: %v", err)
+		return followees
+	}
+	if len(globalSet) == 0 {
+		return followees
+	}
+	small := make([]int64, 0, len(followees))
+	for _, uid := range followees {
+		if _, ok := globalSet[uid]; !ok {
+			small = append(small, uid)
+		}
+	}
+	return small
+}
+
 // listFolloweesCapped 按 limit 截断的 ListFollowees 分页拉取
 func (l *FollowFeedLogic) listFolloweesCapped(viewerID int64, limit int) ([]int64, error) {
 	followees := make([]int64, 0)
@@ -198,15 +221,10 @@ func (l *FollowFeedLogic) writeBigVCache(cacheKey string, ids []int64, ttlSecond
 
 // fetchBigVContentIDs 并行查询每个大 V 的 publish zset 当前窗口
 // 返回所有命中的 (contentID published_at) 并集（含重复）与任意源是否还有更多
-func (l *FollowFeedLogic) fetchBigVContentIDs(bigVIDs []int64, cursor string, pageSize int) ([]scoredID, bool) {
+func (l *FollowFeedLogic) fetchBigVContentIDs(bigVIDs []int64, cursorScore int64, pageSize int) ([]scoredID, bool) {
 	if len(bigVIDs) == 0 {
 		return nil, false
 	}
-
-	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
-	pageSizeStr := strconv.FormatInt(int64(pageSize), 10)
-	cutoffStr := strconv.FormatInt(followwindow.CutoffMillis(days), 10)
-	ttlStr := strconv.Itoa(followwindow.TTLSeconds(days))
 
 	var (
 		mu         sync.Mutex
@@ -221,7 +239,7 @@ func (l *FollowFeedLogic) fetchBigVContentIDs(bigVIDs []int64, cursor string, pa
 		}
 	}, func(uid int64) {
 		feedKey := rediskey.BuildUserPublishFeedKey(uid)
-		items, hasMore, err := l.queryBigVPublishIDs(feedKey, cursor, pageSizeStr, cutoffStr, ttlStr)
+		items, hasMore, err := l.queryBigVPublishIDs(feedKey, cursorScore, pageSize)
 		if err != nil {
 			logger.Errorf("查询大 V publish zset 失败 uid=%d: %v", uid, err)
 			return
@@ -240,25 +258,40 @@ func (l *FollowFeedLogic) fetchBigVContentIDs(bigVIDs []int64, cursor string, pa
 	return pool, anyHasMore
 }
 
-// queryBigVPublishIDs 复用 QueryUserPublishZSetScript，返回当前窗口 (contentID score) 列表 + hasMore
-func (l *FollowFeedLogic) queryBigVPublishIDs(feedKey, cursor, pageSizeStr, cutoffStr, ttlStr string) ([]scoredID, bool, error) {
-	res, err := l.svcCtx.Redis.EvalCtx(
-		l.ctx,
-		luautils.QueryUserPublishZSetScript,
-		[]string{feedKey},
-		cursor,
-		pageSizeStr,
-		cutoffStr,
-		ttlStr,
-	)
+// queryBigVPublishIDs 原生读大 V publish zset 当前窗口候选 复合游标精确过滤交给 mergeScored
+// publish zset 承载全量历史 读时按 cutoff 施加窗口 命中续期窗口 TTL
+func (l *FollowFeedLogic) queryBigVPublishIDs(feedKey string, cursorScore int64, pageSize int) ([]scoredID, bool, error) {
+	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
+	maxScore := math.MaxFloat64
+	if cursorScore > 0 {
+		maxScore = float64(cursorScore)
+	}
+	pairs, err := l.svcCtx.Redis.ZrevrangebyscoreWithScoresByFloatAndLimitCtx(
+		l.ctx, feedKey, float64(followwindow.CutoffMillis(days)), maxScore, 0, pageSize+1)
 	if err != nil {
 		return nil, false, err
 	}
-	items, _, hasMore, exists, ok := parseZSetReply(res)
-	if !ok || !exists {
+	if len(pairs) == 0 {
 		return nil, false, nil
 	}
-	return items, hasMore, nil
+	hasMore := len(pairs) > pageSize
+	if eerr := l.svcCtx.Redis.ExpireCtx(l.ctx, feedKey, followwindow.TTLSeconds(days)); eerr != nil {
+		l.Errorf("续期大 V publish TTL 失败 feedKey=%s: %v", feedKey, eerr)
+	}
+	return scoredPairsToItems(pairs), hasMore, nil
+}
+
+// scoredPairsToItems 把 zset 范围查询的 (member score) 对转 scoredID 过滤非法 id 与哨兵(id<=0)
+func scoredPairsToItems(pairs []redis.FloatPair) []scoredID {
+	items := make([]scoredID, 0, len(pairs))
+	for _, p := range pairs {
+		id, err := strconv.ParseInt(p.Key, 10, 64)
+		if err != nil || id <= 0 {
+			continue
+		}
+		items = append(items, scoredID{id: id, score: int64(p.Score)})
+	}
+	return items
 }
 
 // scoredIDsToIDs 按当前顺序抽出 content_id 丢弃 score
@@ -270,25 +303,25 @@ func scoredIDsToIDs(items []scoredID) []int64 {
 	return ids
 }
 
-// mergeScored 合并 inbox 与大 V 池，按 published_at desc 去重排序，截取 pageSize
-// 返回：合并后 content_id 列表、整体 hasMore、下一页 cursor(末位 score)
-func mergeScored(inbox []scoredID, inboxHasMore bool, bigVPool []scoredID, bigVHasMore bool, pageSize int) ([]int64, bool, string) {
+// mergeScored 合并 inbox 与大 V 池 按复合游标(score id)过滤去重排序 截取 pageSize
+// 各源 inclusive 取到游标分 边界同分在此按 (score id) 精确剔除 返回 content_id 列表 hasMore 复合游标
+func mergeScored(inbox []scoredID, inboxHasMore bool, bigVPool []scoredID, bigVHasMore bool, cursorScore, cursorID int64, pageSize int) ([]int64, bool, string) {
 	seen := make(map[int64]struct{}, len(inbox)+len(bigVPool))
 	merged := make([]scoredID, 0, len(inbox)+len(bigVPool))
-	for _, s := range inbox {
-		if _, ok := seen[s.id]; ok {
-			continue
+	appendUniq := func(src []scoredID) {
+		for _, s := range src {
+			if s.id <= 0 || !afterCursor(s, cursorScore, cursorID) {
+				continue
+			}
+			if _, ok := seen[s.id]; ok {
+				continue
+			}
+			seen[s.id] = struct{}{}
+			merged = append(merged, s)
 		}
-		seen[s.id] = struct{}{}
-		merged = append(merged, s)
 	}
-	for _, s := range bigVPool {
-		if _, ok := seen[s.id]; ok {
-			continue
-		}
-		seen[s.id] = struct{}{}
-		merged = append(merged, s)
-	}
+	appendUniq(inbox)
+	appendUniq(bigVPool)
 
 	// 按 published_at 倒序 同分以 content_id 倒序保证游标稳定
 	sort.Slice(merged, func(i, j int) bool {
@@ -306,7 +339,8 @@ func mergeScored(inbox []scoredID, inboxHasMore bool, bigVPool []scoredID, bigVH
 
 	nextCursor := ""
 	if hasMore && len(merged) > 0 {
-		nextCursor = strconv.FormatInt(merged[len(merged)-1].score, 10)
+		last := merged[len(merged)-1]
+		nextCursor = formatCursor(last.score, last.id)
 	}
 	return scoredIDsToIDs(merged), hasMore, nextCursor
 }
