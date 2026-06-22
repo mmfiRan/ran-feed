@@ -18,14 +18,12 @@ const HandlerName = "bigv.reconcile"
 // reconcileBatchSize Redis 集合分批 SADD 大小
 const reconcileBatchSize = 500
 
-// renameScript 原子把临时集合换到正式 key 修正期间读方始终看到旧集合无空窗
-const renameScript = `redis.call('RENAME', KEYS[1], KEYS[2]); return 1`
-
 // BigVReconcileJob 大 V 定时修正 复查粉丝数补 CDC 漏网晋升 再把 Redis 集合与表对齐
 type BigVReconcileJob struct {
 	svc       *svc.ServiceContext
 	countRepo repositories.CountValueRepository
 	bigVRepo  repositories.BigVRepository
+	logx.Logger
 }
 
 // Register 注册大 V 定时修正任务
@@ -34,6 +32,7 @@ func Register(ctx context.Context, executor *xxljob.Executor, svcCtx *svc.Servic
 		svc:       svcCtx,
 		countRepo: repositories.NewCountValueRepository(ctx, svcCtx.MysqlDb),
 		bigVRepo:  repositories.NewBigVRepository(ctx, svcCtx.MysqlDb),
+		Logger:    logx.WithContext(ctx),
 	}
 	executor.RegisterTask(HandlerName, job.Run)
 }
@@ -59,13 +58,12 @@ func (j *BigVReconcileJob) promoteMissed(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	logger := logx.WithContext(ctx)
 	for _, row := range candidates {
 		if row == nil || row.TargetID <= 0 {
 			continue
 		}
 		if err := j.bigVRepo.Promote(row.TargetID, row.Value); err != nil {
-			logger.Errorf("大 V 修正补晋升失败 userID=%d err=%v", row.TargetID, err)
+			j.Errorf("大 V 修正补晋升失败 userID=%d err=%v", row.TargetID, err)
 		}
 	}
 	return nil
@@ -112,6 +110,6 @@ func (j *BigVReconcileJob) syncRedisFromTable(ctx context.Context) error {
 		return err
 	}
 
-	_, err = j.svc.Redis.EvalCtx(ctx, renameScript, []string{tmpKey, globalKey})
+	_, err = j.svc.Redis.DoCtx(ctx, "RENAME", tmpKey, globalKey)
 	return err
 }
