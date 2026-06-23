@@ -2,8 +2,24 @@
 
 ## 当前状态
 
-**最后更新：** 2026-06-22
-**当前功能：** refactor-005 关注流推拉模型加固（done）
+**最后更新：** 2026-06-23
+**当前功能：** refactor-006 发件箱查询抽象 publishbox（done）
+
+---
+
+## 已完成（refactor-006 发件箱查询抽象 publishbox · Phase 1）
+
+把 publish zset(发件箱 `feed:user:publish:{uid}`)的查询从读路径抽出来，新建 `app/rpc/content/internal/logic/publishbox`。./init.sh 全绿。
+
+- **新增 `publishbox.QueryWindow`**：命中直接读 / 未命中回源重建 / 空作者写哨兵防穿透。读法沿用复合游标——裸 `ZrevrangebyscoreWithScoresByFloatAndLimit` maxScore **inclusive**，边界同分交 `mergeScored` 按 id 过滤（不能套 own-feed 的 exclusive 游标 query lua，会漏边界项）；空结果再 `EXISTS` 区分 cache miss 与窗口内真空。
+- **防击穿改用公共方法**：`cache.DoWithLock`(DistLocker) 取代手搓 `RedisLock`+`time.Sleep`。大V发件箱是跨 pod 热点，全集群只放一个重建 + 拿锁后双检 + 未拿锁轮询等待复用；svcCtx 挂 `PublishBoxRebuildLocker = cache.NewDistLocker(redisClient)`，对齐 interaction 的 `LikeUserRebuildLocker`。`ErrLockBusy` 本轮该作者降级缺席，不阻塞整流。
+- **重建脱离请求 ctx**：`context.WithoutCancel`，回源走 `ListPublishedByAuthorWithinWindow(0, PUBLIC-only)` 与 fanout 写口径一致，写满或写哨兵后回读本页。
+- **bigV merge 切换**：`fetchBigVContentIDs` 改调 `box.QueryWindow`，删裸读的 `queryBigVPublishIDs` —— **修掉大V发件箱 TTL 过期后内容从所有关注者 feed 永久消失的假空当真空 bug**。
+- 写侧(fanout/发布)与 own-feed 本次未动。
+
+## 遗留风险 / 下一步（fix-006 · Phase 2 待办 not-started）
+
+- **跨可见性泄露**：own-feed 的 `loadPageIDs` 冷重建走 `ListPublishedByAuthor`（**不过滤 visibility**），会把 PRIVATE 灌进和大V merge 共享的同一个 `feed:user:publish:{uid}` key，bigV merge 读同 key 喂给关注者 → 私密内容可能泄露。修法：把 own-feed 迁到 `publishbox.QueryWindow`(cutoffMillis=0 全量) 复用 PUBLIC-only 重建，一并删掉 `user_publish_feed_logic` 里重复的锁+重建+内存分页。注意 own-feed 现为 exclusive 字符串游标，迁移后改复合游标需回归翻页行为。
 
 ---
 

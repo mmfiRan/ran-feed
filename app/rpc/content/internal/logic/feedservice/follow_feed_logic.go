@@ -3,6 +3,7 @@ package feedservicelogic
 import (
 	"context"
 	"math"
+	"ran-feed/app/rpc/content/internal/logic/publishbox"
 	"strconv"
 	"strings"
 
@@ -36,6 +37,7 @@ type FollowFeedLogic struct {
 	logx.Logger
 	contentRepo repositories.ContentRepository
 	resolver    *contentDetailResolver
+	publishBox  *publishbox.PublishBox
 }
 
 func NewFollowFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *FollowFeedLogic {
@@ -45,11 +47,12 @@ func NewFollowFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Follow
 		Logger:      logx.WithContext(ctx),
 		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
 		resolver:    newContentDetailResolver(ctx, svcCtx),
+		publishBox:  publishbox.New(ctx, svcCtx),
 	}
 }
 
 func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.FollowFeedRes, error) {
-	// todo 查询该用户是否存在
+
 	if in == nil {
 		return emptyFollowFeedRes(), nil
 	}
@@ -62,10 +65,9 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 		pageSize = 50
 	}
 
-	// 复合游标 score:id 同毫秒翻页不漏不重
 	cursorScore, cursorID := parseCursor(in.Cursor)
 
-	// inbox 只装小号 命中走 Redis 未命中同步构建 都只含小号
+	// inbox 只装小用户 命中走 Redis 未命中同步构建 都只含小用户
 	inboxKey := rediskey.BuildFollowInboxKey(userID)
 	inboxItems, inboxHasMore, err := l.loadInboxSource(inboxKey, userID, cursorScore, cursorID, pageSize)
 	if err != nil {
@@ -112,7 +114,7 @@ func emptyFollowFeedRes() *content.FollowFeedRes {
 	}
 }
 
-// parseCursor 解析复合游标 score:id 兼容旧的纯 score(id 取 0 退化为旧的开区间行为)
+// parseCursor 解析复合游标 score:id
 func parseCursor(cursor string) (int64, int64) {
 	if cursor == "" || cursor == "0" {
 		return 0, 0
@@ -192,7 +194,6 @@ func (l *FollowFeedLogic) queryInboxIDs(inboxKey string, cursorScore int64, page
 }
 
 // buildInboxSync 同步构建 inbox 只取小号窗口内容 写缓存或空哨兵 返回本次首屏来源
-// per-user 流并发极低 不做异步与防击穿锁 一次查询既填缓存又出首屏
 func (l *FollowFeedLogic) buildInboxSync(inboxKey string, userID, cursorScore, cursorID int64, pageSize int) ([]scoredID, bool, error) {
 	followees, err := l.listFolloweesCapped(userID, followInboxBuildFolloweesScanCap)
 	if err != nil {

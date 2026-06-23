@@ -11,6 +11,7 @@ import (
 	"ran-feed/app/rpc/interaction/client/followservice"
 	"ran-feed/app/rpc/interaction/client/likeservice"
 	"ran-feed/app/rpc/user/client/userservice"
+	"ran-feed/pkg/cache"
 	"ran-feed/pkg/interceptor"
 	"ran-feed/pkg/orm"
 
@@ -29,6 +30,8 @@ type ServiceContext struct {
 	FavoriteRpc favoriteservice.FavoriteService
 	FollowRpc   followservice.FollowService
 	CountRpc    counterservice.CounterService
+	// PublishBoxRebuildLocker 发件箱冷重建分布式锁 大V发件箱属跨 pod 热点 防击穿
+	PublishBoxRebuildLocker *cache.DistLocker
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -78,15 +81,17 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		c.CountRpcClientConf,
 		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
 	))
+	redisClient := redis.MustNewRedis(c.RedisConfig)
 	return &ServiceContext{
-		MysqlDb:     mysql,
-		Config:      c,
-		OssContext:  ossContext,
-		Redis:       redis.MustNewRedis(c.RedisConfig),
-		UserRpc:     userRpc,
-		LikesRpc:    likeRpc,
-		FavoriteRpc: favoriteRpc,
-		FollowRpc:   followRpc,
-		CountRpc:    countRpc,
+		MysqlDb:                 mysql,
+		Config:                  c,
+		OssContext:              ossContext,
+		Redis:                   redisClient,
+		UserRpc:                 userRpc,
+		LikesRpc:                likeRpc,
+		FavoriteRpc:             favoriteRpc,
+		FollowRpc:               followRpc,
+		CountRpc:                countRpc,
+		PublishBoxRebuildLocker: cache.NewDistLocker(redisClient),
 	}
 }

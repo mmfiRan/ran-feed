@@ -1,7 +1,7 @@
 package feedservicelogic
 
 import (
-	"math"
+	"ran-feed/app/rpc/content/internal/logic/publishbox"
 	"sort"
 	"strconv"
 	"sync"
@@ -219,7 +219,7 @@ func (l *FollowFeedLogic) writeBigVCache(cacheKey string, ids []int64, ttlSecond
 	}
 }
 
-// fetchBigVContentIDs 并行查询每个大 V 的 publish zset 当前窗口
+// fetchBigVContentIDs 并行查询每个大 V 的发件箱当前窗口 走 publishbox 命中读未命中回源重建
 // 返回所有命中的 (contentID published_at) 并集（含重复）与任意源是否还有更多
 func (l *FollowFeedLogic) fetchBigVContentIDs(bigVIDs []int64, cursorScore int64, pageSize int) ([]scoredID, bool) {
 	if len(bigVIDs) == 0 {
@@ -233,22 +233,23 @@ func (l *FollowFeedLogic) fetchBigVContentIDs(bigVIDs []int64, cursorScore int64
 		logger     = l.Logger
 	)
 
+	cutoff := followwindow.CutoffMillis(l.svcCtx.Config.FollowFanOut.DeadlineWindowDays)
+
 	mr.ForEach(func(source chan<- int64) {
 		for _, uid := range bigVIDs {
 			source <- uid
 		}
 	}, func(uid int64) {
-		feedKey := rediskey.BuildUserPublishFeedKey(uid)
-		items, hasMore, err := l.queryBigVPublishIDs(feedKey, cursorScore, pageSize)
+		items, hasMore, err := l.publishBox.QueryWindow(uid, cutoff, cursorScore, pageSize)
 		if err != nil {
-			logger.Errorf("查询大 V publish zset 失败 uid=%d: %v", uid, err)
+			logger.Errorf("查询大 V 发件箱失败 uid=%d: %v", uid, err)
 			return
 		}
 		if len(items) == 0 && !hasMore {
 			return
 		}
 		mu.Lock()
-		pool = append(pool, items...)
+		pool = append(pool, bigVScored(items)...)
 		if hasMore {
 			anyHasMore = true
 		}
@@ -258,27 +259,13 @@ func (l *FollowFeedLogic) fetchBigVContentIDs(bigVIDs []int64, cursorScore int64
 	return pool, anyHasMore
 }
 
-// queryBigVPublishIDs 原生读大 V publish zset 当前窗口候选 复合游标精确过滤交给 mergeScored
-// publish zset 承载全量历史 读时按 cutoff 施加窗口 命中续期窗口 TTL
-func (l *FollowFeedLogic) queryBigVPublishIDs(feedKey string, cursorScore int64, pageSize int) ([]scoredID, bool, error) {
-	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
-	maxScore := math.MaxFloat64
-	if cursorScore > 0 {
-		maxScore = float64(cursorScore)
+// bigVScored 把 publishbox 候选转本包 scoredID
+func bigVScored(items []publishbox.ScoredID) []scoredID {
+	out := make([]scoredID, 0, len(items))
+	for _, it := range items {
+		out = append(out, scoredID{id: it.ID, score: it.Score})
 	}
-	pairs, err := l.svcCtx.Redis.ZrevrangebyscoreWithScoresByFloatAndLimitCtx(
-		l.ctx, feedKey, float64(followwindow.CutoffMillis(days)), maxScore, 0, pageSize+1)
-	if err != nil {
-		return nil, false, err
-	}
-	if len(pairs) == 0 {
-		return nil, false, nil
-	}
-	hasMore := len(pairs) > pageSize
-	if eerr := l.svcCtx.Redis.ExpireCtx(l.ctx, feedKey, followwindow.TTLSeconds(days)); eerr != nil {
-		l.Errorf("续期大 V publish TTL 失败 feedKey=%s: %v", feedKey, eerr)
-	}
-	return scoredPairsToItems(pairs), hasMore, nil
+	return out
 }
 
 // scoredPairsToItems 把 zset 范围查询的 (member score) 对转 scoredID 过滤非法 id 与哨兵(id<=0)

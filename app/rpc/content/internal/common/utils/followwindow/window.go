@@ -33,7 +33,7 @@ func TTLSeconds(days int) int {
 	return (Days(days) + 1) * 24 * 60 * 60
 }
 
-// WriteArgs 组装 update/backfill 写 lua 的 ARGV keepN cutoff ttl 后跟扁平的 score member 对
+// WriteArgs 组装 update/backfill 写 lua 的 ARGV keepN cutoff ttl 后跟的 score member 对
 // cutoffMillis<=0 表示不按时间裁剪 inbox 传窗口下界 publish 传 0 仅靠 keepN 与 TTL 控量
 // pairs 为 score1 member1 score2 member2 序列
 func WriteArgs(keepN, cutoffMillis int64, ttlSeconds int, pairs ...int64) []any {
