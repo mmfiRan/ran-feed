@@ -20,16 +20,8 @@ const (
 
 	// RedisCommentObjPrefix 评论对象缓存前缀 comment:obj:{comment_id}
 	RedisCommentObjPrefix = "comment:obj"
-	// RedisCommentIdxContentPrefix 一级评论索引前缀 comment:idx:content:{content_id}
-	RedisCommentIdxContentPrefix = "comment:idx:content"
-	// RedisCommentIdxRootPrefix 评论回复索引前缀 comment:idx:root:{root_id}
-	RedisCommentIdxRootPrefix = "comment:idx:root"
 	// RedisCommentObjExpireSeconds 评论对象缓存过期时间：24小时
 	RedisCommentObjExpireSeconds = 24 * 60 * 60
-	// RedisCommentIdxExpireSeconds 评论索引过期时间：20分钟
-	RedisCommentIdxExpireSeconds = 20 * 60
-	// RedisCommentIdxKeepLatestN 评论索引保留最新N条
-	RedisCommentIdxKeepLatestN = 10000
 )
 
 func GetRedisPrefixKey(prefix string, id string) string {
@@ -54,12 +46,4 @@ func BuildUserFavoriteFeedKey(userId string) string {
 
 func BuildCommentObjKey(commentId string) string {
 	return GetRedisPrefixKey(RedisCommentObjPrefix, commentId)
-}
-
-func BuildCommentIdxContentKey(contentId string) string {
-	return GetRedisPrefixKey(RedisCommentIdxContentPrefix, contentId)
-}
-
-func BuildCommentIdxRootKey(rootId string) string {
-	return GetRedisPrefixKey(RedisCommentIdxRootPrefix, rootId)
 }

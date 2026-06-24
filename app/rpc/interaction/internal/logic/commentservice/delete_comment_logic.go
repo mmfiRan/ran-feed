@@ -71,7 +71,6 @@ func (l *DeleteCommentLogic) DeleteComment(in *interaction.DeleteCommentReq) (*i
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除评论失败"))
 	}
 	l.invalidateCommentCache(comment)
-	l.removeFromIndex(comment)
 
 	// 清理父链：若父评论为墓碑且已无子评论，则物理删除
 	l.cleanupDeletedAncestors(comment.ParentID)
@@ -79,38 +78,14 @@ func (l *DeleteCommentLogic) DeleteComment(in *interaction.DeleteCommentReq) (*i
 	return &interaction.DeleteCommentRes{}, nil
 }
 
+// invalidateCommentCache 仅失效自身 obj obj 为不可变快照 回复数在 by-id 路径实时重算无需连删父根
 func (l *DeleteCommentLogic) invalidateCommentCache(c *do.CommentDO) {
 	if c == nil {
 		return
 	}
-	delKeys := []string{rediskey.BuildCommentObjKey(strconv.FormatInt(c.ID, 10))}
-	if c.ParentID > 0 {
-		delKeys = append(delKeys, rediskey.BuildCommentObjKey(strconv.FormatInt(c.ParentID, 10)))
-	}
-	if c.RootID > 0 && c.RootID != c.ID {
-		delKeys = append(delKeys, rediskey.BuildCommentObjKey(strconv.FormatInt(c.RootID, 10)))
-	}
-	if _, delErr := l.svcCtx.Redis.DelCtx(l.ctx, delKeys...); delErr != nil {
+	objKey := rediskey.BuildCommentObjKey(strconv.FormatInt(c.ID, 10))
+	if _, delErr := l.svcCtx.Redis.DelCtx(l.ctx, objKey); delErr != nil {
 		l.Errorf("删除评论缓存失败: %v, comment_id=%d", delErr, c.ID)
-	}
-}
-
-func (l *DeleteCommentLogic) removeFromIndex(c *do.CommentDO) {
-	if c == nil {
-		return
-	}
-	if c.ParentID == 0 {
-		idxKey := rediskey.BuildCommentIdxContentKey(strconv.FormatInt(c.ContentID, 10))
-		if _, err := l.svcCtx.Redis.ZremCtx(l.ctx, idxKey, c.ID); err != nil {
-			l.Errorf("删除评论索引失败: %v, comment_id=%d", err, c.ID)
-		}
-		return
-	}
-	if c.RootID > 0 {
-		idxKey := rediskey.BuildCommentIdxRootKey(strconv.FormatInt(c.RootID, 10))
-		if _, err := l.svcCtx.Redis.ZremCtx(l.ctx, idxKey, c.ID); err != nil {
-			l.Errorf("删除回复索引失败: %v, comment_id=%d", err, c.ID)
-		}
 	}
 }
 
@@ -140,7 +115,6 @@ func (l *DeleteCommentLogic) cleanupDeletedAncestors(parentID int64) {
 			return
 		}
 		l.invalidateCommentCache(parent)
-		l.removeFromIndex(parent)
 
 		current = parent.ParentID
 	}

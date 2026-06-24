@@ -17,16 +17,6 @@ var CancelLikeUserHashScript string
 //go:embed rebuild_like_user_hash.lua
 var RebuildLikeUserHashScript string
 
-// UpdateCommentCacheScript 评论缓存更新脚本
-//
-//go:embed update_comment_cache.lua
-var UpdateCommentCacheScript string
-
-// QueryCommentListScript 评论列表查询脚本
-//
-//go:embed query_comment_list.lua
-var QueryCommentListScript string
-
 // BatchGetCommentObjsScript 批量获取评论对象HASH
 //
 //go:embed batch_get_comment_objs.lua

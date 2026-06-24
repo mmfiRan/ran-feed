@@ -2,16 +2,11 @@ package commentservicelogic
 
 import (
 	"context"
-	"strconv"
-	"time"
 
 	"ran-feed/app/rpc/interaction/interaction"
-	rediskey "ran-feed/app/rpc/interaction/internal/common/consts/redis"
-	luautils "ran-feed/app/rpc/interaction/internal/common/utils/lua"
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/repositories"
 	"ran-feed/app/rpc/interaction/internal/svc"
-	"ran-feed/app/rpc/user/client/userservice"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -96,61 +91,7 @@ func (l *CommentLogic) Comment(in *interaction.CommentReq) (*interaction.Comment
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("创建评论失败"))
 	}
 
-	if parentID == 0 {
-		idxKey := rediskey.BuildCommentIdxContentKey(strconv.FormatInt(in.ContentId, 10))
-		objKey := rediskey.BuildCommentObjKey(strconv.FormatInt(commentID, 10))
-		createdAt := time.Now().Unix()
-		userName := ""
-		userAvatar := ""
-		replyCount := int64(0)
-		resp, uerr := l.svcCtx.UserRpc.GetUser(l.ctx, &userservice.GetUserReq{
-			UserId: in.UserId,
-		})
-		if uerr != nil {
-			l.Errorf("查询用户信息失败: %v, user_id=%d", uerr, in.UserId)
-		}
-		if resp != nil && resp.UserInfo != nil {
-			userName = resp.UserInfo.Nickname
-			userAvatar = resp.UserInfo.Avatar
-		}
-		_, err = l.svcCtx.Redis.EvalCtx(
-			l.ctx,
-			luautils.UpdateCommentCacheScript,
-			[]string{objKey, idxKey},
-			strconv.FormatInt(int64(rediskey.RedisCommentObjExpireSeconds), 10),
-			strconv.FormatInt(int64(rediskey.RedisCommentIdxExpireSeconds), 10),
-			strconv.FormatInt(int64(rediskey.RedisCommentIdxKeepLatestN), 10),
-			strconv.FormatInt(commentID, 10),
-			strconv.FormatInt(commentDO.ContentID, 10),
-			strconv.FormatInt(commentDO.UserID, 10),
-			strconv.FormatInt(commentDO.ReplyToUserID, 10),
-			strconv.FormatInt(commentDO.ParentID, 10),
-			strconv.FormatInt(commentDO.RootID, 10),
-			commentDO.Comment,
-			strconv.FormatInt(createdAt, 10),
-			strconv.FormatInt(int64(commentDO.Status), 10),
-			userName,
-			userAvatar,
-			strconv.FormatInt(replyCount, 10),
-		)
-		if err != nil {
-			l.Errorf("更新评论缓存失败: %v, content_id=%d, comment_id=%d", err, in.ContentId, commentID)
-		}
-	} else {
-		// 旁路缓存策略：回复创建后删除父评论对象缓存 + 根评论索引缓存，触发下次读回源重建
-		delKeys := []string{
-			rediskey.BuildCommentObjKey(strconv.FormatInt(parentID, 10)),
-		}
-		if rootID > 0 && rootID != parentID {
-			delKeys = append(delKeys, rediskey.BuildCommentObjKey(strconv.FormatInt(rootID, 10)))
-		}
-		if rootID > 0 {
-			delKeys = append(delKeys, rediskey.BuildCommentIdxRootKey(strconv.FormatInt(rootID, 10)))
-		}
-		if _, delErr := l.svcCtx.Redis.DelCtx(l.ctx, delKeys...); delErr != nil {
-			l.Errorf("删除回复相关缓存失败: %v, parent_id=%d, root_id=%d", delErr, parentID, rootID)
-		}
-	}
+	// 列表读已改走 DB 创建不再维护缓存 obj 由首次 by-id 读惰性回填
 
 	return &interaction.CommentRes{
 		CommentId: commentID,
