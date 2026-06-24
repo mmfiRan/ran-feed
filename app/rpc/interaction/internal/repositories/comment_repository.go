@@ -142,14 +142,14 @@ func (r *commentRepositoryImpl) HasReferences(id int64) (bool, error) {
 	if id <= 0 {
 		return false, nil
 	}
+	// 软删除过滤须覆盖整组 parent_id 或 root_id 否则 root_id 支会逃逸 is_deleted 过滤
 	q := r.getQuery()
 	rows, err := q.RanFeedComment.WithContext(r.ctx).
 		Where(q.RanFeedComment.IsDeleted.Eq(0)).
 		Where(
-			q.RanFeedComment.ParentID.Eq(id),
-		).
-		Or(
-			q.RanFeedComment.RootID.Eq(id),
+			q.RanFeedComment.WithContext(r.ctx).
+				Where(q.RanFeedComment.ParentID.Eq(id)).
+				Or(q.RanFeedComment.RootID.Eq(id)),
 		).
 		Limit(1).
 		Find()
