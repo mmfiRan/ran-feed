@@ -3,7 +3,9 @@ name: Build and Publish Docker Images
 on:
   push:
     branches:
-      - master
+      - develop
+    tags:
+      - "v*.*.*"
 
 env:
   REGISTRY: ghcr.io
@@ -14,8 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      version: ${{ steps.resolve-version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Discover Dockerfiles
         id: set-matrix
@@ -24,6 +29,23 @@ jobs:
             | sed 's|build/||; s|\.Dockerfile||' \
             | jq -Rc . | jq -sc '{service: .}')
           echo "matrix=$services" >> $GITHUB_OUTPUT
+
+      - name: Resolve version
+        id: resolve-version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            # 正式发布：直接用 tag 名
+            VERSION="${GITHUB_REF_NAME}"
+          else
+            # develop 测试包：base = 最近 semver tag，拼 run_number
+            BASE=$(git tag --list 'v*.*.*' --sort=-version:refname | head -1)
+            if [[ -z "$BASE" ]]; then
+              BASE="v0.0.0"
+            fi
+            VERSION="${BASE}.${{ github.run_number }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Resolved version: $VERSION"
 
   build-and-push:
     needs: prepare
@@ -45,14 +67,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.IMAGE_PREFIX }}/ran-feed-${{ matrix.service }}
-          tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=sha,prefix=,format=short
+      - name: Build tags
+        id: tags
+        run: |
+          IMAGE="${{ env.IMAGE_PREFIX }}/ran-feed-${{ matrix.service }}"
+          VERSION="${{ needs.prepare.outputs.version }}"
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            # 正式包：版本 tag + latest
+            echo "tags=${IMAGE}:${VERSION},${IMAGE}:latest" >> $GITHUB_OUTPUT
+          else
+            # 测试包：仅版本 tag，不覆盖 latest
+            echo "tags=${IMAGE}:${VERSION}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -63,7 +89,6 @@ jobs:
           context: .
           file: build/${{ matrix.service }}.Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
