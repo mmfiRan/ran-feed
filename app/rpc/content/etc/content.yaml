@@ -60,6 +60,7 @@ FollowFanOut:
   BatchSize: 500                # 单次 ListFollowers 拉取批大小
   InboxKeepN: 5000              # follower inbox 保留最近条数
   BigVMergeMaxQuery: 100        # 读路径单次请求查询大 V 数硬上限
+  DeadlineWindowDays: 14        # 读路径查询大 V 时，查询截止日期窗口（14 天内）
   BigVCacheTTLSeconds: 300      # viewer 大 V 列表缓存 TTL 秒数
   BigVFolloweesScanLimit: 500   # 计算 viewer 大 V 列表时扫描关注上限
   BigVCountConcurrency: 16      # 计算大 V 时并行 GetCount 度
