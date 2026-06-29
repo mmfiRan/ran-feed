@@ -3,7 +3,19 @@
 ## 当前状态
 
 **最后更新：** 2026-06-29
-**当前功能：** chore 部署配置迁出仓库（done）
+**当前功能：** fix-007 互动查询补中间件 / fix-008 补关注流窗口配置（done）
+
+---
+
+## 已完成（fix-007 互动查询接口补 OptionalLoginMiddleware）
+
+本地起服务实测业务正确性时发现:登录用户调 like/info 永远 is_liked=false。根因 interaction 读组(like/info、like/info/batch、favorite/info、comment/list、comment/reply/list)的 .api @server 块漏了 middleware 注解,生成的 routes.go 没挂中间件 → token 不解析 → userId=0 → queryIsLiked 的 `if userID<=0 return false` 短路。修法在 interaction.api 读组补 `middleware: OptionalLoginMiddleware`,goctl --style=go_zero 重新生成。./init.sh 全绿,运行时实测 is_liked 由 false 变 true、匿名仍 false 不报错。提交 ccf5270。
+
+## 已完成（fix-008 补 content FollowFanOut.DeadlineWindowDays 配置）
+
+content.yaml 的 FollowFanOut 段缺 DeadlineWindowDays,而 config.go 及 publishbox/feed/fanout 十余处都读它且无代码默认 → 运行时为 0,关注流读窗口塌缩为 0 天。补 `DeadlineWindowDays: 14`。提交 faa255d。
+
+> 本地联调备忘(非本仓库改动):部署配置迁到 ran-feed-docker 后,宿主机 go run 需 `export ENV_FILE=指向 docker .env`(host 改 127.0.0.1)、`/etc/hosts` 加 `127.0.0.1 kafka etcd mysql redis xxl-job-admin`(kafka/etcd advertised 名宿主机需可解析);canal 1.1.7/1.1.8 缺 `canal.instance.global.lazy` 会启动 NPE,已在 docker 仓库补上。
 
 ---
 

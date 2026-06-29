@@ -67,6 +67,22 @@
       "dependencies": ["refactor-006"],
       "status": "not-started",
       "evidence": ""
+    },
+    {
+      "id": "fix-007",
+      "name": "interaction 查询接口补 OptionalLoginMiddleware 修 is_liked/is_favorite 恒 false",
+      "description": "interaction 读组(like/info、like/info/batch、favorite/info、comment/list、comment/reply/list)在 interaction.api 的 @server 块漏了 middleware 注解 生成的 routes.go 这组没挂任何中间件 token 不被解析 userId 取默认 0 queryIsLiked/queryIsFavorite 的 if userID<=0 short-circuit 直接 return false 导致任意登录用户查询自身互动状态恒为 false。修法 在 app/front/doc/interaction/interaction.api 读组 @server 块补 middleware: OptionalLoginMiddleware(可选登录 带 token 注入 userId 匿名也放行) goctl --style=go_zero 重新生成 routes.go 不手改生成产物。",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "./init.sh 通过 build vet test 全绿；改 .api 后 goctl 重新生成 routes.go 该读组挂上 OptionalLoginMiddleware；运行时实测闭环 已点赞内容 like/info 带 token 由修复前 is_liked=false 变为 true 匿名请求 is_liked=false 且不报错 like_count 两侧一致。"
+    },
+    {
+      "id": "fix-008",
+      "name": "补 content FollowFanOut.DeadlineWindowDays 配置 缺失致读窗口归零",
+      "description": "app/rpc/content/etc/content.yaml 的 FollowFanOut 段缺 DeadlineWindowDays 项 而 config.go 及 publishbox/feed/fanout 等十多处读 Config.FollowFanOut.DeadlineWindowDays 无代码默认 运行时取到 0 关注流 inbox/publish 的 deadline 时间窗口塌缩为 0 天。修法 补 DeadlineWindowDays: 14 与代码注释默认值一致。",
+      "dependencies": ["refactor-004"],
+      "status": "done",
+      "evidence": "./init.sh 通过 build vet test 全绿；content.yaml FollowFanOut 段补 DeadlineWindowDays: 14；代码 grep 确认 config.go 定义且十余处 logic 引用该字段。"
     }
   ]
 }
