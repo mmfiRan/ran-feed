@@ -130,6 +130,7 @@ type (
 	tags: interaction
 	group:  interaction
 	prefix: /v1/interaction
+	middleware: OptionalLoginMiddleware
 )
 service front-api {
 	@doc (
