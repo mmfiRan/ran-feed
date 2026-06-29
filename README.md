@@ -100,8 +100,7 @@ app/                # 服务代码
     interaction/    # 互动域
     user/           # 用户域
     count/          # 计数域
-build/              # Dockerfile
-deploy/             # docker-compose 与部署配置
+build/              # Dockerfile（CI 构建镜像用）
 pkg/                # 公共库
 script/             # SQL与启动脚本
 ```
@@ -142,7 +141,7 @@ script/             # SQL与启动脚本
 
 环境变量通过 `${VAR}` 方式注入，启动时会自动加载：
 - 本地：根目录 `.env`
-- 容器：`deploy/.env`
+- 容器：部署仓库 [ran-feed-docker](https://github.com/mmfiRan/ran-feed-docker) 的 `.env`（由其 `.env.example` 复制）
 
 建议先补齐以下关键配置：
 - 数据源：`MYSQL_HOST` / `REDIS_HOST` / `ETCD_HOST` / `KAFKA_BROKERS`
@@ -171,23 +170,17 @@ OSS_PUBLIC_HOST=https://your-bucket.oss-cn-beijing.aliyuncs.com
 ---
 
 ## 部署说明
-推荐使用 Docker Compose（`deploy/docker-compose.yml`）
+部署配置（docker-compose 与各组件配置）已独立到部署仓库 [ran-feed-docker](https://github.com/mmfiRan/ran-feed-docker)。本仓库通过 CI（`.github/workflows/docker-publish.yml` + `build/*.Dockerfile`）构建镜像并推送到 ghcr.io，部署仓库直接拉取这些镜像。
 
 基础流程：
-1. 进入 `deploy/`，准备 `.env`（可从根目录 `.env` 复制并按需修改）。
-2. 启动：
 ```bash
-cd deploy
-docker compose --env-file .env up -d --build
+git clone https://github.com/mmfiRan/ran-feed-docker.git
+cd ran-feed-docker
+cp .env.example .env   # 按需修改
+./start.sh
 ```
-3. 验证：
-```bash
-docker compose ps
-```
-4. 停止：
-```bash
-docker compose down
-```
+
+数据库初始化 SQL 见本仓库 `script/sql/`，部署仓库 `mysql/sql/` 为其同步副本。
 
 ---
 

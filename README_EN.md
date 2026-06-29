@@ -98,8 +98,7 @@ app/                # Services
     interaction/    # Interaction domain
     user/           # User domain
     count/          # Count domain
-build/              # Dockerfile
-deploy/             # docker-compose
+build/              # Dockerfile (used by CI to build images)
 pkg/                # Shared libs
 script/             # SQL + scripts
 ```
@@ -140,7 +139,7 @@ Configs are in `app/**/etc/*.yaml`.
 
 Env vars are injected via `${VAR}`:
 - Local: `.env`
-- Docker: `deploy/.env`
+- Docker: `.env` in the deploy repo [ran-feed-docker](https://github.com/mmfiRan/ran-feed-docker) (copied from its `.env.example`)
 
 Recommended to set these first:
 - Data: `MYSQL_HOST` / `REDIS_HOST` / `ETCD_HOST` / `KAFKA_BROKERS`
@@ -169,23 +168,17 @@ OSS_PUBLIC_HOST=https://your-bucket.oss-cn-beijing.aliyuncs.com
 ---
 
 ## Deployment
-Use Docker Compose (`deploy/docker-compose.yml`).
+Deployment config (docker-compose and component configs) lives in a separate repo: [ran-feed-docker](https://github.com/mmfiRan/ran-feed-docker). This repo builds images via CI (`.github/workflows/docker-publish.yml` + `build/*.Dockerfile`) and pushes them to ghcr.io; the deploy repo pulls those images.
 
 Basic flow:
-1. Enter `deploy/`, prepare `.env` (copy from root `.env` and adjust).
-2. Start:
 ```bash
-cd deploy
-docker compose --env-file .env up -d --build
+git clone https://github.com/mmfiRan/ran-feed-docker.git
+cd ran-feed-docker
+cp .env.example .env   # adjust as needed
+./start.sh
 ```
-3. Verify:
-```bash
-docker compose ps
-```
-4. Stop:
-```bash
-docker compose down
-```
+
+DB init SQL is in this repo under `script/sql/`; the deploy repo's `mysql/sql/` is a synced copy.
 
 ---
 

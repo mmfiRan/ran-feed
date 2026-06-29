@@ -1,8 +1,0 @@
-# sec-002: 证书永远不入库
-*.crt
-*.key
-*.pem
-*.p12
-*.pfx
-!.gitignore
-!README.md

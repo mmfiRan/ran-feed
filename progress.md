@@ -2,8 +2,19 @@
 
 ## 当前状态
 
-**最后更新：** 2026-06-23
-**当前功能：** refactor-006 发件箱查询抽象 publishbox（done）
+**最后更新：** 2026-06-29
+**当前功能：** chore 部署配置迁出仓库（done）
+
+---
+
+## 已完成（chore 部署配置迁出到 ran-feed-docker）
+
+部署层独立到 [ran-feed-docker](https://github.com/mmfiRan/ran-feed-docker) 仓库，本仓库只留源码与镜像构建管线。./init.sh 全绿。
+
+- **删除 `deploy/`**：docker-compose 与 nginx/grafana/prometheus/otel/mysql/canal/filebeat/logstash 配置、`.env`、前端镜像 tar 共 18 个跟踪文件，已迁到部署仓库。
+- **保留镜像构建**：`build/*.Dockerfile` + `.github/workflows/docker-publish.yml` 留在源码仓库，CI 构建推 ghcr.io，部署仓库拉取消费。
+- **保留 SQL**：`script/sql/` 作为 schema 真相源留下，部署仓库 `mysql/sql/` 为同步副本。
+- **文档同步**：README/README_EN 去掉 `deploy/` 死链改指部署仓库，CLAUDE.md 的 `.env` 参考改为部署仓库 `.env.example`。
 
 ---
 
