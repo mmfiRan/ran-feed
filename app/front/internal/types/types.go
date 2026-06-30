@@ -92,6 +92,15 @@ type DeleteContentReq struct {
 type DeleteContentRes struct {
 }
 
+type DeleteSearchHistoryReq struct {
+	Keyword string `form:"keyword,optional"`
+	All     bool   `form:"all,optional"`
+}
+
+type DeleteSearchHistoryRes struct {
+	Success bool `json:"success"`
+}
+
 type FavoriteReq struct {
 	ContentId     *int64  `json:"content_id,string,optional" validate:"required"`
 	ContentUserId *int64  `json:"content_user_id,string,optional" validate:"required"`
@@ -156,6 +165,10 @@ type LikeReq struct {
 }
 
 type LikeRes struct {
+}
+
+type ListSearchHistoryRes struct {
+	Items []SearchHistoryItem `json:"items"`
 }
 
 type LoginReq struct {
@@ -329,6 +342,58 @@ type RemoveFavoriteReq struct {
 }
 
 type RemoveFavoriteRes struct {
+}
+
+type SearchContentItem struct {
+	ContentId            int64  `json:"content_id,string"`
+	ContentType          int32  `json:"content_type"`
+	AuthorId             int64  `json:"author_id,string"`
+	AuthorName           string `json:"author_name"`
+	AuthorAvatar         string `json:"author_avatar"`
+	Title                string `json:"title"`
+	CoverUrl             string `json:"cover_url"`
+	PublishedAt          int64  `json:"published_at"`
+	IsLiked              bool   `json:"is_liked"`
+	LikeCount            int64  `json:"like_count"`
+	HighlightTitle       string `json:"highlight_title"`
+	HighlightDescription string `json:"highlight_description"`
+}
+
+type SearchContentReq struct {
+	Keyword     string `form:"keyword"`
+	ContentType int32  `form:"content_type,optional"`
+	Page        int32  `form:"page,optional"`
+	Size        int32  `form:"size,optional"`
+}
+
+type SearchContentRes struct {
+	Items []SearchContentItem `json:"items"`
+	Total int64               `json:"total"`
+}
+
+type SearchHistoryItem struct {
+	Keyword   string `json:"keyword"`
+	UpdatedAt int64  `json:"updated_at"`
+}
+
+type SearchUserItem struct {
+	UserId        int64  `json:"user_id,string"`
+	Nickname      string `json:"nickname"`
+	Avatar        string `json:"avatar"`
+	Bio           string `json:"bio"`
+	IsFollowed    bool   `json:"is_followed"`
+	FollowerCount int64  `json:"follower_count"`
+}
+
+type SearchUserReq struct {
+	Keyword string `form:"keyword"`
+	Page    int32  `form:"page,optional"`
+	Size    int32  `form:"size,optional"`
+}
+
+type SearchUserRes struct {
+	Items []SearchUserItem `json:"items"`
+	Total int64            `json:"total"`
 }
 
 type UnFollowUserReq struct {

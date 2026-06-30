@@ -1633,6 +1633,9 @@
                 "content_id": {
                   "type": "integer"
                 },
+                "content_user_id": {
+                  "type": "integer"
+                },
                 "scene": {
                   "type": "string"
                 }
@@ -1731,6 +1734,290 @@
             "description": "",
             "schema": {
               "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/search/content": {
+      "get": {
+        "description": "搜索内容 全部/图文/视频",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "search"
+        ],
+        "summary": "SearchContent",
+        "operationId": "searchSearchContent",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "keyword",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "content_type",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "page",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "size",
+            "in": "query",
+            "allowEmptyValue": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "content_id",
+                      "content_type",
+                      "author_id",
+                      "author_name",
+                      "author_avatar",
+                      "title",
+                      "cover_url",
+                      "published_at",
+                      "is_liked",
+                      "like_count",
+                      "highlight_title",
+                      "highlight_description"
+                    ],
+                    "properties": {
+                      "author_avatar": {
+                        "type": "string"
+                      },
+                      "author_id": {
+                        "type": "integer"
+                      },
+                      "author_name": {
+                        "type": "string"
+                      },
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "content_type": {
+                        "type": "integer"
+                      },
+                      "cover_url": {
+                        "type": "string"
+                      },
+                      "highlight_description": {
+                        "type": "string"
+                      },
+                      "highlight_title": {
+                        "type": "string"
+                      },
+                      "is_liked": {
+                        "type": "boolean"
+                      },
+                      "like_count": {
+                        "type": "integer"
+                      },
+                      "published_at": {
+                        "type": "integer"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "total": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/search/history": {
+      "get": {
+        "description": "最近搜索历史",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "search"
+        ],
+        "summary": "ListSearchHistory",
+        "operationId": "searchListSearchHistory",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "keyword",
+                      "updated_at"
+                    ],
+                    "properties": {
+                      "keyword": {
+                        "type": "string"
+                      },
+                      "updated_at": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "description": "删除搜索历史 带 keyword 删单条 all=true 清空",
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "search"
+        ],
+        "summary": "DeleteSearchHistory",
+        "operationId": "searchDeleteSearchHistory",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "keyword",
+            "in": "formData",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "boolean",
+            "name": "all",
+            "in": "formData",
+            "allowEmptyValue": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/search/user": {
+      "get": {
+        "description": "搜索用户",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "search"
+        ],
+        "summary": "SearchUser",
+        "operationId": "searchSearchUser",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "keyword",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "page",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "size",
+            "in": "query",
+            "allowEmptyValue": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "user_id",
+                      "nickname",
+                      "avatar",
+                      "bio",
+                      "is_followed",
+                      "follower_count"
+                    ],
+                    "properties": {
+                      "avatar": {
+                        "type": "string"
+                      },
+                      "bio": {
+                        "type": "string"
+                      },
+                      "follower_count": {
+                        "type": "integer"
+                      },
+                      "is_followed": {
+                        "type": "boolean"
+                      },
+                      "nickname": {
+                        "type": "string"
+                      },
+                      "user_id": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                "total": {
+                  "type": "integer"
+                }
+              }
             }
           }
         }
@@ -2028,9 +2315,9 @@
       }
     }
   },
-  "x-date": "2026-03-20 15:47:33",
+  "x-date": "2026-06-30 15:59:47",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",
-  "x-goctl-version": "1.9.2"
+  "x-goctl-version": "1.10.1"
 }

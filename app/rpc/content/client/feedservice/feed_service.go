@@ -14,20 +14,23 @@ import (
 )
 
 type (
-	FollowFeedReq       = content.FollowFeedReq
-	FollowFeedRes       = content.FollowFeedRes
-	RecommendFeedReq    = content.RecommendFeedReq
-	RecommendFeedRes    = content.RecommendFeedRes
-	UserFavoriteFeedReq = content.UserFavoriteFeedReq
-	UserFavoriteFeedRes = content.UserFavoriteFeedRes
-	UserPublishFeedReq  = content.UserPublishFeedReq
-	UserPublishFeedRes  = content.UserPublishFeedRes
+	BatchGetContentItemsReq = content.BatchGetContentItemsReq
+	BatchGetContentItemsRes = content.BatchGetContentItemsRes
+	FollowFeedReq           = content.FollowFeedReq
+	FollowFeedRes           = content.FollowFeedRes
+	RecommendFeedReq        = content.RecommendFeedReq
+	RecommendFeedRes        = content.RecommendFeedRes
+	UserFavoriteFeedReq     = content.UserFavoriteFeedReq
+	UserFavoriteFeedRes     = content.UserFavoriteFeedRes
+	UserPublishFeedReq      = content.UserPublishFeedReq
+	UserPublishFeedRes      = content.UserPublishFeedRes
 
 	FeedService interface {
 		RecommendFeed(ctx context.Context, in *RecommendFeedReq, opts ...grpc.CallOption) (*RecommendFeedRes, error)
 		FollowFeed(ctx context.Context, in *FollowFeedReq, opts ...grpc.CallOption) (*FollowFeedRes, error)
 		UserPublishFeed(ctx context.Context, in *UserPublishFeedReq, opts ...grpc.CallOption) (*UserPublishFeedRes, error)
 		UserFavoriteFeed(ctx context.Context, in *UserFavoriteFeedReq, opts ...grpc.CallOption) (*UserFavoriteFeedRes, error)
+		BatchGetContentItems(ctx context.Context, in *BatchGetContentItemsReq, opts ...grpc.CallOption) (*BatchGetContentItemsRes, error)
 	}
 
 	defaultFeedService struct {
@@ -59,4 +62,9 @@ func (m *defaultFeedService) UserPublishFeed(ctx context.Context, in *UserPublis
 func (m *defaultFeedService) UserFavoriteFeed(ctx context.Context, in *UserFavoriteFeedReq, opts ...grpc.CallOption) (*UserFavoriteFeedRes, error) {
 	client := content.NewFeedServiceClient(m.cli.Conn())
 	return client.UserFavoriteFeed(ctx, in, opts...)
+}
+
+func (m *defaultFeedService) BatchGetContentItems(ctx context.Context, in *BatchGetContentItemsReq, opts ...grpc.CallOption) (*BatchGetContentItemsRes, error) {
+	client := content.NewFeedServiceClient(m.cli.Conn())
+	return client.BatchGetContentItems(ctx, in, opts...)
 }

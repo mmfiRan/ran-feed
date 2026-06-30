@@ -121,8 +121,8 @@
       "name": "front 搜索接口与结果富化历史记录",
       "description": "见 SEARCH-DESIGN.md P5。改 app/front/doc search.api 后 goctl 重生成(不手改 routes.go)。①/v1/search/content(带可选 content_type tab 参数 全部/图文10/视频20)与 /v1/search/user 挂 OptionalLoginMiddleware 注入 userId。②调 search-rpc 取 ranked IDs 复用 feed 拼装链富化 content→content-rpc/contentcache+user-rpc+count-rpc+interaction is_liked；user→user-rpc+follow is_followed 结果对齐 ContentItem/UserInfo。③/v1/search/history GET 列最近 10 条 DELETE 删单条/清空 匿名返回空。④搜索接口内 userId>0&keyword 非空 时隐式 upsert 历史 失败只 log 不阻断。",
       "dependencies": ["feat-003"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 通过 build vet test 全绿(27 测试文件)。①content-rpc 升级点:content.proto FeedService 加 BatchGetContentItems(content_ids,viewer_id)→items goctl 重生成 logic 薄封装调 resolver.assembleItems(ids,viewerID,publicOnly=true) 真复用 feed 拼装链。②front search.api 定义 /v1/search/content(content_type tab)/user/history(GET DELETE) 挂 OptionalLoginMiddleware goctl 生成+swagger 重生成;front.api import search。③svcCtx 接 SearchRpc(config+yaml SearchRpcClientConf)。④四 logic:SearchContent 调 search-rpc 出 ranked ids+highlight→FeedRpc.BatchGetContentItems 富化→assembleSearchContentItems 按序合并高亮;SearchUser BatchGetUser+并行 GetFollowSummary(is_followed+粉丝数)按搜索序拼装;ListHistory/DeleteHistory 调 search-rpc 匿名守卫;搜索隐式 recordSearchHistory 异步脱离请求 ctx 非致命。单测覆盖高亮合并+保序+nil 跳过。运行期遗留 端到端验证留 feat-006 需 P0 canal search destination 灌数据。"
     },
     {
       "id": "feat-006",

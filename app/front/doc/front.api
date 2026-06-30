@@ -4,6 +4,7 @@ import "content/content.api"
 import "interaction/interaction.api"
 import "user/user.api"
 import "feed/feed.api"
+import "search/search.api"
 
 info (
 	title:        "ran-feed相关接口"

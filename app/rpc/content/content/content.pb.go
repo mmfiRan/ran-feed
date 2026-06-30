@@ -2307,6 +2307,104 @@ func (x *FollowFeedItem) GetLikeCount() int64 {
 	return 0
 }
 
+// BatchGetContentItemsReq 按内容 id 批量富化 viewer_id 为 0 表示匿名
+type BatchGetContentItemsReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ContentIds    []int64                `protobuf:"varint,1,rep,packed,name=content_ids,json=contentIds,proto3" json:"content_ids,omitempty"`
+	ViewerId      int64                  `protobuf:"varint,2,opt,name=viewer_id,json=viewerId,proto3" json:"viewer_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BatchGetContentItemsReq) Reset() {
+	*x = BatchGetContentItemsReq{}
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BatchGetContentItemsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BatchGetContentItemsReq) ProtoMessage() {}
+
+func (x *BatchGetContentItemsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BatchGetContentItemsReq.ProtoReflect.Descriptor instead.
+func (*BatchGetContentItemsReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *BatchGetContentItemsReq) GetContentIds() []int64 {
+	if x != nil {
+		return x.ContentIds
+	}
+	return nil
+}
+
+func (x *BatchGetContentItemsReq) GetViewerId() int64 {
+	if x != nil {
+		return x.ViewerId
+	}
+	return 0
+}
+
+// BatchGetContentItemsRes 按入参 id 顺序返回富化项 已删/非公开自动剔除
+type BatchGetContentItemsRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*ContentItem         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BatchGetContentItemsRes) Reset() {
+	*x = BatchGetContentItemsRes{}
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BatchGetContentItemsRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BatchGetContentItemsRes) ProtoMessage() {}
+
+func (x *BatchGetContentItemsRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BatchGetContentItemsRes.ProtoReflect.Descriptor instead.
+func (*BatchGetContentItemsRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *BatchGetContentItemsRes) GetItems() []*ContentItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
 var File_app_rpc_content_proto_content_proto protoreflect.FileDescriptor
 
 const file_app_rpc_content_proto_content_proto_rawDesc = "" +
@@ -2520,7 +2618,13 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\bis_liked\x18\t \x01(\bR\aisLiked\x12\x1d\n" +
 	"\n" +
 	"like_count\x18\n" +
-	" \x01(\x03R\tlikeCount*?\n" +
+	" \x01(\x03R\tlikeCount\"W\n" +
+	"\x17BatchGetContentItemsReq\x12\x1f\n" +
+	"\vcontent_ids\x18\x01 \x03(\x03R\n" +
+	"contentIds\x12\x1b\n" +
+	"\tviewer_id\x18\x02 \x01(\x03R\bviewerId\"E\n" +
+	"\x17BatchGetContentItemsRes\x12*\n" +
+	"\x05items\x18\x01 \x03(\v2\x14.content.ContentItemR\x05items*?\n" +
 	"\vContentType\x12\x18\n" +
 	"\x14CONTENT_TYPE_UNKNOWN\x10\x00\x12\v\n" +
 	"\aARTICLE\x10\n" +
@@ -2550,13 +2654,14 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\rDeleteContent\x12\x19.content.DeleteContentReq\x1a\x19.content.DeleteContentRes\x12N\n" +
 	"\x10GetContentDetail\x12\x1c.content.GetContentDetailReq\x1a\x1c.content.GetContentDetailRes\x12W\n" +
 	"\x13BackfillFollowInbox\x12\x1f.content.BackfillFollowInboxReq\x1a\x1f.content.BackfillFollowInboxRes\x12`\n" +
-	"\x16PurgeFolloweeFromInbox\x12\".content.PurgeFolloweeFromInboxReq\x1a\".content.PurgeFolloweeFromInboxRes2\xaf\x02\n" +
+	"\x16PurgeFolloweeFromInbox\x12\".content.PurgeFolloweeFromInboxReq\x1a\".content.PurgeFolloweeFromInboxRes2\x8b\x03\n" +
 	"\vFeedService\x12E\n" +
 	"\rRecommendFeed\x12\x19.content.RecommendFeedReq\x1a\x19.content.RecommendFeedRes\x12<\n" +
 	"\n" +
 	"FollowFeed\x12\x16.content.FollowFeedReq\x1a\x16.content.FollowFeedRes\x12K\n" +
 	"\x0fUserPublishFeed\x12\x1b.content.UserPublishFeedReq\x1a\x1b.content.UserPublishFeedRes\x12N\n" +
-	"\x10UserFavoriteFeed\x12\x1c.content.UserFavoriteFeedReq\x1a\x1c.content.UserFavoriteFeedResB\vZ\t./contentb\x06proto3"
+	"\x10UserFavoriteFeed\x12\x1c.content.UserFavoriteFeedReq\x1a\x1c.content.UserFavoriteFeedRes\x12Z\n" +
+	"\x14BatchGetContentItems\x12 .content.BatchGetContentItemsReq\x1a .content.BatchGetContentItemsResB\vZ\t./contentb\x06proto3"
 
 var (
 	file_app_rpc_content_proto_content_proto_rawDescOnce sync.Once
@@ -2571,7 +2676,7 @@ func file_app_rpc_content_proto_content_proto_rawDescGZIP() []byte {
 }
 
 var file_app_rpc_content_proto_content_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_app_rpc_content_proto_content_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
+var file_app_rpc_content_proto_content_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
 var file_app_rpc_content_proto_content_proto_goTypes = []any{
 	(ContentType)(0),                          // 0: content.ContentType
 	(ContentStatus)(0),                        // 1: content.ContentStatus
@@ -2608,6 +2713,8 @@ var file_app_rpc_content_proto_content_proto_goTypes = []any{
 	(*UserFavoriteFeedRes)(nil),               // 32: content.UserFavoriteFeedRes
 	(*ContentItem)(nil),                       // 33: content.ContentItem
 	(*FollowFeedItem)(nil),                    // 34: content.FollowFeedItem
+	(*BatchGetContentItemsReq)(nil),           // 35: content.BatchGetContentItemsReq
+	(*BatchGetContentItemsRes)(nil),           // 36: content.BatchGetContentItemsRes
 }
 var file_app_rpc_content_proto_content_proto_depIdxs = []int32{
 	3,  // 0: content.ContentUploadsCredentialsReq.scene:type_name -> content.ContentUploadsCredentialsReq.Scene
@@ -2623,35 +2730,38 @@ var file_app_rpc_content_proto_content_proto_depIdxs = []int32{
 	33, // 10: content.UserFavoriteFeedRes.items:type_name -> content.ContentItem
 	0,  // 11: content.ContentItem.content_type:type_name -> content.ContentType
 	0,  // 12: content.FollowFeedItem.content_type:type_name -> content.ContentType
-	7,  // 13: content.ContentService.Uploads:input_type -> content.ContentUploadsCredentialsReq
-	10, // 14: content.ContentService.PublishArticle:input_type -> content.ArticlePublishReq
-	12, // 15: content.ContentService.PublishVideo:input_type -> content.VideoPublishReq
-	14, // 16: content.ContentService.GetUserContentCount:input_type -> content.GetUserContentCountReq
-	16, // 17: content.ContentService.DeleteContent:input_type -> content.DeleteContentReq
-	18, // 18: content.ContentService.GetContentDetail:input_type -> content.GetContentDetailReq
-	25, // 19: content.ContentService.BackfillFollowInbox:input_type -> content.BackfillFollowInboxReq
-	27, // 20: content.ContentService.PurgeFolloweeFromInbox:input_type -> content.PurgeFolloweeFromInboxReq
-	21, // 21: content.FeedService.RecommendFeed:input_type -> content.RecommendFeedReq
-	23, // 22: content.FeedService.FollowFeed:input_type -> content.FollowFeedReq
-	29, // 23: content.FeedService.UserPublishFeed:input_type -> content.UserPublishFeedReq
-	31, // 24: content.FeedService.UserFavoriteFeed:input_type -> content.UserFavoriteFeedReq
-	8,  // 25: content.ContentService.Uploads:output_type -> content.ContentUploadsCredentialsRes
-	11, // 26: content.ContentService.PublishArticle:output_type -> content.ArticlePublishRes
-	13, // 27: content.ContentService.PublishVideo:output_type -> content.VideoPublishRes
-	15, // 28: content.ContentService.GetUserContentCount:output_type -> content.GetUserContentCountRes
-	17, // 29: content.ContentService.DeleteContent:output_type -> content.DeleteContentRes
-	20, // 30: content.ContentService.GetContentDetail:output_type -> content.GetContentDetailRes
-	26, // 31: content.ContentService.BackfillFollowInbox:output_type -> content.BackfillFollowInboxRes
-	28, // 32: content.ContentService.PurgeFolloweeFromInbox:output_type -> content.PurgeFolloweeFromInboxRes
-	22, // 33: content.FeedService.RecommendFeed:output_type -> content.RecommendFeedRes
-	24, // 34: content.FeedService.FollowFeed:output_type -> content.FollowFeedRes
-	30, // 35: content.FeedService.UserPublishFeed:output_type -> content.UserPublishFeedRes
-	32, // 36: content.FeedService.UserFavoriteFeed:output_type -> content.UserFavoriteFeedRes
-	25, // [25:37] is the sub-list for method output_type
-	13, // [13:25] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	33, // 13: content.BatchGetContentItemsRes.items:type_name -> content.ContentItem
+	7,  // 14: content.ContentService.Uploads:input_type -> content.ContentUploadsCredentialsReq
+	10, // 15: content.ContentService.PublishArticle:input_type -> content.ArticlePublishReq
+	12, // 16: content.ContentService.PublishVideo:input_type -> content.VideoPublishReq
+	14, // 17: content.ContentService.GetUserContentCount:input_type -> content.GetUserContentCountReq
+	16, // 18: content.ContentService.DeleteContent:input_type -> content.DeleteContentReq
+	18, // 19: content.ContentService.GetContentDetail:input_type -> content.GetContentDetailReq
+	25, // 20: content.ContentService.BackfillFollowInbox:input_type -> content.BackfillFollowInboxReq
+	27, // 21: content.ContentService.PurgeFolloweeFromInbox:input_type -> content.PurgeFolloweeFromInboxReq
+	21, // 22: content.FeedService.RecommendFeed:input_type -> content.RecommendFeedReq
+	23, // 23: content.FeedService.FollowFeed:input_type -> content.FollowFeedReq
+	29, // 24: content.FeedService.UserPublishFeed:input_type -> content.UserPublishFeedReq
+	31, // 25: content.FeedService.UserFavoriteFeed:input_type -> content.UserFavoriteFeedReq
+	35, // 26: content.FeedService.BatchGetContentItems:input_type -> content.BatchGetContentItemsReq
+	8,  // 27: content.ContentService.Uploads:output_type -> content.ContentUploadsCredentialsRes
+	11, // 28: content.ContentService.PublishArticle:output_type -> content.ArticlePublishRes
+	13, // 29: content.ContentService.PublishVideo:output_type -> content.VideoPublishRes
+	15, // 30: content.ContentService.GetUserContentCount:output_type -> content.GetUserContentCountRes
+	17, // 31: content.ContentService.DeleteContent:output_type -> content.DeleteContentRes
+	20, // 32: content.ContentService.GetContentDetail:output_type -> content.GetContentDetailRes
+	26, // 33: content.ContentService.BackfillFollowInbox:output_type -> content.BackfillFollowInboxRes
+	28, // 34: content.ContentService.PurgeFolloweeFromInbox:output_type -> content.PurgeFolloweeFromInboxRes
+	22, // 35: content.FeedService.RecommendFeed:output_type -> content.RecommendFeedRes
+	24, // 36: content.FeedService.FollowFeed:output_type -> content.FollowFeedRes
+	30, // 37: content.FeedService.UserPublishFeed:output_type -> content.UserPublishFeedRes
+	32, // 38: content.FeedService.UserFavoriteFeed:output_type -> content.UserFavoriteFeedRes
+	36, // 39: content.FeedService.BatchGetContentItems:output_type -> content.BatchGetContentItemsRes
+	27, // [27:40] is the sub-list for method output_type
+	14, // [14:27] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_app_rpc_content_proto_content_proto_init() }
@@ -2671,7 +2781,7 @@ func file_app_rpc_content_proto_content_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_app_rpc_content_proto_content_proto_rawDesc), len(file_app_rpc_content_proto_content_proto_rawDesc)),
 			NumEnums:      5,
-			NumMessages:   30,
+			NumMessages:   32,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

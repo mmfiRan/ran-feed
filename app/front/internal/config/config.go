@@ -15,6 +15,7 @@ type Config struct {
 	InteractionRpcClientConf zrpc.RpcClientConf
 	UserRpcClientConf        zrpc.RpcClientConf
 	CountRpcClientConf       zrpc.RpcClientConf
+	SearchRpcClientConf      zrpc.RpcClientConf
 	Oss                      OssConfig
 	SessionTTL               int64
 	RedisConfig              redis.RedisConf

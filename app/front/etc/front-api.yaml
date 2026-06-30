@@ -67,6 +67,13 @@ CountRpcClientConf:
     Key: count.rpc
   NonBlock: true
 
+SearchRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: search.rpc
+  NonBlock: true
+
 Oss:
   Provider: ${OSS_PROVIDER}
   Region: ${OSS_REGION}

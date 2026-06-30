@@ -252,6 +252,17 @@ message FollowFeedItem {
   int64 like_count = 10;
 }
 
+// BatchGetContentItemsReq 按内容 id 批量富化 viewer_id 为 0 表示匿名
+message BatchGetContentItemsReq {
+  repeated int64 content_ids = 1;
+  int64 viewer_id = 2;
+}
+
+// BatchGetContentItemsRes 按入参 id 顺序返回富化项 已删/非公开自动剔除
+message BatchGetContentItemsRes {
+  repeated ContentItem items = 1;
+}
+
 service ContentService{
   rpc Uploads(ContentUploadsCredentialsReq) returns (ContentUploadsCredentialsRes);
   rpc PublishArticle(ArticlePublishReq) returns (ArticlePublishRes);
@@ -268,4 +279,5 @@ service FeedService{
   rpc FollowFeed(FollowFeedReq) returns (FollowFeedRes);
   rpc UserPublishFeed(UserPublishFeedReq) returns (UserPublishFeedRes);
   rpc UserFavoriteFeed(UserFavoriteFeedReq) returns (UserFavoriteFeedRes);
+  rpc BatchGetContentItems(BatchGetContentItemsReq) returns (BatchGetContentItemsRes);
 }

@@ -42,3 +42,8 @@ func (s *FeedServiceServer) UserFavoriteFeed(ctx context.Context, in *content.Us
 	l := feedservicelogic.NewUserFavoriteFeedLogic(ctx, s.svcCtx)
 	return l.UserFavoriteFeed(in)
 }
+
+func (s *FeedServiceServer) BatchGetContentItems(ctx context.Context, in *content.BatchGetContentItemsReq) (*content.BatchGetContentItemsRes, error) {
+	l := feedservicelogic.NewBatchGetContentItemsLogic(ctx, s.svcCtx)
+	return l.BatchGetContentItems(in)
+}

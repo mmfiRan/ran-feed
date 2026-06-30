@@ -9,6 +9,7 @@ import (
 	content "ran-feed/app/front/internal/handler/content"
 	feed "ran-feed/app/front/internal/handler/feed"
 	interaction "ran-feed/app/front/internal/handler/interaction"
+	search "ran-feed/app/front/internal/handler/search"
 	user "ran-feed/app/front/internal/handler/user"
 	"ran-feed/app/front/internal/svc"
 
@@ -169,6 +170,35 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			}...,
 		),
 		rest.WithPrefix("/v1/interaction"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.OptionalLoginMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/content",
+					Handler: search.SearchContentHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/history",
+					Handler: search.ListSearchHistoryHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodDelete,
+					Path:    "/history",
+					Handler: search.DeleteSearchHistoryHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/user",
+					Handler: search.SearchUserHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/search"),
 	)
 
 	server.AddRoutes(

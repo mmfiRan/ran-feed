@@ -3,9 +3,24 @@
 ## 当前状态
 
 **最后更新：** 2026-06-30
-**当前功能：** feat-004 CanalSearchConsumer 增量同步（done）— 搜索功能 P2
+**当前功能：** feat-005 front 搜索接口与富化（done）— 搜索功能 P5
 
 ---
+
+## 已完成（feat-005 front 搜索接口 + 富化 + 历史记录）
+
+搜索 P5。front 网关接搜索，复用 feed 拼装链富化。
+
+- **content-rpc 升级点**：content.proto FeedService 加 `BatchGetContentItems(content_ids, viewer_id)`，goctl 重生成；logic 薄封装直接调内部 `resolver.assembleItems(ids, viewerID, publicOnly=true)`——**真复用 feed 拼装链**（之前富化链封在 content-rpc 内、front 够不着，故开此口）。
+- **front 接口**：`search.api` 定义 `/v1/search/content`（带 content_type tab）`/user` `/history`(GET/DELETE)，挂 OptionalLoginMiddleware；front.api import；goctl api go + swagger 重生成。
+- **svcCtx**：接 `SearchRpc`（config + front-api.yaml `SearchRpcClientConf`，key search.rpc）。
+- **四 logic**：
+  - SearchContent：search-rpc 出 ranked content_ids + 高亮 → `FeedRpc.BatchGetContentItems` 富化 → `assembleSearchContentItems` 按 content-rpc 顺序合并高亮。
+  - SearchUser：`UserRpc.BatchGetUser` + 并行 `FollowRpc.GetFollowSummary`（is_followed + 粉丝数），按搜索序拼装。
+  - ListHistory / DeleteHistory：调 search-rpc，匿名守卫（list 返回空 / delete 直接成功）。
+  - 隐式记录：`recordSearchHistory` 异步脱离请求 ctx + 3s timeout，非致命（go-coding 副作用 ctx 规范）。
+
+单测覆盖高亮合并 + 保序 + nil 跳过。`./init.sh` 全绿（27 测试文件）。**运行期遗留**：端到端验证留 feat-006，需 P0 canal search destination 灌数据。
 
 ## 已完成（feat-004 CanalSearchConsumer 增量同步）
 
