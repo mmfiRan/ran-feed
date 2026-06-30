@@ -143,7 +143,11 @@ func (c *CanalSearchConsumer) dedupAndCollect(msg canalMessage, eventID string, 
 }
 
 // writeES upsert 与 delete 批量写 写失败非致命 仅 log 靠重建 job 补
+// 增量路径 upsert 与 delete 统一用 canal 事件 ts 作 version 单分区内单调 防 删-恢复 快速翻转被旧 tombstone 挡住
 func (c *CanalSearchConsumer) writeES(ctx context.Context, index string, items []es.IndexItem, deleteIDs []int64, version int64) {
+	for i := range items {
+		items[i].Version = version
+	}
 	if len(items) > 0 {
 		if failed, err := es.BulkUpsert(ctx, c.svc.ES, index, items); err != nil {
 			logc.Errorf(ctx, "增量 upsert 失败 index=%s err=%v", index, err)

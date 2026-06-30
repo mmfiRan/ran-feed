@@ -3,9 +3,30 @@
 ## 当前状态
 
 **最后更新：** 2026-06-30
-**当前功能：** feat-005 front 搜索接口与富化（done）— 搜索功能 P5
+**当前功能：** feat-006 搜索端到端联调与架构文档（done）— 搜索功能全部完成
+
+> 搜索功能 feat-001~006 全部 done。剩余待办仅 fix-006（作者主页流，与搜索无关）。
 
 ---
+
+## 已完成（feat-006 搜索端到端联调 + 架构文档）
+
+搜索 P6。真实 ES(8.12.2+IK)+Canal(search destination)+Kafka 全链路联调。
+
+**验证结果（grpcurl 直连 search-rpc + MySQL/ES 观测）**：
+- CDC 增量：touch 行 → 约 4s 进 ES（content5 + user4）。
+- 查询：`测试` 5 命中按 score 排序，title+description 双 IK 高亮。
+- content_type tab：图文 5 / 视频 0；用户搜索：哈哈→1、ran→2。
+- 历史：Record / List / 去重提前 / 删单条 / 清空 全对。
+- 删除传播：软删 content → 约 2s 移出索引、搜索排除。
+
+**联调中发现并修复 feat-004 一个 bug**：删后**快速恢复**的内容不重新可搜——delete 用 canal 事件 ts、upsert 用行 updated_at，两个时钟源不一致 → restore 的 version 被 delete tombstone 以 ES 409 挡住，直到下次 reindex 才恢复。修法：`writeES` 增量路径 upsert/delete **统一用 canal 事件 ts 作 version**（单分区内单调，canal ts ≥ 行 updated_at 与 reindex 仍一致）。重启 search-rpc 复验：删→移出、恢复→约 4s 回插，正确。
+
+**文档**：`docs/architecture.md` 拓扑加 search-rpc(:5006) + 两条 CDC/重建链路，新增「搜索架构」节。按用户口径**不单独迁 search 设计文档**，`SEARCH-DESIGN.md` 暂留由用户自行处理。
+
+**ran-feed-docker**：加 `kafka-init` 服务预创建 `ran-feed-{count,search}-canal` topic，免消费者在 topic 不存在时订阅拿到 0 分区（联调时踩到过：search-rpc 先于 topic 启动导致 0 分区，重启才恢复）。
+
+`./init.sh` 全绿（27 测试文件）。front 富化整链未起全栈、未现场联调，由单测 + `BatchGetContentItems` 复用 resolver 保证。
 
 ## 已完成（feat-005 front 搜索接口 + 富化 + 历史记录）
 

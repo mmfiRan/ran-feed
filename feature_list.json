@@ -127,10 +127,10 @@
     {
       "id": "feat-006",
       "name": "搜索端到端联调与设计文档定稿迁移",
-      "description": "见 SEARCH-DESIGN.md P6。①真实 ES+Canal+Kafka 全链路联调 改一条内容/用户验证秒级可搜 删/转私密/封禁验证从索引消失 四 tab 切换 历史记录增删查 单测覆盖不到的整合验证。②SEARCH-DESIGN.md 定稿迁入 docs/search-design.md 在 docs/architecture.md 补搜索架构一节+拓扑加 search-rpc 删根目录临时文件。③progress.md/feature_list.json 收尾记录。",
+      "description": "见 SEARCH-DESIGN.md P6。①真实 ES+Canal+Kafka 全链路联调 改一条内容/用户验证秒级可搜 删/转私密/封禁验证从索引消失 四 tab 切换 历史记录增删查 单测覆盖不到的整合验证。②docs/architecture.md 补搜索架构一节+拓扑加 search-rpc(按用户口径 不单独迁 search 设计文档 SEARCH-DESIGN.md 暂留由用户自行处理)。③progress.md/feature_list.json 收尾记录。",
       "dependencies": ["feat-002", "feat-003", "feat-004", "feat-005"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "真实 ES(8.12.2+IK)+Canal(search destination)+Kafka 全链路联调通过:CDC touch 后约4s 进 ES(content5+user4);grpcurl 直连 search-rpc SearchContent '测试' 5命中按 score 排序 title+description 双高亮;content_type tab 图文5/视频0;SearchUser 哈哈→1 ran→2;历史 Record/List/去重提前/删单条/清空全对;软删 content→约2s 移出索引 搜索排除。联调中发现并修复 feat-004 一个 bug:删后快速恢复的内容不重新可搜(delete 用 canal ts/upsert 用行 updated_at 两时钟源不一致 restore version 被 delete tombstone 以 409 挡住) 修法 writeES 增量路径统一用 canal 事件 ts 作 version(单分区单调 canal ts≥行 updated_at 与 reindex 一致) 重启后复验 删→移出 恢复→约4s 回插 正确。docs/architecture.md 拓扑加 search-rpc(:5006)+两条 CDC/重建链路 并补『搜索架构』节(只读派生域/索引 IK/写入两路/查询复用 feed 拼装链/历史/降级)。ran-feed-docker 加 kafka-init 预创建 topic 免冷启动 0 分区。./init.sh 全绿(27 测试文件)。front 富化整链未起全栈未现场联调 由单测+BatchGetContentItems 复用 resolver 保证。"
     }
   ]
 }
