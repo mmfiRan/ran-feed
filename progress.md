@@ -3,9 +3,22 @@
 ## 当前状态
 
 **最后更新：** 2026-06-30
-**当前功能：** feat-002 SearchReindexJob 全量回填（done）— 搜索功能 P3
+**当前功能：** feat-003 SearchService 查询逻辑（done）— 搜索功能 P4
 
 ---
+
+## 已完成（feat-003 SearchService 查询逻辑与历史记录方法）
+
+搜索 P4。填 feat-001 的 5 个 logic 桩。
+
+- **es.Search** `internal/es/search.go`：执行 `client.Search` 并解析 hits（_id/_score/highlight），`Hit.FirstHighlight` 取首片段。search-rpc 只返回 ranked IDs+score+高亮，展示字段留 front 富化。
+- **SearchContent**：`bool{must: multi_match(title^3/description^2/body, ik_smart), filter: status=30/visibility=10/is_deleted=0 + 可选 content_type}`，`sort[_score, hot_score, published_at]`，highlight title/description；_id 解析回 content_id。
+- **SearchUser**：`multi_match(nickname^3/bio)` + filter status=10/is_deleted=0，sort[_score]。
+- **分页** `paging.go`：`pageToFromSize` 默认 10、上限 50、page 从 1。
+- **历史三方法**：RecordHistory/ListHistory/DeleteHistory 调 `SearchHistoryRepository`（匿名/空词守卫，all 清空否则删单条），repo 作 logic 字段照搬 count。
+- **降级**：ES 查询失败 `errorx.Wrap` 上抛，由 front 返回空+错误码降级（设计 §4.5）。
+
+单测覆盖分页边界、content 查询 DSL（含 content_type 可选分支）、user 查询 DSL、highlight 解析。`./init.sh` 全绿（25 测试文件）。**运行期遗留**：真实查询验证待 P0 起 ES 且 feat-002 灌入数据。
 
 ## 已完成（feat-002 SearchReindexJob 全量回填/周期重建）
 

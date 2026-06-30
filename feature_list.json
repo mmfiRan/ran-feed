@@ -105,8 +105,8 @@
       "name": "SearchService 查询逻辑与历史记录方法",
       "description": "见 SEARCH-DESIGN.md P4。填 feat-001 桩。①内容查询 bool{must:multi_match(title^3/description^2/body) filter:status=30/visibility=10/is_deleted=0/可选 content_type} sort[_score,hot_score,published_at] highlight title/description 查询分词 ik_smart 返回 ranked IDs+高亮+score 不含展示字段 分页 page/size。②用户查询 multi_match(nickname^3/bio) filter:status=10/is_deleted=0 sort[_score]。③历史三方法 RecordHistory(upsert 去重提到最前 userId>0 且 keyword 非空 才记 非致命)/ListHistory(最近 10 条)/DeleteHistory(删单条 或清空)。",
       "dependencies": ["feat-001", "feat-002"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 通过 build vet test 全绿(25 测试文件)。填 feat-001 五桩:SearchContent 构造 bool{multi_match(title^3/description^2/body ik_smart)+filter(status=30/visibility=10/is_deleted=0/可选 content_type)} sort[_score,hot_score,published_at] highlight title/description 解析 _id 转 content_id;SearchUser multi_match(nickname^3/bio)+filter(status=10/is_deleted=0) sort[_score];es.Search 执行+解析(_id/_score/highlight) FirstHighlight 取首片段;分页 pageToFromSize(默认10 上限50 page从1);RecordHistory/ListHistory/DeleteHistory 调 SearchHistoryRepository(匿名/空词守卫 all 清空否则删单条)。ES 查询失败 errorx.Wrap 返回由 front 降级。单测覆盖分页边界/content 查询 DSL(含 content_type 可选)/user 查询 DSL/highlight 解析。运行期遗留 真实查询验证待 P0 起 ES 并 feat-002 灌数据。"
     },
     {
       "id": "feat-004",
