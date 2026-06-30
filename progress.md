@@ -3,9 +3,20 @@
 ## 当前状态
 
 **最后更新：** 2026-06-30
-**当前功能：** feat-001 search-rpc 骨架（done）— 搜索功能 P1
+**当前功能：** feat-002 SearchReindexJob 全量回填（done）— 搜索功能 P3
 
 ---
+
+## 已完成（feat-002 SearchReindexJob 全量回填/周期重建）
+
+搜索 P3。xxl-job 全量扫 MySQL 以真相源重灌 ES，初始灌入 + 周期兜底漂移。先于增量(feat-004)做，让 ES 有数据可供后续查询 Phase 验证。
+
+- **读模型/仓储**：gorm-gen 加 content/article/video/user 四张读表；`ContentRepository.ScanPublishable`（已发布+公开+未删除，id 游标分批 500）、`UserRepository.ScanActive`（正常+未删除）、`Article/Video.GetByContentIDs`（软删过滤）。状态值提常量 `internal/common/consts/search_consts.go`，软删复用 `pkg/enum`。
+- **文档组装** `internal/logic/indexer`：ContentDoc/UserDoc；`Assembler.AssembleContentDocs` 回源 article/video 拼整篇（id 转 keyword 字符串、published_at 毫秒、文章取标题简介正文、视频仅标题），`AssembleUserDocs`；version 取源行 updated_at 毫秒。**feat-004 消费者将复用此组装链**。表驱动单测覆盖文章/视频/nil 指针/空输入/用户。
+- **ES bulk** `internal/es/bulk.go`：`esutil.BulkIndexer` 封装 `BulkUpsert`，external version 防乱序，409 冲突视为已有更新文档不计失败。（BulkDelete 留 feat-004 用到再加。）
+- **job/装配**：`internal/cron/search_reindex` 游标全量扫 → 组装 → bulk 灌 content/user；`cron.go` Register；main 接 xxl-job executor（照搬 count），config/yaml 加 XxlJob 段。
+
+`./init.sh` 全绿（23 测试文件）。**运行期遗留**：真正灌库要等 P0 起 ES+IK，并在 xxl-job admin 配 handler `search.reindex` 手动触发一次。
 
 ## 已完成（feat-001 search-rpc 服务骨架）
 

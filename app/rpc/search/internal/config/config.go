@@ -1,11 +1,16 @@
 package config
 
-import "github.com/zeromicro/go-zero/zrpc"
+import (
+	"time"
+
+	"github.com/zeromicro/go-zero/zrpc"
+)
 
 type Config struct {
 	zrpc.RpcServerConf
 	MySQL         MySQLConfig
 	Elasticsearch ESConfig
+	XxlJob        XxlJobConfig
 }
 
 type (
@@ -17,5 +22,16 @@ type (
 		Addresses []string
 		Username  string
 		Password  string
+	}
+
+	XxlJobConfig struct {
+		AppName          string
+		Address          string
+		IP               string
+		Port             int
+		AccessToken      string
+		AdminAddresses   []string
+		RegistryInterval time.Duration
+		HTTPTimeout      time.Duration
 	}
 )
