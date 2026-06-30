@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package search;
+
+option go_package = "./search";
+
+// ContentType 内容类型 与 content 域对齐
+enum ContentType {
+  CONTENT_TYPE_UNKNOWN = 0;
+  ARTICLE = 10;
+  VIDEO = 20;
+}
+
+// SearchContentReq 内容搜索请求 content_type 为 0 表示全部
+message SearchContentReq {
+  string keyword = 1;
+  ContentType content_type = 2;
+  int32 page = 3;
+  int32 size = 4;
+}
+
+// ContentHit 内容命中 只含 id 排序分与高亮 展示字段由 front 富化
+message ContentHit {
+  int64 content_id = 1;
+  double score = 2;
+  string highlight_title = 3;
+  string highlight_description = 4;
+}
+
+// SearchContentRes 内容搜索结果
+message SearchContentRes {
+  repeated ContentHit hits = 1;
+  int64 total = 2;
+}
+
+// SearchUserReq 用户搜索请求
+message SearchUserReq {
+  string keyword = 1;
+  int32 page = 2;
+  int32 size = 3;
+}
+
+// UserHit 用户命中 只含 id 与排序分
+message UserHit {
+  int64 user_id = 1;
+  double score = 2;
+}
+
+// SearchUserRes 用户搜索结果
+message SearchUserRes {
+  repeated UserHit hits = 1;
+  int64 total = 2;
+}
+
+// RecordHistoryReq 记录一次搜索 user_id<=0 或 keyword 空则忽略
+message RecordHistoryReq {
+  int64 user_id = 1;
+  string keyword = 2;
+}
+
+message RecordHistoryRes {}
+
+// ListHistoryReq 取最近 limit 条搜索历史
+message ListHistoryReq {
+  int64 user_id = 1;
+  int32 limit = 2;
+}
+
+// HistoryItem 单条历史 updated_at 为毫秒时间戳
+message HistoryItem {
+  string keyword = 1;
+  int64 updated_at = 2;
+}
+
+message ListHistoryRes {
+  repeated HistoryItem items = 1;
+}
+
+// DeleteHistoryReq all 为 true 清空 否则按 keyword 删单条
+message DeleteHistoryReq {
+  int64 user_id = 1;
+  string keyword = 2;
+  bool all = 3;
+}
+
+message DeleteHistoryRes {}
+
+service SearchService {
+  rpc SearchContent(SearchContentReq) returns (SearchContentRes);
+  rpc SearchUser(SearchUserReq) returns (SearchUserRes);
+  rpc RecordHistory(RecordHistoryReq) returns (RecordHistoryRes);
+  rpc ListHistory(ListHistoryReq) returns (ListHistoryRes);
+  rpc DeleteHistory(DeleteHistoryReq) returns (DeleteHistoryRes);
+}

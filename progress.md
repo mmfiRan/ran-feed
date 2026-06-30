@@ -2,10 +2,21 @@
 
 ## 当前状态
 
-**最后更新：** 2026-06-29
-**当前功能：** fix-007 互动查询补中间件 / fix-008 补关注流窗口配置（done）
+**最后更新：** 2026-06-30
+**当前功能：** feat-001 search-rpc 骨架（done）— 搜索功能 P1
 
 ---
+
+## 已完成（feat-001 search-rpc 服务骨架）
+
+按 SEARCH-DESIGN.md 排定的 Phase 开搭搜索。本条只搭骨架与建表 不含业务逻辑（查询/同步留 feat-002~005）。
+
+- **proto + 骨架**：新建 `app/rpc/search/proto/search.proto` 定义 SearchService 五方法（SearchContent/SearchUser/RecordHistory/ListHistory/DeleteHistory）`goctl rpc protoc --style=go_zero --multiple` 生成 pb/grpc/client/logic 桩/server/main。logic 桩返回空待后续填。
+- **ES 客户端**：go.mod 引入 `go-elasticsearch/v8 v8.12.1`（对齐 ES 8.12.2）；`internal/es/` 封装 MustNewClient 与 EnsureIndices（content title^3/description^2/body ik_max_word body 不入 _source；user nickname ik+keyword/bio）幂等建索引；接入 svcCtx。
+- **历史记录表**：`script/sql/ran-feed/search/ran_feed_search_history.sql` 对齐项目公共字段（status/version/is_deleted/created_by/updated_by + UNIQUE(user_id,keyword) 去重）已应用到本地 MySQL；`go run ./gen/generator.go` 生成 model+query；`SearchHistoryRepository`（Upsert/ListRecent/DeleteOne/Clear 软删过滤）。
+- **main**：仅装 gRPC server + 启动调 EnsureIndices（ES 不可用非致命 log）；consumer/cron 留 feat-004/feat-002。
+
+`./init.sh` 全绿（build+vet+test）。**运行期遗留**：实际建 ES 索引需 P0 把 ES+IK 插件起起来（本机 9200 未起 IK 未装）；search.yaml 引用的 `ES_ADDRESS/ES_USERNAME/ES_PASSWORD` 待 P0 在 ran-feed-docker `.env` 补上。
 
 ## 已完成（fix-007 互动查询接口补 OptionalLoginMiddleware）
 

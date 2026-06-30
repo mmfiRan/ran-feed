@@ -1,0 +1,44 @@
+Name: search.rpc
+ListenOn: 0.0.0.0:5006
+Etcd:
+  Hosts:
+  - ${ETCD_HOST}:2379
+  Key: search.rpc
+
+Telemetry:
+  Name: search.rpc-server
+  Endpoint: ${OTEL_ENDPOINT}
+  Batcher: otlpgrpc
+  Sampler: 1.0
+
+Prometheus:
+  Host: ${PROM_HOST}
+  Port: 9296
+  Path: /metrics
+
+Log:
+  ServiceName: "search.rpc"
+  Mode: "file"
+  Encoding: "json"
+  TimeFormat: "2006-01-02T15:04:05.000Z07:00"
+  Path: ${LOG_PATH}
+  Level: "info"
+  MaxContentLength: 0
+  Compress: false
+  Stat: true
+  KeepDays: 1
+  StackCooldownMillis: 100
+  MaxBackups: 0
+  MaxSize: 0
+  Rotation: "daily"
+  FileTimeFormat: "2006-01-02T15:04:05.000Z07:00"
+
+# Elasticsearch 搜索索引 无认证时 Username/Password 留空
+Elasticsearch:
+  Addresses:
+    - ${ES_ADDRESS}
+  Username: ${ES_USERNAME}
+  Password: ${ES_PASSWORD}
+
+MySQL:
+  DataSource: ${MYSQL_APP_USER}:${MYSQL_APP_PASSWORD}@tcp(${MYSQL_HOST}:3306)/ran-feed?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai

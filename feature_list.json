@@ -83,6 +83,54 @@
       "dependencies": ["refactor-004"],
       "status": "done",
       "evidence": "./init.sh 通过 build vet test 全绿；content.yaml FollowFanOut 段补 DeadlineWindowDays: 14；代码 grep 确认 config.go 定义且十余处 logic 引用该字段。"
+    },
+    {
+      "id": "feat-001",
+      "name": "search-rpc 骨架 ES 客户端 索引 mapping 历史记录表",
+      "description": "见 SEARCH-DESIGN.md P1。新建只读派生服务 search-rpc(:5006) 结构照搬 count-rpc 承载 gRPC 查询+Canal 消费+xxl-job 重建挂同一 ServiceGroup。①goctl 生成服务骨架与 search.proto 定义全部方法(SearchContent/SearchUser/RecordHistory/ListHistory/DeleteHistory)先桩实现返回空。②go.mod 引入 github.com/elastic/go-elasticsearch/v8 ES 客户端接入 svcCtx。③索引 mapping ran-feed-content(title^3/description^2/body ik_max_word body 不入 _source)与 ran-feed-user(nickname ik+keyword/bio) EnsureIndex 幂等建索引。④新增 ran_feed_search_history 表 DDL(对齐项目公共字段 UNIQUE(user_id,keyword) 去重)+GORM-gen 仓储。本条只搭骨架与建索引/建表 业务逻辑后续 Phase 填。升级点 新服务+go.mod+新建 proto+新增 DDL。",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "./init.sh 通过 build vet test 全绿。goctl rpc protoc 生成 app/rpc/search 全套骨架 logic 桩返回空；go.mod 引入 go-elasticsearch/v8 v8.12.1 对齐 ES 8.12.2；internal/es 封装 MustNewClient+EnsureIndices(content title^3/description^2/body ik_max_word body 不入 _source；user nickname ik+keyword/bio)接入 svcCtx；ran_feed_search_history DDL 对齐公共字段 UNIQUE(user_id,keyword) 已应用本地 MySQL 并 gorm-gen 出 model+query；SearchHistoryRepository Upsert/ListRecent/DeleteOne/Clear 软删过滤；main 仅装 gRPC+启动 EnsureIndices(ES 不可用非致命)。运行期遗留 实际建 ES 索引待 P0 起 ES+IK 与 .env 补 ES_ADDRESS。"
+    },
+    {
+      "id": "feat-002",
+      "name": "SearchReindexJob 全量回填重建",
+      "description": "见 SEARCH-DESIGN.md P3。xxl-job 全量扫 MySQL content/article/video/user 组装文档 bulk 灌 ES。新增 content/article/video/user 读仓储(GORM-gen 软删过滤)。初始上线必跑一次灌存量 周期重建兜底 ES 漂移/丢失以 MySQL 为真相源重灌。先于增量做 让 ES 有数据可供查询 Phase 验证。",
+      "dependencies": ["feat-001"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-003",
+      "name": "SearchService 查询逻辑与历史记录方法",
+      "description": "见 SEARCH-DESIGN.md P4。填 feat-001 桩。①内容查询 bool{must:multi_match(title^3/description^2/body) filter:status=30/visibility=10/is_deleted=0/可选 content_type} sort[_score,hot_score,published_at] highlight title/description 查询分词 ik_smart 返回 ranked IDs+高亮+score 不含展示字段 分页 page/size。②用户查询 multi_match(nickname^3/bio) filter:status=10/is_deleted=0 sort[_score]。③历史三方法 RecordHistory(upsert 去重提到最前 userId>0 且 keyword 非空 才记 非致命)/ListHistory(最近 10 条)/DeleteHistory(删单条 或清空)。",
+      "dependencies": ["feat-001", "feat-002"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-004",
+      "name": "CanalSearchConsumer 增量同步",
+      "description": "见 SEARCH-DESIGN.md P2。订阅 Kafka ran-feed-search-canal 复用 canalMessage 解析+幂等去重(ran_feed_mq_consume_dedup consumer=search.canal_consumer)。路由按表 content/article/video 取 content_id 回读三表组装整篇文档 判 status=30&visibility=10&is_deleted=0 则 upsert 否则 delete；user 组装文档 判 status=10&is_deleted=0 则 upsert 否则 delete。external version 用源行 updated_at 毫秒防乱序覆盖。写 ES 失败非致命 log 靠重建补。先于本条需 P0 开 Canal search destination 与 Kafka topic。",
+      "dependencies": ["feat-001"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-005",
+      "name": "front 搜索接口与结果富化历史记录",
+      "description": "见 SEARCH-DESIGN.md P5。改 app/front/doc search.api 后 goctl 重生成(不手改 routes.go)。①/v1/search/content(带可选 content_type tab 参数 全部/图文10/视频20)与 /v1/search/user 挂 OptionalLoginMiddleware 注入 userId。②调 search-rpc 取 ranked IDs 复用 feed 拼装链富化 content→content-rpc/contentcache+user-rpc+count-rpc+interaction is_liked；user→user-rpc+follow is_followed 结果对齐 ContentItem/UserInfo。③/v1/search/history GET 列最近 10 条 DELETE 删单条/清空 匿名返回空。④搜索接口内 userId>0&keyword 非空 时隐式 upsert 历史 失败只 log 不阻断。",
+      "dependencies": ["feat-003"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-006",
+      "name": "搜索端到端联调与设计文档定稿迁移",
+      "description": "见 SEARCH-DESIGN.md P6。①真实 ES+Canal+Kafka 全链路联调 改一条内容/用户验证秒级可搜 删/转私密/封禁验证从索引消失 四 tab 切换 历史记录增删查 单测覆盖不到的整合验证。②SEARCH-DESIGN.md 定稿迁入 docs/search-design.md 在 docs/architecture.md 补搜索架构一节+拓扑加 search-rpc 删根目录临时文件。③progress.md/feature_list.json 收尾记录。",
+      "dependencies": ["feat-002", "feat-003", "feat-004", "feat-005"],
+      "status": "not-started",
+      "evidence": ""
     }
   ]
 }

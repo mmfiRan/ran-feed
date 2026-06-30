@@ -1,0 +1,13 @@
+{
+  "settings": { "number_of_shards": 1, "number_of_replicas": 0 },
+  "mappings": {
+    "properties": {
+      "user_id":    { "type": "keyword" },
+      "nickname":   { "type": "text", "analyzer": "ik_max_word", "search_analyzer": "ik_smart", "fields": { "keyword": { "type": "keyword" } } },
+      "bio":        { "type": "text", "analyzer": "ik_max_word", "search_analyzer": "ik_smart" },
+      "username":   { "type": "keyword" },
+      "status":     { "type": "byte" },
+      "is_deleted": { "type": "byte" }
+    }
+  }
+}
