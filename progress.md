@@ -3,9 +3,24 @@
 ## 当前状态
 
 **最后更新：** 2026-06-30
-**当前功能：** feat-003 SearchService 查询逻辑（done）— 搜索功能 P4
+**当前功能：** feat-004 CanalSearchConsumer 增量同步（done）— 搜索功能 P2
 
 ---
+
+## 已完成（feat-004 CanalSearchConsumer 增量同步）
+
+搜索 P2。订阅 canal CDC 增量维护 ES，复用 feat-002 的回源组装链。
+
+- **去重**：gen `ran_feed_mq_consume_dedup` + `MqConsumeDedupRepository.InsertIfAbsent`（consumer=`search.canal_consumer`），照搬 count 幂等闸。
+- **解析**：`canal_message.go`（adapt count，内联 `parseInt64` 兼容 canal 的字符串列值）。
+- **消费者**：`CanalSearchConsumer` 按表路由——content/article/video 取 `content_id`、user 取 `id`；逐行去重后 `GetByIDs`(is_deleted=0) 分类：命中且 `status=30&visibility=10`（用户 `status=10`）→ upsert，软删/下架/转私密/缺失 → delete。复用 `indexer` 组装。
+- **删除**：`es.BulkDelete` external version（取事件 ts 毫秒）忽略 404/409；写 ES 非致命，靠重建补。
+- **装配**：`init_consumer.Consumers` 接 kq；config/yaml 加 `KqConsumerConf`（topic `ran-feed-search-canal`）；main serviceGroup 注册消费者。
+
+单测覆盖 classifyContent/classifyUser（upsert/草稿/私密/封禁/缺失）、parseInt64、rowEventID 稳定性。`./init.sh` 全绿（26 测试文件）。
+
+**ES 已就绪**：ran-feed-docker 已起 ES + IK 8.12.2（只起 ES 容器），ik_smart 分词验证通过；docker 仓库配套 install-ik.sh/gitignore/.env(.example)/README 已补，**未提交**。
+**运行期遗留**：feat-004 联调需在 canal 加 `search` destination（订阅 content/article/video/user → topic `ran-feed-search-canal`）——canal 现仅 count 实例。
 
 ## 已完成（feat-003 SearchService 查询逻辑与历史记录方法）
 

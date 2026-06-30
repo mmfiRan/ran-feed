@@ -14,6 +14,7 @@ import (
 
 type UserRepository interface {
 	ScanActive(cursorID int64, limit int) ([]*model.RanFeedUser, error)
+	GetByIDs(ids []int64) (map[int64]*model.RanFeedUser, error)
 }
 
 type userRepositoryImpl struct {
@@ -48,4 +49,28 @@ func (r *userRepositoryImpl) ScanActive(cursorID int64, limit int) ([]*model.Ran
 		return nil, err
 	}
 	return rows, nil
+}
+
+// GetByIDs 按 id 批量取未删除用户 软删行不返回 供消费侧判 upsert 或 delete
+func (r *userRepositoryImpl) GetByIDs(ids []int64) (map[int64]*model.RanFeedUser, error) {
+	res := make(map[int64]*model.RanFeedUser, len(ids))
+	if len(ids) == 0 {
+		return res, nil
+	}
+
+	q := query.Q
+	rows, err := q.RanFeedUser.WithContext(r.ctx).
+		Where(q.RanFeedUser.IsDeleted.Eq(enum.NotDeleted.Int32())).
+		Where(q.RanFeedUser.ID.In(ids...)).
+		Find()
+	if err != nil {
+		return nil, err
+	}
+	for _, row := range rows {
+		if row == nil {
+			continue
+		}
+		res[row.ID] = row
+	}
+	return res, nil
 }

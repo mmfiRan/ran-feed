@@ -10,6 +10,7 @@ import (
 	"ran-feed/app/rpc/search/internal/config"
 	"ran-feed/app/rpc/search/internal/cron"
 	"ran-feed/app/rpc/search/internal/es"
+	"ran-feed/app/rpc/search/internal/mq/consumer"
 	searchserviceServer "ran-feed/app/rpc/search/internal/server/searchservice"
 	"ran-feed/app/rpc/search/internal/svc"
 	"ran-feed/app/rpc/search/search"
@@ -53,6 +54,11 @@ func main() {
 
 	serviceGroup := service.NewServiceGroup()
 	defer serviceGroup.Stop()
+
+	// 注册 canal 增量消费者
+	for _, mq := range consumer.Consumers(c, context.Background(), ctx) {
+		serviceGroup.Add(mq)
+	}
 
 	// xxl-job 执行器 全量回填/周期重建任务
 	xxlCtx, cancelXxl := context.WithCancel(context.Background())

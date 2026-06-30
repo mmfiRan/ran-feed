@@ -3,14 +3,16 @@ package config
 import (
 	"time"
 
+	"github.com/zeromicro/go-queue/kq"
 	"github.com/zeromicro/go-zero/zrpc"
 )
 
 type Config struct {
 	zrpc.RpcServerConf
-	MySQL         MySQLConfig
-	Elasticsearch ESConfig
-	XxlJob        XxlJobConfig
+	MySQL          MySQLConfig
+	Elasticsearch  ESConfig
+	KqConsumerConf kq.KqConf
+	XxlJob         XxlJobConfig
 }
 
 type (

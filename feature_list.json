@@ -113,8 +113,8 @@
       "name": "CanalSearchConsumer 增量同步",
       "description": "见 SEARCH-DESIGN.md P2。订阅 Kafka ran-feed-search-canal 复用 canalMessage 解析+幂等去重(ran_feed_mq_consume_dedup consumer=search.canal_consumer)。路由按表 content/article/video 取 content_id 回读三表组装整篇文档 判 status=30&visibility=10&is_deleted=0 则 upsert 否则 delete；user 组装文档 判 status=10&is_deleted=0 则 upsert 否则 delete。external version 用源行 updated_at 毫秒防乱序覆盖。写 ES 失败非致命 log 靠重建补。先于本条需 P0 开 Canal search destination 与 Kafka topic。",
       "dependencies": ["feat-001"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 通过 build vet test 全绿(26 测试文件)。gen ran_feed_mq_consume_dedup;MqConsumeDedupRepository.InsertIfAbsent 幂等闸照搬 count;canal_message.go 解析+parseInt64(兼容 canal 字符串列值);CanalSearchConsumer 按表路由(content/article/video 取 content_id user 取 id)逐行去重 GetByIDs(is_deleted=0)分类——命中且 status=30&visibility=10(用户 status=10)则 upsert 软删/下架/转私密/缺失均 delete;复用 feat-002 indexer 组装链;es.BulkDelete external version(取事件 ts 毫秒)忽略 404/409;写 ES 非致命 log 靠重建补;init_consumer 接 kq；config/yaml 加 KqConsumerConf(topic ran-feed-search-canal group ran-feed-search-canal-consumer);main serviceGroup 注册消费者。表驱动单测覆盖 classifyContent/classifyUser(upsert/草稿/私密/封禁/缺失)、parseInt64、rowEventID 稳定性。运行期遗留 联调需 P0 在 canal 加 search destination 并起 ran-feed-search-canal topic。"
     },
     {
       "id": "feat-005",
