@@ -71,6 +71,56 @@ func (ContentType) EnumDescriptor() ([]byte, []int) {
 	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{0}
 }
 
+// SuggestType 补全项类型 决定前端点击后落哪条搜索路径
+type SuggestType int32
+
+const (
+	SuggestType_SUGGEST_TYPE_UNKNOWN SuggestType = 0
+	SuggestType_SUGGEST_CONTENT      SuggestType = 1
+	SuggestType_SUGGEST_USER         SuggestType = 2
+)
+
+// Enum value maps for SuggestType.
+var (
+	SuggestType_name = map[int32]string{
+		0: "SUGGEST_TYPE_UNKNOWN",
+		1: "SUGGEST_CONTENT",
+		2: "SUGGEST_USER",
+	}
+	SuggestType_value = map[string]int32{
+		"SUGGEST_TYPE_UNKNOWN": 0,
+		"SUGGEST_CONTENT":      1,
+		"SUGGEST_USER":         2,
+	}
+)
+
+func (x SuggestType) Enum() *SuggestType {
+	p := new(SuggestType)
+	*p = x
+	return p
+}
+
+func (x SuggestType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SuggestType) Descriptor() protoreflect.EnumDescriptor {
+	return file_app_rpc_search_proto_search_proto_enumTypes[1].Descriptor()
+}
+
+func (SuggestType) Type() protoreflect.EnumType {
+	return &file_app_rpc_search_proto_search_proto_enumTypes[1]
+}
+
+func (x SuggestType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SuggestType.Descriptor instead.
+func (SuggestType) EnumDescriptor() ([]byte, []int) {
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{1}
+}
+
 // SearchContentReq 内容搜索请求 content_type 为 0 表示全部 cursor 空为首页
 type SearchContentReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -445,6 +495,157 @@ func (x *SearchUserRes) GetNextCursor() string {
 	return ""
 }
 
+// SuggestReq 自动补全请求 keyword 为已输入前缀
+type SuggestReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Keyword       string                 `protobuf:"bytes,1,opt,name=keyword,proto3" json:"keyword,omitempty"`
+	Size          int32                  `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SuggestReq) Reset() {
+	*x = SuggestReq{}
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestReq) ProtoMessage() {}
+
+func (x *SuggestReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestReq.ProtoReflect.Descriptor instead.
+func (*SuggestReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *SuggestReq) GetKeyword() string {
+	if x != nil {
+		return x.Keyword
+	}
+	return ""
+}
+
+func (x *SuggestReq) GetSize() int32 {
+	if x != nil {
+		return x.Size
+	}
+	return 0
+}
+
+// SuggestItem 单条补全 text 为建议词 type 区分内容/用户
+type SuggestItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	Type          SuggestType            `protobuf:"varint,2,opt,name=type,proto3,enum=search.SuggestType" json:"type,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SuggestItem) Reset() {
+	*x = SuggestItem{}
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestItem) ProtoMessage() {}
+
+func (x *SuggestItem) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestItem.ProtoReflect.Descriptor instead.
+func (*SuggestItem) Descriptor() ([]byte, []int) {
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SuggestItem) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+func (x *SuggestItem) GetType() SuggestType {
+	if x != nil {
+		return x.Type
+	}
+	return SuggestType_SUGGEST_TYPE_UNKNOWN
+}
+
+// SuggestRes 补全结果 内容与用户建议混合返回 各带 type
+type SuggestRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*SuggestItem         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SuggestRes) Reset() {
+	*x = SuggestRes{}
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestRes) ProtoMessage() {}
+
+func (x *SuggestRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestRes.ProtoReflect.Descriptor instead.
+func (*SuggestRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SuggestRes) GetItems() []*SuggestItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
 // RecordHistoryReq 记录一次搜索 user_id<=0 或 keyword 空则忽略
 type RecordHistoryReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -456,7 +657,7 @@ type RecordHistoryReq struct {
 
 func (x *RecordHistoryReq) Reset() {
 	*x = RecordHistoryReq{}
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[6]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -468,7 +669,7 @@ func (x *RecordHistoryReq) String() string {
 func (*RecordHistoryReq) ProtoMessage() {}
 
 func (x *RecordHistoryReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[6]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -481,7 +682,7 @@ func (x *RecordHistoryReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordHistoryReq.ProtoReflect.Descriptor instead.
 func (*RecordHistoryReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{6}
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *RecordHistoryReq) GetUserId() int64 {
@@ -506,7 +707,7 @@ type RecordHistoryRes struct {
 
 func (x *RecordHistoryRes) Reset() {
 	*x = RecordHistoryRes{}
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[7]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -518,7 +719,7 @@ func (x *RecordHistoryRes) String() string {
 func (*RecordHistoryRes) ProtoMessage() {}
 
 func (x *RecordHistoryRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[7]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -531,7 +732,7 @@ func (x *RecordHistoryRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordHistoryRes.ProtoReflect.Descriptor instead.
 func (*RecordHistoryRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{7}
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{10}
 }
 
 // ListHistoryReq 取最近 limit 条搜索历史
@@ -545,7 +746,7 @@ type ListHistoryReq struct {
 
 func (x *ListHistoryReq) Reset() {
 	*x = ListHistoryReq{}
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[8]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -557,7 +758,7 @@ func (x *ListHistoryReq) String() string {
 func (*ListHistoryReq) ProtoMessage() {}
 
 func (x *ListHistoryReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[8]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -570,7 +771,7 @@ func (x *ListHistoryReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListHistoryReq.ProtoReflect.Descriptor instead.
 func (*ListHistoryReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{8}
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListHistoryReq) GetUserId() int64 {
@@ -598,7 +799,7 @@ type HistoryItem struct {
 
 func (x *HistoryItem) Reset() {
 	*x = HistoryItem{}
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[9]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -610,7 +811,7 @@ func (x *HistoryItem) String() string {
 func (*HistoryItem) ProtoMessage() {}
 
 func (x *HistoryItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[9]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -623,7 +824,7 @@ func (x *HistoryItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HistoryItem.ProtoReflect.Descriptor instead.
 func (*HistoryItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{9}
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *HistoryItem) GetKeyword() string {
@@ -649,7 +850,7 @@ type ListHistoryRes struct {
 
 func (x *ListHistoryRes) Reset() {
 	*x = ListHistoryRes{}
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[10]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -661,7 +862,7 @@ func (x *ListHistoryRes) String() string {
 func (*ListHistoryRes) ProtoMessage() {}
 
 func (x *ListHistoryRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[10]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -674,7 +875,7 @@ func (x *ListHistoryRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListHistoryRes.ProtoReflect.Descriptor instead.
 func (*ListHistoryRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{10}
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListHistoryRes) GetItems() []*HistoryItem {
@@ -696,7 +897,7 @@ type DeleteHistoryReq struct {
 
 func (x *DeleteHistoryReq) Reset() {
 	*x = DeleteHistoryReq{}
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[11]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -708,7 +909,7 @@ func (x *DeleteHistoryReq) String() string {
 func (*DeleteHistoryReq) ProtoMessage() {}
 
 func (x *DeleteHistoryReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[11]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -721,7 +922,7 @@ func (x *DeleteHistoryReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteHistoryReq.ProtoReflect.Descriptor instead.
 func (*DeleteHistoryReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{11}
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *DeleteHistoryReq) GetUserId() int64 {
@@ -753,7 +954,7 @@ type DeleteHistoryRes struct {
 
 func (x *DeleteHistoryRes) Reset() {
 	*x = DeleteHistoryRes{}
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[12]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -765,7 +966,7 @@ func (x *DeleteHistoryRes) String() string {
 func (*DeleteHistoryRes) ProtoMessage() {}
 
 func (x *DeleteHistoryRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_search_proto_search_proto_msgTypes[12]
+	mi := &file_app_rpc_search_proto_search_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -778,7 +979,7 @@ func (x *DeleteHistoryRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteHistoryRes.ProtoReflect.Descriptor instead.
 func (*DeleteHistoryRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{12}
+	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{15}
 }
 
 var File_app_rpc_search_proto_search_proto protoreflect.FileDescriptor
@@ -814,7 +1015,17 @@ const file_app_rpc_search_proto_search_proto_rawDesc = "" +
 	"\x04hits\x18\x01 \x03(\v2\x0f.search.UserHitR\x04hits\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x1f\n" +
 	"\vnext_cursor\x18\x03 \x01(\tR\n" +
-	"nextCursor\"E\n" +
+	"nextCursor\":\n" +
+	"\n" +
+	"SuggestReq\x12\x18\n" +
+	"\akeyword\x18\x01 \x01(\tR\akeyword\x12\x12\n" +
+	"\x04size\x18\x02 \x01(\x05R\x04size\"J\n" +
+	"\vSuggestItem\x12\x12\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\x12'\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x13.search.SuggestTypeR\x04type\"7\n" +
+	"\n" +
+	"SuggestRes\x12)\n" +
+	"\x05items\x18\x01 \x03(\v2\x13.search.SuggestItemR\x05items\"E\n" +
 	"\x10RecordHistoryReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x18\n" +
 	"\akeyword\x18\x02 \x01(\tR\akeyword\"\x12\n" +
@@ -837,11 +1048,16 @@ const file_app_rpc_search_proto_search_proto_rawDesc = "" +
 	"\x14CONTENT_TYPE_UNKNOWN\x10\x00\x12\v\n" +
 	"\aARTICLE\x10\n" +
 	"\x12\t\n" +
-	"\x05VIDEO\x10\x142\xd9\x02\n" +
+	"\x05VIDEO\x10\x14*N\n" +
+	"\vSuggestType\x12\x18\n" +
+	"\x14SUGGEST_TYPE_UNKNOWN\x10\x00\x12\x13\n" +
+	"\x0fSUGGEST_CONTENT\x10\x01\x12\x10\n" +
+	"\fSUGGEST_USER\x10\x022\x8c\x03\n" +
 	"\rSearchService\x12C\n" +
 	"\rSearchContent\x12\x18.search.SearchContentReq\x1a\x18.search.SearchContentRes\x12:\n" +
 	"\n" +
-	"SearchUser\x12\x15.search.SearchUserReq\x1a\x15.search.SearchUserRes\x12C\n" +
+	"SearchUser\x12\x15.search.SearchUserReq\x1a\x15.search.SearchUserRes\x121\n" +
+	"\aSuggest\x12\x12.search.SuggestReq\x1a\x12.search.SuggestRes\x12C\n" +
 	"\rRecordHistory\x12\x18.search.RecordHistoryReq\x1a\x18.search.RecordHistoryRes\x12=\n" +
 	"\vListHistory\x12\x16.search.ListHistoryReq\x1a\x16.search.ListHistoryRes\x12C\n" +
 	"\rDeleteHistory\x12\x18.search.DeleteHistoryReq\x1a\x18.search.DeleteHistoryResB\n" +
@@ -859,44 +1075,52 @@ func file_app_rpc_search_proto_search_proto_rawDescGZIP() []byte {
 	return file_app_rpc_search_proto_search_proto_rawDescData
 }
 
-var file_app_rpc_search_proto_search_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_app_rpc_search_proto_search_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_app_rpc_search_proto_search_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_app_rpc_search_proto_search_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_app_rpc_search_proto_search_proto_goTypes = []any{
 	(ContentType)(0),         // 0: search.ContentType
-	(*SearchContentReq)(nil), // 1: search.SearchContentReq
-	(*ContentHit)(nil),       // 2: search.ContentHit
-	(*SearchContentRes)(nil), // 3: search.SearchContentRes
-	(*SearchUserReq)(nil),    // 4: search.SearchUserReq
-	(*UserHit)(nil),          // 5: search.UserHit
-	(*SearchUserRes)(nil),    // 6: search.SearchUserRes
-	(*RecordHistoryReq)(nil), // 7: search.RecordHistoryReq
-	(*RecordHistoryRes)(nil), // 8: search.RecordHistoryRes
-	(*ListHistoryReq)(nil),   // 9: search.ListHistoryReq
-	(*HistoryItem)(nil),      // 10: search.HistoryItem
-	(*ListHistoryRes)(nil),   // 11: search.ListHistoryRes
-	(*DeleteHistoryReq)(nil), // 12: search.DeleteHistoryReq
-	(*DeleteHistoryRes)(nil), // 13: search.DeleteHistoryRes
+	(SuggestType)(0),         // 1: search.SuggestType
+	(*SearchContentReq)(nil), // 2: search.SearchContentReq
+	(*ContentHit)(nil),       // 3: search.ContentHit
+	(*SearchContentRes)(nil), // 4: search.SearchContentRes
+	(*SearchUserReq)(nil),    // 5: search.SearchUserReq
+	(*UserHit)(nil),          // 6: search.UserHit
+	(*SearchUserRes)(nil),    // 7: search.SearchUserRes
+	(*SuggestReq)(nil),       // 8: search.SuggestReq
+	(*SuggestItem)(nil),      // 9: search.SuggestItem
+	(*SuggestRes)(nil),       // 10: search.SuggestRes
+	(*RecordHistoryReq)(nil), // 11: search.RecordHistoryReq
+	(*RecordHistoryRes)(nil), // 12: search.RecordHistoryRes
+	(*ListHistoryReq)(nil),   // 13: search.ListHistoryReq
+	(*HistoryItem)(nil),      // 14: search.HistoryItem
+	(*ListHistoryRes)(nil),   // 15: search.ListHistoryRes
+	(*DeleteHistoryReq)(nil), // 16: search.DeleteHistoryReq
+	(*DeleteHistoryRes)(nil), // 17: search.DeleteHistoryRes
 }
 var file_app_rpc_search_proto_search_proto_depIdxs = []int32{
 	0,  // 0: search.SearchContentReq.content_type:type_name -> search.ContentType
-	2,  // 1: search.SearchContentRes.hits:type_name -> search.ContentHit
-	5,  // 2: search.SearchUserRes.hits:type_name -> search.UserHit
-	10, // 3: search.ListHistoryRes.items:type_name -> search.HistoryItem
-	1,  // 4: search.SearchService.SearchContent:input_type -> search.SearchContentReq
-	4,  // 5: search.SearchService.SearchUser:input_type -> search.SearchUserReq
-	7,  // 6: search.SearchService.RecordHistory:input_type -> search.RecordHistoryReq
-	9,  // 7: search.SearchService.ListHistory:input_type -> search.ListHistoryReq
-	12, // 8: search.SearchService.DeleteHistory:input_type -> search.DeleteHistoryReq
-	3,  // 9: search.SearchService.SearchContent:output_type -> search.SearchContentRes
-	6,  // 10: search.SearchService.SearchUser:output_type -> search.SearchUserRes
-	8,  // 11: search.SearchService.RecordHistory:output_type -> search.RecordHistoryRes
-	11, // 12: search.SearchService.ListHistory:output_type -> search.ListHistoryRes
-	13, // 13: search.SearchService.DeleteHistory:output_type -> search.DeleteHistoryRes
-	9,  // [9:14] is the sub-list for method output_type
-	4,  // [4:9] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	3,  // 1: search.SearchContentRes.hits:type_name -> search.ContentHit
+	6,  // 2: search.SearchUserRes.hits:type_name -> search.UserHit
+	1,  // 3: search.SuggestItem.type:type_name -> search.SuggestType
+	9,  // 4: search.SuggestRes.items:type_name -> search.SuggestItem
+	14, // 5: search.ListHistoryRes.items:type_name -> search.HistoryItem
+	2,  // 6: search.SearchService.SearchContent:input_type -> search.SearchContentReq
+	5,  // 7: search.SearchService.SearchUser:input_type -> search.SearchUserReq
+	8,  // 8: search.SearchService.Suggest:input_type -> search.SuggestReq
+	11, // 9: search.SearchService.RecordHistory:input_type -> search.RecordHistoryReq
+	13, // 10: search.SearchService.ListHistory:input_type -> search.ListHistoryReq
+	16, // 11: search.SearchService.DeleteHistory:input_type -> search.DeleteHistoryReq
+	4,  // 12: search.SearchService.SearchContent:output_type -> search.SearchContentRes
+	7,  // 13: search.SearchService.SearchUser:output_type -> search.SearchUserRes
+	10, // 14: search.SearchService.Suggest:output_type -> search.SuggestRes
+	12, // 15: search.SearchService.RecordHistory:output_type -> search.RecordHistoryRes
+	15, // 16: search.SearchService.ListHistory:output_type -> search.ListHistoryRes
+	17, // 17: search.SearchService.DeleteHistory:output_type -> search.DeleteHistoryRes
+	12, // [12:18] is the sub-list for method output_type
+	6,  // [6:12] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_app_rpc_search_proto_search_proto_init() }
@@ -909,8 +1133,8 @@ func file_app_rpc_search_proto_search_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_app_rpc_search_proto_search_proto_rawDesc), len(file_app_rpc_search_proto_search_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   13,
+			NumEnums:      2,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

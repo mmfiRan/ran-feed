@@ -193,6 +193,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 				{
 					Method:  http.MethodGet,
+					Path:    "/suggest",
+					Handler: search.SuggestHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
 					Path:    "/user",
 					Handler: search.SearchUserHandler(serverCtx),
 				},

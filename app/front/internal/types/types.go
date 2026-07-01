@@ -398,6 +398,20 @@ type SearchUserRes struct {
 	NextCursor string           `json:"next_cursor"`
 }
 
+type SuggestItem struct {
+	Text string `json:"text"`
+	Type string `json:"type"`
+}
+
+type SuggestReq struct {
+	Keyword string `form:"keyword"`
+	Size    int32  `form:"size,optional"`
+}
+
+type SuggestRes struct {
+	Items []SuggestItem `json:"items"`
+}
+
 type UnFollowUserReq struct {
 	TargetUserId *int64 `json:"target_user_id,string,optional" validate:"required"`
 }

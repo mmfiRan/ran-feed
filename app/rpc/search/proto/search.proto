@@ -54,6 +54,30 @@ message SearchUserRes {
   string next_cursor = 3;
 }
 
+// SuggestType 补全项类型 决定前端点击后落哪条搜索路径
+enum SuggestType {
+  SUGGEST_TYPE_UNKNOWN = 0;
+  SUGGEST_CONTENT = 1;
+  SUGGEST_USER = 2;
+}
+
+// SuggestReq 自动补全请求 keyword 为已输入前缀
+message SuggestReq {
+  string keyword = 1;
+  int32 size = 2;
+}
+
+// SuggestItem 单条补全 text 为建议词 type 区分内容/用户
+message SuggestItem {
+  string text = 1;
+  SuggestType type = 2;
+}
+
+// SuggestRes 补全结果 内容与用户建议混合返回 各带 type
+message SuggestRes {
+  repeated SuggestItem items = 1;
+}
+
 // RecordHistoryReq 记录一次搜索 user_id<=0 或 keyword 空则忽略
 message RecordHistoryReq {
   int64 user_id = 1;
@@ -90,6 +114,7 @@ message DeleteHistoryRes {}
 service SearchService {
   rpc SearchContent(SearchContentReq) returns (SearchContentRes);
   rpc SearchUser(SearchUserReq) returns (SearchUserRes);
+  rpc Suggest(SuggestReq) returns (SuggestRes);
   rpc RecordHistory(RecordHistoryReq) returns (RecordHistoryRes);
   rpc ListHistory(ListHistoryReq) returns (ListHistoryRes);
   rpc DeleteHistory(DeleteHistoryReq) returns (DeleteHistoryRes);

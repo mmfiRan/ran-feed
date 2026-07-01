@@ -3,9 +3,33 @@
 ## 当前状态
 
 **最后更新：** 2026-07-01
-**当前功能：** refactor-008 搜索分页由 from/size 改 search_after 游标（done）
+**当前功能：** feat-007 搜索自动补全（内容标题+用户昵称，中文+拼音前缀）（done）
 
-> 搜索改为 feed 式游标下拉：消除 `max_result_window` 1 万条硬墙 + 页边界不稳。`./init.sh` 全绿（28 测试文件）。**变更尚未提交**（refactor-007 与 refactor-008 均在工作区待提交）。
+> completion suggester 前缀补全，统一入口 `/v1/search/suggest` 分流内容/用户。`./init.sh` 全绿（29 测试文件）。**变更尚未提交**。
+> ⚠️ **端到端拼音生效有前置**：需先装 `analysis-pinyin` 插件（ran-feed-docker，用户负责）→ 删旧索引 → 重启 search-rpc 重建 → 跑 reindex 回填。未装插件时带 pinyin analyzer 的建索引会失败，但单测（不连真 ES）不受影响。
+
+---
+
+## 已完成（feat-007 搜索自动补全）
+
+**背景**：`SEARCH-DESIGN.md §1.1` 原把自动补全列为非目标,现补上。补内容标题 + 用户昵称两类,支持中文字符与拼音前缀。
+
+**方案（completion suggester + 复用现有索引/CDC，零新管道）**：
+- 两索引各加 completion 字段:`ran-feed-content.title_suggest`、`ran-feed-user.nickname_suggest`,存整条标题/昵称,weight 内容取 `hot_score`(float→int clamp)、用户暂 0。
+- mapping `settings.analysis` 定义 **pinyin_suggest analyzer**(pinyin tokenizer 开 full/joined/first_letter/original),completion 字段用它 → 中文字符与拼音前缀同时命中。suggest 字段并入 `_source.excludes`。
+- 写入零新管道:`document.go` 映射器建文档时顺带填 suggest(空文本返 nil 免 ES 拒空 input);跑现成 reindex 回填。
+- **统一入口、结果分流**:`/v1/search/suggest` 并行查两索引 → 合并成带 `type`(content/user) 的建议;点击用建议词跑普通搜索、落对应 tab。不做跨类型混合排序(不碰既定非目标)。
+- 稳定性:单索引 suggest 失败仅该组为空、不整体报错(按键接口要稳)。
+
+**改动**:`search.proto` 加 `SuggestType`+`Suggest` RPC;`es/suggest.go` 新增 `Suggest`(+ 可测的 `parseSuggestOptions`);`document.go` 加 `*completionInput` 字段与填充;`suggest_logic.go`(rpc)并行合并;front `search.api` 加 `/suggest` + `suggest_logic` 透传映射 type。
+
+**验证**:`./init.sh` 全绿(29 测试文件)。单测:`parseSuggestOptions` 正常/空/坏 JSON、document suggest 填充 + weight 取整/负归零/空标题省略。
+
+**部署前置(端到端拼音)**:装 `analysis-pinyin`(ran-feed-docker,用户负责)→ 删旧索引 → 重启 search-rpc(`EnsureIndices` 是"不存在才建",故必须先删)→ reindex 回填。
+
+---
+
+## 上一状态（refactor-008 搜索游标分页，done）
 
 ---
 

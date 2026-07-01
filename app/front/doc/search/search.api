@@ -44,6 +44,17 @@ type (
 		Total      int64            `json:"total"`
 		NextCursor string           `json:"next_cursor"`
 	}
+	SuggestReq {
+		Keyword string `form:"keyword"`
+		Size    int32  `form:"size,optional"`
+	}
+	SuggestItem {
+		Text string `json:"text"`
+		Type string `json:"type"`
+	}
+	SuggestRes {
+		Items []SuggestItem `json:"items"`
+	}
 	SearchHistoryItem {
 		Keyword   string `json:"keyword"`
 		UpdatedAt int64  `json:"updated_at"`
@@ -78,6 +89,12 @@ service front-api {
 	)
 	@handler SearchUser
 	get /user (SearchUserReq) returns (SearchUserRes)
+
+	@doc (
+		description: "搜索自动补全 内容标题与用户昵称前缀"
+	)
+	@handler Suggest
+	get /suggest (SuggestReq) returns (SuggestRes)
 
 	@doc (
 		description: "最近搜索历史"

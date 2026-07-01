@@ -1,12 +1,43 @@
 {
   "settings": {
     "number_of_shards": 1,
-    "number_of_replicas": 0
+    "number_of_replicas": 0,
+    "analysis": {
+      "analyzer": {
+        "pinyin_suggest": {
+          "tokenizer": "pinyin_suggest_tk"
+        }
+      },
+      "tokenizer": {
+        "pinyin_suggest_tk": {
+          "type": "pinyin",
+          "keep_original": true,
+          "keep_full_pinyin": true,
+          "keep_joined_full_pinyin": true,
+          "keep_first_letter": true,
+          "lowercase": true,
+          "remove_duplicated_term": true,
+          "limit_first_letter_length": 16
+        }
+      }
+    }
   },
   "mappings": {
+    "_source": {
+      "excludes": [
+        "nickname_suggest"
+      ]
+    },
     "properties": {
       "user_id": {
         "type": "keyword"
+      },
+      "nickname_suggest": {
+        "type": "completion",
+        "analyzer": "pinyin_suggest",
+        "search_analyzer": "pinyin_suggest",
+        "preserve_separators": false,
+        "preserve_position_increments": false
       },
       "nickname": {
         "type": "text",

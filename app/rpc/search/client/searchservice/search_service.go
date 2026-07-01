@@ -24,10 +24,13 @@ type (
 	SearchContentRes = search.SearchContentRes
 	SearchUserReq    = search.SearchUserReq
 	SearchUserRes    = search.SearchUserRes
+	SuggestReq       = search.SuggestReq
+	SuggestRes       = search.SuggestRes
 
 	SearchService interface {
 		SearchContent(ctx context.Context, in *SearchContentReq, opts ...grpc.CallOption) (*SearchContentRes, error)
 		SearchUser(ctx context.Context, in *SearchUserReq, opts ...grpc.CallOption) (*SearchUserRes, error)
+		Suggest(ctx context.Context, in *SuggestReq, opts ...grpc.CallOption) (*SuggestRes, error)
 		RecordHistory(ctx context.Context, in *RecordHistoryReq, opts ...grpc.CallOption) (*RecordHistoryRes, error)
 		ListHistory(ctx context.Context, in *ListHistoryReq, opts ...grpc.CallOption) (*ListHistoryRes, error)
 		DeleteHistory(ctx context.Context, in *DeleteHistoryReq, opts ...grpc.CallOption) (*DeleteHistoryRes, error)
@@ -52,6 +55,11 @@ func (m *defaultSearchService) SearchContent(ctx context.Context, in *SearchCont
 func (m *defaultSearchService) SearchUser(ctx context.Context, in *SearchUserReq, opts ...grpc.CallOption) (*SearchUserRes, error) {
 	client := search.NewSearchServiceClient(m.cli.Conn())
 	return client.SearchUser(ctx, in, opts...)
+}
+
+func (m *defaultSearchService) Suggest(ctx context.Context, in *SuggestReq, opts ...grpc.CallOption) (*SuggestRes, error) {
+	client := search.NewSearchServiceClient(m.cli.Conn())
+	return client.Suggest(ctx, in, opts...)
 }
 
 func (m *defaultSearchService) RecordHistory(ctx context.Context, in *RecordHistoryReq, opts ...grpc.CallOption) (*RecordHistoryRes, error) {

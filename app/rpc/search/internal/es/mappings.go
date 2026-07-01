@@ -8,6 +8,12 @@ const (
 	IndexUser    = "ran-feed-user"
 )
 
+// 自动补全 completion 字段名 与 mapping 对齐
+const (
+	FieldTitleSuggest    = "title_suggest"
+	FieldNicknameSuggest = "nickname_suggest"
+)
+
 // contentMapping 内容索引 title^3 description^2 body^1 中文分词 ik body 不入 _source 控体积
 //
 //go:embed content_mapping.json

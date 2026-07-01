@@ -33,6 +33,11 @@ func (s *SearchServiceServer) SearchUser(ctx context.Context, in *search.SearchU
 	return l.SearchUser(in)
 }
 
+func (s *SearchServiceServer) Suggest(ctx context.Context, in *search.SuggestReq) (*search.SuggestRes, error) {
+	l := searchservicelogic.NewSuggestLogic(ctx, s.svcCtx)
+	return l.Suggest(in)
+}
+
 func (s *SearchServiceServer) RecordHistory(ctx context.Context, in *search.RecordHistoryReq) (*search.RecordHistoryRes, error) {
 	l := searchservicelogic.NewRecordHistoryLogic(ctx, s.svcCtx)
 	return l.RecordHistory(in)

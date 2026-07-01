@@ -1943,6 +1943,64 @@
         }
       }
     },
+    "/v1/search/suggest": {
+      "get": {
+        "description": "搜索自动补全 内容标题与用户昵称前缀",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "search"
+        ],
+        "summary": "Suggest",
+        "operationId": "searchSuggest",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "keyword",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "size",
+            "in": "query",
+            "allowEmptyValue": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "text",
+                      "type"
+                    ],
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/search/user": {
       "get": {
         "description": "搜索用户",
@@ -2321,7 +2379,7 @@
       }
     }
   },
-  "x-date": "2026-07-01 17:00:32",
+  "x-date": "2026-07-01 17:47:10",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

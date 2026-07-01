@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	SearchService_SearchContent_FullMethodName = "/search.SearchService/SearchContent"
 	SearchService_SearchUser_FullMethodName    = "/search.SearchService/SearchUser"
+	SearchService_Suggest_FullMethodName       = "/search.SearchService/Suggest"
 	SearchService_RecordHistory_FullMethodName = "/search.SearchService/RecordHistory"
 	SearchService_ListHistory_FullMethodName   = "/search.SearchService/ListHistory"
 	SearchService_DeleteHistory_FullMethodName = "/search.SearchService/DeleteHistory"
@@ -32,6 +33,7 @@ const (
 type SearchServiceClient interface {
 	SearchContent(ctx context.Context, in *SearchContentReq, opts ...grpc.CallOption) (*SearchContentRes, error)
 	SearchUser(ctx context.Context, in *SearchUserReq, opts ...grpc.CallOption) (*SearchUserRes, error)
+	Suggest(ctx context.Context, in *SuggestReq, opts ...grpc.CallOption) (*SuggestRes, error)
 	RecordHistory(ctx context.Context, in *RecordHistoryReq, opts ...grpc.CallOption) (*RecordHistoryRes, error)
 	ListHistory(ctx context.Context, in *ListHistoryReq, opts ...grpc.CallOption) (*ListHistoryRes, error)
 	DeleteHistory(ctx context.Context, in *DeleteHistoryReq, opts ...grpc.CallOption) (*DeleteHistoryRes, error)
@@ -59,6 +61,16 @@ func (c *searchServiceClient) SearchUser(ctx context.Context, in *SearchUserReq,
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SearchUserRes)
 	err := c.cc.Invoke(ctx, SearchService_SearchUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *searchServiceClient) Suggest(ctx context.Context, in *SuggestReq, opts ...grpc.CallOption) (*SuggestRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SuggestRes)
+	err := c.cc.Invoke(ctx, SearchService_Suggest_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +113,7 @@ func (c *searchServiceClient) DeleteHistory(ctx context.Context, in *DeleteHisto
 type SearchServiceServer interface {
 	SearchContent(context.Context, *SearchContentReq) (*SearchContentRes, error)
 	SearchUser(context.Context, *SearchUserReq) (*SearchUserRes, error)
+	Suggest(context.Context, *SuggestReq) (*SuggestRes, error)
 	RecordHistory(context.Context, *RecordHistoryReq) (*RecordHistoryRes, error)
 	ListHistory(context.Context, *ListHistoryReq) (*ListHistoryRes, error)
 	DeleteHistory(context.Context, *DeleteHistoryReq) (*DeleteHistoryRes, error)
@@ -119,6 +132,9 @@ func (UnimplementedSearchServiceServer) SearchContent(context.Context, *SearchCo
 }
 func (UnimplementedSearchServiceServer) SearchUser(context.Context, *SearchUserReq) (*SearchUserRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SearchUser not implemented")
+}
+func (UnimplementedSearchServiceServer) Suggest(context.Context, *SuggestReq) (*SuggestRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Suggest not implemented")
 }
 func (UnimplementedSearchServiceServer) RecordHistory(context.Context, *RecordHistoryReq) (*RecordHistoryRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordHistory not implemented")
@@ -182,6 +198,24 @@ func _SearchService_SearchUser_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SearchServiceServer).SearchUser(ctx, req.(*SearchUserReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SearchService_Suggest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SuggestReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SearchServiceServer).Suggest(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SearchService_Suggest_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SearchServiceServer).Suggest(ctx, req.(*SuggestReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -254,6 +288,10 @@ var SearchService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SearchUser",
 			Handler:    _SearchService_SearchUser_Handler,
+		},
+		{
+			MethodName: "Suggest",
+			Handler:    _SearchService_Suggest_Handler,
 		},
 		{
 			MethodName: "RecordHistory",
