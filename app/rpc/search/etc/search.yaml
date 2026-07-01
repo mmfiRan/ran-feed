@@ -43,6 +43,20 @@ Elasticsearch:
 MySQL:
   DataSource: ${MYSQL_APP_USER}:${MYSQL_APP_PASSWORD}@tcp(${MYSQL_HOST}:3306)/ran-feed?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
 
+ContentRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: content.rpc
+  NonBlock: true
+
+UserRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: user.rpc
+  NonBlock: true
+
 # kafka 消费者配置 canal search
 KqConsumerConf:
   Name: search-canal-consumer

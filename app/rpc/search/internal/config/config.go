@@ -9,10 +9,12 @@ import (
 
 type Config struct {
 	zrpc.RpcServerConf
-	MySQL          MySQLConfig
-	Elasticsearch  ESConfig
-	KqConsumerConf kq.KqConf
-	XxlJob         XxlJobConfig
+	MySQL                MySQLConfig
+	Elasticsearch        ESConfig
+	KqConsumerConf       kq.KqConf
+	XxlJob               XxlJobConfig
+	ContentRpcClientConf zrpc.RpcClientConf
+	UserRpcClientConf    zrpc.RpcClientConf
 }
 
 type (

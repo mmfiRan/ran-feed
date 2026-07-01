@@ -387,11 +387,13 @@ var ContentService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	FeedService_RecommendFeed_FullMethodName        = "/content.FeedService/RecommendFeed"
-	FeedService_FollowFeed_FullMethodName           = "/content.FeedService/FollowFeed"
-	FeedService_UserPublishFeed_FullMethodName      = "/content.FeedService/UserPublishFeed"
-	FeedService_UserFavoriteFeed_FullMethodName     = "/content.FeedService/UserFavoriteFeed"
-	FeedService_BatchGetContentItems_FullMethodName = "/content.FeedService/BatchGetContentItems"
+	FeedService_RecommendFeed_FullMethodName           = "/content.FeedService/RecommendFeed"
+	FeedService_FollowFeed_FullMethodName              = "/content.FeedService/FollowFeed"
+	FeedService_UserPublishFeed_FullMethodName         = "/content.FeedService/UserPublishFeed"
+	FeedService_UserFavoriteFeed_FullMethodName        = "/content.FeedService/UserFavoriteFeed"
+	FeedService_BatchGetContentItems_FullMethodName    = "/content.FeedService/BatchGetContentItems"
+	FeedService_BatchGetContentForIndex_FullMethodName = "/content.FeedService/BatchGetContentForIndex"
+	FeedService_ListContentForIndex_FullMethodName     = "/content.FeedService/ListContentForIndex"
 )
 
 // FeedServiceClient is the client API for FeedService service.
@@ -403,6 +405,8 @@ type FeedServiceClient interface {
 	UserPublishFeed(ctx context.Context, in *UserPublishFeedReq, opts ...grpc.CallOption) (*UserPublishFeedRes, error)
 	UserFavoriteFeed(ctx context.Context, in *UserFavoriteFeedReq, opts ...grpc.CallOption) (*UserFavoriteFeedRes, error)
 	BatchGetContentItems(ctx context.Context, in *BatchGetContentItemsReq, opts ...grpc.CallOption) (*BatchGetContentItemsRes, error)
+	BatchGetContentForIndex(ctx context.Context, in *BatchGetContentForIndexReq, opts ...grpc.CallOption) (*BatchGetContentForIndexRes, error)
+	ListContentForIndex(ctx context.Context, in *ListContentForIndexReq, opts ...grpc.CallOption) (*ListContentForIndexRes, error)
 }
 
 type feedServiceClient struct {
@@ -463,6 +467,26 @@ func (c *feedServiceClient) BatchGetContentItems(ctx context.Context, in *BatchG
 	return out, nil
 }
 
+func (c *feedServiceClient) BatchGetContentForIndex(ctx context.Context, in *BatchGetContentForIndexReq, opts ...grpc.CallOption) (*BatchGetContentForIndexRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BatchGetContentForIndexRes)
+	err := c.cc.Invoke(ctx, FeedService_BatchGetContentForIndex_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *feedServiceClient) ListContentForIndex(ctx context.Context, in *ListContentForIndexReq, opts ...grpc.CallOption) (*ListContentForIndexRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListContentForIndexRes)
+	err := c.cc.Invoke(ctx, FeedService_ListContentForIndex_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FeedServiceServer is the server API for FeedService service.
 // All implementations must embed UnimplementedFeedServiceServer
 // for forward compatibility.
@@ -472,6 +496,8 @@ type FeedServiceServer interface {
 	UserPublishFeed(context.Context, *UserPublishFeedReq) (*UserPublishFeedRes, error)
 	UserFavoriteFeed(context.Context, *UserFavoriteFeedReq) (*UserFavoriteFeedRes, error)
 	BatchGetContentItems(context.Context, *BatchGetContentItemsReq) (*BatchGetContentItemsRes, error)
+	BatchGetContentForIndex(context.Context, *BatchGetContentForIndexReq) (*BatchGetContentForIndexRes, error)
+	ListContentForIndex(context.Context, *ListContentForIndexReq) (*ListContentForIndexRes, error)
 	mustEmbedUnimplementedFeedServiceServer()
 }
 
@@ -496,6 +522,12 @@ func (UnimplementedFeedServiceServer) UserFavoriteFeed(context.Context, *UserFav
 }
 func (UnimplementedFeedServiceServer) BatchGetContentItems(context.Context, *BatchGetContentItemsReq) (*BatchGetContentItemsRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchGetContentItems not implemented")
+}
+func (UnimplementedFeedServiceServer) BatchGetContentForIndex(context.Context, *BatchGetContentForIndexReq) (*BatchGetContentForIndexRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchGetContentForIndex not implemented")
+}
+func (UnimplementedFeedServiceServer) ListContentForIndex(context.Context, *ListContentForIndexReq) (*ListContentForIndexRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListContentForIndex not implemented")
 }
 func (UnimplementedFeedServiceServer) mustEmbedUnimplementedFeedServiceServer() {}
 func (UnimplementedFeedServiceServer) testEmbeddedByValue()                     {}
@@ -608,6 +640,42 @@ func _FeedService_BatchGetContentItems_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FeedService_BatchGetContentForIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchGetContentForIndexReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FeedServiceServer).BatchGetContentForIndex(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FeedService_BatchGetContentForIndex_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FeedServiceServer).BatchGetContentForIndex(ctx, req.(*BatchGetContentForIndexReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FeedService_ListContentForIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListContentForIndexReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FeedServiceServer).ListContentForIndex(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FeedService_ListContentForIndex_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FeedServiceServer).ListContentForIndex(ctx, req.(*ListContentForIndexReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FeedService_ServiceDesc is the grpc.ServiceDesc for FeedService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -634,6 +702,14 @@ var FeedService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BatchGetContentItems",
 			Handler:    _FeedService_BatchGetContentItems_Handler,
+		},
+		{
+			MethodName: "BatchGetContentForIndex",
+			Handler:    _FeedService_BatchGetContentForIndex_Handler,
+		},
+		{
+			MethodName: "ListContentForIndex",
+			Handler:    _FeedService_ListContentForIndex_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

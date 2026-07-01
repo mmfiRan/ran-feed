@@ -12,6 +12,7 @@ import (
 
 	"ran-feed/app/rpc/user/internal/config"
 	"ran-feed/app/rpc/user/internal/do"
+	"ran-feed/app/rpc/user/internal/entity/model"
 	"ran-feed/app/rpc/user/internal/entity/query"
 	"ran-feed/app/rpc/user/internal/repositories"
 	"ran-feed/app/rpc/user/internal/svc"
@@ -39,6 +40,12 @@ func (m *mockUserRepository) BatchGetByIDs(userIDs []int64) (map[int64]*do.UserD
 }
 func (m *mockUserRepository) Create(userDO *do.UserDO) (int64, error) {
 	return m.createFn(userDO)
+}
+func (m *mockUserRepository) BatchGetActiveForIndex([]int64) (map[int64]*model.RanFeedUser, error) {
+	return nil, nil
+}
+func (m *mockUserRepository) ScanActiveForIndex(int64, int) ([]*model.RanFeedUser, error) {
+	return nil, nil
 }
 
 func newTestLoginLogic(t *testing.T, repo repositories.UserRepository) (*LoginLogic, *miniredis.Miniredis) {

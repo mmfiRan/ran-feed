@@ -15,6 +15,7 @@ import (
 	rediskey "ran-feed/app/rpc/user/internal/common/consts/redis"
 	"ran-feed/app/rpc/user/internal/config"
 	"ran-feed/app/rpc/user/internal/do"
+	"ran-feed/app/rpc/user/internal/entity/model"
 	"ran-feed/app/rpc/user/internal/entity/query"
 	"ran-feed/app/rpc/user/internal/repositories"
 )
@@ -30,6 +31,10 @@ type mockRepo struct {
 func (m *mockRepo) WithTx(_ *query.Query) repositories.UserRepository { return m }
 func (m *mockRepo) GetByMobile(string) (*do.UserDO, error)            { return nil, nil }
 func (m *mockRepo) Create(*do.UserDO) (int64, error)                  { return 0, nil }
+func (m *mockRepo) BatchGetActiveForIndex([]int64) (map[int64]*model.RanFeedUser, error) {
+	return nil, nil
+}
+func (m *mockRepo) ScanActiveForIndex(int64, int) ([]*model.RanFeedUser, error) { return nil, nil }
 
 func (m *mockRepo) GetByID(userID int64) (*do.UserDO, error) {
 	m.getByIDCalls++

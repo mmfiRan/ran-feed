@@ -14,16 +14,20 @@ import (
 )
 
 type (
-	BatchGetContentItemsReq = content.BatchGetContentItemsReq
-	BatchGetContentItemsRes = content.BatchGetContentItemsRes
-	FollowFeedReq           = content.FollowFeedReq
-	FollowFeedRes           = content.FollowFeedRes
-	RecommendFeedReq        = content.RecommendFeedReq
-	RecommendFeedRes        = content.RecommendFeedRes
-	UserFavoriteFeedReq     = content.UserFavoriteFeedReq
-	UserFavoriteFeedRes     = content.UserFavoriteFeedRes
-	UserPublishFeedReq      = content.UserPublishFeedReq
-	UserPublishFeedRes      = content.UserPublishFeedRes
+	BatchGetContentForIndexReq = content.BatchGetContentForIndexReq
+	BatchGetContentForIndexRes = content.BatchGetContentForIndexRes
+	BatchGetContentItemsReq    = content.BatchGetContentItemsReq
+	BatchGetContentItemsRes    = content.BatchGetContentItemsRes
+	FollowFeedReq              = content.FollowFeedReq
+	FollowFeedRes              = content.FollowFeedRes
+	ListContentForIndexReq     = content.ListContentForIndexReq
+	ListContentForIndexRes     = content.ListContentForIndexRes
+	RecommendFeedReq           = content.RecommendFeedReq
+	RecommendFeedRes           = content.RecommendFeedRes
+	UserFavoriteFeedReq        = content.UserFavoriteFeedReq
+	UserFavoriteFeedRes        = content.UserFavoriteFeedRes
+	UserPublishFeedReq         = content.UserPublishFeedReq
+	UserPublishFeedRes         = content.UserPublishFeedRes
 
 	FeedService interface {
 		RecommendFeed(ctx context.Context, in *RecommendFeedReq, opts ...grpc.CallOption) (*RecommendFeedRes, error)
@@ -31,6 +35,8 @@ type (
 		UserPublishFeed(ctx context.Context, in *UserPublishFeedReq, opts ...grpc.CallOption) (*UserPublishFeedRes, error)
 		UserFavoriteFeed(ctx context.Context, in *UserFavoriteFeedReq, opts ...grpc.CallOption) (*UserFavoriteFeedRes, error)
 		BatchGetContentItems(ctx context.Context, in *BatchGetContentItemsReq, opts ...grpc.CallOption) (*BatchGetContentItemsRes, error)
+		BatchGetContentForIndex(ctx context.Context, in *BatchGetContentForIndexReq, opts ...grpc.CallOption) (*BatchGetContentForIndexRes, error)
+		ListContentForIndex(ctx context.Context, in *ListContentForIndexReq, opts ...grpc.CallOption) (*ListContentForIndexRes, error)
 	}
 
 	defaultFeedService struct {
@@ -67,4 +73,14 @@ func (m *defaultFeedService) UserFavoriteFeed(ctx context.Context, in *UserFavor
 func (m *defaultFeedService) BatchGetContentItems(ctx context.Context, in *BatchGetContentItemsReq, opts ...grpc.CallOption) (*BatchGetContentItemsRes, error) {
 	client := content.NewFeedServiceClient(m.cli.Conn())
 	return client.BatchGetContentItems(ctx, in, opts...)
+}
+
+func (m *defaultFeedService) BatchGetContentForIndex(ctx context.Context, in *BatchGetContentForIndexReq, opts ...grpc.CallOption) (*BatchGetContentForIndexRes, error) {
+	client := content.NewFeedServiceClient(m.cli.Conn())
+	return client.BatchGetContentForIndex(ctx, in, opts...)
+}
+
+func (m *defaultFeedService) ListContentForIndex(ctx context.Context, in *ListContentForIndexReq, opts ...grpc.CallOption) (*ListContentForIndexRes, error) {
+	client := content.NewFeedServiceClient(m.cli.Conn())
+	return client.ListContentForIndex(ctx, in, opts...)
 }

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.19.4
-// source: proto/user.proto
+// source: app/rpc/user/proto/user.proto
 
 package user
 
@@ -19,13 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_Register_FullMethodName       = "/user.UserService/Register"
-	UserService_Login_FullMethodName          = "/user.UserService/Login"
-	UserService_Logout_FullMethodName         = "/user.UserService/Logout"
-	UserService_GetMe_FullMethodName          = "/user.UserService/GetMe"
-	UserService_GetUser_FullMethodName        = "/user.UserService/GetUser"
-	UserService_GetUserProfile_FullMethodName = "/user.UserService/GetUserProfile"
-	UserService_BatchGetUser_FullMethodName   = "/user.UserService/BatchGetUser"
+	UserService_Register_FullMethodName             = "/user.UserService/Register"
+	UserService_Login_FullMethodName                = "/user.UserService/Login"
+	UserService_Logout_FullMethodName               = "/user.UserService/Logout"
+	UserService_GetMe_FullMethodName                = "/user.UserService/GetMe"
+	UserService_GetUser_FullMethodName              = "/user.UserService/GetUser"
+	UserService_GetUserProfile_FullMethodName       = "/user.UserService/GetUserProfile"
+	UserService_BatchGetUser_FullMethodName         = "/user.UserService/BatchGetUser"
+	UserService_BatchGetUserForIndex_FullMethodName = "/user.UserService/BatchGetUserForIndex"
+	UserService_ListUserForIndex_FullMethodName     = "/user.UserService/ListUserForIndex"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -39,6 +41,8 @@ type UserServiceClient interface {
 	GetUser(ctx context.Context, in *GetUserReq, opts ...grpc.CallOption) (*GetUserRes, error)
 	GetUserProfile(ctx context.Context, in *GetUserProfileReq, opts ...grpc.CallOption) (*GetUserProfileRes, error)
 	BatchGetUser(ctx context.Context, in *BatchGetUserReq, opts ...grpc.CallOption) (*BatchGetUserRes, error)
+	BatchGetUserForIndex(ctx context.Context, in *BatchGetUserForIndexReq, opts ...grpc.CallOption) (*BatchGetUserForIndexRes, error)
+	ListUserForIndex(ctx context.Context, in *ListUserForIndexReq, opts ...grpc.CallOption) (*ListUserForIndexRes, error)
 }
 
 type userServiceClient struct {
@@ -119,6 +123,26 @@ func (c *userServiceClient) BatchGetUser(ctx context.Context, in *BatchGetUserRe
 	return out, nil
 }
 
+func (c *userServiceClient) BatchGetUserForIndex(ctx context.Context, in *BatchGetUserForIndexReq, opts ...grpc.CallOption) (*BatchGetUserForIndexRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BatchGetUserForIndexRes)
+	err := c.cc.Invoke(ctx, UserService_BatchGetUserForIndex_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) ListUserForIndex(ctx context.Context, in *ListUserForIndexReq, opts ...grpc.CallOption) (*ListUserForIndexRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListUserForIndexRes)
+	err := c.cc.Invoke(ctx, UserService_ListUserForIndex_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
@@ -130,6 +154,8 @@ type UserServiceServer interface {
 	GetUser(context.Context, *GetUserReq) (*GetUserRes, error)
 	GetUserProfile(context.Context, *GetUserProfileReq) (*GetUserProfileRes, error)
 	BatchGetUser(context.Context, *BatchGetUserReq) (*BatchGetUserRes, error)
+	BatchGetUserForIndex(context.Context, *BatchGetUserForIndexReq) (*BatchGetUserForIndexRes, error)
+	ListUserForIndex(context.Context, *ListUserForIndexReq) (*ListUserForIndexRes, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -160,6 +186,12 @@ func (UnimplementedUserServiceServer) GetUserProfile(context.Context, *GetUserPr
 }
 func (UnimplementedUserServiceServer) BatchGetUser(context.Context, *BatchGetUserReq) (*BatchGetUserRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BatchGetUser not implemented")
+}
+func (UnimplementedUserServiceServer) BatchGetUserForIndex(context.Context, *BatchGetUserForIndexReq) (*BatchGetUserForIndexRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BatchGetUserForIndex not implemented")
+}
+func (UnimplementedUserServiceServer) ListUserForIndex(context.Context, *ListUserForIndexReq) (*ListUserForIndexRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUserForIndex not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -308,6 +340,42 @@ func _UserService_BatchGetUser_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_BatchGetUserForIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BatchGetUserForIndexReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).BatchGetUserForIndex(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_BatchGetUserForIndex_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).BatchGetUserForIndex(ctx, req.(*BatchGetUserForIndexReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_ListUserForIndex_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUserForIndexReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).ListUserForIndex(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_ListUserForIndex_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).ListUserForIndex(ctx, req.(*ListUserForIndexReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -343,7 +411,15 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "BatchGetUser",
 			Handler:    _UserService_BatchGetUser_Handler,
 		},
+		{
+			MethodName: "BatchGetUserForIndex",
+			Handler:    _UserService_BatchGetUserForIndex_Handler,
+		},
+		{
+			MethodName: "ListUserForIndex",
+			Handler:    _UserService_ListUserForIndex_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/user.proto",
+	Metadata: "app/rpc/user/proto/user.proto",
 }

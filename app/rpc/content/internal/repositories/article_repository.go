@@ -18,6 +18,7 @@ type ArticleRepository interface {
 	DeleteByContentID(contentID int64) error
 	GetByContentID(contentID int64) (*model.RanFeedArticle, error)
 	BatchGetBriefByContentIDs(contentIDs []int64) (map[int64]*model.RanFeedArticle, error)
+	BatchGetIndexByContentIDs(contentIDs []int64) (map[int64]*model.RanFeedArticle, error)
 }
 
 type ArticleRepositoryImpl struct {
@@ -106,6 +107,32 @@ func (r *ArticleRepositoryImpl) BatchGetBriefByContentIDs(contentIDs []int64) (m
 	rows, err := q.RanFeedArticle.WithContext(r.ctx).
 		Select(q.RanFeedArticle.ContentID, q.RanFeedArticle.Title, q.RanFeedArticle.Cover).
 		Where(q.RanFeedArticle.ContentID.In(contentIDs...)).
+		Find()
+	if err != nil {
+		return nil, err
+	}
+
+	res := make(map[int64]*model.RanFeedArticle, len(rows))
+	for _, a := range rows {
+		if a == nil {
+			continue
+		}
+		res[a.ContentID] = a
+	}
+	return res, nil
+}
+
+// BatchGetIndexByContentIDs 建索引取标题 摘要 正文 供搜索文档组装
+func (r *ArticleRepositoryImpl) BatchGetIndexByContentIDs(contentIDs []int64) (map[int64]*model.RanFeedArticle, error) {
+	if len(contentIDs) == 0 {
+		return map[int64]*model.RanFeedArticle{}, nil
+	}
+
+	q := r.getQuery()
+	rows, err := q.RanFeedArticle.WithContext(r.ctx).
+		Select(q.RanFeedArticle.ContentID, q.RanFeedArticle.Title, q.RanFeedArticle.Description, q.RanFeedArticle.Content).
+		Where(q.RanFeedArticle.ContentID.In(contentIDs...)).
+		Where(q.RanFeedArticle.IsDeleted.Eq(0)).
 		Find()
 	if err != nil {
 		return nil, err

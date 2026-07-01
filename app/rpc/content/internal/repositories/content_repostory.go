@@ -31,6 +31,8 @@ type ContentRepository interface {
 	ListColdUpdateContents(status int32, visibility int32, start time.Time, cursorID int64, limit int) ([]*model.RanFeedContent, error)
 	BatchGetRecommendByIDs(status int32, visibility int32, contentIDs []int64) (map[int64]*model.RanFeedContent, error)
 	BatchGetPublishedByIDs(contentIDs []int64) (map[int64]*model.RanFeedContent, error)
+	BatchGetIndexableByIDs(contentIDs []int64) (map[int64]*model.RanFeedContent, error)
+	ScanIndexableByIDCursor(cursorID int64, limit int) ([]*model.RanFeedContent, error)
 	BatchUpdateHotScores(ids []int64, scores []float64, updatedAt time.Time) error
 }
 
@@ -358,6 +360,74 @@ func (r *ContentRepositoryImpl) BatchGetPublishedByIDs(contentIDs []int64) (map[
 		res[row.ID] = row
 	}
 	return res, nil
+}
+
+// BatchGetIndexableByIDs 增量回源 取可索引内容(已发布+公开+未删除) 附建索引所需原始字段
+func (r *ContentRepositoryImpl) BatchGetIndexableByIDs(contentIDs []int64) (map[int64]*model.RanFeedContent, error) {
+	if len(contentIDs) == 0 {
+		return map[int64]*model.RanFeedContent{}, nil
+	}
+
+	q := r.getQuery()
+	rows, err := q.RanFeedContent.WithContext(r.ctx).
+		Select(
+			q.RanFeedContent.ID,
+			q.RanFeedContent.UserID,
+			q.RanFeedContent.ContentType,
+			q.RanFeedContent.Status,
+			q.RanFeedContent.Visibility,
+			q.RanFeedContent.HotScore,
+			q.RanFeedContent.PublishedAt,
+			q.RanFeedContent.UpdatedAt,
+		).
+		Where(q.RanFeedContent.ID.In(contentIDs...)).
+		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PUBLISHED))).
+		Where(q.RanFeedContent.Visibility.Eq(int32(content.Visibility_PUBLIC))).
+		Where(q.RanFeedContent.IsDeleted.Eq(0)).
+		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
+		Find()
+	if err != nil {
+		return nil, err
+	}
+
+	res := make(map[int64]*model.RanFeedContent, len(rows))
+	for _, row := range rows {
+		if row == nil {
+			continue
+		}
+		res[row.ID] = row
+	}
+	return res, nil
+}
+
+// ScanIndexableByIDCursor 全量重建 按 id 升序 keyset 游标扫可索引内容
+func (r *ContentRepositoryImpl) ScanIndexableByIDCursor(cursorID int64, limit int) ([]*model.RanFeedContent, error) {
+	if limit <= 0 {
+		return nil, nil
+	}
+
+	q := r.getQuery()
+	doQuery := q.RanFeedContent.WithContext(r.ctx).
+		Select(
+			q.RanFeedContent.ID,
+			q.RanFeedContent.UserID,
+			q.RanFeedContent.ContentType,
+			q.RanFeedContent.Status,
+			q.RanFeedContent.Visibility,
+			q.RanFeedContent.HotScore,
+			q.RanFeedContent.PublishedAt,
+			q.RanFeedContent.UpdatedAt,
+		).
+		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PUBLISHED))).
+		Where(q.RanFeedContent.Visibility.Eq(int32(content.Visibility_PUBLIC))).
+		Where(q.RanFeedContent.IsDeleted.Eq(0)).
+		Where(q.RanFeedContent.PublishedAt.IsNotNull())
+
+	if cursorID > 0 {
+		doQuery = doQuery.Where(q.RanFeedContent.ID.Gt(cursorID))
+	}
+
+	return doQuery.Order(q.RanFeedContent.ID).Limit(limit).Find()
 }
 
 // BatchUpdateHotScores 批量更新热度分与更新时间。

@@ -47,3 +47,13 @@ func (s *FeedServiceServer) BatchGetContentItems(ctx context.Context, in *conten
 	l := feedservicelogic.NewBatchGetContentItemsLogic(ctx, s.svcCtx)
 	return l.BatchGetContentItems(in)
 }
+
+func (s *FeedServiceServer) BatchGetContentForIndex(ctx context.Context, in *content.BatchGetContentForIndexReq) (*content.BatchGetContentForIndexRes, error) {
+	l := feedservicelogic.NewBatchGetContentForIndexLogic(ctx, s.svcCtx)
+	return l.BatchGetContentForIndex(in)
+}
+
+func (s *FeedServiceServer) ListContentForIndex(ctx context.Context, in *content.ListContentForIndexReq) (*content.ListContentForIndexRes, error) {
+	l := feedservicelogic.NewListContentForIndexLogic(ctx, s.svcCtx)
+	return l.ListContentForIndex(in)
+}

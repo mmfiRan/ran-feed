@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/search/internal/es"
 	"ran-feed/app/rpc/search/internal/logic/indexer"
-	"ran-feed/app/rpc/search/internal/repositories"
 	"ran-feed/app/rpc/search/internal/svc"
+	"ran-feed/app/rpc/user/user"
 	"ran-feed/pkg/xxljob"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -15,27 +16,18 @@ import (
 
 const HandlerName = "search.reindex"
 
-// scanBatchSize 全量扫表分批大小
+// scanBatchSize 全量重建单页游标大小
 const scanBatchSize = 500
 
-// SearchReindexJob 全量扫 MySQL 以真相源重灌 ES 初始灌入与周期兜底漂移
+// SearchReindexJob 全量以 content/user 域为真相源经 RPC 投影重灌 ES 初始灌入与周期兜底漂移
 type SearchReindexJob struct {
-	svc         *svc.ServiceContext
-	contentRepo repositories.ContentRepository
-	userRepo    repositories.UserRepository
-	assembler   *indexer.Assembler
+	svc *svc.ServiceContext
 	logx.Logger
 }
 
 func Register(ctx context.Context, executor *xxljob.Executor, svcCtx *svc.ServiceContext) {
 	job := &SearchReindexJob{
-		svc:         svcCtx,
-		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		userRepo:    repositories.NewUserRepository(ctx, svcCtx.MysqlDb),
-		assembler: indexer.NewAssembler(
-			repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
-			repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
-		),
+		svc:    svcCtx,
 		Logger: logx.WithContext(ctx),
 	}
 	executor.RegisterTask(HandlerName, job.Run)
@@ -53,65 +45,68 @@ func (j *SearchReindexJob) Run(ctx context.Context, _ xxljob.TriggerParam) (stri
 	return fmt.Sprintf("ok content=%d user=%d", contentTotal, userTotal), nil
 }
 
-// reindexContent 游标扫已发布公开内容 分批回源组装 bulk 灌入
+// reindexContent 游标经 content-rpc 投影扫可索引内容 分批 bulk 灌入
 func (j *SearchReindexJob) reindexContent(ctx context.Context) (int, error) {
 	var cursor int64
 	var total int
 	for {
-		rows, err := j.contentRepo.ScanPublishable(cursor, scanBatchSize)
+		res, err := j.svc.ContentRpc.ListContentForIndex(ctx, &content.ListContentForIndexReq{Cursor: cursor, Limit: scanBatchSize})
 		if err != nil {
 			return total, err
 		}
-		if len(rows) == 0 {
+		if len(res.Items) == 0 {
 			break
 		}
 
-		items, err := j.assembler.AssembleContentDocs(rows)
-		if err != nil {
-			return total, err
+		items := make([]es.IndexItem, 0, len(res.Items))
+		for _, it := range res.Items {
+			items = append(items, indexer.ContentIndexItemToItem(it))
 		}
 		failed, err := es.BulkUpsert(ctx, j.svc.ES, es.IndexContent, items)
 		if err != nil {
 			return total, err
 		}
 		if failed > 0 {
-			j.Errorf("内容重建部分写入失败 batch=%d failed=%d", len(rows), failed)
+			j.Errorf("内容重建部分写入失败 batch=%d failed=%d", len(res.Items), failed)
 		}
-		total += len(rows) - failed
+		total += len(res.Items) - failed
 
-		cursor = rows[len(rows)-1].ID
-		if len(rows) < scanBatchSize {
+		cursor = res.Items[len(res.Items)-1].ContentId
+		if len(res.Items) < scanBatchSize {
 			break
 		}
 	}
 	return total, nil
 }
 
-// reindexUser 游标扫正常用户 分批组装 bulk 灌入
+// reindexUser 游标经 user-rpc 投影扫可索引用户 分批 bulk 灌入
 func (j *SearchReindexJob) reindexUser(ctx context.Context) (int, error) {
 	var cursor int64
 	var total int
 	for {
-		rows, err := j.userRepo.ScanActive(cursor, scanBatchSize)
+		res, err := j.svc.UserRpc.ListUserForIndex(ctx, &user.ListUserForIndexReq{Cursor: cursor, Limit: scanBatchSize})
 		if err != nil {
 			return total, err
 		}
-		if len(rows) == 0 {
+		if len(res.Items) == 0 {
 			break
 		}
 
-		items := indexer.AssembleUserDocs(rows)
+		items := make([]es.IndexItem, 0, len(res.Items))
+		for _, it := range res.Items {
+			items = append(items, indexer.UserIndexItemToItem(it))
+		}
 		failed, err := es.BulkUpsert(ctx, j.svc.ES, es.IndexUser, items)
 		if err != nil {
 			return total, err
 		}
 		if failed > 0 {
-			j.Errorf("用户重建部分写入失败 batch=%d failed=%d", len(rows), failed)
+			j.Errorf("用户重建部分写入失败 batch=%d failed=%d", len(res.Items), failed)
 		}
-		total += len(rows) - failed
+		total += len(res.Items) - failed
 
-		cursor = rows[len(rows)-1].ID
-		if len(rows) < scanBatchSize {
+		cursor = res.Items[len(res.Items)-1].UserId
+		if len(res.Items) < scanBatchSize {
 			break
 		}
 	}

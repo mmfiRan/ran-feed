@@ -3,39 +3,21 @@ package consumer
 import (
 	"testing"
 
-	"ran-feed/app/rpc/search/internal/common/consts"
-	"ran-feed/app/rpc/search/internal/entity/model"
-
 	"github.com/stretchr/testify/assert"
 )
 
-func TestClassifyContent(t *testing.T) {
+func TestMissingIDs(t *testing.T) {
 	ids := []int64{1, 2, 3, 4}
-	rows := map[int64]*model.RanFeedContent{
-		1: {ID: 1, Status: consts.ContentStatusPublished, Visibility: consts.ContentVisibilityPublic}, // upsert
-		2: {ID: 2, Status: 10, Visibility: consts.ContentVisibilityPublic},                            // 草稿 delete
-		3: {ID: 3, Status: consts.ContentStatusPublished, Visibility: 20},                             // 私密 delete
-		// 4 缺失(软删/硬删) delete
-	}
+	present := map[int64]bool{1: true, 3: true}
 
-	upserts, deleteIDs := classifyContent(ids, rows)
-	assert.Len(t, upserts, 1)
-	assert.Equal(t, int64(1), upserts[0].ID)
-	assert.ElementsMatch(t, []int64{2, 3, 4}, deleteIDs)
-}
+	// 请求了但源域投影未返回(不可索引)的 id 需删除 保序
+	assert.Equal(t, []int64{2, 4}, missingIDs(ids, present))
 
-func TestClassifyUser(t *testing.T) {
-	ids := []int64{10, 20, 30}
-	rows := map[int64]*model.RanFeedUser{
-		10: {ID: 10, Status: consts.UserStatusNormal}, // upsert
-		20: {ID: 20, Status: 20},                      // 封禁 delete
-		// 30 缺失 delete
-	}
+	// 全部可索引 无删除
+	assert.Empty(t, missingIDs([]int64{1, 3}, present))
 
-	upserts, deleteIDs := classifyUser(ids, rows)
-	assert.Len(t, upserts, 1)
-	assert.Equal(t, int64(10), upserts[0].ID)
-	assert.ElementsMatch(t, []int64{20, 30}, deleteIDs)
+	// 全部缺席 全删
+	assert.Equal(t, []int64{5, 6}, missingIDs([]int64{5, 6}, map[int64]bool{}))
 }
 
 func TestParseInt64(t *testing.T) {

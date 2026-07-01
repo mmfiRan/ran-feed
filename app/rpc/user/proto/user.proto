@@ -121,6 +121,35 @@ message BatchGetUserRes {
   repeated UserInfo users = 1;
 }
 
+// UserIndexItem 搜索建索引用的原始字段投影 只在可索引(正常+未删除)时返回
+message UserIndexItem {
+  int64 user_id = 1;
+  string nickname = 2;
+  string bio = 3;
+  string username = 4;
+  UserStatus status = 5;   // 恒为正常 带上供 search 纯拷贝写入
+  int64 version = 6;       // user.updated_at 毫秒 供全量重建 ES external version
+}
+
+// BatchGetUserForIndexReq 增量回源 按 user_id 批量取索引投影
+message BatchGetUserForIndexReq {
+  repeated int64 user_ids = 1;
+}
+
+message BatchGetUserForIndexRes {
+  repeated UserIndexItem items = 1;
+}
+
+// ListUserForIndexReq 全量重建 按 id keyset 游标扫可索引用户
+message ListUserForIndexReq {
+  int64 cursor = 1;
+  int32 limit = 2;
+}
+
+message ListUserForIndexRes {
+  repeated UserIndexItem items = 1;
+}
+
 service UserService {
   rpc Register(RegisterReq) returns (RegisterRes);
   rpc Login(LoginReq) returns (LoginRes);
@@ -129,4 +158,6 @@ service UserService {
   rpc GetUser(GetUserReq) returns (GetUserRes);
   rpc GetUserProfile(GetUserProfileReq) returns (GetUserProfileRes);
   rpc BatchGetUser(BatchGetUserReq) returns (BatchGetUserRes);
+  rpc BatchGetUserForIndex(BatchGetUserForIndexReq) returns (BatchGetUserForIndexRes);
+  rpc ListUserForIndex(ListUserForIndexReq) returns (ListUserForIndexRes);
 }

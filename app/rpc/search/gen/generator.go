@@ -33,10 +33,6 @@ func main() {
 
 	g.ApplyBasic(
 		g.GenerateModel("ran_feed_search_history"),
-		g.GenerateModel("ran_feed_content"),
-		g.GenerateModel("ran_feed_article"),
-		g.GenerateModel("ran_feed_video"),
-		g.GenerateModel("ran_feed_user"),
 		g.GenerateModel("ran_feed_mq_consume_dedup"),
 	)
 

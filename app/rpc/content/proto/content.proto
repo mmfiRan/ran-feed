@@ -263,6 +263,40 @@ message BatchGetContentItemsRes {
   repeated ContentItem items = 1;
 }
 
+// ContentIndexItem 搜索建索引用的原始字段投影 只在可索引(已发布+公开+未删除)时返回
+message ContentIndexItem {
+  int64 content_id = 1;
+  ContentType content_type = 2;
+  ContentStatus status = 3;      // 恒为 PUBLISHED 带上供 search 纯拷贝写入 不再硬编码
+  Visibility visibility = 4;     // 恒为 PUBLIC
+  int64 author_id = 5;           // content.user_id
+  string title = 6;
+  string description = 7;        // article.description 视频为空
+  string body = 8;               // article.content 正文 视频为空
+  int64 published_at = 9;        // 毫秒
+  double hot_score = 10;
+  int64 version = 11;            // content.updated_at 毫秒 供全量重建 ES external version
+}
+
+// BatchGetContentForIndexReq 增量回源 按 content_id 批量取索引投影
+message BatchGetContentForIndexReq {
+  repeated int64 content_ids = 1;
+}
+
+message BatchGetContentForIndexRes {
+  repeated ContentIndexItem items = 1;
+}
+
+// ListContentForIndexReq 全量重建 按 id keyset 游标扫可索引内容
+message ListContentForIndexReq {
+  int64 cursor = 1;
+  int32 limit = 2;
+}
+
+message ListContentForIndexRes {
+  repeated ContentIndexItem items = 1;
+}
+
 service ContentService{
   rpc Uploads(ContentUploadsCredentialsReq) returns (ContentUploadsCredentialsRes);
   rpc PublishArticle(ArticlePublishReq) returns (ArticlePublishRes);
@@ -280,4 +314,6 @@ service FeedService{
   rpc UserPublishFeed(UserPublishFeedReq) returns (UserPublishFeedRes);
   rpc UserFavoriteFeed(UserFavoriteFeedReq) returns (UserFavoriteFeedRes);
   rpc BatchGetContentItems(BatchGetContentItemsReq) returns (BatchGetContentItemsRes);
+  rpc BatchGetContentForIndex(BatchGetContentForIndexReq) returns (BatchGetContentForIndexRes);
+  rpc ListContentForIndex(ListContentForIndexReq) returns (ListContentForIndexRes);
 }

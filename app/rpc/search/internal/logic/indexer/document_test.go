@@ -2,117 +2,69 @@ package indexer
 
 import (
 	"testing"
-	"time"
 
-	"ran-feed/app/rpc/search/internal/entity/model"
+	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/user/user"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-type mockArticleRepo struct {
-	data map[int64]*model.RanFeedArticle
-}
-
-func (m *mockArticleRepo) GetByContentIDs(ids []int64) (map[int64]*model.RanFeedArticle, error) {
-	res := make(map[int64]*model.RanFeedArticle, len(ids))
-	for _, id := range ids {
-		if a, ok := m.data[id]; ok {
-			res[id] = a
-		}
-	}
-	return res, nil
-}
-
-type mockVideoRepo struct {
-	data map[int64]*model.RanFeedVideo
-}
-
-func (m *mockVideoRepo) GetByContentIDs(ids []int64) (map[int64]*model.RanFeedVideo, error) {
-	res := make(map[int64]*model.RanFeedVideo, len(ids))
-	for _, id := range ids {
-		if v, ok := m.data[id]; ok {
-			res[id] = v
-		}
-	}
-	return res, nil
-}
-
-func strptr(s string) *string { return &s }
-
-func TestAssembleContentDocs(t *testing.T) {
-	publishedAt := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
-	updatedAt := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
-
-	assembler := NewAssembler(
-		&mockArticleRepo{data: map[int64]*model.RanFeedArticle{
-			1: {ContentID: 1, Title: "标题A", Description: strptr("简介A"), Content: "正文A"},
-			3: {ContentID: 3, Title: "标题C", Description: nil, Content: "正文C"},
-		}},
-		&mockVideoRepo{data: map[int64]*model.RanFeedVideo{
-			2: {ContentID: 2, Title: "视频B"},
-		}},
-	)
-
-	contents := []*model.RanFeedContent{
-		{ID: 1, UserID: 100, ContentType: 10, Status: 30, Visibility: 10, HotScore: 1.5, PublishedAt: &publishedAt, UpdatedAt: updatedAt},
-		{ID: 2, UserID: 200, ContentType: 20, Status: 30, Visibility: 10, PublishedAt: nil, UpdatedAt: updatedAt},
-		nil,
-		{ID: 3, UserID: 300, ContentType: 10, Status: 30, Visibility: 10, PublishedAt: &publishedAt, UpdatedAt: updatedAt},
+func TestContentIndexItemToItem(t *testing.T) {
+	it := &content.ContentIndexItem{
+		ContentId:   1,
+		ContentType: content.ContentType_ARTICLE,
+		Status:      content.ContentStatus_PUBLISHED,
+		Visibility:  content.Visibility_PUBLIC,
+		AuthorId:    100,
+		Title:       "标题A",
+		Description: "简介A",
+		Body:        "正文A",
+		PublishedAt: 1_700_000_000_000,
+		HotScore:    1.5,
+		Version:     1_700_000_123_456,
 	}
 
-	items, err := assembler.AssembleContentDocs(contents)
-	require.NoError(t, err)
-	require.Len(t, items, 3)
+	item := ContentIndexItemToItem(it)
 
-	// 文章 标题简介正文齐全 id 转字符串 version 取 updated_at 毫秒
-	art := items[0]
-	assert.Equal(t, "1", art.ID)
-	assert.Equal(t, updatedAt.UnixMilli(), art.Version)
-	artDoc := art.Doc.(ContentDoc)
-	assert.Equal(t, "1", artDoc.ContentID)
-	assert.Equal(t, "100", artDoc.AuthorID)
-	assert.Equal(t, "标题A", artDoc.Title)
-	assert.Equal(t, "简介A", artDoc.Description)
-	assert.Equal(t, "正文A", artDoc.Body)
-	assert.Equal(t, publishedAt.UnixMilli(), artDoc.PublishedAt)
-	assert.InDelta(t, 1.5, artDoc.HotScore, 1e-9)
+	// id 转字符串 version 透传投影 version
+	assert.Equal(t, "1", item.ID)
+	assert.Equal(t, int64(1_700_000_123_456), item.Version)
 
-	// 视频 只有标题 无简介正文 published_at 为空转 0
-	vidDoc := items[1].Doc.(ContentDoc)
-	assert.Equal(t, "视频B", vidDoc.Title)
-	assert.Empty(t, vidDoc.Description)
-	assert.Empty(t, vidDoc.Body)
-	assert.Zero(t, vidDoc.PublishedAt)
-
-	// 文章 description 为 nil 指针转空串不 panic
-	cDoc := items[2].Doc.(ContentDoc)
-	assert.Equal(t, "标题C", cDoc.Title)
-	assert.Empty(t, cDoc.Description)
+	doc := item.Doc.(ContentDoc)
+	assert.Equal(t, "1", doc.ContentID)
+	assert.Equal(t, int32(10), doc.ContentType)
+	assert.Equal(t, int32(30), doc.Status)
+	assert.Equal(t, int32(10), doc.Visibility)
+	assert.Equal(t, "100", doc.AuthorID)
+	assert.Equal(t, "标题A", doc.Title)
+	assert.Equal(t, "简介A", doc.Description)
+	assert.Equal(t, "正文A", doc.Body)
+	assert.Equal(t, int64(1_700_000_000_000), doc.PublishedAt)
+	assert.InDelta(t, 1.5, doc.HotScore, 1e-9)
+	// 投影只含可索引内容 is_deleted 恒 0
+	assert.Equal(t, int32(0), doc.IsDeleted)
 }
 
-func TestAssembleContentDocsEmpty(t *testing.T) {
-	assembler := NewAssembler(&mockArticleRepo{}, &mockVideoRepo{})
-	items, err := assembler.AssembleContentDocs(nil)
-	require.NoError(t, err)
-	assert.Empty(t, items)
-}
-
-func TestAssembleUserDocs(t *testing.T) {
-	updatedAt := time.Date(2026, 6, 30, 0, 0, 0, 0, time.UTC)
-	users := []*model.RanFeedUser{
-		{ID: 10, Username: "alice", Nickname: "爱丽丝", Bio: "简介", Status: 10, UpdatedAt: updatedAt},
-		nil,
+func TestUserIndexItemToItem(t *testing.T) {
+	it := &user.UserIndexItem{
+		UserId:   10,
+		Nickname: "爱丽丝",
+		Bio:      "简介",
+		Username: "alice",
+		Status:   user.UserStatus_USER_STATUS_ACTIVE,
+		Version:  1_700_000_123_456,
 	}
 
-	items := AssembleUserDocs(users)
-	require.Len(t, items, 1)
-	assert.Equal(t, "10", items[0].ID)
-	assert.Equal(t, updatedAt.UnixMilli(), items[0].Version)
-	doc := items[0].Doc.(UserDoc)
+	item := UserIndexItemToItem(it)
+
+	assert.Equal(t, "10", item.ID)
+	assert.Equal(t, int64(1_700_000_123_456), item.Version)
+
+	doc := item.Doc.(UserDoc)
 	assert.Equal(t, "10", doc.UserID)
-	assert.Equal(t, "alice", doc.Username)
 	assert.Equal(t, "爱丽丝", doc.Nickname)
 	assert.Equal(t, "简介", doc.Bio)
+	assert.Equal(t, "alice", doc.Username)
 	assert.Equal(t, int32(10), doc.Status)
+	assert.Equal(t, int32(0), doc.IsDeleted)
 }

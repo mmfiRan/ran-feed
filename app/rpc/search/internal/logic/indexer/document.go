@@ -2,12 +2,10 @@ package indexer
 
 import (
 	"strconv"
-	"time"
 
-	"ran-feed/app/rpc/search/internal/common/consts"
-	"ran-feed/app/rpc/search/internal/entity/model"
+	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/search/internal/es"
-	"ran-feed/app/rpc/search/internal/repositories"
+	"ran-feed/app/rpc/user/user"
 )
 
 // ContentDoc 内容索引文档 id 类字段按 keyword 存字符串 published_at 毫秒
@@ -35,105 +33,33 @@ type UserDoc struct {
 	IsDeleted int32  `json:"is_deleted"`
 }
 
-// Assembler 回源组装内容文档 正文散在 article/video 子表 故按 content_id 回读拼整篇
-type Assembler struct {
-	articleRepo repositories.ArticleRepository
-	videoRepo   repositories.VideoRepository
+// ContentIndexItemToItem 由 content-rpc 索引投影映射为 ES 写入项 投影只含可索引内容 故 is_deleted 恒 0
+func ContentIndexItemToItem(it *content.ContentIndexItem) es.IndexItem {
+	doc := ContentDoc{
+		ContentID:   strconv.FormatInt(it.ContentId, 10),
+		ContentType: int32(it.ContentType),
+		Status:      int32(it.Status),
+		Visibility:  int32(it.Visibility),
+		AuthorID:    strconv.FormatInt(it.AuthorId, 10),
+		Title:       it.Title,
+		Description: it.Description,
+		Body:        it.Body,
+		PublishedAt: it.PublishedAt,
+		HotScore:    it.HotScore,
+		IsDeleted:   0,
+	}
+	return es.IndexItem{ID: doc.ContentID, Version: it.Version, Doc: doc}
 }
 
-func NewAssembler(articleRepo repositories.ArticleRepository, videoRepo repositories.VideoRepository) *Assembler {
-	return &Assembler{
-		articleRepo: articleRepo,
-		videoRepo:   videoRepo,
+// UserIndexItemToItem 由 user-rpc 索引投影映射为 ES 写入项 投影只含可索引用户 故 is_deleted 恒 0
+func UserIndexItemToItem(it *user.UserIndexItem) es.IndexItem {
+	doc := UserDoc{
+		UserID:    strconv.FormatInt(it.UserId, 10),
+		Nickname:  it.Nickname,
+		Bio:       it.Bio,
+		Username:  it.Username,
+		Status:    int32(it.Status),
+		IsDeleted: 0,
 	}
-}
-
-// AssembleContentDocs 由内容主表行回源 article/video 组装文档 文章取标题简介正文 视频只有标题
-func (a *Assembler) AssembleContentDocs(contents []*model.RanFeedContent) ([]es.IndexItem, error) {
-	if len(contents) == 0 {
-		return nil, nil
-	}
-
-	ids := make([]int64, 0, len(contents))
-	for _, c := range contents {
-		if c != nil {
-			ids = append(ids, c.ID)
-		}
-	}
-
-	articles, err := a.articleRepo.GetByContentIDs(ids)
-	if err != nil {
-		return nil, err
-	}
-	videos, err := a.videoRepo.GetByContentIDs(ids)
-	if err != nil {
-		return nil, err
-	}
-
-	items := make([]es.IndexItem, 0, len(contents))
-	for _, c := range contents {
-		if c == nil {
-			continue
-		}
-		doc := ContentDoc{
-			ContentID:   strconv.FormatInt(c.ID, 10),
-			ContentType: c.ContentType,
-			Status:      c.Status,
-			Visibility:  c.Visibility,
-			AuthorID:    strconv.FormatInt(c.UserID, 10),
-			PublishedAt: millis(c.PublishedAt),
-			HotScore:    c.HotScore,
-			IsDeleted:   c.IsDeleted,
-		}
-		switch c.ContentType {
-		case consts.ContentTypeArticle:
-			if art := articles[c.ID]; art != nil {
-				doc.Title = art.Title
-				if art.Description != nil {
-					doc.Description = *art.Description
-				}
-				doc.Body = art.Content
-			}
-		case consts.ContentTypeVideo:
-			if vid := videos[c.ID]; vid != nil {
-				doc.Title = vid.Title
-			}
-		}
-		items = append(items, es.IndexItem{
-			ID:      doc.ContentID,
-			Version: c.UpdatedAt.UnixMilli(),
-			Doc:     doc,
-		})
-	}
-	return items, nil
-}
-
-// AssembleUserDocs 组装用户文档 无子表回源
-func AssembleUserDocs(users []*model.RanFeedUser) []es.IndexItem {
-	items := make([]es.IndexItem, 0, len(users))
-	for _, u := range users {
-		if u == nil {
-			continue
-		}
-		items = append(items, es.IndexItem{
-			ID:      strconv.FormatInt(u.ID, 10),
-			Version: u.UpdatedAt.UnixMilli(),
-			Doc: UserDoc{
-				UserID:    strconv.FormatInt(u.ID, 10),
-				Nickname:  u.Nickname,
-				Bio:       u.Bio,
-				Username:  u.Username,
-				Status:    u.Status,
-				IsDeleted: u.IsDeleted,
-			},
-		})
-	}
-	return items
-}
-
-func millis(t *time.Time) int64 {
-	if t == nil {
-		return 0
-	}
-	return t.UnixMilli()
+	return es.IndexItem{ID: doc.UserID, Version: it.Version, Doc: doc}
 }
