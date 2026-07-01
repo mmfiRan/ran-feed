@@ -1,7 +1,7 @@
 {
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
-  "last_updated": "2026-06-16",
+  "last_updated": "2026-07-01",
   "_meta_note": "重构起点 从零跟踪功能状态",
   "_field_guide": {
     "id": "feat-XXX 新功能 / fix-XXX 修复 / sec-XXX 安全 / opt-XXX 优化 / refactor-XXX 重构",
@@ -131,6 +131,22 @@
       "dependencies": ["feat-002", "feat-003", "feat-004", "feat-005"],
       "status": "done",
       "evidence": "真实 ES(8.12.2+IK)+Canal(search destination)+Kafka 全链路联调通过:CDC touch 后约4s 进 ES(content5+user4);grpcurl 直连 search-rpc SearchContent '测试' 5命中按 score 排序 title+description 双高亮;content_type tab 图文5/视频0;SearchUser 哈哈→1 ran→2;历史 Record/List/去重提前/删单条/清空全对;软删 content→约2s 移出索引 搜索排除。联调中发现并修复 feat-004 一个 bug:删后快速恢复的内容不重新可搜(delete 用 canal ts/upsert 用行 updated_at 两时钟源不一致 restore version 被 delete tombstone 以 409 挡住) 修法 writeES 增量路径统一用 canal 事件 ts 作 version(单分区单调 canal ts≥行 updated_at 与 reindex 一致) 重启后复验 删→移出 恢复→约4s 回插 正确。docs/architecture.md 拓扑加 search-rpc(:5006)+两条 CDC/重建链路 并补『搜索架构』节(只读派生域/索引 IK/写入两路/查询复用 feed 拼装链/历史/降级)。ran-feed-docker 加 kafka-init 预创建 topic 免冷启动 0 分区。./init.sh 全绿(27 测试文件)。front 富化整链未起全栈未现场联调 由单测+BatchGetContentItems 复用 resolver 保证。"
+    },
+    {
+      "id": "refactor-007",
+      "name": "search 写入链路去跨域直读表 改 RPC 索引投影",
+      "description": "search-rpc 原本直接持有并读取 content/article/video/user 四张别域表(GORM-gen model+repository)用于 CanalSearchConsumer 增量回源与 SearchReindexJob 全量重建 是全项目唯一跨域直读者 拆库即断。重构为经源域 RPC 回源:①content-rpc FeedService 加 BatchGetContentForIndex(content_ids)与 ListContentForIndex(cursor,limit) 只返回可索引(已发布+公开+未删除)内容的原始投影(title/description/body/hot_score/published_at/version=updated_at 毫秒) 内部复用 article/video repo 组装 判活逻辑归 content 域;②user-rpc UserService 加 BatchGetUserForIndex/ListUserForIndex 只返回正常+未删除用户投影;③search 消费者与重建 job 改调上述 RPC 返回项 upsert 请求了但未返回的 id 判 delete(判活口径彻底移出 search 删 classifyContent/classifyUser);document.go 由回源 Assembler 改纯映射器 ContentIndexItemToItem/UserIndexItemToItem;canal 表路由改 search 本地源表名常量;svc/config/yaml 接 ContentRpc(feedservice)/UserRpc 客户端(Etcd 发现+ClientGrpcInterceptor);删 4 个跨域 repo+gen/generator.go 去 4 表并连带删 8 个 .gen.go 与 trim query/gen.go。CDC 仍作变更触发器保留(search 只保留源表名字符串常量路由 canal 事件)。",
+      "dependencies": ["feat-005", "feat-006"],
+      "status": "done",
+      "evidence": "./init.sh 通过 build vet test 全绿(28 测试文件)。①content.proto/user.proto 加索引投影 msg+rpc goctl 重生成;content/user repo 各加可索引批量取+id 游标扫方法(article 新增取 title/description/content);两侧 logic 提纯映射器并加单测(content 文章取正文视频只标题 published_at 空归零 version 取 updated_at;user 字段映射)。②search 消费者 handleContent/handleUser 改 RPC 回源 新增 missingIDs 分区 upsert/delete 并加单测;reindex job 改 ListXxxForIndex 游标循环;document.go 改纯映射器加单测覆盖 is_deleted 恒 0/id 转串/version 透传;删 classify 与旧 Assembler。③svc 接 ContentRpc/UserRpc 客户端 config+search.yaml 加两段 RpcClientConf;consts 加 SourceTable* 删只写入用的 ContentType*。④删 4 跨域 repo+8 .gen.go trim query/gen.go 更新 generator.go 至 2 表;全仓 grep 无残留引用。连带:goctl 1.10.1 regen 丢嵌套类型别名 补回 user client UserInfo/UserProfile 使净效果仅新增 ForIndex 别名。端到端(真实 ES+Canal RPC 回源)未现场联调 由单测+全绿保证。"
+    },
+    {
+      "id": "refactor-008",
+      "name": "搜索分页由 from/size 改 search_after 游标",
+      "description": "搜索原用 from/size 偏移分页 前端是 feed 式无限下拉 用不上跳页却吃深分页两个代价:ES max_result_window 默认 1 万 from+size 越界直接报错(下拉滚够久必崩);深分页每 shard 取 from+size 归并丢弃越深越慢。且原 sort [_score,hot_score,published_at] 无唯一 tiebreaker 页边界可能漏/重。改为 search_after 游标:游标即上页末条命中的 ES sort 值数组 json+base64 成不透明串 前端当黑盒回传 search-rpc 解码后原样作 search_after(不理解排序字段语义);sort 末位补唯一键(content 加 content_id asc、user 加 user_id asc 均 keyword 可排序);buildQuery 删 from cursor 非空时加 search_after;proto SearchContentReq/SearchUserReq 的 page 改 cursor 响应加 next_cursor(空表示无下一页 满页才给);保留 total(ES 默认 track_total_hits 上限 1 万 best-effort 基本零成本);放弃跳页 不引入 PIT 接受与既有 feed 同级翻页漂移。front search.api page 改 cursor 响应加 next_cursor 透传。history 三接口与 ES mapping 与写入链路不动。",
+      "dependencies": ["feat-004", "feat-006"],
+      "status": "done",
+      "evidence": "./init.sh 通过 build vet test 全绿(28 测试文件)。①search.proto page→cursor 响应加 next_cursor goctl 重生成(client 别名无丢失);es.Hit 加 Sort []any 并解析 hits[].sort。②paging.go 改 normalizeSize+encodeCursor/decodeCursor(base64+json)+nextCursor(满页才给末条 sort 编码 不足一页返空);两 logic buildQuery 删 from、sort 末位加 content_id/user_id tiebreaker、cursor 非空加 search_after、出参带 next_cursor;非法游标 errorx.Wrap 不静默从头(防翻页死循环)。③front search.api page→cursor 响应加 next_cursor 重生成 api+swagger;两 logic 透传 req.Cursor 与 resp.NextCursor。④单测:cursor 混合类型往返、空/非法游标、nextCursor 满页/到底/空命中、buildQuery 无 from+tiebreaker+search_after 加入省略、normalizeSize 边界。端到端(真实 ES 下拉多页串联/翻过 1 万条不报 max_result_window)未现场联调 由单测+全绿保证。"
     }
   ]
 }

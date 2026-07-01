@@ -11,11 +11,11 @@ enum ContentType {
   VIDEO = 20;
 }
 
-// SearchContentReq 内容搜索请求 content_type 为 0 表示全部
+// SearchContentReq 内容搜索请求 content_type 为 0 表示全部 cursor 空为首页
 message SearchContentReq {
   string keyword = 1;
   ContentType content_type = 2;
-  int32 page = 3;
+  string cursor = 3;
   int32 size = 4;
 }
 
@@ -27,16 +27,17 @@ message ContentHit {
   string highlight_description = 4;
 }
 
-// SearchContentRes 内容搜索结果
+// SearchContentRes 内容搜索结果 next_cursor 空表示无下一页
 message SearchContentRes {
   repeated ContentHit hits = 1;
   int64 total = 2;
+  string next_cursor = 3;
 }
 
-// SearchUserReq 用户搜索请求
+// SearchUserReq 用户搜索请求 cursor 空为首页
 message SearchUserReq {
   string keyword = 1;
-  int32 page = 2;
+  string cursor = 2;
   int32 size = 3;
 }
 
@@ -46,10 +47,11 @@ message UserHit {
   double score = 2;
 }
 
-// SearchUserRes 用户搜索结果
+// SearchUserRes 用户搜索结果 next_cursor 空表示无下一页
 message SearchUserRes {
   repeated UserHit hits = 1;
   int64 total = 2;
+  string next_cursor = 3;
 }
 
 // RecordHistoryReq 记录一次搜索 user_id<=0 或 keyword 空则忽略

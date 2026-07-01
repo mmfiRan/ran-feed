@@ -9,11 +9,13 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
-// Hit 一条命中 只含 _id 排序分与高亮 展示字段由 front 富化
+// Hit 一条命中 只含 _id 排序分 高亮与 sort 值 展示字段由 front 富化
+// Sort 为 ES 按 sort 子句返回的排序值数组 原样作 search_after 游标
 type Hit struct {
 	ID        string
 	Score     float64
 	Highlight map[string][]string
+	Sort      []any
 }
 
 // FirstHighlight 取某字段首个高亮片段 无则空串
@@ -39,6 +41,7 @@ type esSearchResponse struct {
 			ID        string              `json:"_id"`
 			Score     float64             `json:"_score"`
 			Highlight map[string][]string `json:"highlight"`
+			Sort      []any               `json:"sort"`
 		} `json:"hits"`
 	} `json:"hits"`
 }
@@ -68,12 +71,15 @@ func Search(ctx context.Context, client *elasticsearch.Client, index string, bod
 		return nil, err
 	}
 
-	result := &SearchResult{Total: parsed.Hits.Total.Value}
+	result := &SearchResult{
+		Total: parsed.Hits.Total.Value,
+	}
 	for _, h := range parsed.Hits.Hits {
 		result.Hits = append(result.Hits, Hit{
 			ID:        h.ID,
 			Score:     h.Score,
 			Highlight: h.Highlight,
+			Sort:      h.Sort,
 		})
 	}
 	return result, nil

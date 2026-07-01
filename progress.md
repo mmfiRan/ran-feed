@@ -2,12 +2,57 @@
 
 ## 当前状态
 
-**最后更新：** 2026-06-30
-**当前功能：** feat-006 搜索端到端联调与架构文档（done）— 搜索功能全部完成
+**最后更新：** 2026-07-01
+**当前功能：** refactor-008 搜索分页由 from/size 改 search_after 游标（done）
 
-> 搜索功能 feat-001~006 全部 done。剩余待办仅 fix-006（作者主页流，与搜索无关）。
+> 搜索改为 feed 式游标下拉：消除 `max_result_window` 1 万条硬墙 + 页边界不稳。`./init.sh` 全绿（28 测试文件）。**变更尚未提交**（refactor-007 与 refactor-008 均在工作区待提交）。
 
 ---
+
+## 已完成（refactor-008 搜索游标分页）
+
+**背景**：搜索原用 `from/size` 偏移分页,前端是 feed 式无限下拉——用不上跳页,却吃两个代价:①ES `max_result_window` 默认 1 万,`from+size` 越界**直接报错**(下拉滚够久必崩);②深分页每 shard 取 `from+size` 归并丢弃越深越慢。且原 sort `[_score,hot_score,published_at]` 无唯一 tiebreaker,页边界可能漏/重。
+
+**方案(游标 = ES 自己的 sort 数组原样回传)**:
+- 游标即上页末条命中的 ES `sort` 值数组 → `json+base64` 成不透明串给前端 → 回传解码后原样作 `search_after`。search-rpc **不理解排序字段语义**,只做黑盒往返。
+- sort 末位补唯一键:content 加 `content_id asc`、user 加 `user_id asc`(均 keyword 可排序),消除同分页边界不稳。
+- `buildQuery` 删 `from`;`cursor` 非空时加 `search_after`。
+- proto `SearchContentReq/SearchUserReq` 的 `page` → `cursor`,响应加 `next_cursor`(空=无下一页,满页才给);front `.api` 同步。
+- **保留 `total`**(ES 默认 track_total_hits 上限 1 万 best-effort,零成本);**放弃跳页**、不引入 PIT(接受与既有 feed 同级翻页漂移)。
+
+**改动**:`es.Hit` 加 `Sort []any` 并解析;`paging.go` → `normalizeSize` + `encode/decodeCursor` + `nextCursor`;两 logic 的 `buildQuery` 与出参;front 两 logic 透传 `cursor/next_cursor`。history 三接口、ES mapping、写入链路不动。
+
+**验证**:`./init.sh` 全绿(28 测试文件)。新增单测:游标混合类型往返、空/非法游标、`nextCursor` 满页/到底/空命中、`buildQuery` 无 from + tiebreaker + search_after 加入/省略、`normalizeSize` 边界。非法游标返回错误(不静默从头,防翻页死循环)。
+
+**遗留**:端到端(真实 ES 下拉多页串联无漏重、翻过 1 万条不报 `max_result_window`)未现场联调,由单测 + 全绿保证。
+
+---
+
+## 上一状态（refactor-007 search 去跨域直读 改 RPC 回源，done）
+
+---
+
+## 已完成（refactor-007 search 去跨域直读 改 RPC 回源）
+
+**背景**：search-rpc 原是全项目唯一直读 4 张别域表（content/article/video/user）的服务，仅因开发期共库能跑；目标架构 database-per-service 下拆库即断。查询/富化链路本就走 RPC，问题只在写入/建索引两条链路的「回源读表」。
+
+**方案（分 3 Phase）**：
+- **A · content-rpc**：`FeedService` 加 `BatchGetContentForIndex(content_ids)` / `ListContentForIndex(cursor,limit)`，只返回**可索引**（已发布+公开+未删除）内容的原始投影（title/description/body/hot_score/published_at/version=updated_at 毫秒）；判活与三表组装归 content 域。
+- **B · user-rpc**：`UserService` 加 `BatchGetUserForIndex` / `ListUserForIndex`，只返回正常+未删除用户投影。
+- **C · search-rpc**：消费者 `handleContent/handleUser` 改调 RPC，返回项 upsert、请求了但未返回的 id 判 delete（新 `missingIDs`）；reindex job 改 `ListXxxForIndex` 游标循环；`document.go` 由回源 `Assembler` 改**纯映射器**；canal 路由改本地 `SourceTable*` 常量；svc/config/yaml 接 `ContentRpc(feedservice)`/`UserRpc` 客户端；**删** 4 个跨域 repo + 8 个 `.gen.go`，trim `query/gen.go`，`generator.go` 收到 2 表。
+
+**判定归属**：可索引判定从 search 硬编码 `status=30/visibility=10` 彻底移进源域 RPC，`classifyContent/classifyUser` 删除。
+**解耦深度**：CDC 保留作「变更触发器」，search 只留源表名字符串常量路由 canal 事件。
+
+**连带点**：goctl 1.10.1 regen 只再导出 req/res 别名、丢掉嵌套类型别名 → user client 的 `UserInfo/UserProfile` 被删导致 content/interaction 编译失败；已按原样补回，使 regen 净效果仅新增 ForIndex 别名。
+
+**验证**：`./init.sh` build+vet+test 全绿（28 测试文件）。新增单测：content/user 投影映射、search `missingIDs` 分区、`document.go` 映射器。全仓 grep 无对已删 model/repo 的残留引用。
+
+**遗留**：端到端（真实 ES + Canal + RPC 回源）未现场联调，需三服务 + ES + Canal 起全栈；本次由单测 + 全绿保证。GORM model 因本地无 `.env`/DB 凭据未用 `go run ./gen/generator.go` 重跑，改为手工 trim 生成物 + 同步 `generator.go`（下次带 DB regen 可复现同一结果）。
+
+---
+
+## 上一状态（feat-006 搜索端到端联调 + 架构文档，done）
 
 ## 已完成（feat-006 搜索端到端联调 + 架构文档）
 

@@ -4,7 +4,7 @@ type (
 	SearchContentReq {
 		Keyword     string `form:"keyword"`
 		ContentType int32  `form:"content_type,optional"`
-		Page        int32  `form:"page,optional"`
+		Cursor      string `form:"cursor,optional"`
 		Size        int32  `form:"size,optional"`
 	}
 	SearchContentItem {
@@ -22,12 +22,13 @@ type (
 		HighlightDescription string `json:"highlight_description"`
 	}
 	SearchContentRes {
-		Items []SearchContentItem `json:"items"`
-		Total int64               `json:"total"`
+		Items      []SearchContentItem `json:"items"`
+		Total      int64               `json:"total"`
+		NextCursor string              `json:"next_cursor"`
 	}
 	SearchUserReq {
 		Keyword string `form:"keyword"`
-		Page    int32  `form:"page,optional"`
+		Cursor  string `form:"cursor,optional"`
 		Size    int32  `form:"size,optional"`
 	}
 	SearchUserItem {
@@ -39,8 +40,9 @@ type (
 		FollowerCount int64  `json:"follower_count"`
 	}
 	SearchUserRes {
-		Items []SearchUserItem `json:"items"`
-		Total int64            `json:"total"`
+		Items      []SearchUserItem `json:"items"`
+		Total      int64            `json:"total"`
+		NextCursor string           `json:"next_cursor"`
 	}
 	SearchHistoryItem {
 		Keyword   string `json:"keyword"`

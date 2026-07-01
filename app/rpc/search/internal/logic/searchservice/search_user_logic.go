@@ -32,8 +32,13 @@ func (l *SearchUserLogic) SearchUser(in *search.SearchUserReq) (*search.SearchUs
 		return &search.SearchUserRes{}, nil
 	}
 
-	from, size := pageToFromSize(in.Page, in.Size)
-	result, err := es.Search(l.ctx, l.svcCtx.ES, es.IndexUser, l.buildQuery(in, from, size))
+	size := normalizeSize(in.Size)
+	searchAfter, err := decodeCursor(in.Cursor)
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("用户搜索失败"))
+	}
+
+	result, err := es.Search(l.ctx, l.svcCtx.ES, es.IndexUser, l.buildQuery(in, size, searchAfter))
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("用户搜索失败"))
 	}
@@ -50,13 +55,17 @@ func (l *SearchUserLogic) SearchUser(in *search.SearchUserReq) (*search.SearchUs
 			Score:  h.Score,
 		})
 	}
-	return &search.SearchUserRes{Hits: hits, Total: result.Total}, nil
+	return &search.SearchUserRes{
+		Hits:       hits,
+		Total:      result.Total,
+		NextCursor: nextCursor(result.Hits, size),
+	}, nil
 }
 
-// buildQuery 昵称^3 简介 多字段匹配 仅正常未删除 排序 _score
-func (l *SearchUserLogic) buildQuery(in *search.SearchUserReq, from, size int) map[string]any {
-	return map[string]any{
-		"from": from,
+// buildQuery 昵称^3 简介 多字段匹配 仅正常未删除 排序 _score 末位 user_id 兜底唯一序
+// searchAfter 非空时接 search_after 游标翻页 不用 from 偏移
+func (l *SearchUserLogic) buildQuery(in *search.SearchUserReq, size int, searchAfter []any) map[string]any {
+	query := map[string]any{
 		"size": size,
 		"query": map[string]any{
 			"bool": map[string]any{
@@ -75,6 +84,11 @@ func (l *SearchUserLogic) buildQuery(in *search.SearchUserReq, from, size int) m
 		},
 		"sort": []map[string]any{
 			{"_score": map[string]any{"order": "desc"}},
+			{"user_id": map[string]any{"order": "asc"}},
 		},
 	}
+	if len(searchAfter) > 0 {
+		query["search_after"] = searchAfter
+	}
+	return query
 }

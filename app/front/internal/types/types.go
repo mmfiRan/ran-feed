@@ -362,13 +362,14 @@ type SearchContentItem struct {
 type SearchContentReq struct {
 	Keyword     string `form:"keyword"`
 	ContentType int32  `form:"content_type,optional"`
-	Page        int32  `form:"page,optional"`
+	Cursor      string `form:"cursor,optional"`
 	Size        int32  `form:"size,optional"`
 }
 
 type SearchContentRes struct {
-	Items []SearchContentItem `json:"items"`
-	Total int64               `json:"total"`
+	Items      []SearchContentItem `json:"items"`
+	Total      int64               `json:"total"`
+	NextCursor string              `json:"next_cursor"`
 }
 
 type SearchHistoryItem struct {
@@ -387,13 +388,14 @@ type SearchUserItem struct {
 
 type SearchUserReq struct {
 	Keyword string `form:"keyword"`
-	Page    int32  `form:"page,optional"`
+	Cursor  string `form:"cursor,optional"`
 	Size    int32  `form:"size,optional"`
 }
 
 type SearchUserRes struct {
-	Items []SearchUserItem `json:"items"`
-	Total int64            `json:"total"`
+	Items      []SearchUserItem `json:"items"`
+	Total      int64            `json:"total"`
+	NextCursor string           `json:"next_cursor"`
 }
 
 type UnFollowUserReq struct {

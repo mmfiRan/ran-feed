@@ -32,8 +32,13 @@ func (l *SearchContentLogic) SearchContent(in *search.SearchContentReq) (*search
 		return &search.SearchContentRes{}, nil
 	}
 
-	from, size := pageToFromSize(in.Page, in.Size)
-	result, err := es.Search(l.ctx, l.svcCtx.ES, es.IndexContent, l.buildQuery(in, from, size))
+	size := normalizeSize(in.Size)
+	searchAfter, err := decodeCursor(in.Cursor)
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("内容搜索失败"))
+	}
+
+	result, err := es.Search(l.ctx, l.svcCtx.ES, es.IndexContent, l.buildQuery(in, size, searchAfter))
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("内容搜索失败"))
 	}
@@ -52,11 +57,16 @@ func (l *SearchContentLogic) SearchContent(in *search.SearchContentReq) (*search
 			HighlightDescription: h.FirstHighlight("description"),
 		})
 	}
-	return &search.SearchContentRes{Hits: hits, Total: result.Total}, nil
+	return &search.SearchContentRes{
+		Hits:       hits,
+		Total:      result.Total,
+		NextCursor: nextCursor(result.Hits, size),
+	}, nil
 }
 
-// buildQuery 标题^3 简介^2 正文 多字段匹配 仅已发布公开未删除 排序 _score 加 hot_score 加 published_at
-func (l *SearchContentLogic) buildQuery(in *search.SearchContentReq, from, size int) map[string]any {
+// buildQuery 标题^3 简介^2 正文 多字段匹配 仅已发布公开未删除 排序 _score 加 hot_score 加 published_at 末位 content_id 兜底唯一序
+// searchAfter 非空时接 search_after 游标翻页 不用 from 偏移
+func (l *SearchContentLogic) buildQuery(in *search.SearchContentReq, size int, searchAfter []any) map[string]any {
 	filters := []map[string]any{
 		{"term": map[string]any{"status": consts.ContentStatusPublished}},
 		{"term": map[string]any{"visibility": consts.ContentVisibilityPublic}},
@@ -66,8 +76,7 @@ func (l *SearchContentLogic) buildQuery(in *search.SearchContentReq, from, size 
 		filters = append(filters, map[string]any{"term": map[string]any{"content_type": int32(in.ContentType)}})
 	}
 
-	return map[string]any{
-		"from": from,
+	query := map[string]any{
 		"size": size,
 		"query": map[string]any{
 			"bool": map[string]any{
@@ -85,6 +94,7 @@ func (l *SearchContentLogic) buildQuery(in *search.SearchContentReq, from, size 
 			{"_score": map[string]any{"order": "desc"}},
 			{"hot_score": map[string]any{"order": "desc"}},
 			{"published_at": map[string]any{"order": "desc"}},
+			{"content_id": map[string]any{"order": "asc"}},
 		},
 		"highlight": map[string]any{
 			"fields": map[string]any{
@@ -93,4 +103,8 @@ func (l *SearchContentLogic) buildQuery(in *search.SearchContentReq, from, size 
 			},
 		},
 	}
+	if len(searchAfter) > 0 {
+		query["search_after"] = searchAfter
+	}
+	return query
 }

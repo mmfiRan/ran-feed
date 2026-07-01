@@ -42,7 +42,7 @@ func (l *SearchContentLogic) SearchContent(req *types.SearchContentReq) (resp *t
 	searchRes, err := l.svcCtx.SearchRpc.SearchContent(l.ctx, &search.SearchContentReq{
 		Keyword:     req.Keyword,
 		ContentType: search.ContentType(req.ContentType),
-		Page:        req.Page,
+		Cursor:      req.Cursor,
 		Size:        req.Size,
 	})
 	if err != nil {
@@ -70,6 +70,7 @@ func (l *SearchContentLogic) SearchContent(req *types.SearchContentReq) (resp *t
 
 	resp.Items = assembleSearchContentItems(enriched.Items, highlightMap)
 	resp.Total = searchRes.Total
+	resp.NextCursor = searchRes.NextCursor
 
 	recordSearchHistory(l.svcCtx, viewerID, req.Keyword)
 	return resp, nil

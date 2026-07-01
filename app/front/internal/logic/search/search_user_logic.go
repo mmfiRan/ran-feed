@@ -43,7 +43,7 @@ func (l *SearchUserLogic) SearchUser(req *types.SearchUserReq) (resp *types.Sear
 
 	searchRes, err := l.svcCtx.SearchRpc.SearchUser(l.ctx, &search.SearchUserReq{
 		Keyword: req.Keyword,
-		Page:    req.Page,
+		Cursor:  req.Cursor,
 		Size:    req.Size,
 	})
 	if err != nil {
@@ -92,6 +92,7 @@ func (l *SearchUserLogic) SearchUser(req *types.SearchUserReq) (resp *types.Sear
 	}
 	resp.Items = items
 	resp.Total = searchRes.Total
+	resp.NextCursor = searchRes.NextCursor
 
 	recordSearchHistory(l.svcCtx, viewerID, req.Keyword)
 	return resp, nil

@@ -71,12 +71,12 @@ func (ContentType) EnumDescriptor() ([]byte, []int) {
 	return file_app_rpc_search_proto_search_proto_rawDescGZIP(), []int{0}
 }
 
-// SearchContentReq 内容搜索请求 content_type 为 0 表示全部
+// SearchContentReq 内容搜索请求 content_type 为 0 表示全部 cursor 空为首页
 type SearchContentReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Keyword       string                 `protobuf:"bytes,1,opt,name=keyword,proto3" json:"keyword,omitempty"`
 	ContentType   ContentType            `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=search.ContentType" json:"content_type,omitempty"`
-	Page          int32                  `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	Cursor        string                 `protobuf:"bytes,3,opt,name=cursor,proto3" json:"cursor,omitempty"`
 	Size          int32                  `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -126,11 +126,11 @@ func (x *SearchContentReq) GetContentType() ContentType {
 	return ContentType_CONTENT_TYPE_UNKNOWN
 }
 
-func (x *SearchContentReq) GetPage() int32 {
+func (x *SearchContentReq) GetCursor() string {
 	if x != nil {
-		return x.Page
+		return x.Cursor
 	}
-	return 0
+	return ""
 }
 
 func (x *SearchContentReq) GetSize() int32 {
@@ -209,11 +209,12 @@ func (x *ContentHit) GetHighlightDescription() string {
 	return ""
 }
 
-// SearchContentRes 内容搜索结果
+// SearchContentRes 内容搜索结果 next_cursor 空表示无下一页
 type SearchContentRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Hits          []*ContentHit          `protobuf:"bytes,1,rep,name=hits,proto3" json:"hits,omitempty"`
 	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	NextCursor    string                 `protobuf:"bytes,3,opt,name=next_cursor,json=nextCursor,proto3" json:"next_cursor,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -262,11 +263,18 @@ func (x *SearchContentRes) GetTotal() int64 {
 	return 0
 }
 
-// SearchUserReq 用户搜索请求
+func (x *SearchContentRes) GetNextCursor() string {
+	if x != nil {
+		return x.NextCursor
+	}
+	return ""
+}
+
+// SearchUserReq 用户搜索请求 cursor 空为首页
 type SearchUserReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Keyword       string                 `protobuf:"bytes,1,opt,name=keyword,proto3" json:"keyword,omitempty"`
-	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	Cursor        string                 `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
 	Size          int32                  `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -309,11 +317,11 @@ func (x *SearchUserReq) GetKeyword() string {
 	return ""
 }
 
-func (x *SearchUserReq) GetPage() int32 {
+func (x *SearchUserReq) GetCursor() string {
 	if x != nil {
-		return x.Page
+		return x.Cursor
 	}
-	return 0
+	return ""
 }
 
 func (x *SearchUserReq) GetSize() int32 {
@@ -376,11 +384,12 @@ func (x *UserHit) GetScore() float64 {
 	return 0
 }
 
-// SearchUserRes 用户搜索结果
+// SearchUserRes 用户搜索结果 next_cursor 空表示无下一页
 type SearchUserRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Hits          []*UserHit             `protobuf:"bytes,1,rep,name=hits,proto3" json:"hits,omitempty"`
 	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	NextCursor    string                 `protobuf:"bytes,3,opt,name=next_cursor,json=nextCursor,proto3" json:"next_cursor,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -427,6 +436,13 @@ func (x *SearchUserRes) GetTotal() int64 {
 		return x.Total
 	}
 	return 0
+}
+
+func (x *SearchUserRes) GetNextCursor() string {
+	if x != nil {
+		return x.NextCursor
+	}
+	return ""
 }
 
 // RecordHistoryReq 记录一次搜索 user_id<=0 或 keyword 空则忽略
@@ -769,11 +785,11 @@ var File_app_rpc_search_proto_search_proto protoreflect.FileDescriptor
 
 const file_app_rpc_search_proto_search_proto_rawDesc = "" +
 	"\n" +
-	"!app/rpc/search/proto/search.proto\x12\x06search\"\x8c\x01\n" +
+	"!app/rpc/search/proto/search.proto\x12\x06search\"\x90\x01\n" +
 	"\x10SearchContentReq\x12\x18\n" +
 	"\akeyword\x18\x01 \x01(\tR\akeyword\x126\n" +
-	"\fcontent_type\x18\x02 \x01(\x0e2\x13.search.ContentTypeR\vcontentType\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x12\n" +
+	"\fcontent_type\x18\x02 \x01(\x0e2\x13.search.ContentTypeR\vcontentType\x12\x16\n" +
+	"\x06cursor\x18\x03 \x01(\tR\x06cursor\x12\x12\n" +
 	"\x04size\x18\x04 \x01(\x05R\x04size\"\x9f\x01\n" +
 	"\n" +
 	"ContentHit\x12\x1d\n" +
@@ -781,20 +797,24 @@ const file_app_rpc_search_proto_search_proto_rawDesc = "" +
 	"content_id\x18\x01 \x01(\x03R\tcontentId\x12\x14\n" +
 	"\x05score\x18\x02 \x01(\x01R\x05score\x12'\n" +
 	"\x0fhighlight_title\x18\x03 \x01(\tR\x0ehighlightTitle\x123\n" +
-	"\x15highlight_description\x18\x04 \x01(\tR\x14highlightDescription\"P\n" +
+	"\x15highlight_description\x18\x04 \x01(\tR\x14highlightDescription\"q\n" +
 	"\x10SearchContentRes\x12&\n" +
 	"\x04hits\x18\x01 \x03(\v2\x12.search.ContentHitR\x04hits\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total\"Q\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x1f\n" +
+	"\vnext_cursor\x18\x03 \x01(\tR\n" +
+	"nextCursor\"U\n" +
 	"\rSearchUserReq\x12\x18\n" +
-	"\akeyword\x18\x01 \x01(\tR\akeyword\x12\x12\n" +
-	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x12\n" +
+	"\akeyword\x18\x01 \x01(\tR\akeyword\x12\x16\n" +
+	"\x06cursor\x18\x02 \x01(\tR\x06cursor\x12\x12\n" +
 	"\x04size\x18\x03 \x01(\x05R\x04size\"8\n" +
 	"\aUserHit\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x14\n" +
-	"\x05score\x18\x02 \x01(\x01R\x05score\"J\n" +
+	"\x05score\x18\x02 \x01(\x01R\x05score\"k\n" +
 	"\rSearchUserRes\x12#\n" +
 	"\x04hits\x18\x01 \x03(\v2\x0f.search.UserHitR\x04hits\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total\"E\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x1f\n" +
+	"\vnext_cursor\x18\x03 \x01(\tR\n" +
+	"nextCursor\"E\n" +
 	"\x10RecordHistoryReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x18\n" +
 	"\akeyword\x18\x02 \x01(\tR\akeyword\"\x12\n" +
