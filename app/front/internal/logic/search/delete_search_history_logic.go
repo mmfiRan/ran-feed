@@ -32,7 +32,9 @@ func NewDeleteSearchHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext
 func (l *DeleteSearchHistoryLogic) DeleteSearchHistory(req *types.DeleteSearchHistoryReq) (resp *types.DeleteSearchHistoryRes, err error) {
 	viewerID := utils.GetContextUserIdWithDefault(l.ctx)
 	if viewerID <= 0 {
-		return &types.DeleteSearchHistoryRes{Success: true}, nil
+		return &types.DeleteSearchHistoryRes{
+			Success: true,
+		}, nil
 	}
 
 	if _, err = l.svcCtx.SearchRpc.DeleteHistory(l.ctx, &search.DeleteHistoryReq{

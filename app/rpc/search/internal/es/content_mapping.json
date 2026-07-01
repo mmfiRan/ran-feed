@@ -1,19 +1,55 @@
 {
-  "settings": { "number_of_shards": 1, "number_of_replicas": 0 },
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
   "mappings": {
-    "_source": { "excludes": ["body"] },
+    "_source": {
+      "excludes": [
+        "body"
+      ]
+    },
     "properties": {
-      "content_id":   { "type": "keyword" },
-      "content_type": { "type": "byte" },
-      "status":       { "type": "byte" },
-      "visibility":   { "type": "byte" },
-      "author_id":    { "type": "keyword" },
-      "title":        { "type": "text", "analyzer": "ik_max_word", "search_analyzer": "ik_smart" },
-      "description":  { "type": "text", "analyzer": "ik_max_word", "search_analyzer": "ik_smart" },
-      "body":         { "type": "text", "analyzer": "ik_max_word", "search_analyzer": "ik_smart" },
-      "published_at": { "type": "date", "format": "epoch_millis" },
-      "hot_score":    { "type": "double" },
-      "is_deleted":   { "type": "byte" }
+      "content_id": {
+        "type": "keyword"
+      },
+      "content_type": {
+        "type": "byte"
+      },
+      "status": {
+        "type": "byte"
+      },
+      "visibility": {
+        "type": "byte"
+      },
+      "author_id": {
+        "type": "keyword"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "description": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "body": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "published_at": {
+        "type": "date",
+        "format": "epoch_millis"
+      },
+      "hot_score": {
+        "type": "double"
+      },
+      "is_deleted": {
+        "type": "byte"
+      }
     }
   }
 }
