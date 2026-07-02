@@ -24,4 +24,4 @@ COPY --from=build /out/search-rpc /app/bin/search-rpc
 COPY app/rpc/search/etc /app/app/rpc/search/etc
 RUN mkdir -p /var/log/ran-feed
 
-EXPOSE 5006 9296
+EXPOSE 5006 5007 9296
