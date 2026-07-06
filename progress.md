@@ -2,11 +2,24 @@
 
 ## 当前状态
 
-**最后更新：** 2026-07-01
-**当前功能：** feat-007 搜索自动补全（内容标题+用户昵称，中文+拼音前缀）（done）
+**最后更新：** 2026-07-06
+**当前功能：** 热榜定时任务链路追踪与关键日志（已提交 744ae67）
 
-> completion suggester 前缀补全，统一入口 `/v1/search/suggest` 分流内容/用户。`./init.sh` 全绿（29 测试文件）。**变更尚未提交**。
-> ⚠️ **端到端拼音生效有前置**：需先装 `analysis-pinyin` 插件（ran-feed-docker，用户负责）→ 删旧索引 → 重启 search-rpc 重建 → 跑 reindex 回填。未装插件时带 pinyin analyzer 的建索引会失败，但单测（不连真 ES）不受影响。
+> xxl 触发的定时任务原无 trace span 日志缺 traceId 无法串联；快慢更新关键节点日志过少 失败时定位不到阶段。本次补齐。`./init.sh` 全绿。
+
+---
+
+## 已完成（热榜定时任务可观测性）
+
+**背景**：冷/快更执行失败时只看到 runner 一行裸 error 无 traceId 无阶段 定位困难。
+
+**改动**：
+- `pkg/xxljob/runner.go`：每次执行在协程内起根 span（server 端）→ Telemetry 已配 `Sampler:1.0` 故 traceId 有效，begin/fail/finish/callback 全链串联，下游 DB/RPC span 正确嵌套；裸 `go func()` 换 `threading.GoSafe`（内层原 recover+回调保留）。
+- `hot_fast_update`（job+recompute）与 `hot_cold_update`：统一 `logx.WithContext(ctx)`（run ctx traceId 才生效），关键节点补中文日志（开始/让路/放弃/条数/快照重建或跳过/完成），每个 `return "", err` 与跨边界失败点用中文阶段名包裹。
+- `content.yaml`：`XxlJob.HTTPTimeout` 10s→60s。
+- 用户后续把两处锁释放由 `ReleaseCtx(ctx)` 改回 `Release()` 避免 ctx 取消导致解锁失败。
+
+**验证**：`./init.sh` 全绿。
 
 ---
 
