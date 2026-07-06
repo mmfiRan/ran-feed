@@ -2,6 +2,7 @@ package hot_fast_update
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -69,7 +70,7 @@ func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator
 		// 拿 published_at 加过滤状态 未返回的即已删或非公开 从主榜移除
 		contentMap, err := j.contentRepo.BatchGetRecommendByIDs(statusPublished, visibilityPublic, batch)
 		if err != nil {
-			return err
+			return fmt.Errorf("批量拉取推荐内容失败 %w", err)
 		}
 
 		staleMembers := make([]any, 0)
@@ -93,7 +94,7 @@ func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator
 		// 回查计数总量 点赞 评论 收藏 算全分
 		counts, err := j.batchGetCounts(ctx, validIDs)
 		if err != nil {
-			return err
+			return fmt.Errorf("回查互动计数失败 %w", err)
 		}
 
 		dbIDs := make([]int64, 0, len(validIDs))
@@ -132,7 +133,7 @@ func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator
 
 		// 同步落库 hot_score 与主榜口径一致
 		if err = j.contentRepo.BatchUpdateHotScores(dbIDs, dbScores, time.Now()); err != nil {
-			return err
+			return fmt.Errorf("批量落库 hot_score 失败 %w", err)
 		}
 	}
 	return nil

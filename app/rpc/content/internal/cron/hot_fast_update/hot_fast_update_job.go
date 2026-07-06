@@ -3,6 +3,7 @@ package hot_fast_update
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"ran-feed/pkg/hotrank"
 	"ran-feed/pkg/xxljob"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
@@ -65,6 +67,8 @@ func Register(ctx context.Context, executor *xxljob.Executor, svcCtx *svc.Servic
 // Run 快更 冻结脏集合 回查计数总量算全分 覆盖主榜 刷新快照
 func (j *HotFastUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (string, error) {
 	p := parseParams(param.ExecutorParams)
+	logger := logx.WithContext(ctx)
+	logger.Infof("热榜快更开始 shards=%d mainN=%d topN=%d halfLife=%.1f", p.Shards, p.MainN, p.TopN, p.HalfLifeHours)
 
 	calculator := hotrank.AdditiveTime{
 		Weights:       mergeWeights(p.Weights),
@@ -75,9 +79,10 @@ func (j *HotFastUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 	// 让掉的这轮互动原样留在活跃脏桶 冷更跑完或下一轮快更照常处理 不丢
 	pending, err := j.svc.Redis.ExistsCtx(ctx, rediskey.RedisFeedHotColdPendingKey)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("检查冷更让路标志失败 %w", err)
 	}
 	if pending {
+		logger.Info("热榜快更让路冷更 本轮不抢写锁")
 		return "yield", nil
 	}
 
@@ -86,35 +91,39 @@ func (j *HotFastUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 	redisLock.SetExpire(p.LockTTL)
 	locked, err := redisLock.AcquireCtx(ctx)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("抢主榜写锁失败 %w", err)
 	}
 	if !locked {
+		logger.Info("热榜快更放弃 写锁被占")
 		return "duplicate", nil
 	}
-	defer redisLock.ReleaseCtx(context.Background())
+	defer redisLock.Release()
 
 	// 逐分片冻结脏集合并收集脏 ID 双缓冲 处理期间新互动堆进活跃桶
 	dirtyIDs, err := j.collectDirtyIDs(ctx, p.Shards)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("收集脏 ID 失败 %w", err)
 	}
+	logger.Infof("热榜快更收集脏 ID 完成 count=%d", len(dirtyIDs))
 
 	// 回查计数总量算全分 ZADD 覆盖主榜
 	if len(dirtyIDs) > 0 {
 		if err = j.recomputeAndOverwrite(ctx, calculator, dirtyIDs, p.MainN); err != nil {
-			return "", err
+			return "", fmt.Errorf("回查算分覆盖主榜失败 %w", err)
 		}
+		logger.Infof("热榜快更回查算分覆盖主榜完成 count=%d", len(dirtyIDs))
 	}
 
 	// 裁剪主榜到 MainN 候选池 取前 TopN 建快照 切 latest 指针
 	if err = j.refreshSnapshot(ctx, p.MainN, p.TopN); err != nil {
-		return "", err
+		return "", fmt.Errorf("刷新快照失败 %w", err)
 	}
 	// 清理已处理的冻结桶
 	if err = j.cleanupProcShards(ctx, p.Shards); err != nil {
-		return "", err
+		return "", fmt.Errorf("清理冻结桶失败 %w", err)
 	}
 
+	logger.Infof("热榜快更完成 dirty=%d", len(dirtyIDs))
 	return "ok", nil
 }
 
@@ -170,16 +179,20 @@ func (j *HotFastUpdateJob) refreshSnapshot(ctx context.Context, mainN, topN int)
 		return err
 	}
 	if card == 0 {
+		logx.WithContext(ctx).Info("热榜快更跳过快照 主榜为空")
 		return nil
 	}
 	snapshotID := time.Now().UTC().Format(snapshotIDLayout)
 	snapshotKey := rediskey.BuildHotFeedSnapshotKey(snapshotID)
-	_, err = j.svc.Redis.EvalCtx(ctx, luautils.RebuildHotSnapshotScript, []string{
+	if _, err = j.svc.Redis.EvalCtx(ctx, luautils.RebuildHotSnapshotScript, []string{
 		rediskey.RedisFeedHotGlobalKey,
 		snapshotKey,
 		rediskey.RedisFeedHotGlobalLatestKey,
-	}, strconv.Itoa(mainN), strconv.Itoa(topN), snapshotID, strconv.Itoa(defaultSnapshotTTL))
-	return err
+	}, strconv.Itoa(mainN), strconv.Itoa(topN), snapshotID, strconv.Itoa(defaultSnapshotTTL)); err != nil {
+		return err
+	}
+	logx.WithContext(ctx).Infof("热榜快更快照重建完成 snapshotID=%s main=%d", snapshotID, card)
+	return nil
 }
 
 // cleanupProcShards 删除本轮已处理的冻结桶

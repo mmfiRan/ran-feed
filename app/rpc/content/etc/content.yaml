@@ -98,4 +98,4 @@ XxlJob:
   AdminAddresses:
     - ${XXL_JOB_ADMIN_ADDR}
   RegistryInterval: 30s
-  HTTPTimeout: 10s
+  HTTPTimeout: 60s

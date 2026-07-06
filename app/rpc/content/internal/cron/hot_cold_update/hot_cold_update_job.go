@@ -17,6 +17,7 @@ import (
 	"ran-feed/pkg/hotrank"
 	"ran-feed/pkg/xxljob"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
@@ -48,8 +49,8 @@ const (
 	defaultAcquireWaitSeconds = 60
 	// 轮询抢锁间隔秒
 	defaultAcquireRetryInterval = 3
-	snapshotIDLayout   = "20060102150405"
-	coldLockDateLayout = "20060102"
+	snapshotIDLayout            = "20060102150405"
+	coldLockDateLayout          = "20060102"
 )
 
 type Params struct {
@@ -112,6 +113,9 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 		p.WindowDays = deriveWindowDays(p.HalfLifeHours)
 	}
 
+	logger := logx.WithContext(ctx)
+	logger.Infof("热榜冷更开始 windowDays=%d mainN=%d topN=%d halfLife=%.1f shards=%d", p.WindowDays, p.MainN, p.TopN, p.HalfLifeHours, p.Shards)
+
 	calculator := hotrank.AdditiveTime{
 		Weights:       mergeWeights(p.Weights),
 		HalfLifeHours: p.HalfLifeHours,
@@ -124,12 +128,13 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 	redisLock.SetExpire(p.LockTTL)
 	locked, err := redisLock.AcquireCtx(ctx)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("抢当日冷更锁失败 %w", err)
 	}
 	if !locked {
+		logger.Info("热榜冷更放弃 当日已执行")
 		return "duplicate", nil
 	}
-	defer redisLock.ReleaseCtx(context.Background())
+	defer redisLock.Release()
 
 	// 置冷更预约标志 带 TTL 快更见到即主动让路不抢写锁 保证冷更每日必跑不被饿死
 	// 异常未清标志时 TTL 到期自动失效 快更最多让路到此为止 不会被永久挡住
@@ -138,7 +143,7 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 		coldPendingTTL = defaultColdPendingTTL
 	}
 	if err := j.svc.Redis.SetexCtx(ctx, rediskey.RedisFeedHotColdPendingKey, "1", coldPendingTTL); err != nil {
-		return "", err
+		return "", fmt.Errorf("置冷更让路标志失败 %w", err)
 	}
 	defer func() { _, _ = j.svc.Redis.DelCtx(context.Background(), rediskey.RedisFeedHotColdPendingKey) }()
 
@@ -149,46 +154,46 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 	writeLock.SetExpire(p.LockTTL)
 	writeLocked, err := j.acquireWriteLockBounded(ctx, writeLock)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("抢主榜写锁失败 %w", err)
 	}
 	if !writeLocked {
+		logger.Info("热榜冷更放弃 等主榜写锁超时")
 		return "busy", nil
 	}
 	defer writeLock.ReleaseCtx(context.Background())
 
 	// 冷更新用持久信源对账快更 补丢事件丢种脏 纠 count-rpc 与 DB 冗余计数漂移
 	// 回收被裁内容 兜底 Redis 整体丢失
-	// 重建写影子 key 建满后 RENAME 原子覆盖主榜 重建期间主榜不空 消除对外读空窗
-	// 空结果不 RENAME 不会白删主榜
 	rebuildKey := rediskey.RedisFeedHotGlobalRebuildKey
 	// 清掉上轮可能残留的影子 key 防止脏数据并入本轮重建
 	if _, err := j.svc.Redis.DelCtx(ctx, rebuildKey); err != nil {
-		return "", err
+		return "", fmt.Errorf("清理重建影子 key 失败 %w", err)
 	}
 
 	startTime := now.Add(-time.Duration(p.WindowDays) * 24 * time.Hour)
 	if err := j.rebuildFromDB(ctx, calculator, startTime, now, p, rebuildKey); err != nil {
-		return "", err
+		return "", fmt.Errorf("从 DB 重建热榜失败 %w", err)
 	}
 
 	// 影子 key 重建条数 为空说明窗口内无内容 保留旧主榜不动 直接走后续清理
 	rebuildCard, err := j.svc.Redis.ZcardCtx(ctx, rebuildKey)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("读重建影子 key 数量失败 %w", err)
 	}
+	logger.Infof("热榜冷更重建完成 count=%d", rebuildCard)
 	if rebuildCard > 0 {
 		if err := j.svc.Redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
 			pipe.Rename(ctx, rebuildKey, rediskey.RedisFeedHotGlobalKey)
 			return nil
 		}); err != nil {
-			return "", err
+			return "", fmt.Errorf("切换主榜失败 %w", err)
 		}
 	}
 
 	// 重建完成后裁剪主榜到 MainN 候选池 取前 TopN 生成最新快照
 	card, err := j.svc.Redis.ZcardCtx(ctx, rediskey.RedisFeedHotGlobalKey)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("读主榜数量失败 %w", err)
 	}
 
 	if card > 0 {
@@ -199,8 +204,11 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 			snapshotKey,
 			rediskey.RedisFeedHotGlobalLatestKey,
 		}, strconv.Itoa(p.MainN), strconv.Itoa(p.TopN), snapshotID, strconv.Itoa(defaultSnapshotTTL)); err != nil {
-			return "", err
+			return "", fmt.Errorf("重建快照失败 %w", err)
 		}
+		logger.Infof("热榜冷更快照重建完成 snapshotID=%s main=%d", snapshotID, card)
+	} else {
+		logger.Info("热榜冷更跳过快照 主榜为空")
 	}
 
 	// 清理所有脏集合桶 活跃和冻结 与旧版增量桶 避免冷更新后把旧脏数据再次合并
@@ -213,11 +221,12 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 		}
 		for _, k := range keys {
 			if _, err := j.svc.Redis.DelCtx(ctx, k); err != nil {
-				return "", err
+				return "", fmt.Errorf("清理脏集合桶失败 %w", err)
 			}
 		}
 	}
 
+	logger.Info("热榜冷更完成")
 	return "ok", nil
 }
 
@@ -304,7 +313,7 @@ func (j *HotColdUpdateJob) rebuildFromDB(ctx context.Context, calculator hotrank
 			p.PageSize,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("分页拉取冷更内容失败 %w", err)
 		}
 		if len(rows) == 0 {
 			return nil
@@ -327,12 +336,12 @@ func (j *HotColdUpdateJob) rebuildFromDB(ctx context.Context, calculator hotrank
 
 		if len(ids) > 0 {
 			if err := j.batchUpdateHotScore(ctx, ids, scores, p.BatchSize); err != nil {
-				return err
+				return fmt.Errorf("批量落库 hot_score 失败 %w", err)
 			}
 			if _, err := j.svc.Redis.EvalCtx(ctx, luautils.RebuildHotFeedZSetScript, []string{
 				targetKey,
 			}, redisArgs...); err != nil {
-				return err
+				return fmt.Errorf("写重建影子 key 失败 %w", err)
 			}
 		}
 
@@ -349,9 +358,6 @@ func calcScore(calculator hotrank.AdditiveTime, row *model.RanFeedContent, now t
 	if row.PublishedAt != nil {
 		publishedAt = row.PublishedAt.UTC()
 	}
-
-	// 冷更新读 ran_feed_content 冗余计数 已是聚合值 非 COUNT 明细 符合设计 3.2.4
-	// 口径与 fast_update 回查 count-rpc 的统一性见 R-04 信源收敛后两者应一致
 	weighted := calculator.Weighted(row.LikeCount, row.CommentCount, row.FavoriteCount)
 
 	// 与 fast_update 完全一致的加法时间项公式 保证快慢任务口径统一
