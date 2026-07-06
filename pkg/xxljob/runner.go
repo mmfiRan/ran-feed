@@ -93,16 +93,21 @@ func (r *taskRunner) start(ctx context.Context, param TriggerParam, client *Admi
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	// 超时 ctx 的释放必须绑在任务协程上 不能 defer 在 start 里
+	// 否则 start 一返回就 cancel 掉 ctx 协程里的任务首个调用即拿到 context canceled
+	var timeoutCancel context.CancelFunc
 	if param.ExecutorTimeout > 0 {
-		var timeoutCancel context.CancelFunc
 		ctx, timeoutCancel = context.WithTimeout(ctx, time.Duration(param.ExecutorTimeout)*time.Second)
-		defer timeoutCancel()
 	}
 	ctx, cancel := context.WithCancel(ctx)
 	slot.running = &runningTask{cancel: cancel, jobID: param.JobID}
 	slot.mu.Unlock()
 
 	threading.GoSafe(func() {
+		defer cancel()
+		if timeoutCancel != nil {
+			defer timeoutCancel()
+		}
 		startedAt := time.Now()
 		// 每次执行起一个根 span 触发外部为 xxl admin 视为 server 端
 		// 任务 ctx 来自 admin HTTP 请求 不经 trace 拦截器 无 span 会导致所有日志缺 traceId
