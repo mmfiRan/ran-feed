@@ -1,0 +1,87 @@
+package middleware
+
+import (
+	"context"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	"ran-feed/app/admin/internal/common/consts"
+	"ran-feed/app/admin/internal/config"
+
+	"github.com/zeromicro/go-zero/core/stores/redis"
+	"github.com/zeromicro/go-zero/rest/httpx"
+)
+
+const defaultSessionTTL = 7 * 24 * time.Hour
+
+type AdminAuthMiddleware struct {
+	redis  *redis.Redis
+	config config.Config
+}
+
+func NewAdminAuthMiddleware(r *redis.Redis, c config.Config) *AdminAuthMiddleware {
+	return &AdminAuthMiddleware{redis: r, config: c}
+}
+
+func (m *AdminAuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token, ok := extractToken(r)
+		if !ok {
+			httpx.ErrorCtx(r.Context(), w, consts.ErrAdminNotLogin)
+			return
+		}
+		adminID, err := m.verifyAndRenew(r.Context(), token)
+		if err != nil || adminID <= 0 {
+			httpx.ErrorCtx(r.Context(), w, consts.ErrAdminNotLogin)
+			return
+		}
+		ctx := context.WithValue(r.Context(), consts.CtxKeyAdminID, adminID)
+		ctx = context.WithValue(ctx, consts.CtxKeyToken, token)
+		next(w, r.WithContext(ctx))
+	}
+}
+
+func (m *AdminAuthMiddleware) sessionTTL() time.Duration {
+	if m.config.SessionTTL <= 0 {
+		return defaultSessionTTL
+	}
+	return time.Duration(m.config.SessionTTL) * time.Second
+}
+
+func (m *AdminAuthMiddleware) verifyAndRenew(ctx context.Context, token string) (int64, error) {
+	val, err := m.redis.GetCtx(ctx, consts.BuildAdminSessionKey(token))
+	if err != nil {
+		return 0, err
+	}
+	val = strings.TrimSpace(val)
+	if val == "" {
+		return 0, nil
+	}
+	adminID, err := strconv.ParseInt(val, 10, 64)
+	if err != nil || adminID <= 0 {
+		return 0, nil
+	}
+
+	ttl := int(m.sessionTTL().Seconds())
+	_ = m.redis.ExpireCtx(ctx, consts.BuildAdminSessionKey(token), ttl)
+	_ = m.redis.ExpireCtx(ctx, consts.BuildAdminSessionAdminKey(adminID), ttl)
+	return adminID, nil
+}
+
+func extractToken(r *http.Request) (string, bool) {
+	authorization := strings.TrimSpace(r.Header.Get(consts.HeaderAuthorization))
+	if authorization == "" {
+		return "", false
+	}
+	parts := strings.SplitN(authorization, " ", 2)
+	if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		t := strings.TrimSpace(parts[1])
+		return t, t != ""
+	}
+	if len(parts) == 1 && parts[0] != "" {
+		return parts[0], true
+	}
+	return "", false
+}

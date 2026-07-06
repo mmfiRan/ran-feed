@@ -36,3 +36,5 @@ go.work.sum
 
 
 logs/
+# 本地设计草稿 不提交
+ADMIN-DESIGN.md

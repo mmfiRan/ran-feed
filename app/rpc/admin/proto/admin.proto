@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package admin;
+
+option go_package = "./admin";
+
+// AdminStatus 管理员账号状态
+enum AdminStatus {
+  ADMIN_STATUS_UNKNOWN = 0;
+  ADMIN_ENABLED = 10;
+  ADMIN_DISABLED = 20;
+}
+
+// AuthenticateAdminReq 校验管理员账号密码
+message AuthenticateAdminReq {
+  string username = 1;
+  string password = 2;
+}
+
+// AuthenticateAdminRes 校验结果
+message AuthenticateAdminRes {
+  int64 admin_id = 1;
+  string nickname = 2;
+  AdminStatus status = 3;
+}
+
+// GetAdminReq 查询管理员基本信息
+message GetAdminReq {
+  int64 admin_id = 1;
+}
+
+// GetAdminRes 管理员基本信息
+message GetAdminRes {
+  int64 admin_id = 1;
+  string username = 2;
+  string nickname = 3;
+  AdminStatus status = 4;
+}
+
+// ListAdminPermissionsReq 查询管理员权限点集合
+message ListAdminPermissionsReq {
+  int64 admin_id = 1;
+}
+
+// ListAdminPermissionsRes 权限点 code 集合
+message ListAdminPermissionsRes {
+  repeated string codes = 1;
+}
+
+// WriteOperationLogReq 写操作审计日志
+message WriteOperationLogReq {
+  int64 admin_id = 1;
+  string action = 2;
+  string target_type = 3;
+  int64 target_id = 4;
+  string payload = 5;
+  string result = 6;
+  string ip = 7;
+}
+
+// WriteOperationLogRes 写入结果
+message WriteOperationLogRes {
+  int64 log_id = 1;
+}
+
+service AdminService {
+  rpc AuthenticateAdmin(AuthenticateAdminReq) returns (AuthenticateAdminRes);
+  rpc GetAdmin(GetAdminReq) returns (GetAdminRes);
+  rpc ListAdminPermissions(ListAdminPermissionsReq) returns (ListAdminPermissionsRes);
+  rpc WriteOperationLog(WriteOperationLogReq) returns (WriteOperationLogRes);
+}

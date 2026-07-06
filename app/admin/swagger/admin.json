@@ -1,0 +1,173 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "https/http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "ran-feed 后台管理系统 admin-api BFF",
+    "title": "ran-feed 后台管理接口",
+    "contact": {
+      "name": "Ran",
+      "email": "3246617572@qq.com"
+    },
+    "version": "v0.0.1"
+  },
+  "basePath": "/v1/admin",
+  "paths": {
+    "/v1/admin/login": {
+      "post": {
+        "description": "管理员登录 成功返回 token 与权限点集合 后续请求带 Authorization: Bearer {token}",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "authLogin",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "password": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "admin_id": {
+                  "type": "integer"
+                },
+                "expired_at": {
+                  "type": "integer"
+                },
+                "nickname": {
+                  "type": "string"
+                },
+                "permissions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/logout": {
+      "post": {
+        "description": "管理员登出 需带 Authorization: Bearer {token}",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Logout",
+        "operationId": "authLogout",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/me": {
+      "get": {
+        "description": "获取当前管理员信息与权限点 需带 Authorization: Bearer {token}",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "GetMe",
+        "operationId": "authGetMe",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "admin_info": {
+                  "type": "object",
+                  "required": [
+                    "admin_id",
+                    "username",
+                    "nickname",
+                    "status"
+                  ],
+                  "properties": {
+                    "admin_id": {
+                      "type": "integer"
+                    },
+                    "nickname": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "permissions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-date": "2026-07-06 18:51:11",
+  "x-description": "This is a goctl generated swagger file.",
+  "x-github": "https://github.com/zeromicro/go-zero",
+  "x-go-zero-doc": "https://go-zero.dev/",
+  "x-goctl-version": "1.10.1"
+}

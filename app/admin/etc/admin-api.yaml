@@ -1,0 +1,47 @@
+Name: admin-api
+Host: 0.0.0.0
+Port: 5010
+MaxBytes: 20971520
+Timeout: 100000
+
+Telemetry:
+  Name: admin-api-server
+  Endpoint: ${OTEL_ENDPOINT}
+  Batcher: otlpgrpc
+  Sampler: 1.0
+
+Log:
+  ServiceName: "admin-api"
+  Mode: "file"
+  Encoding: "json"
+  TimeFormat: "2006-01-02T15:04:05.000Z07:00"
+  Path: ${LOG_PATH}
+  Level: "info"
+  MaxContentLength: 0
+  Compress: false
+  Stat: true
+  KeepDays: 1
+  StackCooldownMillis: 100
+  MaxBackups: 0
+  MaxSize: 0
+  Rotation: "daily"
+  FileTimeFormat: "2006-01-02T15:04:05.000Z07:00"
+
+Prometheus:
+  Host: ${PROM_HOST}
+  Port: 9298
+  Path: /metrics
+
+RedisConfig:
+  Host: ${REDIS_HOST}:6379
+  Type: node
+  Pass: ${REDIS_PASSWORD}
+
+AdminRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: admin.rpc
+  NonBlock: true
+
+SessionTTL: 86400

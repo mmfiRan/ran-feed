@@ -1,0 +1,14 @@
+syntax = "v1"
+
+import "auth/auth.api"
+
+info (
+	title:        "ran-feed 后台管理接口"
+	description:  "ran-feed 后台管理系统 admin-api BFF"
+	contactName:  "Ran"
+	contactEmail: "3246617572@qq.com"
+	version:      "v0.0.1"
+	basePath:     "/v1/admin"
+	schemes:      "https/http"
+)
+

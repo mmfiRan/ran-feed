@@ -1,0 +1,37 @@
+Name: admin.rpc
+ListenOn: 0.0.0.0:5008
+Etcd:
+  Hosts:
+  - ${ETCD_HOST}:2379
+  Key: admin.rpc
+
+Telemetry:
+  Name: admin.rpc-server
+  Endpoint: ${OTEL_ENDPOINT}
+  Batcher: otlpgrpc
+  Sampler: 1.0
+
+Prometheus:
+  Host: ${PROM_HOST}
+  Port: 9297
+  Path: /metrics
+
+Log:
+  ServiceName: "admin.rpc"
+  Mode: "file"
+  Encoding: "json"
+  TimeFormat: "2006-01-02T15:04:05.000Z07:00"
+  Path: ${LOG_PATH}
+  Level: "info"
+  MaxContentLength: 0
+  Compress: false
+  Stat: true
+  KeepDays: 1
+  StackCooldownMillis: 100
+  MaxBackups: 0
+  MaxSize: 0
+  Rotation: "daily"
+  FileTimeFormat: "2006-01-02T15:04:05.000Z07:00"
+
+MySQL:
+  DataSource: ${MYSQL_APP_USER}:${MYSQL_APP_PASSWORD}@tcp(${MYSQL_HOST}:3306)/ran-feed?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai

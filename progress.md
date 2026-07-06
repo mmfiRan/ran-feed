@@ -3,9 +3,68 @@
 ## 当前状态
 
 **最后更新：** 2026-07-06
-**当前功能：** 热榜定时任务链路追踪与关键日志（已提交 744ae67）
+**当前功能：** feat-admin-003 RBAC 中间件 + 操作审计埋点（已完成 · 未提交）
 
-> xxl 触发的定时任务原无 trace span 日志缺 traceId 无法串联；快慢更新关键节点日志过少 失败时定位不到阶段。本次补齐。`./init.sh` 全绿。
+> 后台管理系统 Phase A 三条全部完成。设计定稿见根目录 `ADMIN-DESIGN.md`（5 决策 D1~D5 + Phase A~E 路线图）。admin 地基（admin-rpc + admin-api + 登录 + RBAC + 审计）已就绪。下一步进入 Phase B（内容管理 + 先审后发），首次动 content.proto 属升级项需先确认。`./init.sh` 全绿。
+
+---
+
+## 已完成（feat-admin-003 RBAC + 审计埋点）
+
+**背景**：Phase A 地基收尾条。Phase A 尚无业务门禁路由 故本条交付 RBAC/审计**执行基础设施**（live 门禁随 Phase B 业务路由激活），审计中间件当下即生效（登出被记录）。未改 admin.proto 无升级。
+
+**交付**：
+- `internal/common/rbac` 包：`registry`（route→权限点 map，Phase A 空，Phase B/C 路由登记所需 code）+ `HasPermission` 纯校验 + `LoadPermissions`（Redis 权限缓存 cache-aside，回源 ListAdminPermissions，哨兵 `__loaded__` 区分零权限与未命中）+ `Invalidate`（变更失效）。
+- `AdminRbacMiddleware`：按 registry 取路由所需 code，未登记只需登录，缺权限返 `100203 无操作权限`。
+- `AdminAuditMiddleware`：已登录非 GET 请求，`statusWriter` 捕获状态码，`threading.GoSafe`+bg ctx 异步落 `operation_log`（action=METHOD+path / ip / result）。
+- 两中间件挂 protected 组（Auth→Rbac→Audit），goctl 重生成 routes；svc 注入。
+- 单测：registry 查找、HasPermission、toSet 剔哨兵、LoadPermissions（miss 回源 / hit 不回源 / 零权限哨兵 / Invalidate 重载 / loader 错误）。
+
+**冒烟**（真实 admin-rpc:5008 + admin-api:5010）：登录→登出后 `operation_log` 落一行 `admin_id=1 action='POST /v1/admin/logout' result=200`（冒烟数据已清）。
+
+**Phase A 收尾**：admin-rpc 骨架 + admin-api 登录闭环 + RBAC/审计 全部就绪。**下一步 Phase B**：content-rpc 新起 `AdminContentService`（列表/下架）+ admin-api 内容管理 + 先审后发（改发布/fanout 写路径）——首次动 content.proto，属升级项，动手前需与用户确认。
+
+**未提交**：feat-admin-001/002/003 全部改动 + 会话前的 content/service_context.go。
+
+---
+
+## 已完成（feat-admin-002 admin-api 登录闭环）
+
+**背景**：用户要先定义 admin BFF 接口供前端并行开发 → 契约先行 随后补全逻辑做到端到端可登录。
+
+**交付**：
+- 新建 `app/admin`（HTTP :5010 纯 BFF 与 app/front 平级）：契约 `POST /v1/admin/login`、`POST /logout`、`GET /me`（后两者挂 `AdminAuthMiddleware`）；响应带 **permissions[]** 供前端 RBAC 驱动菜单免返工；swagger 出 `app/admin/swagger/admin.json`。
+- 鉴权：`AdminAuthMiddleware` 用 go-zero 单命令（GetCtx 校验 + ExpireCtx 滑动续期），`admin:session:{token}` 独立命名空间与 C 端隔离；登录顶掉旧 token。
+- admin-rpc 4 logic 由桩转实现：AuthenticateAdmin（bcrypt `hash=pwd+salt` 校验 + 状态）、GetAdmin、ListAdminPermissions（admin→角色→权限 code 去重）、WriteOperationLog。
+- 超管播种 `script/sql/ran-feed/admin/seed_super_admin.sql`（幂等）：super 角色 + 5 权限点 + 全绑定 + 账号 **admin / Admin@123456**（bcrypt）。已建 admin id=1。
+
+**端到端冒烟**（真实 admin-rpc:5008 + admin-api:5010 + etcd/redis/mysql）：错误密码拒 / 正确密码返 token+5 权限点 / 无 token /me 返 100201 / 带 token /me 返 admin_info+权限 / 登出后 /me 失效 —— 全部符合预期。
+
+**下一步 feat-admin-003**：RBAC 路由级权限点校验中间件 + 操作审计自动埋点（写操作落 operation_log）+ 权限点按业务模块扩充。
+
+**未提交**：feat-admin-001 + feat-admin-002 全部改动 + 会话前的 content/service_context.go。
+
+---
+
+## 已完成（feat-admin-001 admin-rpc 骨架）
+
+**背景**：项目原为纯 C 端 B 端 0 代码。经讨论定 admin 落地方案(见 `ADMIN-DESIGN.md`):独立 admin-rpc 管理域 + admin-api 纯 BFF + 各域新起 `AdminXxxService` 承接 admin 方法(不违反 refactor-007 每域独占表不变式)+ Redis session 鉴权 + 先审后发。
+
+**改动（纯地基 无业务逻辑）**：
+- `admin.proto`：`AdminService` 4 方法(AuthenticateAdmin/GetAdmin/ListAdminPermissions/WriteOperationLog)goctl 生成骨架 logic 桩返回空;main 补 `envx.Load`+`conf.UseEnv`+`ServerGrpcInterceptor` 对齐 user-rpc。
+- 6 表 DDL 于 `script/sql/ran-feed/admin/`：admin_user/role/permission/user_role/role_permission/operation_log 沿用公共字段 已建于本地 MySQL。
+- gorm-gen 出 6 model+query;5 Repository 全软删过滤;svc 挂 MysqlDb+query.SetDefault 仅 MySQL(无 Redis/Kafka/xxljob)。
+- **端口修正**：admin-rpc 取 **5008**(5005/5007 被 content/search 的 xxl-job 执行器占用 见 ran-feed-docker/.env);Prometheus 9297。`ADMIN-DESIGN.md` 端口表已按真实 .env 更正。
+
+**验证**：`./init.sh` 全绿(build+vet+test 30 测试文件)。
+
+## 下一步
+
+1. 工作区未提交:本条(feat-admin-001)+ 会话前的 service_context.go 改动 待提交
+2. feat-admin-002 admin-api BFF 骨架 + 登录/登出 + AdminAuthMiddleware(依赖 admin-rpc AuthenticateAdmin 落地)
+3. feat-admin-003 RBAC 中间件 + 权限点播种 + 操作审计埋点
+
+**遗留提示**：admin-rpc 的 4 个 logic 目前是空桩 真实逻辑在 feat-admin-002/003 填(登录校验落 AuthenticateAdmin/RBAC 落 ListAdminPermissions/审计落 WriteOperationLog)。
 
 ---
 

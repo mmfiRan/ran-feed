@@ -1,0 +1,59 @@
+syntax = "v1"
+
+type (
+	AdminLoginReq {
+		Username *string `json:"username,optional" validate:"required,max=64"`
+		Password *string `json:"password,optional" validate:"required"`
+	}
+	AdminLoginRes {
+		AdminId     int64    `json:"admin_id"`
+		Token       string   `json:"token"`
+		ExpiredAt   int64    `json:"expired_at"`
+		Nickname    string   `json:"nickname"`
+		Permissions []string `json:"permissions"`
+	}
+	AdminLogoutRes  {}
+	AdminInfo {
+		AdminId  int64  `json:"admin_id"`
+		Username string `json:"username"`
+		Nickname string `json:"nickname"`
+		Status   int32  `json:"status"`
+	}
+	AdminMeRes {
+		AdminInfo   AdminInfo `json:"admin_info"`
+		Permissions []string  `json:"permissions"`
+	}
+)
+
+@server (
+	tags:   auth
+	group:  auth
+	prefix: /v1/admin
+)
+service admin-api {
+	@doc (
+		description: "管理员登录 成功返回 token 与权限点集合 后续请求带 Authorization: Bearer {token}"
+	)
+	@handler Login
+	post /login (AdminLoginReq) returns (AdminLoginRes)
+}
+
+@server (
+	tags:       auth
+	group:      auth
+	prefix:     /v1/admin
+	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+)
+service admin-api {
+	@doc (
+		description: "管理员登出 需带 Authorization: Bearer {token}"
+	)
+	@handler Logout
+	post /logout returns (AdminLogoutRes)
+
+	@doc (
+		description: "获取当前管理员信息与权限点 需带 Authorization: Bearer {token}"
+	)
+	@handler GetMe
+	get /me returns (AdminMeRes)
+}
