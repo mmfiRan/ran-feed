@@ -60,6 +60,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 				{
 					Method:  http.MethodPost,
+					Path:    "/contents/review",
+					Handler: content.ReviewContentHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
 					Path:    "/contents/status",
 					Handler: content.SetContentStatusHandler(serverCtx),
 				},

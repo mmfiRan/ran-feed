@@ -35,6 +35,7 @@ func main() {
 		g.GenerateModel("ran_feed_article"),
 		g.GenerateModel("ran_feed_content"),
 		g.GenerateModel("ran_feed_video"),
+		g.GenerateModel("ran_feed_content_review"),
 	)
 
 	g.Execute()

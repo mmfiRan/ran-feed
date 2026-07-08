@@ -40,6 +40,8 @@ type ContentRepository interface {
 	AdminGetByID(contentID int64) (*model.RanFeedContent, error)
 	// AdminUpdateStatus 管理端翻转状态 落 updated_by 返回受影响行数
 	AdminUpdateStatus(contentID int64, status int32, operatorID int64) (int64, error)
+	// AdminApproveContent 先审后发审核通过 PENDING_REVIEW->PUBLISHED 落 published_at + updated_by 返回受影响行数
+	AdminApproveContent(contentID, operatorID int64, publishedAt time.Time) (int64, error)
 }
 
 type ContentRepositoryImpl struct {
@@ -541,6 +543,28 @@ func (r *ContentRepositoryImpl) AdminUpdateStatus(contentID int64, status int32,
 		Where(q.RanFeedContent.IsDeleted.Eq(0)).
 		UpdateSimple(
 			q.RanFeedContent.Status.Value(status),
+			q.RanFeedContent.UpdatedBy.Value(operatorID),
+		)
+	if err != nil {
+		return 0, err
+	}
+	return info.RowsAffected, nil
+}
+
+// AdminApproveContent 审核通过 仅对 PENDING_REVIEW 生效 落 published_at + updated_by 返回受影响行数
+func (r *ContentRepositoryImpl) AdminApproveContent(contentID, operatorID int64, publishedAt time.Time) (int64, error) {
+	if contentID <= 0 {
+		return 0, nil
+	}
+
+	q := r.getQuery()
+	info, err := q.RanFeedContent.WithContext(r.ctx).
+		Where(q.RanFeedContent.ID.Eq(contentID)).
+		Where(q.RanFeedContent.IsDeleted.Eq(0)).
+		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PENDING_REVIEW))).
+		UpdateSimple(
+			q.RanFeedContent.Status.Value(int32(content.ContentStatus_PUBLISHED)),
+			q.RanFeedContent.PublishedAt.Value(publishedAt),
 			q.RanFeedContent.UpdatedBy.Value(operatorID),
 		)
 	if err != nil {

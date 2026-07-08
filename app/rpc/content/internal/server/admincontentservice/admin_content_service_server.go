@@ -37,3 +37,8 @@ func (s *AdminContentServiceServer) AdminSetContentStatus(ctx context.Context, i
 	l := admincontentservicelogic.NewAdminSetContentStatusLogic(ctx, s.svcCtx)
 	return l.AdminSetContentStatus(in)
 }
+
+func (s *AdminContentServiceServer) AdminReviewContent(ctx context.Context, in *content.AdminReviewContentReq) (*content.AdminReviewContentRes, error) {
+	l := admincontentservicelogic.NewAdminReviewContentLogic(ctx, s.svcCtx)
+	return l.AdminReviewContent(in)
+}

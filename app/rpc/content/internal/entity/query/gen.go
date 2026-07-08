@@ -16,44 +16,49 @@ import (
 )
 
 var (
-	Q              = new(Query)
-	RanFeedArticle *ranFeedArticle
-	RanFeedContent *ranFeedContent
-	RanFeedVideo   *ranFeedVideo
+	Q                    = new(Query)
+	RanFeedArticle       *ranFeedArticle
+	RanFeedContent       *ranFeedContent
+	RanFeedContentReview *ranFeedContentReview
+	RanFeedVideo         *ranFeedVideo
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	RanFeedArticle = &Q.RanFeedArticle
 	RanFeedContent = &Q.RanFeedContent
+	RanFeedContentReview = &Q.RanFeedContentReview
 	RanFeedVideo = &Q.RanFeedVideo
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:             db,
-		RanFeedArticle: newRanFeedArticle(db, opts...),
-		RanFeedContent: newRanFeedContent(db, opts...),
-		RanFeedVideo:   newRanFeedVideo(db, opts...),
+		db:                   db,
+		RanFeedArticle:       newRanFeedArticle(db, opts...),
+		RanFeedContent:       newRanFeedContent(db, opts...),
+		RanFeedContentReview: newRanFeedContentReview(db, opts...),
+		RanFeedVideo:         newRanFeedVideo(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	RanFeedArticle ranFeedArticle
-	RanFeedContent ranFeedContent
-	RanFeedVideo   ranFeedVideo
+	RanFeedArticle       ranFeedArticle
+	RanFeedContent       ranFeedContent
+	RanFeedContentReview ranFeedContentReview
+	RanFeedVideo         ranFeedVideo
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:             db,
-		RanFeedArticle: q.RanFeedArticle.clone(db),
-		RanFeedContent: q.RanFeedContent.clone(db),
-		RanFeedVideo:   q.RanFeedVideo.clone(db),
+		db:                   db,
+		RanFeedArticle:       q.RanFeedArticle.clone(db),
+		RanFeedContent:       q.RanFeedContent.clone(db),
+		RanFeedContentReview: q.RanFeedContentReview.clone(db),
+		RanFeedVideo:         q.RanFeedVideo.clone(db),
 	}
 }
 
@@ -67,24 +72,27 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:             db,
-		RanFeedArticle: q.RanFeedArticle.replaceDB(db),
-		RanFeedContent: q.RanFeedContent.replaceDB(db),
-		RanFeedVideo:   q.RanFeedVideo.replaceDB(db),
+		db:                   db,
+		RanFeedArticle:       q.RanFeedArticle.replaceDB(db),
+		RanFeedContent:       q.RanFeedContent.replaceDB(db),
+		RanFeedContentReview: q.RanFeedContentReview.replaceDB(db),
+		RanFeedVideo:         q.RanFeedVideo.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	RanFeedArticle IRanFeedArticleDo
-	RanFeedContent IRanFeedContentDo
-	RanFeedVideo   IRanFeedVideoDo
+	RanFeedArticle       IRanFeedArticleDo
+	RanFeedContent       IRanFeedContentDo
+	RanFeedContentReview IRanFeedContentReviewDo
+	RanFeedVideo         IRanFeedVideoDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		RanFeedArticle: q.RanFeedArticle.WithContext(ctx),
-		RanFeedContent: q.RanFeedContent.WithContext(ctx),
-		RanFeedVideo:   q.RanFeedVideo.WithContext(ctx),
+		RanFeedArticle:       q.RanFeedArticle.WithContext(ctx),
+		RanFeedContent:       q.RanFeedContent.WithContext(ctx),
+		RanFeedContentReview: q.RanFeedContentReview.WithContext(ctx),
+		RanFeedVideo:         q.RanFeedVideo.WithContext(ctx),
 	}
 }
 

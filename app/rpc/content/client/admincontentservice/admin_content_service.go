@@ -18,6 +18,8 @@ type (
 	AdminGetContentDetailRes = content.AdminGetContentDetailRes
 	AdminListContentsReq     = content.AdminListContentsReq
 	AdminListContentsRes     = content.AdminListContentsRes
+	AdminReviewContentReq    = content.AdminReviewContentReq
+	AdminReviewContentRes    = content.AdminReviewContentRes
 	AdminSetContentStatusReq = content.AdminSetContentStatusReq
 	AdminSetContentStatusRes = content.AdminSetContentStatusRes
 
@@ -25,6 +27,7 @@ type (
 		AdminListContents(ctx context.Context, in *AdminListContentsReq, opts ...grpc.CallOption) (*AdminListContentsRes, error)
 		AdminGetContentDetail(ctx context.Context, in *AdminGetContentDetailReq, opts ...grpc.CallOption) (*AdminGetContentDetailRes, error)
 		AdminSetContentStatus(ctx context.Context, in *AdminSetContentStatusReq, opts ...grpc.CallOption) (*AdminSetContentStatusRes, error)
+		AdminReviewContent(ctx context.Context, in *AdminReviewContentReq, opts ...grpc.CallOption) (*AdminReviewContentRes, error)
 	}
 
 	defaultAdminContentService struct {
@@ -51,4 +54,9 @@ func (m *defaultAdminContentService) AdminGetContentDetail(ctx context.Context, 
 func (m *defaultAdminContentService) AdminSetContentStatus(ctx context.Context, in *AdminSetContentStatusReq, opts ...grpc.CallOption) (*AdminSetContentStatusRes, error) {
 	client := content.NewAdminContentServiceClient(m.cli.Conn())
 	return client.AdminSetContentStatus(ctx, in, opts...)
+}
+
+func (m *defaultAdminContentService) AdminReviewContent(ctx context.Context, in *AdminReviewContentReq, opts ...grpc.CallOption) (*AdminReviewContentRes, error) {
+	client := content.NewAdminContentServiceClient(m.cli.Conn())
+	return client.AdminReviewContent(ctx, in, opts...)
 }

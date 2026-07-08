@@ -62,6 +62,16 @@ type (
 	AdminContentStatusRes {
 		Status int32 `json:"status"` // 变更后状态
 	}
+
+	// AdminContentReviewReq 先审后发审核 decision 取 approve(通过) 或 reject(拒绝)
+	AdminContentReviewReq {
+		ContentId    int64  `json:"content_id,optional" validate:"required,gt=0"`
+		Decision     string `json:"decision,optional" validate:"required,oneof=approve reject"`
+		RejectReason string `json:"reject_reason,optional"`
+	}
+	AdminContentReviewRes {
+		Status int32 `json:"status"` // 变更后状态 30已发布 70拒绝
+	}
 )
 
 @server (
@@ -88,4 +98,10 @@ service admin-api {
 	)
 	@handler SetContentStatus
 	post /contents/status (AdminContentStatusReq) returns (AdminContentStatusRes)
+
+	@doc (
+		description: "先审后发审核 通过/拒绝 待审队列用 GET /contents?status=60 权限点 content:review"
+	)
+	@handler ReviewContent
+	post /contents/review (AdminContentReviewReq) returns (AdminContentReviewRes)
 }

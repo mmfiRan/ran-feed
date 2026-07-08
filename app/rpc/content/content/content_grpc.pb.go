@@ -720,6 +720,7 @@ const (
 	AdminContentService_AdminListContents_FullMethodName     = "/content.AdminContentService/AdminListContents"
 	AdminContentService_AdminGetContentDetail_FullMethodName = "/content.AdminContentService/AdminGetContentDetail"
 	AdminContentService_AdminSetContentStatus_FullMethodName = "/content.AdminContentService/AdminSetContentStatus"
+	AdminContentService_AdminReviewContent_FullMethodName    = "/content.AdminContentService/AdminReviewContent"
 )
 
 // AdminContentServiceClient is the client API for AdminContentService service.
@@ -729,6 +730,7 @@ type AdminContentServiceClient interface {
 	AdminListContents(ctx context.Context, in *AdminListContentsReq, opts ...grpc.CallOption) (*AdminListContentsRes, error)
 	AdminGetContentDetail(ctx context.Context, in *AdminGetContentDetailReq, opts ...grpc.CallOption) (*AdminGetContentDetailRes, error)
 	AdminSetContentStatus(ctx context.Context, in *AdminSetContentStatusReq, opts ...grpc.CallOption) (*AdminSetContentStatusRes, error)
+	AdminReviewContent(ctx context.Context, in *AdminReviewContentReq, opts ...grpc.CallOption) (*AdminReviewContentRes, error)
 }
 
 type adminContentServiceClient struct {
@@ -769,6 +771,16 @@ func (c *adminContentServiceClient) AdminSetContentStatus(ctx context.Context, i
 	return out, nil
 }
 
+func (c *adminContentServiceClient) AdminReviewContent(ctx context.Context, in *AdminReviewContentReq, opts ...grpc.CallOption) (*AdminReviewContentRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminReviewContentRes)
+	err := c.cc.Invoke(ctx, AdminContentService_AdminReviewContent_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminContentServiceServer is the server API for AdminContentService service.
 // All implementations must embed UnimplementedAdminContentServiceServer
 // for forward compatibility.
@@ -776,6 +788,7 @@ type AdminContentServiceServer interface {
 	AdminListContents(context.Context, *AdminListContentsReq) (*AdminListContentsRes, error)
 	AdminGetContentDetail(context.Context, *AdminGetContentDetailReq) (*AdminGetContentDetailRes, error)
 	AdminSetContentStatus(context.Context, *AdminSetContentStatusReq) (*AdminSetContentStatusRes, error)
+	AdminReviewContent(context.Context, *AdminReviewContentReq) (*AdminReviewContentRes, error)
 	mustEmbedUnimplementedAdminContentServiceServer()
 }
 
@@ -794,6 +807,9 @@ func (UnimplementedAdminContentServiceServer) AdminGetContentDetail(context.Cont
 }
 func (UnimplementedAdminContentServiceServer) AdminSetContentStatus(context.Context, *AdminSetContentStatusReq) (*AdminSetContentStatusRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AdminSetContentStatus not implemented")
+}
+func (UnimplementedAdminContentServiceServer) AdminReviewContent(context.Context, *AdminReviewContentReq) (*AdminReviewContentRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AdminReviewContent not implemented")
 }
 func (UnimplementedAdminContentServiceServer) mustEmbedUnimplementedAdminContentServiceServer() {}
 func (UnimplementedAdminContentServiceServer) testEmbeddedByValue()                             {}
@@ -870,6 +886,24 @@ func _AdminContentService_AdminSetContentStatus_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminContentService_AdminReviewContent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminReviewContentReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminContentServiceServer).AdminReviewContent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminContentService_AdminReviewContent_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminContentServiceServer).AdminReviewContent(ctx, req.(*AdminReviewContentReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminContentService_ServiceDesc is the grpc.ServiceDesc for AdminContentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -888,6 +922,10 @@ var AdminContentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AdminSetContentStatus",
 			Handler:    _AdminContentService_AdminSetContentStatus_Handler,
+		},
+		{
+			MethodName: "AdminReviewContent",
+			Handler:    _AdminContentService_AdminReviewContent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

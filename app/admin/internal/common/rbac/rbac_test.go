@@ -33,6 +33,7 @@ func TestRequiredPermission(t *testing.T) {
 		{name: "内容列表", method: "GET", path: "/v1/admin/contents", wantCode: "content:list", wantNeed: true},
 		{name: "内容详情", method: "GET", path: "/v1/admin/contents/detail", wantCode: "content:detail", wantNeed: true},
 		{name: "下架恢复", method: "POST", path: "/v1/admin/contents/status", wantCode: "content:takedown", wantNeed: true},
+		{name: "内容审核", method: "POST", path: "/v1/admin/contents/review", wantCode: "content:review", wantNeed: true},
 		{name: "方法大小写不敏感", method: "get", path: "/v1/admin/contents", wantCode: "content:list", wantNeed: true},
 		{name: "未登记路由只需登录", method: "POST", path: "/v1/admin/logout", wantCode: "", wantNeed: false},
 	}

@@ -2,11 +2,9 @@ package contentservicelogic
 
 import (
 	"context"
-	"ran-feed/app/rpc/content/internal/common/consts"
-	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	"time"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/consts"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -36,20 +34,19 @@ func NewPublishVideoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Publ
 }
 
 func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.VideoPublishRes, error) {
-	now := time.Now()
 	var contentId int64
 	if err := query.Q.Transaction(func(tx *query.Query) error {
 		contentRepo := l.contentRepository.WithTx(tx)
 		videoRepo := l.videoRepository.WithTx(tx)
 
 		contentId = snowflake.GenID()
+		// 先审后发 发布落待审 published_at 留空 审核通过才置位并进 feed
 		contentDO := &do.ContentDO{
 			ID:          contentId,
 			UserID:      in.UserId,
 			ContentType: int32(content.ContentType_VIDEO),
-			Status:      int32(content.ContentStatus_PUBLISHED),
+			Status:      int32(content.ContentStatus_PENDING_REVIEW),
 			Visibility:  int32(in.Visibility),
-			PublishedAt: &now,
 			CreatedBy:   in.UserId,
 			UpdatedBy:   in.UserId,
 		}
@@ -71,23 +68,8 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("发布视频失败"))
 	}
 
-	l.afterPublish(contentId, in.UserId, now.UnixMilli(), in.Visibility)
-
+	// 先审后发 发布不触发进 feed 副作用 待审核通过由 AdminReviewContent 触发 RunPublishFeedEffects
 	return &content.VideoPublishRes{
 		ContentId: contentId,
 	}, nil
-}
-
-func (l *PublishVideoLogic) afterPublish(contentId, userID, publishedAtMillis int64, visibility content.Visibility) {
-	feedKey := rediskey.BuildUserPublishFeedKey(userID)
-	if err := writeUserPublishZSet(l.ctx, l.svcCtx, feedKey, contentId, publishedAtMillis); err != nil {
-		l.Logger.Errorf("更新用户发布列表缓存失败 contentId=%d: %v", contentId, err)
-	}
-	if shouldSeedHotIncrement(visibility) {
-		if err := writePublishHotSeed(l.ctx, l.svcCtx, contentId); err != nil {
-			l.Logger.Errorf("写热榜增量失败 contentId=%d: %v", contentId, err)
-		}
-	}
-	// 推拉结合：小账号 fan-out 到 follower inbox，大 V 跳过
-	fanOutToFollowersAsync(l.svcCtx, userID, contentId, publishedAtMillis, visibility)
 }

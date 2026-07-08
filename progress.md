@@ -3,9 +3,31 @@
 ## 当前状态
 
 **最后更新：** 2026-07-08
-**当前功能：** fix-009 search 枚举字面量改用 pb 枚举（已完成 · 未提交）
+**当前功能：** feat-admin-005 先审后发（已完成 · 未提交）
 
-> feat-admin-004（内容管理）已提交（commit 7a87281）；go-coding skill 加「常量与枚举」小节已提交（1022f94）。本轮 fix-009 按新 skill 规则消除 search 服务 DB 枚举字面量重复定义。下一步待办：fix-006（own-feed 跨可见性泄露）、feat-admin-005（先审后发，升级项需先确认）。`./init.sh` 全绿。
+> Phase B 收官条。发布落待审 + AdminReviewContent（通过/拒绝）+ 进 feed 副作用触发点从发布迁到审核通过 + content 域审核历史表 ran_feed_content_review。用户中途拉起 docker 容器提供 DB（`ENV_FILE=/home/wmr/opt/ran-feed-docker/.env`），故 gorm-gen 正常跑通、审核表落地（未走拆分）。下一步待办：fix-006（own-feed 跨可见性泄露）、Phase C feat-admin-006（用户管理）。`./init.sh` 全绿（33 测试文件）。
+
+---
+
+## 已完成（feat-admin-005 先审后发）
+
+**背景**：Phase B 收官。设计 D5 先审后发——发布落待审、审核通过才进 feed、fanout 触发点从发布时挪到审核通过时。经与用户确认：published_at 取审核通过时间、新建审核历史表、fanout 副作用抽导出函数复用。
+
+**中途转折（DB 可用性）**：起初本地无 `.env`/DB（3306 不通），一度定为"拆分"（先落先审后发、审核表待 DB）。用户随后拉起 docker 容器并给出 `.env` 路径（`/home/wmr/opt/ran-feed-docker/.env`），DB 可达 → 撤销拆分，按完整版落地（含审核历史表 gorm-gen）。
+
+**交付**：
+- **发布落待审**：`PublishArticle/PublishVideo` 终态 `PUBLISHED`→`PENDING_REVIEW`，`published_at` 置空，删两份重复 `afterPublish`（连带清 now/time/rediskey 冗余 import）。发布不再触发任何进 feed 副作用。
+- **AdminReviewContent**（content.proto 加 `ReviewDecision` + rpc，挂 AdminContentService）：`AdminGetByID` 守卫仅 `PENDING_REVIEW` 可审 → `query.Q.Transaction` 内翻状态 + 落审核记录；通过用 `AdminApproveContent`（状态守卫 + `published_at`=审核时刻 + `updated_by`，affected==0 回滚），拒绝用 `AdminUpdateStatus(REJECTED)`。事务提交后（仅通过）调 `RunPublishFeedEffects` + `contentcache.Invalidate`（遵守事务内不碰 Redis/RPC）。
+- **副作用抽取**：`afterPublish` 三件套（publish zset + 热榜脏集合 + follower 扩散）抽成导出 `RunPublishFeedEffects`（fanout_helper.go），发布/审核共用；`admincontentservicelogic` 单向 import `contentservicelogic` 无环。
+- **审核历史表**：content 域 `ran_feed_content_review`（content_id/decision/reason/公共字段，`created_by`=审核管理员），DDL 应用本地 MySQL；generator.go 加该表跑 gorm-gen（**容器坑**：该库既有 content/article/video 表注释存为乱码，全表 regen 会污染既有 gen 文件，故仅保留新表两文件 + gen.go 装配，其余 6 个既有 gen `git checkout` 还原；新表注释正确）。`ContentReviewRepository`(WithTx+Create) + `do.ContentReviewDO`，审核记录随状态变更同事务落库。
+- **admin-api**：`POST /v1/admin/contents/review`（decision approve/reject + reject_reason），RBAC `content:review`，seed 加权限点并已 apply 本地 DB；待审队列复用 `GET /contents?status=60`。
+- **搜索**：走 CDC + `BatchGetContentForIndex`（status=PUBLISHED 过滤），待审自动不进索引，审核通过 CDC 自动补，无需改。
+
+**验证**：`./init.sh` 全绿（build+vet+test，33 测试文件）；单测：buildReviewDO 映射、rbac registry 四内容路由含 review。DB 已应用 review 表 DDL + content 权限 seed。
+
+**C 端连带（已告知用户）**：`GetContentDetail`/own-feed 按 status=PUBLISHED 过滤，作者发布后 C 端暂看不到自己的待审内容；"我的待审列表"属后续产品项，本轮 C 端一行未改。
+
+**遗留**：端到端（起全栈：发布→待审→审核通过进 feed / 拒绝）未现场联调，由单测 + 全绿 + DB DDL 就绪保证。**下一步**：fix-006（own-feed 跨可见性泄露）或 Phase C feat-admin-006（用户管理，改 user.proto 升级项）。
 
 ---
 

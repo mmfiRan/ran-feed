@@ -323,6 +323,13 @@ service FeedService{
 
 // ===== admin 管理端 (feat-admin-004) 与 C 端接口物理隔离 复用 content 域 repo =====
 
+// ReviewDecision 先审后发审核决策 (feat-admin-005)
+enum ReviewDecision {
+  REVIEW_DECISION_UNKNOWN = 0;
+  REVIEW_APPROVE = 10;  // 通过 转 PUBLISHED 并触发进 feed 副作用
+  REVIEW_REJECT = 20;   // 拒绝 转 REJECTED
+}
+
 // AdminContentItem 管理端内容列表项 纯管理视角 不做展示富化 含非公开与各状态
 message AdminContentItem {
   int64 content_id = 1;
@@ -393,8 +400,21 @@ message AdminSetContentStatusRes {
   ContentStatus status = 1;  // 变更后状态
 }
 
+// AdminReviewContentReq 先审后发审核 仅对 PENDING_REVIEW 内容生效
+message AdminReviewContentReq {
+  int64 content_id = 1;
+  ReviewDecision decision = 2;
+  int64 operator_id = 3;      // 审核管理员 id 落 created_by 与 updated_by
+  string reject_reason = 4;   // 拒绝理由 通过时忽略
+}
+
+message AdminReviewContentRes {
+  ContentStatus status = 1;   // 变更后状态 PUBLISHED 或 REJECTED
+}
+
 service AdminContentService{
   rpc AdminListContents(AdminListContentsReq) returns (AdminListContentsRes);
   rpc AdminGetContentDetail(AdminGetContentDetailReq) returns (AdminGetContentDetailRes);
   rpc AdminSetContentStatus(AdminSetContentStatusReq) returns (AdminSetContentStatusRes);
+  rpc AdminReviewContent(AdminReviewContentReq) returns (AdminReviewContentRes);
 }

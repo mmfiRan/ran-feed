@@ -59,6 +59,16 @@ type AdminContentListRes struct {
 	HasMore    bool                   `json:"has_more"`
 }
 
+type AdminContentReviewReq struct {
+	ContentId    int64  `json:"content_id,optional" validate:"required,gt=0"`
+	Decision     string `json:"decision,optional" validate:"required,oneof=approve reject"`
+	RejectReason string `json:"reject_reason,optional"`
+}
+
+type AdminContentReviewRes struct {
+	Status int32 `json:"status"` // 变更后状态 30已发布 70拒绝
+}
+
 type AdminContentStatusReq struct {
 	ContentId int64  `json:"content_id,optional" validate:"required,gt=0"`
 	Action    string `json:"action,optional" validate:"required,oneof=takedown restore"`

@@ -21,6 +21,24 @@ const (
 	fanOutBackgroundTimeout       = 30 * time.Second
 )
 
+// RunPublishFeedEffects 内容进入 feed 时的副作用汇总 先审后发下由审核通过触发(原发布时触发)
+// 写作者 publish zset + 公开内容登记热榜脏集合 + 小账号扩散到 follower inbox 错误只记日志不阻断
+// 供发布链路与 admin 审核链路复用 须在数据落库事务提交后调用(内含 Redis/RPC 副作用)
+func RunPublishFeedEffects(ctx context.Context, svcCtx *svc.ServiceContext, contentID, userID, publishedAtMillis int64, visibility content.Visibility) {
+	logger := logx.WithContext(ctx)
+	feedKey := rediskey.BuildUserPublishFeedKey(userID)
+	if err := writeUserPublishZSet(ctx, svcCtx, feedKey, contentID, publishedAtMillis); err != nil {
+		logger.Errorf("更新用户发布列表缓存失败 contentId=%d: %v", contentID, err)
+	}
+	if shouldSeedHotIncrement(visibility) {
+		if err := writePublishHotSeed(ctx, svcCtx, contentID); err != nil {
+			logger.Errorf("写热榜增量失败 contentId=%d: %v", contentID, err)
+		}
+	}
+	// 推拉结合 小账号 fan-out 到 follower inbox 大 V 跳过
+	fanOutToFollowersAsync(svcCtx, userID, contentID, publishedAtMillis, visibility)
+}
+
 // writeUserPublishZSet 写单条内容到作者 publish zset score=published_at
 // publish zset 承载作者全量发布历史 不按时间裁剪 cutoff=0 仅 keepN 与 TTL 控量
 func writeUserPublishZSet(ctx context.Context, svcCtx *svc.ServiceContext, feedKey string, contentID, publishedAtMillis int64) error {

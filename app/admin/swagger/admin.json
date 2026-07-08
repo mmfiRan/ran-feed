@@ -253,6 +253,60 @@
         }
       }
     },
+    "/v1/admin/contents/review": {
+      "post": {
+        "description": "先审后发审核 通过/拒绝 待审队列用 GET /contents?status=60 权限点 content:review",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "ReviewContent",
+        "operationId": "contentReviewContent",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "decision": {
+                  "type": "string"
+                },
+                "reject_reason": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "description": "变更后状态 30已发布 70拒绝",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/admin/contents/status": {
       "post": {
         "description": "内容下架/恢复 权限点 content:takedown",
@@ -449,7 +503,7 @@
       }
     }
   },
-  "x-date": "2026-07-08 15:18:57",
+  "x-date": "2026-07-08 17:38:21",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

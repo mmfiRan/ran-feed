@@ -36,6 +36,16 @@ type VideoDO struct {
 	TranscodeStatus int32
 }
 
+// ContentReviewDO 内容审核记录 created_by/updated_by 落审核管理员 id
+type ContentReviewDO struct {
+	ID        int64
+	ContentID int64
+	Decision  int32
+	Reason    string
+	CreatedBy int64
+	UpdatedBy int64
+}
+
 // ContentDetailDO feed 二级缓存按 content_id 存的内容本征详情
 type ContentDetailDO struct {
 	ContentID   int64  `json:"content_id"`

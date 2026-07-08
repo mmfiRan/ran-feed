@@ -186,6 +186,56 @@ func (Visibility) EnumDescriptor() ([]byte, []int) {
 	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{2}
 }
 
+// ReviewDecision 先审后发审核决策 (feat-admin-005)
+type ReviewDecision int32
+
+const (
+	ReviewDecision_REVIEW_DECISION_UNKNOWN ReviewDecision = 0
+	ReviewDecision_REVIEW_APPROVE          ReviewDecision = 10 // 通过 转 PUBLISHED 并触发进 feed 副作用
+	ReviewDecision_REVIEW_REJECT           ReviewDecision = 20 // 拒绝 转 REJECTED
+)
+
+// Enum value maps for ReviewDecision.
+var (
+	ReviewDecision_name = map[int32]string{
+		0:  "REVIEW_DECISION_UNKNOWN",
+		10: "REVIEW_APPROVE",
+		20: "REVIEW_REJECT",
+	}
+	ReviewDecision_value = map[string]int32{
+		"REVIEW_DECISION_UNKNOWN": 0,
+		"REVIEW_APPROVE":          10,
+		"REVIEW_REJECT":           20,
+	}
+)
+
+func (x ReviewDecision) Enum() *ReviewDecision {
+	p := new(ReviewDecision)
+	*p = x
+	return p
+}
+
+func (x ReviewDecision) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ReviewDecision) Descriptor() protoreflect.EnumDescriptor {
+	return file_app_rpc_content_proto_content_proto_enumTypes[3].Descriptor()
+}
+
+func (ReviewDecision) Type() protoreflect.EnumType {
+	return &file_app_rpc_content_proto_content_proto_enumTypes[3]
+}
+
+func (x ReviewDecision) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ReviewDecision.Descriptor instead.
+func (ReviewDecision) EnumDescriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{3}
+}
+
 type ContentUploadsCredentialsReq_Scene int32
 
 const (
@@ -222,11 +272,11 @@ func (x ContentUploadsCredentialsReq_Scene) String() string {
 }
 
 func (ContentUploadsCredentialsReq_Scene) Descriptor() protoreflect.EnumDescriptor {
-	return file_app_rpc_content_proto_content_proto_enumTypes[3].Descriptor()
+	return file_app_rpc_content_proto_content_proto_enumTypes[4].Descriptor()
 }
 
 func (ContentUploadsCredentialsReq_Scene) Type() protoreflect.EnumType {
-	return &file_app_rpc_content_proto_content_proto_enumTypes[3]
+	return &file_app_rpc_content_proto_content_proto_enumTypes[4]
 }
 
 func (x ContentUploadsCredentialsReq_Scene) Number() protoreflect.EnumNumber {
@@ -292,11 +342,11 @@ func (x ContentUploadsCredentialsReq_FileExt) String() string {
 }
 
 func (ContentUploadsCredentialsReq_FileExt) Descriptor() protoreflect.EnumDescriptor {
-	return file_app_rpc_content_proto_content_proto_enumTypes[4].Descriptor()
+	return file_app_rpc_content_proto_content_proto_enumTypes[5].Descriptor()
 }
 
 func (ContentUploadsCredentialsReq_FileExt) Type() protoreflect.EnumType {
-	return &file_app_rpc_content_proto_content_proto_enumTypes[4]
+	return &file_app_rpc_content_proto_content_proto_enumTypes[5]
 }
 
 func (x ContentUploadsCredentialsReq_FileExt) Number() protoreflect.EnumNumber {
@@ -3353,6 +3403,119 @@ func (x *AdminSetContentStatusRes) GetStatus() ContentStatus {
 	return ContentStatus_STATUS_UNKNOWN
 }
 
+// AdminReviewContentReq 先审后发审核 仅对 PENDING_REVIEW 内容生效
+type AdminReviewContentReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
+	Decision      ReviewDecision         `protobuf:"varint,2,opt,name=decision,proto3,enum=content.ReviewDecision" json:"decision,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`      // 审核管理员 id 落 created_by 与 updated_by
+	RejectReason  string                 `protobuf:"bytes,4,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"` // 拒绝理由 通过时忽略
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminReviewContentReq) Reset() {
+	*x = AdminReviewContentReq{}
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[45]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminReviewContentReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminReviewContentReq) ProtoMessage() {}
+
+func (x *AdminReviewContentReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[45]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminReviewContentReq.ProtoReflect.Descriptor instead.
+func (*AdminReviewContentReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *AdminReviewContentReq) GetContentId() int64 {
+	if x != nil {
+		return x.ContentId
+	}
+	return 0
+}
+
+func (x *AdminReviewContentReq) GetDecision() ReviewDecision {
+	if x != nil {
+		return x.Decision
+	}
+	return ReviewDecision_REVIEW_DECISION_UNKNOWN
+}
+
+func (x *AdminReviewContentReq) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+func (x *AdminReviewContentReq) GetRejectReason() string {
+	if x != nil {
+		return x.RejectReason
+	}
+	return ""
+}
+
+type AdminReviewContentRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        ContentStatus          `protobuf:"varint,1,opt,name=status,proto3,enum=content.ContentStatus" json:"status,omitempty"` // 变更后状态 PUBLISHED 或 REJECTED
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminReviewContentRes) Reset() {
+	*x = AdminReviewContentRes{}
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[46]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminReviewContentRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminReviewContentRes) ProtoMessage() {}
+
+func (x *AdminReviewContentRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[46]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminReviewContentRes.ProtoReflect.Descriptor instead.
+func (*AdminReviewContentRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{46}
+}
+
+func (x *AdminReviewContentRes) GetStatus() ContentStatus {
+	if x != nil {
+		return x.Status
+	}
+	return ContentStatus_STATUS_UNKNOWN
+}
+
 var File_app_rpc_content_proto_content_proto protoreflect.FileDescriptor
 
 const file_app_rpc_content_proto_content_proto_rawDesc = "" +
@@ -3669,6 +3832,15 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\voperator_id\x18\x03 \x01(\x03R\n" +
 	"operatorId\"J\n" +
 	"\x18AdminSetContentStatusRes\x12.\n" +
+	"\x06status\x18\x01 \x01(\x0e2\x16.content.ContentStatusR\x06status\"\xb1\x01\n" +
+	"\x15AdminReviewContentReq\x12\x1d\n" +
+	"\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\x123\n" +
+	"\bdecision\x18\x02 \x01(\x0e2\x17.content.ReviewDecisionR\bdecision\x12\x1f\n" +
+	"\voperator_id\x18\x03 \x01(\x03R\n" +
+	"operatorId\x12#\n" +
+	"\rreject_reason\x18\x04 \x01(\tR\frejectReason\"G\n" +
+	"\x15AdminReviewContentRes\x12.\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x16.content.ContentStatusR\x06status*?\n" +
 	"\vContentType\x12\x18\n" +
 	"\x14CONTENT_TYPE_UNKNOWN\x10\x00\x12\v\n" +
@@ -3694,7 +3866,12 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\n" +
 	"\x06PUBLIC\x10\n" +
 	"\x12\v\n" +
-	"\aPRIVATE\x10\x142\xa2\x05\n" +
+	"\aPRIVATE\x10\x14*T\n" +
+	"\x0eReviewDecision\x12\x1b\n" +
+	"\x17REVIEW_DECISION_UNKNOWN\x10\x00\x12\x12\n" +
+	"\x0eREVIEW_APPROVE\x10\n" +
+	"\x12\x11\n" +
+	"\rREVIEW_REJECT\x10\x142\xa2\x05\n" +
 	"\x0eContentService\x12W\n" +
 	"\aUploads\x12%.content.ContentUploadsCredentialsReq\x1a%.content.ContentUploadsCredentialsRes\x12H\n" +
 	"\x0ePublishArticle\x12\x1a.content.ArticlePublishReq\x1a\x1a.content.ArticlePublishRes\x12B\n" +
@@ -3712,11 +3889,12 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\x10UserFavoriteFeed\x12\x1c.content.UserFavoriteFeedReq\x1a\x1c.content.UserFavoriteFeedRes\x12Z\n" +
 	"\x14BatchGetContentItems\x12 .content.BatchGetContentItemsReq\x1a .content.BatchGetContentItemsRes\x12c\n" +
 	"\x17BatchGetContentForIndex\x12#.content.BatchGetContentForIndexReq\x1a#.content.BatchGetContentForIndexRes\x12W\n" +
-	"\x13ListContentForIndex\x12\x1f.content.ListContentForIndexReq\x1a\x1f.content.ListContentForIndexRes2\xa6\x02\n" +
+	"\x13ListContentForIndex\x12\x1f.content.ListContentForIndexReq\x1a\x1f.content.ListContentForIndexRes2\xfc\x02\n" +
 	"\x13AdminContentService\x12Q\n" +
 	"\x11AdminListContents\x12\x1d.content.AdminListContentsReq\x1a\x1d.content.AdminListContentsRes\x12]\n" +
 	"\x15AdminGetContentDetail\x12!.content.AdminGetContentDetailReq\x1a!.content.AdminGetContentDetailRes\x12]\n" +
-	"\x15AdminSetContentStatus\x12!.content.AdminSetContentStatusReq\x1a!.content.AdminSetContentStatusResB\vZ\t./contentb\x06proto3"
+	"\x15AdminSetContentStatus\x12!.content.AdminSetContentStatusReq\x1a!.content.AdminSetContentStatusRes\x12T\n" +
+	"\x12AdminReviewContent\x12\x1e.content.AdminReviewContentReq\x1a\x1e.content.AdminReviewContentResB\vZ\t./contentb\x06proto3"
 
 var (
 	file_app_rpc_content_proto_content_proto_rawDescOnce sync.Once
@@ -3730,133 +3908,140 @@ func file_app_rpc_content_proto_content_proto_rawDescGZIP() []byte {
 	return file_app_rpc_content_proto_content_proto_rawDescData
 }
 
-var file_app_rpc_content_proto_content_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_app_rpc_content_proto_content_proto_msgTypes = make([]protoimpl.MessageInfo, 45)
+var file_app_rpc_content_proto_content_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
+var file_app_rpc_content_proto_content_proto_msgTypes = make([]protoimpl.MessageInfo, 47)
 var file_app_rpc_content_proto_content_proto_goTypes = []any{
 	(ContentType)(0),                          // 0: content.ContentType
 	(ContentStatus)(0),                        // 1: content.ContentStatus
 	(Visibility)(0),                           // 2: content.Visibility
-	(ContentUploadsCredentialsReq_Scene)(0),   // 3: content.ContentUploadsCredentialsReq.Scene
-	(ContentUploadsCredentialsReq_FileExt)(0), // 4: content.ContentUploadsCredentialsReq.FileExt
-	(*PageReq)(nil),                           // 5: content.PageReq
-	(*PageRes)(nil),                           // 6: content.PageRes
-	(*ContentUploadsCredentialsReq)(nil),      // 7: content.ContentUploadsCredentialsReq
-	(*ContentUploadsCredentialsRes)(nil),      // 8: content.ContentUploadsCredentialsRes
-	(*OssFormData)(nil),                       // 9: content.OssFormData
-	(*ArticlePublishReq)(nil),                 // 10: content.ArticlePublishReq
-	(*ArticlePublishRes)(nil),                 // 11: content.ArticlePublishRes
-	(*VideoPublishReq)(nil),                   // 12: content.VideoPublishReq
-	(*VideoPublishRes)(nil),                   // 13: content.VideoPublishRes
-	(*GetUserContentCountReq)(nil),            // 14: content.GetUserContentCountReq
-	(*GetUserContentCountRes)(nil),            // 15: content.GetUserContentCountRes
-	(*DeleteContentReq)(nil),                  // 16: content.DeleteContentReq
-	(*DeleteContentRes)(nil),                  // 17: content.DeleteContentRes
-	(*GetContentDetailReq)(nil),               // 18: content.GetContentDetailReq
-	(*ContentDetail)(nil),                     // 19: content.ContentDetail
-	(*GetContentDetailRes)(nil),               // 20: content.GetContentDetailRes
-	(*RecommendFeedReq)(nil),                  // 21: content.RecommendFeedReq
-	(*RecommendFeedRes)(nil),                  // 22: content.RecommendFeedRes
-	(*FollowFeedReq)(nil),                     // 23: content.FollowFeedReq
-	(*FollowFeedRes)(nil),                     // 24: content.FollowFeedRes
-	(*BackfillFollowInboxReq)(nil),            // 25: content.BackfillFollowInboxReq
-	(*BackfillFollowInboxRes)(nil),            // 26: content.BackfillFollowInboxRes
-	(*PurgeFolloweeFromInboxReq)(nil),         // 27: content.PurgeFolloweeFromInboxReq
-	(*PurgeFolloweeFromInboxRes)(nil),         // 28: content.PurgeFolloweeFromInboxRes
-	(*UserPublishFeedReq)(nil),                // 29: content.UserPublishFeedReq
-	(*UserPublishFeedRes)(nil),                // 30: content.UserPublishFeedRes
-	(*UserFavoriteFeedReq)(nil),               // 31: content.UserFavoriteFeedReq
-	(*UserFavoriteFeedRes)(nil),               // 32: content.UserFavoriteFeedRes
-	(*ContentItem)(nil),                       // 33: content.ContentItem
-	(*FollowFeedItem)(nil),                    // 34: content.FollowFeedItem
-	(*BatchGetContentItemsReq)(nil),           // 35: content.BatchGetContentItemsReq
-	(*BatchGetContentItemsRes)(nil),           // 36: content.BatchGetContentItemsRes
-	(*ContentIndexItem)(nil),                  // 37: content.ContentIndexItem
-	(*BatchGetContentForIndexReq)(nil),        // 38: content.BatchGetContentForIndexReq
-	(*BatchGetContentForIndexRes)(nil),        // 39: content.BatchGetContentForIndexRes
-	(*ListContentForIndexReq)(nil),            // 40: content.ListContentForIndexReq
-	(*ListContentForIndexRes)(nil),            // 41: content.ListContentForIndexRes
-	(*AdminContentItem)(nil),                  // 42: content.AdminContentItem
-	(*AdminListContentsReq)(nil),              // 43: content.AdminListContentsReq
-	(*AdminListContentsRes)(nil),              // 44: content.AdminListContentsRes
-	(*AdminGetContentDetailReq)(nil),          // 45: content.AdminGetContentDetailReq
-	(*AdminContentDetail)(nil),                // 46: content.AdminContentDetail
-	(*AdminGetContentDetailRes)(nil),          // 47: content.AdminGetContentDetailRes
-	(*AdminSetContentStatusReq)(nil),          // 48: content.AdminSetContentStatusReq
-	(*AdminSetContentStatusRes)(nil),          // 49: content.AdminSetContentStatusRes
+	(ReviewDecision)(0),                       // 3: content.ReviewDecision
+	(ContentUploadsCredentialsReq_Scene)(0),   // 4: content.ContentUploadsCredentialsReq.Scene
+	(ContentUploadsCredentialsReq_FileExt)(0), // 5: content.ContentUploadsCredentialsReq.FileExt
+	(*PageReq)(nil),                           // 6: content.PageReq
+	(*PageRes)(nil),                           // 7: content.PageRes
+	(*ContentUploadsCredentialsReq)(nil),      // 8: content.ContentUploadsCredentialsReq
+	(*ContentUploadsCredentialsRes)(nil),      // 9: content.ContentUploadsCredentialsRes
+	(*OssFormData)(nil),                       // 10: content.OssFormData
+	(*ArticlePublishReq)(nil),                 // 11: content.ArticlePublishReq
+	(*ArticlePublishRes)(nil),                 // 12: content.ArticlePublishRes
+	(*VideoPublishReq)(nil),                   // 13: content.VideoPublishReq
+	(*VideoPublishRes)(nil),                   // 14: content.VideoPublishRes
+	(*GetUserContentCountReq)(nil),            // 15: content.GetUserContentCountReq
+	(*GetUserContentCountRes)(nil),            // 16: content.GetUserContentCountRes
+	(*DeleteContentReq)(nil),                  // 17: content.DeleteContentReq
+	(*DeleteContentRes)(nil),                  // 18: content.DeleteContentRes
+	(*GetContentDetailReq)(nil),               // 19: content.GetContentDetailReq
+	(*ContentDetail)(nil),                     // 20: content.ContentDetail
+	(*GetContentDetailRes)(nil),               // 21: content.GetContentDetailRes
+	(*RecommendFeedReq)(nil),                  // 22: content.RecommendFeedReq
+	(*RecommendFeedRes)(nil),                  // 23: content.RecommendFeedRes
+	(*FollowFeedReq)(nil),                     // 24: content.FollowFeedReq
+	(*FollowFeedRes)(nil),                     // 25: content.FollowFeedRes
+	(*BackfillFollowInboxReq)(nil),            // 26: content.BackfillFollowInboxReq
+	(*BackfillFollowInboxRes)(nil),            // 27: content.BackfillFollowInboxRes
+	(*PurgeFolloweeFromInboxReq)(nil),         // 28: content.PurgeFolloweeFromInboxReq
+	(*PurgeFolloweeFromInboxRes)(nil),         // 29: content.PurgeFolloweeFromInboxRes
+	(*UserPublishFeedReq)(nil),                // 30: content.UserPublishFeedReq
+	(*UserPublishFeedRes)(nil),                // 31: content.UserPublishFeedRes
+	(*UserFavoriteFeedReq)(nil),               // 32: content.UserFavoriteFeedReq
+	(*UserFavoriteFeedRes)(nil),               // 33: content.UserFavoriteFeedRes
+	(*ContentItem)(nil),                       // 34: content.ContentItem
+	(*FollowFeedItem)(nil),                    // 35: content.FollowFeedItem
+	(*BatchGetContentItemsReq)(nil),           // 36: content.BatchGetContentItemsReq
+	(*BatchGetContentItemsRes)(nil),           // 37: content.BatchGetContentItemsRes
+	(*ContentIndexItem)(nil),                  // 38: content.ContentIndexItem
+	(*BatchGetContentForIndexReq)(nil),        // 39: content.BatchGetContentForIndexReq
+	(*BatchGetContentForIndexRes)(nil),        // 40: content.BatchGetContentForIndexRes
+	(*ListContentForIndexReq)(nil),            // 41: content.ListContentForIndexReq
+	(*ListContentForIndexRes)(nil),            // 42: content.ListContentForIndexRes
+	(*AdminContentItem)(nil),                  // 43: content.AdminContentItem
+	(*AdminListContentsReq)(nil),              // 44: content.AdminListContentsReq
+	(*AdminListContentsRes)(nil),              // 45: content.AdminListContentsRes
+	(*AdminGetContentDetailReq)(nil),          // 46: content.AdminGetContentDetailReq
+	(*AdminContentDetail)(nil),                // 47: content.AdminContentDetail
+	(*AdminGetContentDetailRes)(nil),          // 48: content.AdminGetContentDetailRes
+	(*AdminSetContentStatusReq)(nil),          // 49: content.AdminSetContentStatusReq
+	(*AdminSetContentStatusRes)(nil),          // 50: content.AdminSetContentStatusRes
+	(*AdminReviewContentReq)(nil),             // 51: content.AdminReviewContentReq
+	(*AdminReviewContentRes)(nil),             // 52: content.AdminReviewContentRes
 }
 var file_app_rpc_content_proto_content_proto_depIdxs = []int32{
-	3,  // 0: content.ContentUploadsCredentialsReq.scene:type_name -> content.ContentUploadsCredentialsReq.Scene
-	4,  // 1: content.ContentUploadsCredentialsReq.file_ext:type_name -> content.ContentUploadsCredentialsReq.FileExt
-	9,  // 2: content.ContentUploadsCredentialsRes.form_data:type_name -> content.OssFormData
+	4,  // 0: content.ContentUploadsCredentialsReq.scene:type_name -> content.ContentUploadsCredentialsReq.Scene
+	5,  // 1: content.ContentUploadsCredentialsReq.file_ext:type_name -> content.ContentUploadsCredentialsReq.FileExt
+	10, // 2: content.ContentUploadsCredentialsRes.form_data:type_name -> content.OssFormData
 	2,  // 3: content.ArticlePublishReq.visibility:type_name -> content.Visibility
 	2,  // 4: content.VideoPublishReq.visibility:type_name -> content.Visibility
 	0,  // 5: content.ContentDetail.content_type:type_name -> content.ContentType
-	19, // 6: content.GetContentDetailRes.detail:type_name -> content.ContentDetail
-	33, // 7: content.RecommendFeedRes.items:type_name -> content.ContentItem
-	34, // 8: content.FollowFeedRes.items:type_name -> content.FollowFeedItem
-	33, // 9: content.UserPublishFeedRes.items:type_name -> content.ContentItem
-	33, // 10: content.UserFavoriteFeedRes.items:type_name -> content.ContentItem
+	20, // 6: content.GetContentDetailRes.detail:type_name -> content.ContentDetail
+	34, // 7: content.RecommendFeedRes.items:type_name -> content.ContentItem
+	35, // 8: content.FollowFeedRes.items:type_name -> content.FollowFeedItem
+	34, // 9: content.UserPublishFeedRes.items:type_name -> content.ContentItem
+	34, // 10: content.UserFavoriteFeedRes.items:type_name -> content.ContentItem
 	0,  // 11: content.ContentItem.content_type:type_name -> content.ContentType
 	0,  // 12: content.FollowFeedItem.content_type:type_name -> content.ContentType
-	33, // 13: content.BatchGetContentItemsRes.items:type_name -> content.ContentItem
+	34, // 13: content.BatchGetContentItemsRes.items:type_name -> content.ContentItem
 	0,  // 14: content.ContentIndexItem.content_type:type_name -> content.ContentType
 	1,  // 15: content.ContentIndexItem.status:type_name -> content.ContentStatus
 	2,  // 16: content.ContentIndexItem.visibility:type_name -> content.Visibility
-	37, // 17: content.BatchGetContentForIndexRes.items:type_name -> content.ContentIndexItem
-	37, // 18: content.ListContentForIndexRes.items:type_name -> content.ContentIndexItem
+	38, // 17: content.BatchGetContentForIndexRes.items:type_name -> content.ContentIndexItem
+	38, // 18: content.ListContentForIndexRes.items:type_name -> content.ContentIndexItem
 	0,  // 19: content.AdminContentItem.content_type:type_name -> content.ContentType
 	1,  // 20: content.AdminContentItem.status:type_name -> content.ContentStatus
 	2,  // 21: content.AdminContentItem.visibility:type_name -> content.Visibility
 	1,  // 22: content.AdminListContentsReq.status:type_name -> content.ContentStatus
 	0,  // 23: content.AdminListContentsReq.content_type:type_name -> content.ContentType
-	42, // 24: content.AdminListContentsRes.items:type_name -> content.AdminContentItem
+	43, // 24: content.AdminListContentsRes.items:type_name -> content.AdminContentItem
 	0,  // 25: content.AdminContentDetail.content_type:type_name -> content.ContentType
 	1,  // 26: content.AdminContentDetail.status:type_name -> content.ContentStatus
 	2,  // 27: content.AdminContentDetail.visibility:type_name -> content.Visibility
-	46, // 28: content.AdminGetContentDetailRes.detail:type_name -> content.AdminContentDetail
+	47, // 28: content.AdminGetContentDetailRes.detail:type_name -> content.AdminContentDetail
 	1,  // 29: content.AdminSetContentStatusReq.status:type_name -> content.ContentStatus
 	1,  // 30: content.AdminSetContentStatusRes.status:type_name -> content.ContentStatus
-	7,  // 31: content.ContentService.Uploads:input_type -> content.ContentUploadsCredentialsReq
-	10, // 32: content.ContentService.PublishArticle:input_type -> content.ArticlePublishReq
-	12, // 33: content.ContentService.PublishVideo:input_type -> content.VideoPublishReq
-	14, // 34: content.ContentService.GetUserContentCount:input_type -> content.GetUserContentCountReq
-	16, // 35: content.ContentService.DeleteContent:input_type -> content.DeleteContentReq
-	18, // 36: content.ContentService.GetContentDetail:input_type -> content.GetContentDetailReq
-	25, // 37: content.ContentService.BackfillFollowInbox:input_type -> content.BackfillFollowInboxReq
-	27, // 38: content.ContentService.PurgeFolloweeFromInbox:input_type -> content.PurgeFolloweeFromInboxReq
-	21, // 39: content.FeedService.RecommendFeed:input_type -> content.RecommendFeedReq
-	23, // 40: content.FeedService.FollowFeed:input_type -> content.FollowFeedReq
-	29, // 41: content.FeedService.UserPublishFeed:input_type -> content.UserPublishFeedReq
-	31, // 42: content.FeedService.UserFavoriteFeed:input_type -> content.UserFavoriteFeedReq
-	35, // 43: content.FeedService.BatchGetContentItems:input_type -> content.BatchGetContentItemsReq
-	38, // 44: content.FeedService.BatchGetContentForIndex:input_type -> content.BatchGetContentForIndexReq
-	40, // 45: content.FeedService.ListContentForIndex:input_type -> content.ListContentForIndexReq
-	43, // 46: content.AdminContentService.AdminListContents:input_type -> content.AdminListContentsReq
-	45, // 47: content.AdminContentService.AdminGetContentDetail:input_type -> content.AdminGetContentDetailReq
-	48, // 48: content.AdminContentService.AdminSetContentStatus:input_type -> content.AdminSetContentStatusReq
-	8,  // 49: content.ContentService.Uploads:output_type -> content.ContentUploadsCredentialsRes
-	11, // 50: content.ContentService.PublishArticle:output_type -> content.ArticlePublishRes
-	13, // 51: content.ContentService.PublishVideo:output_type -> content.VideoPublishRes
-	15, // 52: content.ContentService.GetUserContentCount:output_type -> content.GetUserContentCountRes
-	17, // 53: content.ContentService.DeleteContent:output_type -> content.DeleteContentRes
-	20, // 54: content.ContentService.GetContentDetail:output_type -> content.GetContentDetailRes
-	26, // 55: content.ContentService.BackfillFollowInbox:output_type -> content.BackfillFollowInboxRes
-	28, // 56: content.ContentService.PurgeFolloweeFromInbox:output_type -> content.PurgeFolloweeFromInboxRes
-	22, // 57: content.FeedService.RecommendFeed:output_type -> content.RecommendFeedRes
-	24, // 58: content.FeedService.FollowFeed:output_type -> content.FollowFeedRes
-	30, // 59: content.FeedService.UserPublishFeed:output_type -> content.UserPublishFeedRes
-	32, // 60: content.FeedService.UserFavoriteFeed:output_type -> content.UserFavoriteFeedRes
-	36, // 61: content.FeedService.BatchGetContentItems:output_type -> content.BatchGetContentItemsRes
-	39, // 62: content.FeedService.BatchGetContentForIndex:output_type -> content.BatchGetContentForIndexRes
-	41, // 63: content.FeedService.ListContentForIndex:output_type -> content.ListContentForIndexRes
-	44, // 64: content.AdminContentService.AdminListContents:output_type -> content.AdminListContentsRes
-	47, // 65: content.AdminContentService.AdminGetContentDetail:output_type -> content.AdminGetContentDetailRes
-	49, // 66: content.AdminContentService.AdminSetContentStatus:output_type -> content.AdminSetContentStatusRes
-	49, // [49:67] is the sub-list for method output_type
-	31, // [31:49] is the sub-list for method input_type
-	31, // [31:31] is the sub-list for extension type_name
-	31, // [31:31] is the sub-list for extension extendee
-	0,  // [0:31] is the sub-list for field type_name
+	3,  // 31: content.AdminReviewContentReq.decision:type_name -> content.ReviewDecision
+	1,  // 32: content.AdminReviewContentRes.status:type_name -> content.ContentStatus
+	8,  // 33: content.ContentService.Uploads:input_type -> content.ContentUploadsCredentialsReq
+	11, // 34: content.ContentService.PublishArticle:input_type -> content.ArticlePublishReq
+	13, // 35: content.ContentService.PublishVideo:input_type -> content.VideoPublishReq
+	15, // 36: content.ContentService.GetUserContentCount:input_type -> content.GetUserContentCountReq
+	17, // 37: content.ContentService.DeleteContent:input_type -> content.DeleteContentReq
+	19, // 38: content.ContentService.GetContentDetail:input_type -> content.GetContentDetailReq
+	26, // 39: content.ContentService.BackfillFollowInbox:input_type -> content.BackfillFollowInboxReq
+	28, // 40: content.ContentService.PurgeFolloweeFromInbox:input_type -> content.PurgeFolloweeFromInboxReq
+	22, // 41: content.FeedService.RecommendFeed:input_type -> content.RecommendFeedReq
+	24, // 42: content.FeedService.FollowFeed:input_type -> content.FollowFeedReq
+	30, // 43: content.FeedService.UserPublishFeed:input_type -> content.UserPublishFeedReq
+	32, // 44: content.FeedService.UserFavoriteFeed:input_type -> content.UserFavoriteFeedReq
+	36, // 45: content.FeedService.BatchGetContentItems:input_type -> content.BatchGetContentItemsReq
+	39, // 46: content.FeedService.BatchGetContentForIndex:input_type -> content.BatchGetContentForIndexReq
+	41, // 47: content.FeedService.ListContentForIndex:input_type -> content.ListContentForIndexReq
+	44, // 48: content.AdminContentService.AdminListContents:input_type -> content.AdminListContentsReq
+	46, // 49: content.AdminContentService.AdminGetContentDetail:input_type -> content.AdminGetContentDetailReq
+	49, // 50: content.AdminContentService.AdminSetContentStatus:input_type -> content.AdminSetContentStatusReq
+	51, // 51: content.AdminContentService.AdminReviewContent:input_type -> content.AdminReviewContentReq
+	9,  // 52: content.ContentService.Uploads:output_type -> content.ContentUploadsCredentialsRes
+	12, // 53: content.ContentService.PublishArticle:output_type -> content.ArticlePublishRes
+	14, // 54: content.ContentService.PublishVideo:output_type -> content.VideoPublishRes
+	16, // 55: content.ContentService.GetUserContentCount:output_type -> content.GetUserContentCountRes
+	18, // 56: content.ContentService.DeleteContent:output_type -> content.DeleteContentRes
+	21, // 57: content.ContentService.GetContentDetail:output_type -> content.GetContentDetailRes
+	27, // 58: content.ContentService.BackfillFollowInbox:output_type -> content.BackfillFollowInboxRes
+	29, // 59: content.ContentService.PurgeFolloweeFromInbox:output_type -> content.PurgeFolloweeFromInboxRes
+	23, // 60: content.FeedService.RecommendFeed:output_type -> content.RecommendFeedRes
+	25, // 61: content.FeedService.FollowFeed:output_type -> content.FollowFeedRes
+	31, // 62: content.FeedService.UserPublishFeed:output_type -> content.UserPublishFeedRes
+	33, // 63: content.FeedService.UserFavoriteFeed:output_type -> content.UserFavoriteFeedRes
+	37, // 64: content.FeedService.BatchGetContentItems:output_type -> content.BatchGetContentItemsRes
+	40, // 65: content.FeedService.BatchGetContentForIndex:output_type -> content.BatchGetContentForIndexRes
+	42, // 66: content.FeedService.ListContentForIndex:output_type -> content.ListContentForIndexRes
+	45, // 67: content.AdminContentService.AdminListContents:output_type -> content.AdminListContentsRes
+	48, // 68: content.AdminContentService.AdminGetContentDetail:output_type -> content.AdminGetContentDetailRes
+	50, // 69: content.AdminContentService.AdminSetContentStatus:output_type -> content.AdminSetContentStatusRes
+	52, // 70: content.AdminContentService.AdminReviewContent:output_type -> content.AdminReviewContentRes
+	52, // [52:71] is the sub-list for method output_type
+	33, // [33:52] is the sub-list for method input_type
+	33, // [33:33] is the sub-list for extension type_name
+	33, // [33:33] is the sub-list for extension extendee
+	0,  // [0:33] is the sub-list for field type_name
 }
 
 func init() { file_app_rpc_content_proto_content_proto_init() }
@@ -3876,8 +4061,8 @@ func file_app_rpc_content_proto_content_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_app_rpc_content_proto_content_proto_rawDesc), len(file_app_rpc_content_proto_content_proto_rawDesc)),
-			NumEnums:      5,
-			NumMessages:   45,
+			NumEnums:      6,
+			NumMessages:   47,
 			NumExtensions: 0,
 			NumServices:   3,
 		},

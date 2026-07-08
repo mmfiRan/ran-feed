@@ -108,3 +108,20 @@ func TestOptionalFilters(t *testing.T) {
 }
 
 func ptrInt64(v int64) *int64 { return &v }
+
+func TestBuildReviewDO(t *testing.T) {
+	t.Run("拒绝带理由", func(t *testing.T) {
+		d := buildReviewDO(88, reviewDecisionReject, "含敏感内容", 7)
+		assert.Equal(t, int64(88), d.ContentID)
+		assert.Equal(t, reviewDecisionReject, d.Decision)
+		assert.Equal(t, "含敏感内容", d.Reason)
+		assert.Equal(t, int64(7), d.CreatedBy)
+		assert.Equal(t, int64(7), d.UpdatedBy)
+		assert.NotZero(t, d.ID)
+	})
+	t.Run("通过理由为空", func(t *testing.T) {
+		d := buildReviewDO(88, reviewDecisionApprove, "", 7)
+		assert.Equal(t, reviewDecisionApprove, d.Decision)
+		assert.Empty(t, d.Reason)
+	})
+}

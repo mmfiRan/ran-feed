@@ -9,6 +9,7 @@ var routePermissions = map[string]string{
 	"GET /v1/admin/contents":         "content:list",
 	"GET /v1/admin/contents/detail":  "content:detail",
 	"POST /v1/admin/contents/status": "content:takedown",
+	"POST /v1/admin/contents/review": "content:review",
 }
 
 // RequiredPermission 返回该路由所需权限点 无登记则第二返回 false 表示只需登录

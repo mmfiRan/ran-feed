@@ -5,7 +5,8 @@
 INSERT INTO ran_feed_admin_permission (code, name, module)
 VALUES ('content:list', '内容列表', 'content'),
        ('content:detail', '内容详情', 'content'),
-       ('content:takedown', '内容下架/恢复', 'content')
+       ('content:takedown', '内容下架/恢复', 'content'),
+       ('content:review', '内容审核', 'content')
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- super 补绑 content 模块全部权限点
