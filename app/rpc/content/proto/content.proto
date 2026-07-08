@@ -18,6 +18,9 @@ enum ContentStatus {
   PROCESSING = 20;
   PUBLISHED = 30;
   FAILED = 40;
+  TAKEN_DOWN = 50;      // 管理员下架
+  PENDING_REVIEW = 60;  // 待审核 先审后发 Phase B feat-admin-005 起用
+  REJECTED = 70;        // 审核拒绝 Phase B feat-admin-005 起用
 }
 
 // 可见性枚举
@@ -316,4 +319,82 @@ service FeedService{
   rpc BatchGetContentItems(BatchGetContentItemsReq) returns (BatchGetContentItemsRes);
   rpc BatchGetContentForIndex(BatchGetContentForIndexReq) returns (BatchGetContentForIndexRes);
   rpc ListContentForIndex(ListContentForIndexReq) returns (ListContentForIndexRes);
+}
+
+// ===== admin 管理端 (feat-admin-004) 与 C 端接口物理隔离 复用 content 域 repo =====
+
+// AdminContentItem 管理端内容列表项 纯管理视角 不做展示富化 含非公开与各状态
+message AdminContentItem {
+  int64 content_id = 1;
+  ContentType content_type = 2;
+  ContentStatus status = 3;
+  Visibility visibility = 4;
+  int64 author_id = 5;
+  string title = 6;
+  int64 like_count = 7;
+  int64 favorite_count = 8;
+  int64 comment_count = 9;
+  int64 published_at = 10;  // 毫秒 0 表示未发布
+  int64 created_at = 11;    // 毫秒
+}
+
+// AdminListContentsReq 多条件筛选 + id keyset 游标分页 status/content_type/author 均可选
+message AdminListContentsReq {
+  optional ContentStatus status = 1;
+  optional ContentType content_type = 2;
+  optional int64 author_id = 3;
+  int64 cursor_id = 4;  // 上页末条 id 0 表示首页
+  int32 page_size = 5;
+}
+
+message AdminListContentsRes {
+  repeated AdminContentItem items = 1;
+  int64 next_cursor = 2;  // 0 表示无更多
+  bool has_more = 3;
+}
+
+message AdminGetContentDetailReq {
+  int64 content_id = 1;
+}
+
+// AdminContentDetail 管理端详情 含正文/非公开 无 viewer 相关互动字段
+message AdminContentDetail {
+  int64 content_id = 1;
+  ContentType content_type = 2;
+  ContentStatus status = 3;
+  Visibility visibility = 4;
+  int64 author_id = 5;
+  string title = 6;
+  string description = 7;
+  string cover_url = 8;
+  string article_content = 9;
+  string video_url = 10;
+  int32 video_duration = 11;
+  int64 like_count = 12;
+  int64 favorite_count = 13;
+  int64 comment_count = 14;
+  int64 published_at = 15;  // 毫秒 0 表示未发布
+  int64 created_at = 16;    // 毫秒
+  int64 updated_at = 17;    // 毫秒
+}
+
+message AdminGetContentDetailRes {
+  AdminContentDetail detail = 1;
+}
+
+// AdminSetContentStatusReq 下架/恢复 本轮支持 TAKEN_DOWN(下架) 与 PUBLISHED(恢复)
+message AdminSetContentStatusReq {
+  int64 content_id = 1;
+  ContentStatus status = 2;
+  int64 operator_id = 3;  // 操作管理员 id 落 updated_by
+}
+
+message AdminSetContentStatusRes {
+  ContentStatus status = 1;  // 变更后状态
+}
+
+service AdminContentService{
+  rpc AdminListContents(AdminListContentsReq) returns (AdminListContentsRes);
+  rpc AdminGetContentDetail(AdminGetContentDetailReq) returns (AdminGetContentDetailRes);
+  rpc AdminSetContentStatus(AdminSetContentStatusReq) returns (AdminSetContentStatusRes);
 }

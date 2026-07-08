@@ -1,0 +1,91 @@
+syntax = "v1"
+
+type (
+	// AdminContentListReq 内容列表筛选 各筛选项 0 表示不限 cursor_id 0 表示首页
+	AdminContentListReq {
+		Status      int32 `form:"status,optional"`       // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
+		ContentType int32 `form:"content_type,optional"` // 10文章 20视频
+		AuthorId    int64 `form:"author_id,optional"`
+		CursorId    int64 `form:"cursor_id,optional"` // 上页末条 content_id
+		PageSize    int32 `form:"page_size,optional"`
+	}
+	AdminContentListItem {
+		ContentId     int64  `json:"content_id"`
+		ContentType   int32  `json:"content_type"`
+		Status        int32  `json:"status"`
+		Visibility    int32  `json:"visibility"`
+		AuthorId      int64  `json:"author_id"`
+		Title         string `json:"title"`
+		LikeCount     int64  `json:"like_count"`
+		FavoriteCount int64  `json:"favorite_count"`
+		CommentCount  int64  `json:"comment_count"`
+		PublishedAt   int64  `json:"published_at"` // 毫秒 0 未发布
+		CreatedAt     int64  `json:"created_at"`   // 毫秒
+	}
+	AdminContentListRes {
+		Items      []AdminContentListItem `json:"items"`
+		NextCursor int64                  `json:"next_cursor"` // 0 表示无更多
+		HasMore    bool                   `json:"has_more"`
+	}
+
+	AdminContentDetailReq {
+		ContentId int64 `form:"content_id"`
+	}
+	AdminContentDetailData {
+		ContentId      int64  `json:"content_id"`
+		ContentType    int32  `json:"content_type"`
+		Status         int32  `json:"status"`
+		Visibility     int32  `json:"visibility"`
+		AuthorId       int64  `json:"author_id"`
+		Title          string `json:"title"`
+		Description    string `json:"description"`
+		CoverUrl       string `json:"cover_url"`
+		ArticleContent string `json:"article_content"`
+		VideoUrl       string `json:"video_url"`
+		VideoDuration  int32  `json:"video_duration"`
+		LikeCount      int64  `json:"like_count"`
+		FavoriteCount  int64  `json:"favorite_count"`
+		CommentCount   int64  `json:"comment_count"`
+		PublishedAt    int64  `json:"published_at"`
+		CreatedAt      int64  `json:"created_at"`
+		UpdatedAt      int64  `json:"updated_at"`
+	}
+	AdminContentDetailRes {
+		Detail AdminContentDetailData `json:"detail"`
+	}
+
+	// AdminContentStatusReq action 取 takedown(下架) 或 restore(恢复)
+	AdminContentStatusReq {
+		ContentId int64  `json:"content_id,optional" validate:"required,gt=0"`
+		Action    string `json:"action,optional" validate:"required,oneof=takedown restore"`
+	}
+	AdminContentStatusRes {
+		Status int32 `json:"status"` // 变更后状态
+	}
+)
+
+@server (
+	tags:       content
+	group:      content
+	prefix:     /v1/admin
+	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+)
+service admin-api {
+	@doc (
+		description: "内容列表 多条件筛选 + 游标分页 权限点 content:list"
+	)
+	@handler ListContents
+	get /contents (AdminContentListReq) returns (AdminContentListRes)
+
+	@doc (
+		description: "内容详情 含非公开与正文 权限点 content:detail"
+	)
+	@handler GetContentDetail
+	get /contents/detail (AdminContentDetailReq) returns (AdminContentDetailRes)
+
+	@doc (
+		description: "内容下架/恢复 权限点 content:takedown"
+	)
+	@handler SetContentStatus
+	post /contents/status (AdminContentStatusReq) returns (AdminContentStatusRes)
+}

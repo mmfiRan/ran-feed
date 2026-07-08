@@ -20,6 +20,290 @@
   },
   "basePath": "/v1/admin",
   "paths": {
+    "/v1/admin/contents": {
+      "get": {
+        "description": "内容列表 多条件筛选 + 游标分页 权限点 content:list",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "ListContents",
+        "operationId": "contentListContents",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝",
+            "name": "status",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "description": "10文章 20视频",
+            "name": "content_type",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "author_id",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "description": "上页末条 content_id",
+            "name": "cursor_id",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "page_size",
+            "in": "query",
+            "allowEmptyValue": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "has_more": {
+                  "type": "boolean"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "content_id",
+                      "content_type",
+                      "status",
+                      "visibility",
+                      "author_id",
+                      "title",
+                      "like_count",
+                      "favorite_count",
+                      "comment_count",
+                      "published_at",
+                      "created_at"
+                    ],
+                    "properties": {
+                      "author_id": {
+                        "type": "integer"
+                      },
+                      "comment_count": {
+                        "type": "integer"
+                      },
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "content_type": {
+                        "type": "integer"
+                      },
+                      "created_at": {
+                        "description": "毫秒",
+                        "type": "integer"
+                      },
+                      "favorite_count": {
+                        "type": "integer"
+                      },
+                      "like_count": {
+                        "type": "integer"
+                      },
+                      "published_at": {
+                        "description": "毫秒 0 未发布",
+                        "type": "integer"
+                      },
+                      "status": {
+                        "type": "integer"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "visibility": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                "next_cursor": {
+                  "description": "0 表示无更多",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/contents/detail": {
+      "get": {
+        "description": "内容详情 含非公开与正文 权限点 content:detail",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "GetContentDetail",
+        "operationId": "contentGetContentDetail",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "content_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "object",
+                  "required": [
+                    "content_id",
+                    "content_type",
+                    "status",
+                    "visibility",
+                    "author_id",
+                    "title",
+                    "description",
+                    "cover_url",
+                    "article_content",
+                    "video_url",
+                    "video_duration",
+                    "like_count",
+                    "favorite_count",
+                    "comment_count",
+                    "published_at",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "properties": {
+                    "article_content": {
+                      "type": "string"
+                    },
+                    "author_id": {
+                      "type": "integer"
+                    },
+                    "comment_count": {
+                      "type": "integer"
+                    },
+                    "content_id": {
+                      "type": "integer"
+                    },
+                    "content_type": {
+                      "type": "integer"
+                    },
+                    "cover_url": {
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "integer"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "favorite_count": {
+                      "type": "integer"
+                    },
+                    "like_count": {
+                      "type": "integer"
+                    },
+                    "published_at": {
+                      "type": "integer"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "type": "integer"
+                    },
+                    "video_duration": {
+                      "type": "integer"
+                    },
+                    "video_url": {
+                      "type": "string"
+                    },
+                    "visibility": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/contents/status": {
+      "post": {
+        "description": "内容下架/恢复 权限点 content:takedown",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "SetContentStatus",
+        "operationId": "contentSetContentStatus",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "action": {
+                  "type": "string"
+                },
+                "content_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "description": "变更后状态",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/admin/login": {
       "post": {
         "description": "管理员登录 成功返回 token 与权限点集合 后续请求带 Authorization: Bearer {token}",
@@ -165,7 +449,7 @@
       }
     }
   },
-  "x-date": "2026-07-06 18:51:11",
+  "x-date": "2026-07-08 15:18:57",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

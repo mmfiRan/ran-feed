@@ -1,6 +1,7 @@
 syntax = "v1"
 
 import "auth/auth.api"
+import "content/content.api"
 
 info (
 	title:        "ran-feed 后台管理接口"

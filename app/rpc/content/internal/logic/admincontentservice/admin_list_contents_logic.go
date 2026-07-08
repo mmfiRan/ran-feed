@@ -1,0 +1,155 @@
+package admincontentservicelogic
+
+import (
+	"context"
+
+	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/consts"
+	"ran-feed/app/rpc/content/internal/entity/model"
+	"ran-feed/app/rpc/content/internal/repositories"
+	"ran-feed/app/rpc/content/internal/svc"
+	"ran-feed/pkg/errorx"
+
+	"github.com/zeromicro/go-zero/core/logx"
+)
+
+type AdminListContentsLogic struct {
+	ctx    context.Context
+	svcCtx *svc.ServiceContext
+	logx.Logger
+	contentRepo repositories.ContentRepository
+	articleRepo repositories.ArticleRepository
+	videoRepo   repositories.VideoRepository
+}
+
+func NewAdminListContentsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminListContentsLogic {
+	return &AdminListContentsLogic{
+		ctx:         ctx,
+		svcCtx:      svcCtx,
+		Logger:      logx.WithContext(ctx),
+		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
+		articleRepo: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
+		videoRepo:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
+	}
+}
+
+func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContentsReq) (*content.AdminListContentsRes, error) {
+	if in == nil {
+		return nil, errorx.NewMsg("参数错误")
+	}
+
+	pageSize := normalizePageSize(in.GetPageSize())
+	statusFilter := optionalStatus(in)
+	typeFilter := optionalContentType(in)
+	authorFilter := optionalAuthorID(in)
+
+	rows, err := l.contentRepo.AdminListContents(statusFilter, typeFilter, authorFilter, in.GetCursorId(), pageSize)
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
+	}
+
+	titles, err := l.loadTitles(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]*content.AdminContentItem, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, buildAdminContentItem(row, titles[row.ID]))
+	}
+
+	res := &content.AdminListContentsRes{Items: items}
+	if len(rows) == pageSize && len(rows) > 0 {
+		res.NextCursor = rows[len(rows)-1].ID
+		res.HasMore = true
+	}
+	return res, nil
+}
+
+// loadTitles 按类型分组批量取文章/视频标题
+func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[int64]string, error) {
+	articleIDs := make([]int64, 0, len(rows))
+	videoIDs := make([]int64, 0, len(rows))
+	for _, row := range rows {
+		switch content.ContentType(row.ContentType) {
+		case content.ContentType_ARTICLE:
+			articleIDs = append(articleIDs, row.ID)
+		case content.ContentType_VIDEO:
+			videoIDs = append(videoIDs, row.ID)
+		}
+	}
+
+	titles := make(map[int64]string, len(rows))
+	if len(articleIDs) > 0 {
+		articles, err := l.articleRepo.BatchGetBriefByContentIDs(articleIDs)
+		if err != nil {
+			return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
+		}
+		for id, a := range articles {
+			titles[id] = a.Title
+		}
+	}
+	if len(videoIDs) > 0 {
+		videos, err := l.videoRepo.BatchGetBriefByContentIDs(videoIDs)
+		if err != nil {
+			return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
+		}
+		for id, v := range videos {
+			titles[id] = v.Title
+		}
+	}
+	return titles, nil
+}
+
+func buildAdminContentItem(row *model.RanFeedContent, title string) *content.AdminContentItem {
+	item := &content.AdminContentItem{
+		ContentId:     row.ID,
+		ContentType:   content.ContentType(row.ContentType),
+		Status:        content.ContentStatus(row.Status),
+		Visibility:    content.Visibility(row.Visibility),
+		AuthorId:      row.UserID,
+		Title:         title,
+		LikeCount:     row.LikeCount,
+		FavoriteCount: row.FavoriteCount,
+		CommentCount:  row.CommentCount,
+		CreatedAt:     row.CreatedAt.UnixMilli(),
+	}
+	if row.PublishedAt != nil {
+		item.PublishedAt = row.PublishedAt.UnixMilli()
+	}
+	return item
+}
+
+func normalizePageSize(size int32) int {
+	if size <= 0 {
+		return consts.AdminListDefaultPageSize
+	}
+	if size > consts.AdminListMaxPageSize {
+		return consts.AdminListMaxPageSize
+	}
+	return int(size)
+}
+
+func optionalStatus(in *content.AdminListContentsReq) *int32 {
+	if in.Status == nil {
+		return nil
+	}
+	v := int32(in.GetStatus())
+	return &v
+}
+
+func optionalContentType(in *content.AdminListContentsReq) *int32 {
+	if in.ContentType == nil {
+		return nil
+	}
+	v := int32(in.GetContentType())
+	return &v
+}
+
+func optionalAuthorID(in *content.AdminListContentsReq) *int64 {
+	if in.AuthorId == nil {
+		return nil
+	}
+	v := in.GetAuthorId()
+	return &v
+}

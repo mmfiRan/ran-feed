@@ -3,6 +3,71 @@
 
 package types
 
+type AdminContentDetailData struct {
+	ContentId      int64  `json:"content_id"`
+	ContentType    int32  `json:"content_type"`
+	Status         int32  `json:"status"`
+	Visibility     int32  `json:"visibility"`
+	AuthorId       int64  `json:"author_id"`
+	Title          string `json:"title"`
+	Description    string `json:"description"`
+	CoverUrl       string `json:"cover_url"`
+	ArticleContent string `json:"article_content"`
+	VideoUrl       string `json:"video_url"`
+	VideoDuration  int32  `json:"video_duration"`
+	LikeCount      int64  `json:"like_count"`
+	FavoriteCount  int64  `json:"favorite_count"`
+	CommentCount   int64  `json:"comment_count"`
+	PublishedAt    int64  `json:"published_at"`
+	CreatedAt      int64  `json:"created_at"`
+	UpdatedAt      int64  `json:"updated_at"`
+}
+
+type AdminContentDetailReq struct {
+	ContentId int64 `form:"content_id"`
+}
+
+type AdminContentDetailRes struct {
+	Detail AdminContentDetailData `json:"detail"`
+}
+
+type AdminContentListItem struct {
+	ContentId     int64  `json:"content_id"`
+	ContentType   int32  `json:"content_type"`
+	Status        int32  `json:"status"`
+	Visibility    int32  `json:"visibility"`
+	AuthorId      int64  `json:"author_id"`
+	Title         string `json:"title"`
+	LikeCount     int64  `json:"like_count"`
+	FavoriteCount int64  `json:"favorite_count"`
+	CommentCount  int64  `json:"comment_count"`
+	PublishedAt   int64  `json:"published_at"` // 毫秒 0 未发布
+	CreatedAt     int64  `json:"created_at"`   // 毫秒
+}
+
+type AdminContentListReq struct {
+	Status      int32 `form:"status,optional"`       // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
+	ContentType int32 `form:"content_type,optional"` // 10文章 20视频
+	AuthorId    int64 `form:"author_id,optional"`
+	CursorId    int64 `form:"cursor_id,optional"` // 上页末条 content_id
+	PageSize    int32 `form:"page_size,optional"`
+}
+
+type AdminContentListRes struct {
+	Items      []AdminContentListItem `json:"items"`
+	NextCursor int64                  `json:"next_cursor"` // 0 表示无更多
+	HasMore    bool                   `json:"has_more"`
+}
+
+type AdminContentStatusReq struct {
+	ContentId int64  `json:"content_id,optional" validate:"required,gt=0"`
+	Action    string `json:"action,optional" validate:"required,oneof=takedown restore"`
+}
+
+type AdminContentStatusRes struct {
+	Status int32 `json:"status"` // 变更后状态
+}
+
 type AdminInfo struct {
 	AdminId  int64  `json:"admin_id"`
 	Username string `json:"username"`

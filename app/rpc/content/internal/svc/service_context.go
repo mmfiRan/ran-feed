@@ -21,15 +21,15 @@ import (
 )
 
 type ServiceContext struct {
-	Config      config.Config
-	OssContext  *oss.Context
-	Redis       *redis.Redis
-	MysqlDb     *orm.DB
-	UserRpc     userservice.UserService
-	LikesRpc    likeservice.LikeService
-	FavoriteRpc favoriteservice.FavoriteService
-	FollowRpc   followservice.FollowService
-	CountRpc    counterservice.CounterService
+	Config                  config.Config
+	OssContext              *oss.Context
+	Redis                   *redis.Redis
+	MysqlDb                 *orm.DB
+	UserRpc                 userservice.UserService
+	LikesRpc                likeservice.LikeService
+	FavoriteRpc             favoriteservice.FavoriteService
+	FollowRpc               followservice.FollowService
+	CountRpc                counterservice.CounterService
 	// PublishBoxRebuildLocker 发件箱冷重建分布式锁 大V发件箱属跨 pod 热点 防击穿
 	PublishBoxRebuildLocker *cache.DistLocker
 }

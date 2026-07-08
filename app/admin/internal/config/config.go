@@ -11,7 +11,8 @@ import (
 
 type Config struct {
 	rest.RestConf
-	AdminRpcClientConf zrpc.RpcClientConf
-	RedisConfig        redis.RedisConf
-	SessionTTL         int64
+	AdminRpcClientConf   zrpc.RpcClientConf
+	ContentRpcClientConf zrpc.RpcClientConf
+	RedisConfig          redis.RedisConf
+	SessionTTL           int64
 }

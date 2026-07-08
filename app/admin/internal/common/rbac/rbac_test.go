@@ -22,10 +22,7 @@ func newTestRedis(t *testing.T) (*redis.Redis, *miniredis.Miniredis) {
 }
 
 func TestRequiredPermission(t *testing.T) {
-	// 临时登记一条门禁路由 用后还原
-	routePermissions["GET /v1/admin/contents"] = "content:list"
-	t.Cleanup(func() { delete(routePermissions, "GET /v1/admin/contents") })
-
+	// 断言 feat-admin-004 永久登记的内容管理门禁路由
 	tests := []struct {
 		name     string
 		method   string
@@ -33,7 +30,9 @@ func TestRequiredPermission(t *testing.T) {
 		wantCode string
 		wantNeed bool
 	}{
-		{name: "已登记路由", method: "GET", path: "/v1/admin/contents", wantCode: "content:list", wantNeed: true},
+		{name: "内容列表", method: "GET", path: "/v1/admin/contents", wantCode: "content:list", wantNeed: true},
+		{name: "内容详情", method: "GET", path: "/v1/admin/contents/detail", wantCode: "content:detail", wantNeed: true},
+		{name: "下架恢复", method: "POST", path: "/v1/admin/contents/status", wantCode: "content:takedown", wantNeed: true},
 		{name: "方法大小写不敏感", method: "get", path: "/v1/admin/contents", wantCode: "content:list", wantNeed: true},
 		{name: "未登记路由只需登录", method: "POST", path: "/v1/admin/logout", wantCode: "", wantNeed: false},
 	}

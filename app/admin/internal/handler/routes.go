@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	auth "ran-feed/app/admin/internal/handler/auth"
+	content "ran-feed/app/admin/internal/handler/content"
 	"ran-feed/app/admin/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
@@ -37,6 +38,30 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Method:  http.MethodGet,
 					Path:    "/me",
 					Handler: auth.GetMeHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/admin"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.AdminAuthMiddleware, serverCtx.AdminRbacMiddleware, serverCtx.AdminAuditMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/contents",
+					Handler: content.ListContentsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/contents/detail",
+					Handler: content.GetContentDetailHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/contents/status",
+					Handler: content.SetContentStatusHandler(serverCtx),
 				},
 			}...,
 		),

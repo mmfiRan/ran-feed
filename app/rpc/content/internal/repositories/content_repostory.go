@@ -34,6 +34,12 @@ type ContentRepository interface {
 	BatchGetIndexableByIDs(contentIDs []int64) (map[int64]*model.RanFeedContent, error)
 	ScanIndexableByIDCursor(cursorID int64, limit int) ([]*model.RanFeedContent, error)
 	BatchUpdateHotScores(ids []int64, scores []float64, updatedAt time.Time) error
+	// AdminListContents 管理端多条件筛选 + id 倒序 keyset 游标 不限状态/可见性 仅软删过滤
+	AdminListContents(status *int32, contentType *int32, authorID *int64, cursorID int64, limit int) ([]*model.RanFeedContent, error)
+	// AdminGetByID 管理端取任意状态内容(含非公开) 仅软删过滤
+	AdminGetByID(contentID int64) (*model.RanFeedContent, error)
+	// AdminUpdateStatus 管理端翻转状态 落 updated_by 返回受影响行数
+	AdminUpdateStatus(contentID int64, status int32, operatorID int64) (int64, error)
 }
 
 type ContentRepositoryImpl struct {
@@ -459,4 +465,86 @@ func (r *ContentRepositoryImpl) BatchUpdateHotScores(ids []int64, scores []float
 		}
 		return nil
 	})
+}
+
+// AdminListContents 管理端列表 id 倒序 keyset 游标(cursorID>0 时取 id<cursorID) 不限状态/可见性 仅软删过滤
+func (r *ContentRepositoryImpl) AdminListContents(status *int32, contentType *int32, authorID *int64, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
+	if limit <= 0 {
+		return []*model.RanFeedContent{}, nil
+	}
+
+	q := r.getQuery()
+	stmt := q.RanFeedContent.WithContext(r.ctx).
+		Select(
+			q.RanFeedContent.ID,
+			q.RanFeedContent.UserID,
+			q.RanFeedContent.ContentType,
+			q.RanFeedContent.Status,
+			q.RanFeedContent.Visibility,
+			q.RanFeedContent.LikeCount,
+			q.RanFeedContent.FavoriteCount,
+			q.RanFeedContent.CommentCount,
+			q.RanFeedContent.PublishedAt,
+			q.RanFeedContent.CreatedAt,
+		).
+		Where(q.RanFeedContent.IsDeleted.Eq(0))
+
+	if status != nil {
+		stmt = stmt.Where(q.RanFeedContent.Status.Eq(*status))
+	}
+	if contentType != nil {
+		stmt = stmt.Where(q.RanFeedContent.ContentType.Eq(*contentType))
+	}
+	if authorID != nil {
+		stmt = stmt.Where(q.RanFeedContent.UserID.Eq(*authorID))
+	}
+	if cursorID > 0 {
+		stmt = stmt.Where(q.RanFeedContent.ID.Lt(cursorID))
+	}
+
+	rows, err := stmt.Order(q.RanFeedContent.ID.Desc()).Limit(limit).Find()
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}
+
+// AdminGetByID 管理端取任意状态内容(含非公开) 仅软删过滤 未命中返回 nil
+func (r *ContentRepositoryImpl) AdminGetByID(contentID int64) (*model.RanFeedContent, error) {
+	if contentID <= 0 {
+		return nil, nil
+	}
+
+	q := r.getQuery()
+	row, err := q.RanFeedContent.WithContext(r.ctx).
+		Where(q.RanFeedContent.ID.Eq(contentID)).
+		Where(q.RanFeedContent.IsDeleted.Eq(0)).
+		Take()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return row, nil
+}
+
+// AdminUpdateStatus 管理端翻转状态 落 updated_by 仅软删过滤 返回受影响行数
+func (r *ContentRepositoryImpl) AdminUpdateStatus(contentID int64, status int32, operatorID int64) (int64, error) {
+	if contentID <= 0 {
+		return 0, nil
+	}
+
+	q := r.getQuery()
+	info, err := q.RanFeedContent.WithContext(r.ctx).
+		Where(q.RanFeedContent.ID.Eq(contentID)).
+		Where(q.RanFeedContent.IsDeleted.Eq(0)).
+		UpdateSimple(
+			q.RanFeedContent.Status.Value(status),
+			q.RanFeedContent.UpdatedBy.Value(operatorID),
+		)
+	if err != nil {
+		return 0, err
+	}
+	return info.RowsAffected, nil
 }

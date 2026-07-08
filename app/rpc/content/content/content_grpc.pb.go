@@ -715,3 +715,181 @@ var FeedService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "app/rpc/content/proto/content.proto",
 }
+
+const (
+	AdminContentService_AdminListContents_FullMethodName     = "/content.AdminContentService/AdminListContents"
+	AdminContentService_AdminGetContentDetail_FullMethodName = "/content.AdminContentService/AdminGetContentDetail"
+	AdminContentService_AdminSetContentStatus_FullMethodName = "/content.AdminContentService/AdminSetContentStatus"
+)
+
+// AdminContentServiceClient is the client API for AdminContentService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AdminContentServiceClient interface {
+	AdminListContents(ctx context.Context, in *AdminListContentsReq, opts ...grpc.CallOption) (*AdminListContentsRes, error)
+	AdminGetContentDetail(ctx context.Context, in *AdminGetContentDetailReq, opts ...grpc.CallOption) (*AdminGetContentDetailRes, error)
+	AdminSetContentStatus(ctx context.Context, in *AdminSetContentStatusReq, opts ...grpc.CallOption) (*AdminSetContentStatusRes, error)
+}
+
+type adminContentServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAdminContentServiceClient(cc grpc.ClientConnInterface) AdminContentServiceClient {
+	return &adminContentServiceClient{cc}
+}
+
+func (c *adminContentServiceClient) AdminListContents(ctx context.Context, in *AdminListContentsReq, opts ...grpc.CallOption) (*AdminListContentsRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListContentsRes)
+	err := c.cc.Invoke(ctx, AdminContentService_AdminListContents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminContentServiceClient) AdminGetContentDetail(ctx context.Context, in *AdminGetContentDetailReq, opts ...grpc.CallOption) (*AdminGetContentDetailRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetContentDetailRes)
+	err := c.cc.Invoke(ctx, AdminContentService_AdminGetContentDetail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminContentServiceClient) AdminSetContentStatus(ctx context.Context, in *AdminSetContentStatusReq, opts ...grpc.CallOption) (*AdminSetContentStatusRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminSetContentStatusRes)
+	err := c.cc.Invoke(ctx, AdminContentService_AdminSetContentStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AdminContentServiceServer is the server API for AdminContentService service.
+// All implementations must embed UnimplementedAdminContentServiceServer
+// for forward compatibility.
+type AdminContentServiceServer interface {
+	AdminListContents(context.Context, *AdminListContentsReq) (*AdminListContentsRes, error)
+	AdminGetContentDetail(context.Context, *AdminGetContentDetailReq) (*AdminGetContentDetailRes, error)
+	AdminSetContentStatus(context.Context, *AdminSetContentStatusReq) (*AdminSetContentStatusRes, error)
+	mustEmbedUnimplementedAdminContentServiceServer()
+}
+
+// UnimplementedAdminContentServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedAdminContentServiceServer struct{}
+
+func (UnimplementedAdminContentServiceServer) AdminListContents(context.Context, *AdminListContentsReq) (*AdminListContentsRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AdminListContents not implemented")
+}
+func (UnimplementedAdminContentServiceServer) AdminGetContentDetail(context.Context, *AdminGetContentDetailReq) (*AdminGetContentDetailRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AdminGetContentDetail not implemented")
+}
+func (UnimplementedAdminContentServiceServer) AdminSetContentStatus(context.Context, *AdminSetContentStatusReq) (*AdminSetContentStatusRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AdminSetContentStatus not implemented")
+}
+func (UnimplementedAdminContentServiceServer) mustEmbedUnimplementedAdminContentServiceServer() {}
+func (UnimplementedAdminContentServiceServer) testEmbeddedByValue()                             {}
+
+// UnsafeAdminContentServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AdminContentServiceServer will
+// result in compilation errors.
+type UnsafeAdminContentServiceServer interface {
+	mustEmbedUnimplementedAdminContentServiceServer()
+}
+
+func RegisterAdminContentServiceServer(s grpc.ServiceRegistrar, srv AdminContentServiceServer) {
+	// If the following call pancis, it indicates UnimplementedAdminContentServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&AdminContentService_ServiceDesc, srv)
+}
+
+func _AdminContentService_AdminListContents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListContentsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminContentServiceServer).AdminListContents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminContentService_AdminListContents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminContentServiceServer).AdminListContents(ctx, req.(*AdminListContentsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminContentService_AdminGetContentDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetContentDetailReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminContentServiceServer).AdminGetContentDetail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminContentService_AdminGetContentDetail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminContentServiceServer).AdminGetContentDetail(ctx, req.(*AdminGetContentDetailReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminContentService_AdminSetContentStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminSetContentStatusReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminContentServiceServer).AdminSetContentStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminContentService_AdminSetContentStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminContentServiceServer).AdminSetContentStatus(ctx, req.(*AdminSetContentStatusReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AdminContentService_ServiceDesc is the grpc.ServiceDesc for AdminContentService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AdminContentService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "content.AdminContentService",
+	HandlerType: (*AdminContentServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AdminListContents",
+			Handler:    _AdminContentService_AdminListContents_Handler,
+		},
+		{
+			MethodName: "AdminGetContentDetail",
+			Handler:    _AdminContentService_AdminGetContentDetail_Handler,
+		},
+		{
+			MethodName: "AdminSetContentStatus",
+			Handler:    _AdminContentService_AdminSetContentStatus_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "app/rpc/content/proto/content.proto",
+}

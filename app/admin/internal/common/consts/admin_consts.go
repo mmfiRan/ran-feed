@@ -25,6 +25,11 @@ const (
 
 	CtxKeyAdminID = "admin_id"
 	CtxKeyToken   = "token"
+
+	// ContentActionTakedown 内容下架 action 入参约定值
+	ContentActionTakedown = "takedown"
+	// ContentActionRestore 内容恢复 action 入参约定值
+	ContentActionRestore = "restore"
 )
 
 // ErrAdminNotLogin 后台未登录

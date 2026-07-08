@@ -9,6 +9,7 @@ import (
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/cron"
+	admincontentserviceServer "ran-feed/app/rpc/content/internal/server/admincontentservice"
 	contentserviceServer "ran-feed/app/rpc/content/internal/server/contentservice"
 	feedserviceServer "ran-feed/app/rpc/content/internal/server/feedservice"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -39,6 +40,7 @@ func main() {
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		content.RegisterContentServiceServer(grpcServer, contentserviceServer.NewContentServiceServer(ctx))
 		content.RegisterFeedServiceServer(grpcServer, feedserviceServer.NewFeedServiceServer(ctx))
+		content.RegisterAdminContentServiceServer(grpcServer, admincontentserviceServer.NewAdminContentServiceServer(ctx))
 
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
 			reflection.Register(grpcServer)

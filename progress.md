@@ -2,10 +2,31 @@
 
 ## 当前状态
 
-**最后更新：** 2026-07-06
-**当前功能：** feat-admin-003 RBAC 中间件 + 操作审计埋点（已完成 · 未提交）
+**最后更新：** 2026-07-08
+**当前功能：** feat-admin-004 内容管理（AdminContentService + admin-api + RBAC 激活）（已完成 · 未提交）
 
-> 后台管理系统 Phase A 三条全部完成。设计定稿见根目录 `ADMIN-DESIGN.md`（5 决策 D1~D5 + Phase A~E 路线图）。admin 地基（admin-rpc + admin-api + 登录 + RBAC + 审计）已就绪。下一步进入 Phase B（内容管理 + 先审后发），首次动 content.proto 属升级项需先确认。`./init.sh` 全绿。
+> 后台管理系统进入 Phase B。本轮交付内容管理（列表/详情/下架恢复），首次动 content.proto（加 enum 三值 + AdminContentService，已与用户确认）。Phase A 的 RBAC 门禁随本轮内容路由登记**首次真正生效**。下一步 feat-admin-005 先审后发（改发布/fanout 写路径，升级项需再确认）。`./init.sh` 全绿。
+
+---
+
+## 已完成（feat-admin-004 内容管理）
+
+**背景**：Phase A 地基就绪后进入 Phase B。经与用户确认：本轮只做 feat-admin-004（内容管理，较安全的只读 + 下架/恢复），先审后发（005）留下一轮单独确认；content.proto 的 ContentStatus enum 三值（TAKEN_DOWN/PENDING_REVIEW/REJECTED）一次加齐（同一次 proto 改动，005 不必再动 enum，本轮仅用 TAKEN_DOWN）。
+
+**关键设计验证**：下架 = 状态翻 `TAKEN_DOWN` + `contentcache.Invalidate`。已核实 feed 读路径回源走 `BatchGetPublishedByIDs`（`Status.Eq(PUBLISHED)` 过滤），故下架内容缓存失效后下次 miss 回源即被过滤，**自动从所有流消失，无需清 ZSET**。链路自洽。
+
+**交付**：
+- **content.proto**：ContentStatus 加 `TAKEN_DOWN=50/PENDING_REVIEW=60/REJECTED=70`；新增 `AdminContentService`（AdminListContents/AdminGetContentDetail/AdminSetContentStatus）+ 消息，goctl 重生成。`content.go` 注册第三 service（决策 D4 同进程物理隔离，C 端两 service 不改）。
+- **content-rpc**：`ContentRepository` 加 `AdminListContents`（可选 status/type/author 筛选 + id 倒序 keyset 游标，仅软删过滤）、`AdminGetByID`（任意状态）、`AdminUpdateStatus`（status + updated_by）。三 logic：列表按类型分组批量取 article/video 标题拼装、满页给 next_cursor；详情复用 GetByContentID 拼正文/封面、含非公开无 viewer 门槛；下架/恢复经纯函数 `validateStatusTransition` 校验状态机后翻状态 + Invalidate。
+- **admin-api**：`content.api` 三**静态路由**（`/contents`、`/contents/detail`、`/contents/status` action=takedown/restore）——避开 `:id` 路径参数，因 `AdminRbacMiddleware` 按 `r.URL.Path` 精确匹配。挂 Auth+Rbac+Audit 组，goctl 重生成 routes/swagger；svc/config/yaml 接 `ContentRpcClientConf`（key content.rpc）；operator_id 从 ctx 取 admin_id。
+- **RBAC 激活**：registry 登记 `content:list/detail/takedown`——**Phase A 门禁首次真正生效**；`seed_content_permissions.sql` 幂等播种三权限点 + super 补绑 content 模块。
+- **单测**：`validateStatusTransition` 状态机 10 例、`buildAdminContentItem` 映射、`normalizePageSize` 边界、`optional*` 零值转 nil；rbac registry 断言三内容路由。
+
+**验证**：`./init.sh` 全绿（build+vet+test，31 测试文件）。
+
+**遗留**：端到端（起全栈 admin-rpc+content-rpc，下架后 feed 消失、RBAC 拒绝无权限角色）未现场联调，由单测 + 全绿保证；`seed_content_permissions.sql` 待部署时执行一次。**下一步 feat-admin-005**：先审后发（发布落待审 + AdminReviewContent + fanout 触发点从发布迁到审核通过），改发布/fanout 写路径属升级项，动手前需与用户确认。
+
+**未提交**：feat-admin-004 全部改动（content.proto + content-rpc + admin-api + seed sql）。
 
 ---
 
