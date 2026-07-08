@@ -3,7 +3,29 @@
 ## 当前状态
 
 **最后更新：** 2026-07-08
-**当前功能：** feat-admin-005 先审后发（已完成 · 未提交）
+**当前功能：** fix-006 own-feed 迁移 publishbox 修复跨可见性泄露（已完成 · 未提交）
+
+> own-feed（UserPublishFeed）迁到 publishbox.QueryWindow（PUBLIC-only 重建 + 复合游标），并把装配改 publicOnly=true 从读侧堵死私密泄露。删旧锁/重建/内存分页 + 最后一个 query lua 消费者（连带删 QueryUserPublishZSetScript + .lua + parseZSetReply）。`./init.sh` 全绿（32 测试文件）。下一步：Phase C feat-admin-006（用户管理，改 user.proto 升级项）。
+
+---
+
+## 已完成（fix-006 own-feed 迁移 publishbox 修复跨可见性泄露）
+
+**背景**：refactor-006 的 Phase 2 待办。own-feed 冷重建走 `ListPublishedByAuthor`（不过滤 visibility），把 PRIVATE 灌进与大V merge 共享的 `feed:user:publish:{uid}`。
+
+**核实泄露真相（比原描述更准）**：bigV merge 经 follow feed `resolveDetails(ids, true)` 已按 PUBLIC 过滤，**不泄露**；真正泄露在 **own-feed 自身**——它用 `assembleItems(ids, viewerID, false)`（publicOnly=false）把作者私密返回给**任意访问者**；且增量 `writeUserPublishZSet` 无视 visibility 会写私密进 zset，故仅改重建口径不足以消除泄露。
+
+**改动**：
+- own-feed 迁到 `publishbox.QueryWindow(authorID, cutoffMillis=0, cursorScore, pageSize)`：复用命中读 / 未命中 PUBLIC-only 重建 / 空哨兵 / DistLocker 防击穿。删 `loadPageIDs`/`queryUserPublishIDs`/`queryUserPublishAllFromDB`/`updateUserPublishCache`/`pageUserPublishRows` + 手搓 RedisLock 重建 + 内存分页 + rebuild 常量 + `contentRepo` 字段 + `buildUserPublishFeedKey`/`userPublishFeedKeepN`。
+- 游标 exclusive 纯 millis 串 → 复合 `score:id`，复用 follow feed 的 `parseCursor/afterCursor/formatCursor`，修同毫秒（审核通过 published_at 同批相近）翻页 skip/dup。
+- **装配 publicOnly=false → true**：与写扩散 / 大V merge 口径一致，从读侧彻底堵死泄露（即使 zset 残留私密 id 也在装配被过滤）。
+- 清死代码：删最后一个 query lua 消费者 → 删 `QueryUserPublishZSetScript` 变量 + `query_user_publish_zset.lua` + `lua_reply.go` 的 `parseZSetReply`（`luaReplyString/Int64` 仍被 recommend feed 用，保留）。
+
+**行为变更（已知）**：作者主页流现**严格 PUBLIC-only**，作者本人也不再经此流看到自己私密内容（项目无 viewer==author 私密展示逻辑，可接受权衡）。`writeUserPublishZSet` 增量写仍可能含私密 id（读侧全 publicOnly=true 已无害；收紧为 PUBLIC-only 属可选 hygiene，未做）。
+
+**验证**：`./init.sh` 全绿（build+vet+test，32 测试文件）。项目未上线无存量游标兼容负担。
+
+---
 
 > Phase B 收官条。发布落待审 + AdminReviewContent（通过/拒绝）+ 进 feed 副作用触发点从发布迁到审核通过 + content 域审核历史表 ran_feed_content_review。用户中途拉起 docker 容器提供 DB（`ENV_FILE=/home/wmr/opt/ran-feed-docker/.env`），故 gorm-gen 正常跑通、审核表落地（未走拆分）。下一步待办：fix-006（own-feed 跨可见性泄露）、Phase C feat-admin-006（用户管理）。`./init.sh` 全绿（33 测试文件）。
 

@@ -65,8 +65,8 @@
       "name": "作者主页流 own-feed 迁移 publishbox 修复跨可见性泄露",
       "description": "[Phase 2 待办] own-feed(UserPublishFeed)的 loadPageIDs 冷重建走 ListPublishedByAuthor 不带 Visibility.Eq(PUBLIC) 过滤 会把 PRIVATE 内容灌进与大V merge 共享的同一个 feed:user:publish:{uid} key；bigV merge 读同 key 喂给关注者 → 作者私密内容可能泄露给关注者(取决于该发件箱最后由哪条路径冷重建)。修法：把 own-feed 的 loadPageIDs 迁到 publishbox.QueryWindow(cutoffMillis=0 取全量历史) 复用 PUBLIC-only 重建口径 一并消除泄露 并删掉 user_publish_feed_logic 里重复的锁+重建+in-memory 分页代码。注意 own-feed 现用 exclusive 字符串游标 迁移后改复合游标语义需回归翻页行为。",
       "dependencies": ["refactor-006"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 全绿(build+vet+test 32 测试文件)。①own-feed UserPublishFeed 迁到 publishbox.QueryWindow(authorID cutoffMillis=0 全量历史 cursorScore pageSize)复用命中读/未命中 PUBLIC-only 重建(ListPublishedByAuthorWithinWindow sinceMillis=0 PUBLIC-only)/空哨兵/DistLocker 防击穿;删 UserPublishFeedLogic 的 loadPageIDs/queryUserPublishIDs/queryUserPublishAllFromDB/updateUserPublishCache/pageUserPublishRows + RedisLock 手搓重建 + 内存分页 + rebuild 常量 + contentRepo 字段 + buildUserPublishFeedKey/userPublishFeedKeepN。②游标由 exclusive 纯 millis 串改复合 score:id 复用 follow feed 的 parseCursor/afterCursor/formatCursor 修同毫秒(审核通过 published_at 可能同批相近)翻页 skip/dup。③核实泄露真相:bigV merge 经 follow feed resolveDetails(ids,true) 已按 PUBLIC 过滤不泄露;泄露实为 own-feed 自身 assembleItems 用 publicOnly=false 把作者私密返回给任意访问者 且增量 writeUserPublishZSet 无视 visibility 会写私密进 zset 故仅改重建口径不够——本修一并把 own-feed 装配改 publicOnly=true 与写扩散/大V merge 口径一致 从读侧彻底堵死(即使 zset 残留私密 id 也在装配被过滤)。④清死代码:删最后一个 query lua 消费者后删 QueryUserPublishZSetScript 变量 + query_user_publish_zset.lua 文件 + lua_reply.go 的 parseZSetReply(luaReplyString/Int64 仍被 recommend feed 用故保留)。行为变更:作者主页流现严格 PUBLIC-only 作者本人也不再经此流看到自己私密内容(项目无 viewer==author 私密展示逻辑 属可接受权衡);publish zset 增量写仍可能含私密 id(读侧全 publicOnly=true 已无害 收紧 writeUserPublishZSet 为 PUBLIC-only 属可选 hygiene 未做)。项目未上线无存量游标兼容负担。"
     },
     {
       "id": "fix-007",
