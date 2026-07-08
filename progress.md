@@ -3,9 +3,22 @@
 ## 当前状态
 
 **最后更新：** 2026-07-08
-**当前功能：** feat-admin-004 内容管理（AdminContentService + admin-api + RBAC 激活）（已完成 · 未提交）
+**当前功能：** fix-009 search 枚举字面量改用 pb 枚举（已完成 · 未提交）
 
-> 后台管理系统进入 Phase B。本轮交付内容管理（列表/详情/下架恢复），首次动 content.proto（加 enum 三值 + AdminContentService，已与用户确认）。Phase A 的 RBAC 门禁随本轮内容路由登记**首次真正生效**。下一步 feat-admin-005 先审后发（改发布/fanout 写路径，升级项需再确认）。`./init.sh` 全绿。
+> feat-admin-004（内容管理）已提交（commit 7a87281）；go-coding skill 加「常量与枚举」小节已提交（1022f94）。本轮 fix-009 按新 skill 规则消除 search 服务 DB 枚举字面量重复定义。下一步待办：fix-006（own-feed 跨可见性泄露）、feat-admin-005（先审后发，升级项需先确认）。`./init.sh` 全绿。
+
+---
+
+## 已完成（fix-009 search 枚举字面量改用 pb 枚举）
+
+**背景**：go-coding skill 新增「常量与枚举」小节后，`search_consts.go` 的 `ContentStatusPublished int32=30` / `ContentVisibilityPublic int32=10` / `UserStatusNormal int32=10` 成为该规则点名的反例——重复定义了 pb 已有的 DB 枚举值，值一改两处漂移。
+
+**改动**：
+- `search_content_logic.go` buildQuery：status/visibility filter 改 `int32(content.ContentStatus_PUBLISHED)` / `int32(content.Visibility_PUBLIC)`；换 consts import 为 content pb import。
+- `search_user_logic.go`：status filter 改 `int32(user.UserStatus_USER_STATUS_ACTIVE)`（user.proto 已有 UserStatus enum）；换 consts import 为 user pb import。
+- `search_consts.go` 删三个 DB 枚举字面量，仅留 `SourceTable*`（canal 源表名，属非 DB 业务字面量，按规则保留）。
+
+**验证**：`./init.sh` 全绿（build+vet+test，32 测试文件）；全仓 grep 无残留引用；值与 pb 定义一致，ES filter 行为不变。
 
 ---
 

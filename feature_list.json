@@ -193,8 +193,8 @@
       "name": "search 服务枚举字面量改用 pb 枚举 消除 DB 枚举重复定义",
       "description": "见 go-coding skill「常量与枚举」规则。app/rpc/search/internal/common/consts/search_consts.go 的 ContentStatusPublished(int32=30)/ContentVisibilityPublic(int32=10)/UserStatusNormal(int32=10) 三个字面量重复定义了 pb 已有的 DB 枚举值 属反例(值一改两处漂移)。search-rpc 经 refactor-007 已 import content/user pb 客户端 故改用对应 pb 枚举:search_content_logic ES filter 的 status/visibility 改 int32(content.ContentStatus_PUBLISHED)/int32(content.Visibility_PUBLIC);search_user_logic 的 status 改 user 侧 status 枚举(若 user.proto 无 status enum 则退而用 pkg/enum 或保留字面量但注释来源指向 schema)。删掉 search_consts.go 中被替换的字面量(SourceTable* canal 源表名常量保留 属非 DB 枚举的业务字面量)。",
       "dependencies": [],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 全绿(build+vet+test 32 测试文件)。search_content_logic buildQuery 的 status/visibility filter 改 int32(content.ContentStatus_PUBLISHED)(=30)/int32(content.Visibility_PUBLIC)(=10);search_user_logic 的 status filter 改 int32(user.UserStatus_USER_STATUS_ACTIVE)(=10 user.proto 已有 UserStatus enum);两 logic 各去掉只为这仨字面量而引的 consts import 换成 content/user pb import。search_consts.go 删三个 DB 枚举字面量 仅留 SourceTable*(canal 源表名 属非 DB 业务字面量按规则保留)。全仓 grep 无对已删常量的残留引用 值与 pb 定义一致 ES filter 行为不变。"
     }
   ]
 }

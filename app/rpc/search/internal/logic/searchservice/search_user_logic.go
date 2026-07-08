@@ -4,10 +4,10 @@ import (
 	"context"
 	"strconv"
 
-	"ran-feed/app/rpc/search/internal/common/consts"
 	"ran-feed/app/rpc/search/internal/es"
 	"ran-feed/app/rpc/search/internal/svc"
 	"ran-feed/app/rpc/search/search"
+	"ran-feed/app/rpc/user/user"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -77,7 +77,7 @@ func (l *SearchUserLogic) buildQuery(in *search.SearchUserReq, size int, searchA
 					}},
 				},
 				"filter": []map[string]any{
-					{"term": map[string]any{"status": consts.UserStatusNormal}},
+					{"term": map[string]any{"status": int32(user.UserStatus_USER_STATUS_ACTIVE)}},
 					{"term": map[string]any{"is_deleted": 0}},
 				},
 			},
