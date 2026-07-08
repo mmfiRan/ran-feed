@@ -187,6 +187,14 @@
       "dependencies": ["feat-admin-001", "feat-admin-002", "feat-admin-003"],
       "status": "done",
       "evidence": "./init.sh 全绿(build+vet+test 31 测试文件)。①content.proto:ContentStatus 加 TAKEN_DOWN=50/PENDING_REVIEW=60/REJECTED=70;新增 AdminContentService 三方法 + 消息 goctl rpc protoc 重生成(pb/grpc/client/server/logic 桩);content.go 注册第三 service RegisterAdminContentServiceServer C 端两 service 一行不改;goctl 顺手 gofmt 了 service_context.go 已补回 PublishBoxRebuildLocker 注释。②content-rpc:ContentRepository 加 AdminListContents(可选 status/content_type/author 筛选 IsDeleted.Eq(0) id.Desc keyset 游标 cursorID>0 时 id<cursorID)、AdminGetByID(任意状态软删过滤)、AdminUpdateStatus(status+updated_by 返回行数);三 logic 实现——列表按类型分组批量取 article/video 标题拼装+满页给 next_cursor;详情复用 GetByContentID 拼正文/封面 无 viewer 门槛含非公开;下架/恢复经纯函数 validateStatusTransition 校验状态机(下架仅 PUBLISHED 入 恢复仅 TAKEN_DOWN 入 幂等 noop 杜绝草稿/待审越权转发布)后 AdminUpdateStatus + contentcache.Invalidate(失败不阻断);分页常量入 content_consts.go(AdminListDefaultPageSize/MaxPageSize)不内联。③admin-api:content.api 三静态路由(GET /contents、GET /contents/detail、POST /contents/status action=takedown/restore)挂 Auth+Rbac+Audit 组 goctl 重生成 routes/swagger;svc/config/yaml 接 ContentRpcClientConf(key content.rpc)admincontentservice 客户端;三 logic 透传映射 operator_id 从 ctx 取 admin_id;action 字面量入 admin_consts.go(ContentActionTakedown/Restore)不内联。④RBAC 激活:registry 登记 content:list/detail/takedown 首次启用业务门禁;seed_content_permissions.sql 幂等播种三权限点 + super 补绑 content 模块。⑤单测:validateStatusTransition 状态机 10 例(下架/恢复/幂等/越权/不支持目标)、buildAdminContentItem 映射(已发布带时间/未发布归零)、normalizePageSize 边界、optional* 零值转 nil/非零透传;rbac registry 断言三内容路由。运行期遗留:端到端(真实 admin-rpc+content-rpc 起全栈 下架后 feed 消失)未现场联调 由单测+全绿保证;seed_content_permissions.sql 待部署时执行一次。先审后发 fanout 触发点迁移留 feat-admin-005。"
+    },
+    {
+      "id": "fix-009",
+      "name": "search 服务枚举字面量改用 pb 枚举 消除 DB 枚举重复定义",
+      "description": "见 go-coding skill「常量与枚举」规则。app/rpc/search/internal/common/consts/search_consts.go 的 ContentStatusPublished(int32=30)/ContentVisibilityPublic(int32=10)/UserStatusNormal(int32=10) 三个字面量重复定义了 pb 已有的 DB 枚举值 属反例(值一改两处漂移)。search-rpc 经 refactor-007 已 import content/user pb 客户端 故改用对应 pb 枚举:search_content_logic ES filter 的 status/visibility 改 int32(content.ContentStatus_PUBLISHED)/int32(content.Visibility_PUBLIC);search_user_logic 的 status 改 user 侧 status 枚举(若 user.proto 无 status enum 则退而用 pkg/enum 或保留字面量但注释来源指向 schema)。删掉 search_consts.go 中被替换的字面量(SourceTable* canal 源表名常量保留 属非 DB 枚举的业务字面量)。",
+      "dependencies": [],
+      "status": "not-started",
+      "evidence": ""
     }
   ]
 }
