@@ -243,6 +243,38 @@
       "dependencies": ["feat-admin-003", "feat-admin-006", "feat-admin-007", "feat-admin-008"],
       "status": "done",
       "evidence": "./init.sh 全绿(build+vet+test)。pkg/rbacgen 独立 module(自带 go.mod 隔离 goctl-tools 重依赖 二进制 .gitignore 不入库)解析 .api @doc 生成 docmeta_gen.go;19 条受控路由 @doc 补 permission 键去掉描述冗余权限点文字;auth.api 的 logout/me 组去掉 AdminRbacMiddleware 仅留 Auth+Audit(只需登录) login 本就公开无中间件;main.go server.Use(docmeta.Inject) 全局最外层先执行 保证 RBAC 中间件能从 ctx 读到;AdminRbacMiddleware 先验 adminID 再取 required=docmeta.Value(ctx,permission)——required 空(漏声明/漏跑 rbacgen)一律 100203 拒并 log(fail-closed)非放行,有权限点则 LoadPermissions+HasPermission 校验;删 registry.go/RequiredPermission/TestRequiredPermission,HasPermission/LoadPermissions/权限缓存逻辑与单测保留;go-coding new-interface.md 补『改 admin .api 必跑 rbacgen』强制规则含命令。运行时中间件顺序(Inject 全局最外→Auth→Rbac)由 go-zero server.Use 语义保证 端到端待起全栈复验。"
+    },
+    {
+      "id": "feat-admin-009",
+      "name": "Phase C 用户管理·user.proto AdminUserService 骨架",
+      "description": "见 ADMIN-DESIGN Phase C 与 plans/clever-wishing-sunset.md。用户管理拆 4 步之第 1 步:只搭 user-rpc 的 admin 契约与骨架,不含业务。①user.proto 新增 AdminUserService(决策 D4 与 C 端 UserService 同进程并存)+ 消息:AdminListUsers(status?/keyword?/page/page_size → repeated AdminUserItem + total)、AdminGetUserDetail(user_id → AdminUserDetail)、AdminSetUserStatus(user_id/status/operator_id → 空);AdminUserItem(user_id/username/nickname/mobile/avatar/status/created_at 毫秒)、AdminUserDetail(item + bio/gender/email/updated_at);status 复用现有 UserStatus enum(不加 MUTED enum 不动,UNKNOWN=0 表示不限)。②goctl rpc protoc 重生成 pb/grpc/client/server + logic 桩(桩返回空)。③user.go 加 RegisterAdminUserServiceServer(C 端 UserService 一行不动,参照 content.go 三 service)。升级点:改 user.proto(已确认)。DoD:./init.sh 全绿(桩)。",
+      "dependencies": ["feat-admin-008"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-admin-010",
+      "name": "Phase C 用户管理·user-rpc 数据层与踢下线 helper",
+      "description": "用户管理拆 4 步之第 2 步:补数据层与踢下线工具(暂不接 logic)。①UserRepository(app/rpc/user/internal/repositories/user_repository.go)抽 adminUserQuery 共享筛选(软删过滤 + status>0 Eq + keyword 非空 Nickname LIKE %kw%)+ AdminListUsers(offset/limit id.Desc 返 *model.RanFeedUser 以带 CreatedAt)/AdminCountUsers(同筛选 .Count() 分离两 builder)/AdminGetByID(任意状态 软删过滤 未命中返 nil,区别于现有返 *do.UserDO 的 GetByID)/AdminUpdateStatus(Updates map{status,updated_by} 返 RowsAffected)。②session 包(internal/common/utils/session/session_helper.go)加 RemoveByUserID(ctx,r,userID):GET rediskey.BuildUserSessionUserKey(userID) 取 token,非空则调现有 RemoveSession(删双向 key)。③user-rpc consts 加 page 默认/上限(20/100)。DoD:./init.sh 全绿 + session RemoveByUserID miniredis 单测(有会话删双向 / 无会话 no-op)。",
+      "dependencies": ["feat-admin-009"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-admin-011",
+      "name": "Phase C 用户管理·user-rpc 3 logic 填实",
+      "description": "用户管理拆 4 步之第 3 步:填实 adminuserservice 3 logic 使 RPC 真正可用。①AdminListUsers:先 AdminCountUsers 为 0 直返 → utils.NormalizePage(page,pageSize,DefaultPageSize,MaxPageSize) → AdminListUsers → buildAdminUserItem 映射(created_at UnixMilli)。②AdminGetUserDetail:AdminGetByID nil 报『用户不存在』→ 映射详情(含 bio/gender/email/updated_at)。③AdminSetUserStatus:纯函数守卫仅接受 ACTIVE/DISABLED(其它拒『不支持的状态』)→ AdminUpdateStatus affected==0 报『用户不存在』→ status==DISABLED 时 session.RemoveByUserID 踢下线(失败只 log 不阻断);updated_by=operator_id。边缘:model status 有 30=注销不在 proto enum,本轮封禁只 10↔20,restore 不特判 30(注明,后续需要再加守卫)。DoD:./init.sh 全绿 + 单测(buildAdminUserItem 映射、SetUserStatus 状态守卫纯函数)。",
+      "dependencies": ["feat-admin-010"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-admin-012",
+      "name": "Phase C 用户管理·admin-api 模块 + RBAC + seed",
+      "description": "用户管理拆 4 步之第 4 步(收官):admin-api 暴露 HTTP 面。①首次接 user-rpc admin 客户端:config.go 加 UserRpcClientConf、admin-api.yaml 加该段(Etcd key user.rpc)、svcCtx 加 UserAdminRpc(user-rpc 生成的 adminuserservice client + ClientGrpcInterceptor)。②doc/user/user.api(group user,全静态路由挂 Auth+Rbac+Audit):GET /users(status?/keyword?/page/page_size)@doc permission user:list、GET /users/detail(user_id)permission user:list、POST /users/status(user_id/action oneof=ban restore)permission user:ban;import 进 doc/admin.api;goctl api go + swagger 重生成。③3 BFF logic mirror content:mapUserStatusAction(ban→DISABLED restore→ACTIVE 纯函数可测)、operatorID from ctx(consts.CtxKeyAdminID)、调 UserAdminRpc、映射响应。④跑 rbacgen 重生成 app/admin/internal/docmeta(含 user 三路由 permission)。⑤seed_user_permissions.sql(mirror seed_content_permissions.sql,module=user:插 user:list/user:ban + super 补绑 module=user)。DoD:./init.sh 全绿 + 单测(mapUserStatusAction、docmeta grep 含 user 路由);端到端(DB 起时):封禁→该用户 C 端 /me 立即 401(踢下线)、恢复可再登录、无 user:ban 角色调 /users/status 被 100203、seed apply 一次。",
+      "dependencies": ["feat-admin-011"],
+      "status": "not-started",
+      "evidence": ""
     }
   ]
 }
