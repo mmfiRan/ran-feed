@@ -6,9 +6,11 @@ import (
 
 	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/admin/internal/common/rbac"
+	"ran-feed/app/admin/internal/docmeta"
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/app/rpc/admin/client/adminservice"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
@@ -28,15 +30,17 @@ func NewAdminRbacMiddleware(r *redis.Redis, adminRpc adminservice.AdminService, 
 
 func (m *AdminRbacMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		required, need := rbac.RequiredPermission(r.Method, r.URL.Path)
-		if !need {
-			next(w, r)
-			return
-		}
-
 		adminID, _ := r.Context().Value(consts.CtxKeyAdminID).(int64)
 		if adminID <= 0 {
 			httpx.ErrorCtx(r.Context(), w, consts.ErrAdminNotLogin)
+			return
+		}
+
+		// 所需权限点由 docmeta.Inject 从路由 @doc 注入 ctx
+		required, _ := docmeta.Value(r.Context(), "permission")
+		if required == "" {
+			logx.WithContext(r.Context()).Errorf("路由挂了 RBAC 中间件却无 permission 声明 拒绝 path=%s", r.URL.Path)
+			httpx.ErrorCtx(r.Context(), w, consts.ErrAdminForbidden)
 			return
 		}
 

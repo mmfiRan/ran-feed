@@ -21,46 +21,6 @@ func newTestRedis(t *testing.T) (*redis.Redis, *miniredis.Miniredis) {
 	return redis.MustNewRedis(redis.RedisConf{Host: mr.Addr(), Type: redis.NodeType}), mr
 }
 
-func TestRequiredPermission(t *testing.T) {
-	// 断言 feat-admin-004 永久登记的内容管理门禁路由
-	tests := []struct {
-		name     string
-		method   string
-		path     string
-		wantCode string
-		wantNeed bool
-	}{
-		{name: "内容列表", method: "GET", path: "/v1/admin/contents", wantCode: "content:list", wantNeed: true},
-		{name: "内容详情", method: "GET", path: "/v1/admin/contents/detail", wantCode: "content:detail", wantNeed: true},
-		{name: "下架恢复", method: "POST", path: "/v1/admin/contents/status", wantCode: "content:takedown", wantNeed: true},
-		{name: "内容审核", method: "POST", path: "/v1/admin/contents/review", wantCode: "content:review", wantNeed: true},
-		{name: "权限点目录", method: "GET", path: "/v1/admin/permissions", wantCode: "admin:permission:list", wantNeed: true},
-		{name: "审计日志", method: "GET", path: "/v1/admin/operation-logs", wantCode: "admin:audit:list", wantNeed: true},
-		{name: "角色列表", method: "GET", path: "/v1/admin/roles", wantCode: "admin:role:list", wantNeed: true},
-		{name: "角色详情", method: "GET", path: "/v1/admin/roles/detail", wantCode: "admin:role:list", wantNeed: true},
-		{name: "建角色", method: "POST", path: "/v1/admin/roles/create", wantCode: "admin:role:manage", wantNeed: true},
-		{name: "改角色", method: "POST", path: "/v1/admin/roles/update", wantCode: "admin:role:manage", wantNeed: true},
-		{name: "设角色权限", method: "POST", path: "/v1/admin/roles/permissions", wantCode: "admin:role:manage", wantNeed: true},
-		{name: "删角色", method: "POST", path: "/v1/admin/roles/delete", wantCode: "admin:role:manage", wantNeed: true},
-		{name: "管理员列表", method: "GET", path: "/v1/admin/admins", wantCode: "admin:user:list", wantNeed: true},
-		{name: "管理员详情", method: "GET", path: "/v1/admin/admins/detail", wantCode: "admin:user:list", wantNeed: true},
-		{name: "建管理员", method: "POST", path: "/v1/admin/admins/create", wantCode: "admin:user:manage", wantNeed: true},
-		{name: "改管理员", method: "POST", path: "/v1/admin/admins/update", wantCode: "admin:user:manage", wantNeed: true},
-		{name: "启禁管理员", method: "POST", path: "/v1/admin/admins/status", wantCode: "admin:user:manage", wantNeed: true},
-		{name: "重置密码", method: "POST", path: "/v1/admin/admins/reset-password", wantCode: "admin:user:manage", wantNeed: true},
-		{name: "设管理员角色", method: "POST", path: "/v1/admin/admins/roles", wantCode: "admin:user:manage", wantNeed: true},
-		{name: "方法大小写不敏感", method: "get", path: "/v1/admin/contents", wantCode: "content:list", wantNeed: true},
-		{name: "未登记路由只需登录", method: "POST", path: "/v1/admin/logout", wantCode: "", wantNeed: false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			code, need := RequiredPermission(tt.method, tt.path)
-			assert.Equal(t, tt.wantNeed, need)
-			assert.Equal(t, tt.wantCode, code)
-		})
-	}
-}
-
 func TestHasPermission(t *testing.T) {
 	perms := map[string]struct{}{"content:list": {}, "user:ban": {}}
 	tests := []struct {

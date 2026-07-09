@@ -26,6 +26,30 @@ goctl api swagger --api app/front/doc/front.api --dir app/front/swagger --filena
 - 请求字段用指针 加 `,optional`，并带 `validate:"..."` 标签做参数校验
 - 路由按服务分组，handler 名与 logic 一一对应
 
+## 后台 admin-api RBAC 元数据（改 admin 的 .api 必跑）
+
+admin-api 的路由级权限校验不写死在代码里,而是**以 `.api` 每条路由的 `@doc` 为事实源**:
+
+```
+@doc (
+    description: "角色列表 分页"
+    permission: "admin:role:list"   // 需要鉴权的路由声明所需权限点 只登录的(登录/登出/me)不写
+)
+@handler ListRoles
+get /roles (AdminRoleListReq) returns (AdminRoleListRes)
+```
+
+`pkg/rbacgen`(独立 module)解析 `.api` 把每条路由 `@doc` 的 key-value 生成到 `app/admin/internal/docmeta`;
+`main.go` 全局 `server.Use(docmeta.Inject)` 把当前路由 `@doc` 注入 ctx;`AdminRbacMiddleware` 从 ctx 读
+`permission` 校验(未声明则只验登录)。
+
+**强制:凡改动 `app/admin` 下任意 `.api`(增删路由或改 permission),在上面 goctl 两步之外,必须再跑一次
+rbacgen 重生成 docmeta**,否则权限映射与路由脱节(改了权限不生效 / 新路由漏鉴权):
+
+```bash
+cd pkg/rbacgen && go run . -api ../../app/admin/doc/admin.api -out ../../app/admin/internal/docmeta -pkg docmeta
+```
+
 ## gRPC（服务间）
 
 改 `app/rpc/<svc>/proto/<svc>.proto` 后（保持 `--style=go_zero --multiple` 统一文件名风格）：

@@ -35,7 +35,8 @@ type (
 )
 service admin-api {
 	@doc (
-		description: "操作审计日志 多条件筛选 + 分页 权限点 admin:audit:list"
+		description: "操作审计日志 多条件筛选 + 分页"
+		permission: "admin:audit:list"
 	)
 	@handler ListOperationLogs
 	get /operation-logs (AdminOperationLogListReq) returns (AdminOperationLogListRes)

@@ -24,7 +24,8 @@ type (
 )
 service admin-api {
 	@doc (
-		description: "权限点目录 供角色分权选择 权限点 admin:permission:list"
+		description: "权限点目录 供角色分权选择"
+		permission: "admin:permission:list"
 	)
 	@handler ListPermissions
 	get /permissions (AdminPermissionListReq) returns (AdminPermissionListRes)

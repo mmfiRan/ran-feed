@@ -72,43 +72,50 @@ type (
 )
 service admin-api {
 	@doc (
-		description: "管理员列表 分页 权限点 admin:user:list"
+		description: "管理员列表 分页"
+		permission: "admin:user:list"
 	)
 	@handler ListAdmins
 	get /admins (AdminUserListReq) returns (AdminUserListRes)
 
 	@doc (
-		description: "管理员详情 含角色ID 权限点 admin:user:list"
+		description: "管理员详情 含角色ID"
+		permission: "admin:user:list"
 	)
 	@handler GetAdminDetail
 	get /admins/detail (AdminUserDetailReq) returns (AdminUserDetailRes)
 
 	@doc (
-		description: "建管理员 权限点 admin:user:manage"
+		description: "建管理员"
+		permission: "admin:user:manage"
 	)
 	@handler CreateAdmin
 	post /admins/create (AdminUserCreateReq) returns (AdminUserCreateRes)
 
 	@doc (
-		description: "改管理员昵称 权限点 admin:user:manage"
+		description: "改管理员昵称"
+		permission: "admin:user:manage"
 	)
 	@handler UpdateAdmin
 	post /admins/update (AdminUserUpdateReq) returns (AdminUserUpdateRes)
 
 	@doc (
-		description: "启用禁用管理员 禁用即踢下线 权限点 admin:user:manage"
+		description: "启用禁用管理员 禁用即踢下线"
+		permission: "admin:user:manage"
 	)
 	@handler SetAdminStatus
 	post /admins/status (AdminUserStatusReq) returns (AdminUserStatusRes)
 
 	@doc (
-		description: "重置管理员密码 重置即踢下线 权限点 admin:user:manage"
+		description: "重置管理员密码 重置即踢下线"
+		permission: "admin:user:manage"
 	)
 	@handler ResetAdminPassword
 	post /admins/reset-password (AdminUserResetPasswordReq) returns (AdminUserResetPasswordRes)
 
 	@doc (
-		description: "覆盖式设管理员角色 权限点 admin:user:manage"
+		description: "覆盖式设管理员角色"
+		permission: "admin:user:manage"
 	)
 	@handler SetAdminRoles
 	post /admins/roles (AdminUserSetRolesReq) returns (AdminUserSetRolesRes)

@@ -3,7 +3,32 @@
 ## 当前状态
 
 **最后更新：** 2026-07-09
-**当前功能：** feat-admin-008 Phase A 自服务收尾·管理员账号管理（已完成 · 未提交）
+**当前功能：** admin 两点临时修改（fix-admin-001 内容列表分页 + refactor-admin-001 RBAC 元数据化）（已完成 · 未提交）
+
+> 用户提出两点:①后台内容列表不该是流式游标,应正常 offset 分页(可跳页+看总数)→ 已改(content.proto page/total + 仓储 Count + 复用 pkg/utils.NormalizePage)。②registry.go 路由权限写死不优雅 → 用户自建独立 module `pkg/rbacgen` 从 `.api` @doc 的 `permission` 键生成 `docmeta`,main 全局 `Use(docmeta.Inject)` 注入 ctx,`AdminRbacMiddleware` 改从 ctx 读,删 registry.go。约定「改 admin .api 必跑 rbacgen」写进 go-coding skill。`./init.sh` 全绿。
+
+> **RBAC 取舍(用户拍板)**:哪些路由要鉴权靠"挂不挂 RBAC 中间件"人工判断(按 `.api` 分组)。挂了 RBAC 中间件的路由**一律要有 permission 声明**,`AdminRbacMiddleware` 对 `required==""` **fail-closed 拒绝**(漏声明/漏跑 rbacgen 即拒,不放行);只登录不鉴权的 login/logout/me **不挂** RBAC 中间件(仅 Auth+Audit)。中间件顺序靠 main 里手动 `server.Use(docmeta.Inject)` 保证最外层先执行。
+
+**未提交(本批,在 4b078df 之上)**：fix-admin-001 + refactor-admin-001 全部改动（content.proto + content-rpc + admin .api×5 + docmeta + 中间件 + 删 registry + pkg/rbacgen + go-coding skill）。**待一起提交。**
+
+**运行期遗留**：DB 未起;RBAC 端到端(建号/授权即时生效/中间件顺序)待起全栈复验,由单测+全绿保证。
+
+---
+
+## 已完成（fix-admin-001 内容列表游标→offset 分页 / refactor-admin-001 RBAC 元数据化）
+
+**fix-admin-001**：后台内容列表原 keyset 游标(cursor_id/next_cursor/has_more)是 feed 式流,不适合后台。改 offset:`content.proto` 两消息 `page`/`total`;`ContentRepository` 抽 `adminContentQuery` 共享筛选 + `AdminListContents`(Offset/Limit) + 新增 `AdminCountContents`;logic 先 Count 为 0 直返、复用 `pkg/utils.NormalizePage`、删本地 `normalizePageSize`+其单测;admin-api `content.api`/logic 透传 `page`/`total`。
+
+**refactor-admin-001**：后台路由权限从 `registry.go` 硬编码改为 `.api @doc` 元数据驱动。
+- 独立 module `pkg/rbacgen`(隔离 goctl-tools 重依赖,二进制 `.gitignore`)解析 `.api` 生成 `app/admin/internal/docmeta`(docMeta 表 + `Inject` 中间件 + `Value` 读取器)。
+- 19 条受控路由 `@doc` 补 `permission:` 键;`main.go` 全局 `server.Use(docmeta.Inject)` 最外层注入 ctx;`AdminRbacMiddleware` 改 `docmeta.Value(ctx,"permission")` 并 **fail-closed**(`required==""` 一律拒并 log,非放行)。
+- **只登录不鉴权的 login/logout/me 不挂 RBAC 中间件**(auth.api 该组改为仅 `AdminAuthMiddleware, AdminAuditMiddleware`),使"挂了 RBAC = 必须有权限点"成立。
+- 删 `registry.go`/`RequiredPermission`/其单测(权限缓存 `LoadPermissions`/`HasPermission` 逻辑与单测保留)。
+- `go-coding` skill `new-interface.md` 补强制规则:**改 `app/admin` 任意 `.api` 后必跑 rbacgen 重生成 docmeta**(含命令)。
+
+**验证**：`./init.sh` 全绿(build+vet+test)。
+
+---
 
 > Phase A 自服务收尾**三子 Phase 全部完成**（feat-admin-006 审计+权限目录 / 007 角色管理 / 008 账号管理）。本条 admin.proto 加 7 账号方法；admin-rpc 扩 admin_user repo + 护栏纯函数（自禁用/移除自己 super）+ 事务建号绑角色；admin-api adminuser 模块 7 路由，禁用/重置密码后踢下线、设角色后失效权限缓存。`./init.sh` 全绿。**三条一起提交（用户指定）**。
 

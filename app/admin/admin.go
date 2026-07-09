@@ -14,6 +14,7 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 
 	"ran-feed/app/admin/internal/config"
+	"ran-feed/app/admin/internal/docmeta"
 	"ran-feed/app/admin/internal/handler"
 	"ran-feed/app/admin/internal/svc"
 
@@ -31,6 +32,9 @@ func main() {
 
 	server := rest.MustNewServer(c.RestConf, rest.WithCors())
 	defer server.Stop()
+
+	// 全局最先注入 把当前路由 @doc 元数据(含 permission)放进 ctx 供 RBAC 中间件读取
+	server.Use(docmeta.Inject)
 
 	ctx := svc.NewServiceContext(c)
 	handler.RegisterHandlers(server, ctx)
