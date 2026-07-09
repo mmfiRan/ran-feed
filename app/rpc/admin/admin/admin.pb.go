@@ -527,6 +527,1928 @@ func (x *WriteOperationLogRes) GetLogId() int64 {
 	return 0
 }
 
+// PermissionItem 权限点目录项
+type PermissionItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Code          string                 `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Module        string                 `protobuf:"bytes,4,opt,name=module,proto3" json:"module,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PermissionItem) Reset() {
+	*x = PermissionItem{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PermissionItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PermissionItem) ProtoMessage() {}
+
+func (x *PermissionItem) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PermissionItem.ProtoReflect.Descriptor instead.
+func (*PermissionItem) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *PermissionItem) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *PermissionItem) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *PermissionItem) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *PermissionItem) GetModule() string {
+	if x != nil {
+		return x.Module
+	}
+	return ""
+}
+
+// ListPermissionsReq 查询权限点目录 module 空则全量
+type ListPermissionsReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Module        string                 `protobuf:"bytes,1,opt,name=module,proto3" json:"module,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPermissionsReq) Reset() {
+	*x = ListPermissionsReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPermissionsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPermissionsReq) ProtoMessage() {}
+
+func (x *ListPermissionsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPermissionsReq.ProtoReflect.Descriptor instead.
+func (*ListPermissionsReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *ListPermissionsReq) GetModule() string {
+	if x != nil {
+		return x.Module
+	}
+	return ""
+}
+
+// ListPermissionsRes 权限点目录
+type ListPermissionsRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*PermissionItem      `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPermissionsRes) Reset() {
+	*x = ListPermissionsRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPermissionsRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPermissionsRes) ProtoMessage() {}
+
+func (x *ListPermissionsRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPermissionsRes.ProtoReflect.Descriptor instead.
+func (*ListPermissionsRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListPermissionsRes) GetItems() []*PermissionItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+// OperationLogItem 操作审计日志项 created_at 毫秒
+type OperationLogItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	AdminId       int64                  `protobuf:"varint,2,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
+	Action        string                 `protobuf:"bytes,3,opt,name=action,proto3" json:"action,omitempty"`
+	TargetType    string                 `protobuf:"bytes,4,opt,name=target_type,json=targetType,proto3" json:"target_type,omitempty"`
+	TargetId      int64                  `protobuf:"varint,5,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
+	Result        string                 `protobuf:"bytes,6,opt,name=result,proto3" json:"result,omitempty"`
+	Ip            string                 `protobuf:"bytes,7,opt,name=ip,proto3" json:"ip,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OperationLogItem) Reset() {
+	*x = OperationLogItem{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OperationLogItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OperationLogItem) ProtoMessage() {}
+
+func (x *OperationLogItem) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OperationLogItem.ProtoReflect.Descriptor instead.
+func (*OperationLogItem) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *OperationLogItem) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *OperationLogItem) GetAdminId() int64 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+func (x *OperationLogItem) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *OperationLogItem) GetTargetType() string {
+	if x != nil {
+		return x.TargetType
+	}
+	return ""
+}
+
+func (x *OperationLogItem) GetTargetId() int64 {
+	if x != nil {
+		return x.TargetId
+	}
+	return 0
+}
+
+func (x *OperationLogItem) GetResult() string {
+	if x != nil {
+		return x.Result
+	}
+	return ""
+}
+
+func (x *OperationLogItem) GetIp() string {
+	if x != nil {
+		return x.Ip
+	}
+	return ""
+}
+
+func (x *OperationLogItem) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+// ListOperationLogsReq 查询操作审计日志 可选筛选加分页 start_time/end_time 毫秒
+type ListOperationLogsReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
+	Action        string                 `protobuf:"bytes,2,opt,name=action,proto3" json:"action,omitempty"`
+	TargetType    string                 `protobuf:"bytes,3,opt,name=target_type,json=targetType,proto3" json:"target_type,omitempty"`
+	StartTime     int64                  `protobuf:"varint,4,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	EndTime       int64                  `protobuf:"varint,5,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	Page          int32                  `protobuf:"varint,6,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,7,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListOperationLogsReq) Reset() {
+	*x = ListOperationLogsReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListOperationLogsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListOperationLogsReq) ProtoMessage() {}
+
+func (x *ListOperationLogsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListOperationLogsReq.ProtoReflect.Descriptor instead.
+func (*ListOperationLogsReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ListOperationLogsReq) GetAdminId() int64 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+func (x *ListOperationLogsReq) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *ListOperationLogsReq) GetTargetType() string {
+	if x != nil {
+		return x.TargetType
+	}
+	return ""
+}
+
+func (x *ListOperationLogsReq) GetStartTime() int64 {
+	if x != nil {
+		return x.StartTime
+	}
+	return 0
+}
+
+func (x *ListOperationLogsReq) GetEndTime() int64 {
+	if x != nil {
+		return x.EndTime
+	}
+	return 0
+}
+
+func (x *ListOperationLogsReq) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListOperationLogsReq) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+// ListOperationLogsRes 审计日志分页结果
+type ListOperationLogsRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*OperationLogItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListOperationLogsRes) Reset() {
+	*x = ListOperationLogsRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListOperationLogsRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListOperationLogsRes) ProtoMessage() {}
+
+func (x *ListOperationLogsRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListOperationLogsRes.ProtoReflect.Descriptor instead.
+func (*ListOperationLogsRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ListOperationLogsRes) GetItems() []*OperationLogItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListOperationLogsRes) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+// RoleItem 角色项 created_at 毫秒
+type RoleItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Code          string                 `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Remark        string                 `protobuf:"bytes,4,opt,name=remark,proto3" json:"remark,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RoleItem) Reset() {
+	*x = RoleItem{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RoleItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RoleItem) ProtoMessage() {}
+
+func (x *RoleItem) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RoleItem.ProtoReflect.Descriptor instead.
+func (*RoleItem) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *RoleItem) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *RoleItem) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *RoleItem) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *RoleItem) GetRemark() string {
+	if x != nil {
+		return x.Remark
+	}
+	return ""
+}
+
+func (x *RoleItem) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+// ListRolesReq 角色分页
+type ListRolesReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRolesReq) Reset() {
+	*x = ListRolesReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRolesReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRolesReq) ProtoMessage() {}
+
+func (x *ListRolesReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRolesReq.ProtoReflect.Descriptor instead.
+func (*ListRolesReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ListRolesReq) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListRolesReq) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+// ListRolesRes 角色分页结果
+type ListRolesRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*RoleItem            `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRolesRes) Reset() {
+	*x = ListRolesRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRolesRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRolesRes) ProtoMessage() {}
+
+func (x *ListRolesRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRolesRes.ProtoReflect.Descriptor instead.
+func (*ListRolesRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ListRolesRes) GetItems() []*RoleItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListRolesRes) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+// GetRoleDetailReq 角色详情
+type GetRoleDetailReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRoleDetailReq) Reset() {
+	*x = GetRoleDetailReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRoleDetailReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRoleDetailReq) ProtoMessage() {}
+
+func (x *GetRoleDetailReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRoleDetailReq.ProtoReflect.Descriptor instead.
+func (*GetRoleDetailReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetRoleDetailReq) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+// GetRoleDetailRes 角色详情含所绑权限点ID集合
+type GetRoleDetailRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Role          *RoleItem              `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	PermissionIds []int64                `protobuf:"varint,2,rep,packed,name=permission_ids,json=permissionIds,proto3" json:"permission_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRoleDetailRes) Reset() {
+	*x = GetRoleDetailRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRoleDetailRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRoleDetailRes) ProtoMessage() {}
+
+func (x *GetRoleDetailRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRoleDetailRes.ProtoReflect.Descriptor instead.
+func (*GetRoleDetailRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *GetRoleDetailRes) GetRole() *RoleItem {
+	if x != nil {
+		return x.Role
+	}
+	return nil
+}
+
+func (x *GetRoleDetailRes) GetPermissionIds() []int64 {
+	if x != nil {
+		return x.PermissionIds
+	}
+	return nil
+}
+
+// CreateRoleReq 建角色 code 唯一
+type CreateRoleReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Remark        string                 `protobuf:"bytes,3,opt,name=remark,proto3" json:"remark,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,4,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateRoleReq) Reset() {
+	*x = CreateRoleReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateRoleReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateRoleReq) ProtoMessage() {}
+
+func (x *CreateRoleReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateRoleReq.ProtoReflect.Descriptor instead.
+func (*CreateRoleReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *CreateRoleReq) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *CreateRoleReq) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateRoleReq) GetRemark() string {
+	if x != nil {
+		return x.Remark
+	}
+	return ""
+}
+
+func (x *CreateRoleReq) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+// CreateRoleRes 建角色结果
+type CreateRoleRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateRoleRes) Reset() {
+	*x = CreateRoleRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateRoleRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateRoleRes) ProtoMessage() {}
+
+func (x *CreateRoleRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateRoleRes.ProtoReflect.Descriptor instead.
+func (*CreateRoleRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *CreateRoleRes) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+// UpdateRoleReq 改角色 不可改 code
+type UpdateRoleReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Remark        string                 `protobuf:"bytes,3,opt,name=remark,proto3" json:"remark,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,4,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateRoleReq) Reset() {
+	*x = UpdateRoleReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateRoleReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateRoleReq) ProtoMessage() {}
+
+func (x *UpdateRoleReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateRoleReq.ProtoReflect.Descriptor instead.
+func (*UpdateRoleReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *UpdateRoleReq) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UpdateRoleReq) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateRoleReq) GetRemark() string {
+	if x != nil {
+		return x.Remark
+	}
+	return ""
+}
+
+func (x *UpdateRoleReq) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+// UpdateRoleRes 改角色结果
+type UpdateRoleRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateRoleRes) Reset() {
+	*x = UpdateRoleRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateRoleRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateRoleRes) ProtoMessage() {}
+
+func (x *UpdateRoleRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateRoleRes.ProtoReflect.Descriptor instead.
+func (*UpdateRoleRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{22}
+}
+
+// SetRolePermissionsReq 覆盖式设角色权限点
+type SetRolePermissionsReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoleId        int64                  `protobuf:"varint,1,opt,name=role_id,json=roleId,proto3" json:"role_id,omitempty"`
+	PermissionIds []int64                `protobuf:"varint,2,rep,packed,name=permission_ids,json=permissionIds,proto3" json:"permission_ids,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetRolePermissionsReq) Reset() {
+	*x = SetRolePermissionsReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetRolePermissionsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetRolePermissionsReq) ProtoMessage() {}
+
+func (x *SetRolePermissionsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetRolePermissionsReq.ProtoReflect.Descriptor instead.
+func (*SetRolePermissionsReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *SetRolePermissionsReq) GetRoleId() int64 {
+	if x != nil {
+		return x.RoleId
+	}
+	return 0
+}
+
+func (x *SetRolePermissionsReq) GetPermissionIds() []int64 {
+	if x != nil {
+		return x.PermissionIds
+	}
+	return nil
+}
+
+func (x *SetRolePermissionsReq) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+// SetRolePermissionsRes 返回受影响管理员ID供上层失效权限缓存
+type SetRolePermissionsRes struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	AffectedAdminIds []int64                `protobuf:"varint,1,rep,packed,name=affected_admin_ids,json=affectedAdminIds,proto3" json:"affected_admin_ids,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *SetRolePermissionsRes) Reset() {
+	*x = SetRolePermissionsRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetRolePermissionsRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetRolePermissionsRes) ProtoMessage() {}
+
+func (x *SetRolePermissionsRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetRolePermissionsRes.ProtoReflect.Descriptor instead.
+func (*SetRolePermissionsRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *SetRolePermissionsRes) GetAffectedAdminIds() []int64 {
+	if x != nil {
+		return x.AffectedAdminIds
+	}
+	return nil
+}
+
+// DeleteRoleReq 删角色 护栏禁删 super
+type DeleteRoleReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteRoleReq) Reset() {
+	*x = DeleteRoleReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRoleReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRoleReq) ProtoMessage() {}
+
+func (x *DeleteRoleReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRoleReq.ProtoReflect.Descriptor instead.
+func (*DeleteRoleReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *DeleteRoleReq) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *DeleteRoleReq) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+// DeleteRoleRes 返回受影响管理员ID供上层失效权限缓存
+type DeleteRoleRes struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	AffectedAdminIds []int64                `protobuf:"varint,1,rep,packed,name=affected_admin_ids,json=affectedAdminIds,proto3" json:"affected_admin_ids,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *DeleteRoleRes) Reset() {
+	*x = DeleteRoleRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteRoleRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteRoleRes) ProtoMessage() {}
+
+func (x *DeleteRoleRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteRoleRes.ProtoReflect.Descriptor instead.
+func (*DeleteRoleRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *DeleteRoleRes) GetAffectedAdminIds() []int64 {
+	if x != nil {
+		return x.AffectedAdminIds
+	}
+	return nil
+}
+
+// AdminListItem 管理员列表项 created_at 毫秒
+type AdminListItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	Nickname      string                 `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Status        AdminStatus            `protobuf:"varint,4,opt,name=status,proto3,enum=admin.AdminStatus" json:"status,omitempty"`
+	RoleCodes     []string               `protobuf:"bytes,5,rep,name=role_codes,json=roleCodes,proto3" json:"role_codes,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminListItem) Reset() {
+	*x = AdminListItem{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminListItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminListItem) ProtoMessage() {}
+
+func (x *AdminListItem) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminListItem.ProtoReflect.Descriptor instead.
+func (*AdminListItem) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *AdminListItem) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *AdminListItem) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *AdminListItem) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *AdminListItem) GetStatus() AdminStatus {
+	if x != nil {
+		return x.Status
+	}
+	return AdminStatus_ADMIN_STATUS_UNKNOWN
+}
+
+func (x *AdminListItem) GetRoleCodes() []string {
+	if x != nil {
+		return x.RoleCodes
+	}
+	return nil
+}
+
+func (x *AdminListItem) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+// ListAdminsReq status UNKNOWN(0) 表示不限
+type ListAdminsReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        AdminStatus            `protobuf:"varint,1,opt,name=status,proto3,enum=admin.AdminStatus" json:"status,omitempty"`
+	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAdminsReq) Reset() {
+	*x = ListAdminsReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAdminsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAdminsReq) ProtoMessage() {}
+
+func (x *ListAdminsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAdminsReq.ProtoReflect.Descriptor instead.
+func (*ListAdminsReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *ListAdminsReq) GetStatus() AdminStatus {
+	if x != nil {
+		return x.Status
+	}
+	return AdminStatus_ADMIN_STATUS_UNKNOWN
+}
+
+func (x *ListAdminsReq) GetPage() int32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *ListAdminsReq) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+// ListAdminsRes 管理员分页结果
+type ListAdminsRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*AdminListItem       `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAdminsRes) Reset() {
+	*x = ListAdminsRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAdminsRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAdminsRes) ProtoMessage() {}
+
+func (x *ListAdminsRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAdminsRes.ProtoReflect.Descriptor instead.
+func (*ListAdminsRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *ListAdminsRes) GetItems() []*AdminListItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *ListAdminsRes) GetTotal() int64 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+// GetAdminDetailReq 管理员详情
+type GetAdminDetailReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAdminDetailReq) Reset() {
+	*x = GetAdminDetailReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAdminDetailReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAdminDetailReq) ProtoMessage() {}
+
+func (x *GetAdminDetailReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAdminDetailReq.ProtoReflect.Descriptor instead.
+func (*GetAdminDetailReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *GetAdminDetailReq) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+// GetAdminDetailRes 管理员详情含所绑角色ID集合
+type GetAdminDetailRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Admin         *AdminListItem         `protobuf:"bytes,1,opt,name=admin,proto3" json:"admin,omitempty"`
+	RoleIds       []int64                `protobuf:"varint,2,rep,packed,name=role_ids,json=roleIds,proto3" json:"role_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAdminDetailRes) Reset() {
+	*x = GetAdminDetailRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAdminDetailRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAdminDetailRes) ProtoMessage() {}
+
+func (x *GetAdminDetailRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAdminDetailRes.ProtoReflect.Descriptor instead.
+func (*GetAdminDetailRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *GetAdminDetailRes) GetAdmin() *AdminListItem {
+	if x != nil {
+		return x.Admin
+	}
+	return nil
+}
+
+func (x *GetAdminDetailRes) GetRoleIds() []int64 {
+	if x != nil {
+		return x.RoleIds
+	}
+	return nil
+}
+
+// CreateAdminReq 建管理员 username 唯一 password 明文由服务端加盐哈希
+type CreateAdminReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	Nickname      string                 `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	RoleIds       []int64                `protobuf:"varint,4,rep,packed,name=role_ids,json=roleIds,proto3" json:"role_ids,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,5,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateAdminReq) Reset() {
+	*x = CreateAdminReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateAdminReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateAdminReq) ProtoMessage() {}
+
+func (x *CreateAdminReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateAdminReq.ProtoReflect.Descriptor instead.
+func (*CreateAdminReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *CreateAdminReq) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *CreateAdminReq) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *CreateAdminReq) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *CreateAdminReq) GetRoleIds() []int64 {
+	if x != nil {
+		return x.RoleIds
+	}
+	return nil
+}
+
+func (x *CreateAdminReq) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+// CreateAdminRes 建管理员结果
+type CreateAdminRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateAdminRes) Reset() {
+	*x = CreateAdminRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateAdminRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateAdminRes) ProtoMessage() {}
+
+func (x *CreateAdminRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateAdminRes.ProtoReflect.Descriptor instead.
+func (*CreateAdminRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *CreateAdminRes) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+// UpdateAdminReq 改管理员昵称
+type UpdateAdminReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAdminReq) Reset() {
+	*x = UpdateAdminReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAdminReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAdminReq) ProtoMessage() {}
+
+func (x *UpdateAdminReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAdminReq.ProtoReflect.Descriptor instead.
+func (*UpdateAdminReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *UpdateAdminReq) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *UpdateAdminReq) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *UpdateAdminReq) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+// UpdateAdminRes 改管理员结果
+type UpdateAdminRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateAdminRes) Reset() {
+	*x = UpdateAdminRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[35]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateAdminRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateAdminRes) ProtoMessage() {}
+
+func (x *UpdateAdminRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[35]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateAdminRes.ProtoReflect.Descriptor instead.
+func (*UpdateAdminRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{35}
+}
+
+// SetAdminStatusReq 启用禁用管理员 护栏禁止禁用自己
+type SetAdminStatusReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Status        AdminStatus            `protobuf:"varint,2,opt,name=status,proto3,enum=admin.AdminStatus" json:"status,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetAdminStatusReq) Reset() {
+	*x = SetAdminStatusReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[36]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetAdminStatusReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetAdminStatusReq) ProtoMessage() {}
+
+func (x *SetAdminStatusReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[36]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetAdminStatusReq.ProtoReflect.Descriptor instead.
+func (*SetAdminStatusReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *SetAdminStatusReq) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *SetAdminStatusReq) GetStatus() AdminStatus {
+	if x != nil {
+		return x.Status
+	}
+	return AdminStatus_ADMIN_STATUS_UNKNOWN
+}
+
+func (x *SetAdminStatusReq) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+// SetAdminStatusRes 启禁结果
+type SetAdminStatusRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetAdminStatusRes) Reset() {
+	*x = SetAdminStatusRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[37]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetAdminStatusRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetAdminStatusRes) ProtoMessage() {}
+
+func (x *SetAdminStatusRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[37]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetAdminStatusRes.ProtoReflect.Descriptor instead.
+func (*SetAdminStatusRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{37}
+}
+
+// ResetAdminPasswordReq 重置管理员密码 明文由服务端加盐哈希
+type ResetAdminPasswordReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	NewPassword   string                 `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResetAdminPasswordReq) Reset() {
+	*x = ResetAdminPasswordReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResetAdminPasswordReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResetAdminPasswordReq) ProtoMessage() {}
+
+func (x *ResetAdminPasswordReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResetAdminPasswordReq.ProtoReflect.Descriptor instead.
+func (*ResetAdminPasswordReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *ResetAdminPasswordReq) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *ResetAdminPasswordReq) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+func (x *ResetAdminPasswordReq) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+// ResetAdminPasswordRes 重置密码结果
+type ResetAdminPasswordRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResetAdminPasswordRes) Reset() {
+	*x = ResetAdminPasswordRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[39]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResetAdminPasswordRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResetAdminPasswordRes) ProtoMessage() {}
+
+func (x *ResetAdminPasswordRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[39]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResetAdminPasswordRes.ProtoReflect.Descriptor instead.
+func (*ResetAdminPasswordRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{39}
+}
+
+// SetAdminRolesReq 覆盖式设管理员角色 护栏禁止移除自己的 super
+type SetAdminRolesReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
+	RoleIds       []int64                `protobuf:"varint,2,rep,packed,name=role_ids,json=roleIds,proto3" json:"role_ids,omitempty"`
+	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetAdminRolesReq) Reset() {
+	*x = SetAdminRolesReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetAdminRolesReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetAdminRolesReq) ProtoMessage() {}
+
+func (x *SetAdminRolesReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetAdminRolesReq.ProtoReflect.Descriptor instead.
+func (*SetAdminRolesReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *SetAdminRolesReq) GetAdminId() int64 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+func (x *SetAdminRolesReq) GetRoleIds() []int64 {
+	if x != nil {
+		return x.RoleIds
+	}
+	return nil
+}
+
+func (x *SetAdminRolesReq) GetOperatorId() int64 {
+	if x != nil {
+		return x.OperatorId
+	}
+	return 0
+}
+
+// SetAdminRolesRes 设角色结果
+type SetAdminRolesRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetAdminRolesRes) Reset() {
+	*x = SetAdminRolesRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetAdminRolesRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetAdminRolesRes) ProtoMessage() {}
+
+func (x *SetAdminRolesRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetAdminRolesRes.ProtoReflect.Descriptor instead.
+func (*SetAdminRolesRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{41}
+}
+
 var File_app_rpc_admin_proto_admin_proto protoreflect.FileDescriptor
 
 const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
@@ -560,17 +2482,170 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\x06result\x18\x06 \x01(\tR\x06result\x12\x0e\n" +
 	"\x02ip\x18\a \x01(\tR\x02ip\"-\n" +
 	"\x14WriteOperationLogRes\x12\x15\n" +
-	"\x06log_id\x18\x01 \x01(\x03R\x05logId*N\n" +
+	"\x06log_id\x18\x01 \x01(\x03R\x05logId\"`\n" +
+	"\x0ePermissionItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04code\x18\x02 \x01(\tR\x04code\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x16\n" +
+	"\x06module\x18\x04 \x01(\tR\x06module\",\n" +
+	"\x12ListPermissionsReq\x12\x16\n" +
+	"\x06module\x18\x01 \x01(\tR\x06module\"A\n" +
+	"\x12ListPermissionsRes\x12+\n" +
+	"\x05items\x18\x01 \x03(\v2\x15.admin.PermissionItemR\x05items\"\xda\x01\n" +
+	"\x10OperationLogItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
+	"\badmin_id\x18\x02 \x01(\x03R\aadminId\x12\x16\n" +
+	"\x06action\x18\x03 \x01(\tR\x06action\x12\x1f\n" +
+	"\vtarget_type\x18\x04 \x01(\tR\n" +
+	"targetType\x12\x1b\n" +
+	"\ttarget_id\x18\x05 \x01(\x03R\btargetId\x12\x16\n" +
+	"\x06result\x18\x06 \x01(\tR\x06result\x12\x0e\n" +
+	"\x02ip\x18\a \x01(\tR\x02ip\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\b \x01(\x03R\tcreatedAt\"\xd5\x01\n" +
+	"\x14ListOperationLogsReq\x12\x19\n" +
+	"\badmin_id\x18\x01 \x01(\x03R\aadminId\x12\x16\n" +
+	"\x06action\x18\x02 \x01(\tR\x06action\x12\x1f\n" +
+	"\vtarget_type\x18\x03 \x01(\tR\n" +
+	"targetType\x12\x1d\n" +
+	"\n" +
+	"start_time\x18\x04 \x01(\x03R\tstartTime\x12\x19\n" +
+	"\bend_time\x18\x05 \x01(\x03R\aendTime\x12\x12\n" +
+	"\x04page\x18\x06 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\a \x01(\x05R\bpageSize\"[\n" +
+	"\x14ListOperationLogsRes\x12-\n" +
+	"\x05items\x18\x01 \x03(\v2\x17.admin.OperationLogItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\"y\n" +
+	"\bRoleItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04code\x18\x02 \x01(\tR\x04code\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\x12\x16\n" +
+	"\x06remark\x18\x04 \x01(\tR\x06remark\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x05 \x01(\x03R\tcreatedAt\"?\n" +
+	"\fListRolesReq\x12\x12\n" +
+	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"K\n" +
+	"\fListRolesRes\x12%\n" +
+	"\x05items\x18\x01 \x03(\v2\x0f.admin.RoleItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\"\"\n" +
+	"\x10GetRoleDetailReq\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"^\n" +
+	"\x10GetRoleDetailRes\x12#\n" +
+	"\x04role\x18\x01 \x01(\v2\x0f.admin.RoleItemR\x04role\x12%\n" +
+	"\x0epermission_ids\x18\x02 \x03(\x03R\rpermissionIds\"p\n" +
+	"\rCreateRoleReq\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\tR\x04code\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
+	"\x06remark\x18\x03 \x01(\tR\x06remark\x12\x1f\n" +
+	"\voperator_id\x18\x04 \x01(\x03R\n" +
+	"operatorId\"\x1f\n" +
+	"\rCreateRoleRes\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"l\n" +
+	"\rUpdateRoleReq\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
+	"\x06remark\x18\x03 \x01(\tR\x06remark\x12\x1f\n" +
+	"\voperator_id\x18\x04 \x01(\x03R\n" +
+	"operatorId\"\x0f\n" +
+	"\rUpdateRoleRes\"x\n" +
+	"\x15SetRolePermissionsReq\x12\x17\n" +
+	"\arole_id\x18\x01 \x01(\x03R\x06roleId\x12%\n" +
+	"\x0epermission_ids\x18\x02 \x03(\x03R\rpermissionIds\x12\x1f\n" +
+	"\voperator_id\x18\x03 \x01(\x03R\n" +
+	"operatorId\"E\n" +
+	"\x15SetRolePermissionsRes\x12,\n" +
+	"\x12affected_admin_ids\x18\x01 \x03(\x03R\x10affectedAdminIds\"@\n" +
+	"\rDeleteRoleReq\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1f\n" +
+	"\voperator_id\x18\x02 \x01(\x03R\n" +
+	"operatorId\"=\n" +
+	"\rDeleteRoleRes\x12,\n" +
+	"\x12affected_admin_ids\x18\x01 \x03(\x03R\x10affectedAdminIds\"\xc1\x01\n" +
+	"\rAdminListItem\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
+	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
+	"\bnickname\x18\x03 \x01(\tR\bnickname\x12*\n" +
+	"\x06status\x18\x04 \x01(\x0e2\x12.admin.AdminStatusR\x06status\x12\x1d\n" +
+	"\n" +
+	"role_codes\x18\x05 \x03(\tR\troleCodes\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x06 \x01(\x03R\tcreatedAt\"l\n" +
+	"\rListAdminsReq\x12*\n" +
+	"\x06status\x18\x01 \x01(\x0e2\x12.admin.AdminStatusR\x06status\x12\x12\n" +
+	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"Q\n" +
+	"\rListAdminsRes\x12*\n" +
+	"\x05items\x18\x01 \x03(\v2\x14.admin.AdminListItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\"#\n" +
+	"\x11GetAdminDetailReq\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"Z\n" +
+	"\x11GetAdminDetailRes\x12*\n" +
+	"\x05admin\x18\x01 \x01(\v2\x14.admin.AdminListItemR\x05admin\x12\x19\n" +
+	"\brole_ids\x18\x02 \x03(\x03R\aroleIds\"\xa0\x01\n" +
+	"\x0eCreateAdminReq\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1a\n" +
+	"\bnickname\x18\x03 \x01(\tR\bnickname\x12\x19\n" +
+	"\brole_ids\x18\x04 \x03(\x03R\aroleIds\x12\x1f\n" +
+	"\voperator_id\x18\x05 \x01(\x03R\n" +
+	"operatorId\" \n" +
+	"\x0eCreateAdminRes\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"]\n" +
+	"\x0eUpdateAdminReq\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1a\n" +
+	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x1f\n" +
+	"\voperator_id\x18\x03 \x01(\x03R\n" +
+	"operatorId\"\x10\n" +
+	"\x0eUpdateAdminRes\"p\n" +
+	"\x11SetAdminStatusReq\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12*\n" +
+	"\x06status\x18\x02 \x01(\x0e2\x12.admin.AdminStatusR\x06status\x12\x1f\n" +
+	"\voperator_id\x18\x03 \x01(\x03R\n" +
+	"operatorId\"\x13\n" +
+	"\x11SetAdminStatusRes\"k\n" +
+	"\x15ResetAdminPasswordReq\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12!\n" +
+	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\x12\x1f\n" +
+	"\voperator_id\x18\x03 \x01(\x03R\n" +
+	"operatorId\"\x17\n" +
+	"\x15ResetAdminPasswordRes\"i\n" +
+	"\x10SetAdminRolesReq\x12\x19\n" +
+	"\badmin_id\x18\x01 \x01(\x03R\aadminId\x12\x19\n" +
+	"\brole_ids\x18\x02 \x03(\x03R\aroleIds\x12\x1f\n" +
+	"\voperator_id\x18\x03 \x01(\x03R\n" +
+	"operatorId\"\x12\n" +
+	"\x10SetAdminRolesRes*N\n" +
 	"\vAdminStatus\x12\x18\n" +
 	"\x14ADMIN_STATUS_UNKNOWN\x10\x00\x12\x11\n" +
 	"\rADMIN_ENABLED\x10\n" +
 	"\x12\x12\n" +
-	"\x0eADMIN_DISABLED\x10\x142\xb8\x02\n" +
+	"\x0eADMIN_DISABLED\x10\x142\x9f\n" +
+	"\n" +
 	"\fAdminService\x12M\n" +
 	"\x11AuthenticateAdmin\x12\x1b.admin.AuthenticateAdminReq\x1a\x1b.admin.AuthenticateAdminRes\x122\n" +
 	"\bGetAdmin\x12\x12.admin.GetAdminReq\x1a\x12.admin.GetAdminRes\x12V\n" +
 	"\x14ListAdminPermissions\x12\x1e.admin.ListAdminPermissionsReq\x1a\x1e.admin.ListAdminPermissionsRes\x12M\n" +
-	"\x11WriteOperationLog\x12\x1b.admin.WriteOperationLogReq\x1a\x1b.admin.WriteOperationLogResB\tZ\a./adminb\x06proto3"
+	"\x11WriteOperationLog\x12\x1b.admin.WriteOperationLogReq\x1a\x1b.admin.WriteOperationLogRes\x12G\n" +
+	"\x0fListPermissions\x12\x19.admin.ListPermissionsReq\x1a\x19.admin.ListPermissionsRes\x12M\n" +
+	"\x11ListOperationLogs\x12\x1b.admin.ListOperationLogsReq\x1a\x1b.admin.ListOperationLogsRes\x125\n" +
+	"\tListRoles\x12\x13.admin.ListRolesReq\x1a\x13.admin.ListRolesRes\x12A\n" +
+	"\rGetRoleDetail\x12\x17.admin.GetRoleDetailReq\x1a\x17.admin.GetRoleDetailRes\x128\n" +
+	"\n" +
+	"CreateRole\x12\x14.admin.CreateRoleReq\x1a\x14.admin.CreateRoleRes\x128\n" +
+	"\n" +
+	"UpdateRole\x12\x14.admin.UpdateRoleReq\x1a\x14.admin.UpdateRoleRes\x12P\n" +
+	"\x12SetRolePermissions\x12\x1c.admin.SetRolePermissionsReq\x1a\x1c.admin.SetRolePermissionsRes\x128\n" +
+	"\n" +
+	"DeleteRole\x12\x14.admin.DeleteRoleReq\x1a\x14.admin.DeleteRoleRes\x128\n" +
+	"\n" +
+	"ListAdmins\x12\x14.admin.ListAdminsReq\x1a\x14.admin.ListAdminsRes\x12D\n" +
+	"\x0eGetAdminDetail\x12\x18.admin.GetAdminDetailReq\x1a\x18.admin.GetAdminDetailRes\x12;\n" +
+	"\vCreateAdmin\x12\x15.admin.CreateAdminReq\x1a\x15.admin.CreateAdminRes\x12;\n" +
+	"\vUpdateAdmin\x12\x15.admin.UpdateAdminReq\x1a\x15.admin.UpdateAdminRes\x12D\n" +
+	"\x0eSetAdminStatus\x12\x18.admin.SetAdminStatusReq\x1a\x18.admin.SetAdminStatusRes\x12P\n" +
+	"\x12ResetAdminPassword\x12\x1c.admin.ResetAdminPasswordReq\x1a\x1c.admin.ResetAdminPasswordRes\x12A\n" +
+	"\rSetAdminRoles\x12\x17.admin.SetAdminRolesReq\x1a\x17.admin.SetAdminRolesResB\tZ\a./adminb\x06proto3"
 
 var (
 	file_app_rpc_admin_proto_admin_proto_rawDescOnce sync.Once
@@ -585,7 +2660,7 @@ func file_app_rpc_admin_proto_admin_proto_rawDescGZIP() []byte {
 }
 
 var file_app_rpc_admin_proto_admin_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_app_rpc_admin_proto_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_app_rpc_admin_proto_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 42)
 var file_app_rpc_admin_proto_admin_proto_goTypes = []any{
 	(AdminStatus)(0),                // 0: admin.AdminStatus
 	(*AuthenticateAdminReq)(nil),    // 1: admin.AuthenticateAdminReq
@@ -596,23 +2671,96 @@ var file_app_rpc_admin_proto_admin_proto_goTypes = []any{
 	(*ListAdminPermissionsRes)(nil), // 6: admin.ListAdminPermissionsRes
 	(*WriteOperationLogReq)(nil),    // 7: admin.WriteOperationLogReq
 	(*WriteOperationLogRes)(nil),    // 8: admin.WriteOperationLogRes
+	(*PermissionItem)(nil),          // 9: admin.PermissionItem
+	(*ListPermissionsReq)(nil),      // 10: admin.ListPermissionsReq
+	(*ListPermissionsRes)(nil),      // 11: admin.ListPermissionsRes
+	(*OperationLogItem)(nil),        // 12: admin.OperationLogItem
+	(*ListOperationLogsReq)(nil),    // 13: admin.ListOperationLogsReq
+	(*ListOperationLogsRes)(nil),    // 14: admin.ListOperationLogsRes
+	(*RoleItem)(nil),                // 15: admin.RoleItem
+	(*ListRolesReq)(nil),            // 16: admin.ListRolesReq
+	(*ListRolesRes)(nil),            // 17: admin.ListRolesRes
+	(*GetRoleDetailReq)(nil),        // 18: admin.GetRoleDetailReq
+	(*GetRoleDetailRes)(nil),        // 19: admin.GetRoleDetailRes
+	(*CreateRoleReq)(nil),           // 20: admin.CreateRoleReq
+	(*CreateRoleRes)(nil),           // 21: admin.CreateRoleRes
+	(*UpdateRoleReq)(nil),           // 22: admin.UpdateRoleReq
+	(*UpdateRoleRes)(nil),           // 23: admin.UpdateRoleRes
+	(*SetRolePermissionsReq)(nil),   // 24: admin.SetRolePermissionsReq
+	(*SetRolePermissionsRes)(nil),   // 25: admin.SetRolePermissionsRes
+	(*DeleteRoleReq)(nil),           // 26: admin.DeleteRoleReq
+	(*DeleteRoleRes)(nil),           // 27: admin.DeleteRoleRes
+	(*AdminListItem)(nil),           // 28: admin.AdminListItem
+	(*ListAdminsReq)(nil),           // 29: admin.ListAdminsReq
+	(*ListAdminsRes)(nil),           // 30: admin.ListAdminsRes
+	(*GetAdminDetailReq)(nil),       // 31: admin.GetAdminDetailReq
+	(*GetAdminDetailRes)(nil),       // 32: admin.GetAdminDetailRes
+	(*CreateAdminReq)(nil),          // 33: admin.CreateAdminReq
+	(*CreateAdminRes)(nil),          // 34: admin.CreateAdminRes
+	(*UpdateAdminReq)(nil),          // 35: admin.UpdateAdminReq
+	(*UpdateAdminRes)(nil),          // 36: admin.UpdateAdminRes
+	(*SetAdminStatusReq)(nil),       // 37: admin.SetAdminStatusReq
+	(*SetAdminStatusRes)(nil),       // 38: admin.SetAdminStatusRes
+	(*ResetAdminPasswordReq)(nil),   // 39: admin.ResetAdminPasswordReq
+	(*ResetAdminPasswordRes)(nil),   // 40: admin.ResetAdminPasswordRes
+	(*SetAdminRolesReq)(nil),        // 41: admin.SetAdminRolesReq
+	(*SetAdminRolesRes)(nil),        // 42: admin.SetAdminRolesRes
 }
 var file_app_rpc_admin_proto_admin_proto_depIdxs = []int32{
-	0, // 0: admin.AuthenticateAdminRes.status:type_name -> admin.AdminStatus
-	0, // 1: admin.GetAdminRes.status:type_name -> admin.AdminStatus
-	1, // 2: admin.AdminService.AuthenticateAdmin:input_type -> admin.AuthenticateAdminReq
-	3, // 3: admin.AdminService.GetAdmin:input_type -> admin.GetAdminReq
-	5, // 4: admin.AdminService.ListAdminPermissions:input_type -> admin.ListAdminPermissionsReq
-	7, // 5: admin.AdminService.WriteOperationLog:input_type -> admin.WriteOperationLogReq
-	2, // 6: admin.AdminService.AuthenticateAdmin:output_type -> admin.AuthenticateAdminRes
-	4, // 7: admin.AdminService.GetAdmin:output_type -> admin.GetAdminRes
-	6, // 8: admin.AdminService.ListAdminPermissions:output_type -> admin.ListAdminPermissionsRes
-	8, // 9: admin.AdminService.WriteOperationLog:output_type -> admin.WriteOperationLogRes
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0,  // 0: admin.AuthenticateAdminRes.status:type_name -> admin.AdminStatus
+	0,  // 1: admin.GetAdminRes.status:type_name -> admin.AdminStatus
+	9,  // 2: admin.ListPermissionsRes.items:type_name -> admin.PermissionItem
+	12, // 3: admin.ListOperationLogsRes.items:type_name -> admin.OperationLogItem
+	15, // 4: admin.ListRolesRes.items:type_name -> admin.RoleItem
+	15, // 5: admin.GetRoleDetailRes.role:type_name -> admin.RoleItem
+	0,  // 6: admin.AdminListItem.status:type_name -> admin.AdminStatus
+	0,  // 7: admin.ListAdminsReq.status:type_name -> admin.AdminStatus
+	28, // 8: admin.ListAdminsRes.items:type_name -> admin.AdminListItem
+	28, // 9: admin.GetAdminDetailRes.admin:type_name -> admin.AdminListItem
+	0,  // 10: admin.SetAdminStatusReq.status:type_name -> admin.AdminStatus
+	1,  // 11: admin.AdminService.AuthenticateAdmin:input_type -> admin.AuthenticateAdminReq
+	3,  // 12: admin.AdminService.GetAdmin:input_type -> admin.GetAdminReq
+	5,  // 13: admin.AdminService.ListAdminPermissions:input_type -> admin.ListAdminPermissionsReq
+	7,  // 14: admin.AdminService.WriteOperationLog:input_type -> admin.WriteOperationLogReq
+	10, // 15: admin.AdminService.ListPermissions:input_type -> admin.ListPermissionsReq
+	13, // 16: admin.AdminService.ListOperationLogs:input_type -> admin.ListOperationLogsReq
+	16, // 17: admin.AdminService.ListRoles:input_type -> admin.ListRolesReq
+	18, // 18: admin.AdminService.GetRoleDetail:input_type -> admin.GetRoleDetailReq
+	20, // 19: admin.AdminService.CreateRole:input_type -> admin.CreateRoleReq
+	22, // 20: admin.AdminService.UpdateRole:input_type -> admin.UpdateRoleReq
+	24, // 21: admin.AdminService.SetRolePermissions:input_type -> admin.SetRolePermissionsReq
+	26, // 22: admin.AdminService.DeleteRole:input_type -> admin.DeleteRoleReq
+	29, // 23: admin.AdminService.ListAdmins:input_type -> admin.ListAdminsReq
+	31, // 24: admin.AdminService.GetAdminDetail:input_type -> admin.GetAdminDetailReq
+	33, // 25: admin.AdminService.CreateAdmin:input_type -> admin.CreateAdminReq
+	35, // 26: admin.AdminService.UpdateAdmin:input_type -> admin.UpdateAdminReq
+	37, // 27: admin.AdminService.SetAdminStatus:input_type -> admin.SetAdminStatusReq
+	39, // 28: admin.AdminService.ResetAdminPassword:input_type -> admin.ResetAdminPasswordReq
+	41, // 29: admin.AdminService.SetAdminRoles:input_type -> admin.SetAdminRolesReq
+	2,  // 30: admin.AdminService.AuthenticateAdmin:output_type -> admin.AuthenticateAdminRes
+	4,  // 31: admin.AdminService.GetAdmin:output_type -> admin.GetAdminRes
+	6,  // 32: admin.AdminService.ListAdminPermissions:output_type -> admin.ListAdminPermissionsRes
+	8,  // 33: admin.AdminService.WriteOperationLog:output_type -> admin.WriteOperationLogRes
+	11, // 34: admin.AdminService.ListPermissions:output_type -> admin.ListPermissionsRes
+	14, // 35: admin.AdminService.ListOperationLogs:output_type -> admin.ListOperationLogsRes
+	17, // 36: admin.AdminService.ListRoles:output_type -> admin.ListRolesRes
+	19, // 37: admin.AdminService.GetRoleDetail:output_type -> admin.GetRoleDetailRes
+	21, // 38: admin.AdminService.CreateRole:output_type -> admin.CreateRoleRes
+	23, // 39: admin.AdminService.UpdateRole:output_type -> admin.UpdateRoleRes
+	25, // 40: admin.AdminService.SetRolePermissions:output_type -> admin.SetRolePermissionsRes
+	27, // 41: admin.AdminService.DeleteRole:output_type -> admin.DeleteRoleRes
+	30, // 42: admin.AdminService.ListAdmins:output_type -> admin.ListAdminsRes
+	32, // 43: admin.AdminService.GetAdminDetail:output_type -> admin.GetAdminDetailRes
+	34, // 44: admin.AdminService.CreateAdmin:output_type -> admin.CreateAdminRes
+	36, // 45: admin.AdminService.UpdateAdmin:output_type -> admin.UpdateAdminRes
+	38, // 46: admin.AdminService.SetAdminStatus:output_type -> admin.SetAdminStatusRes
+	40, // 47: admin.AdminService.ResetAdminPassword:output_type -> admin.ResetAdminPasswordRes
+	42, // 48: admin.AdminService.SetAdminRoles:output_type -> admin.SetAdminRolesRes
+	30, // [30:49] is the sub-list for method output_type
+	11, // [11:30] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_app_rpc_admin_proto_admin_proto_init() }
@@ -626,7 +2774,7 @@ func file_app_rpc_admin_proto_admin_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_app_rpc_admin_proto_admin_proto_rawDesc), len(file_app_rpc_admin_proto_admin_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   8,
+			NumMessages:   42,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

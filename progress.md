@@ -2,10 +2,64 @@
 
 ## 当前状态
 
-**最后更新：** 2026-07-08
-**当前功能：** fix-006 own-feed 迁移 publishbox 修复跨可见性泄露（已完成 · 未提交）
+**最后更新：** 2026-07-09
+**当前功能：** feat-admin-008 Phase A 自服务收尾·管理员账号管理（已完成 · 未提交）
 
-> own-feed（UserPublishFeed）迁到 publishbox.QueryWindow（PUBLIC-only 重建 + 复合游标），并把装配改 publicOnly=true 从读侧堵死私密泄露。删旧锁/重建/内存分页 + 最后一个 query lua 消费者（连带删 QueryUserPublishZSetScript + .lua + parseZSetReply）。`./init.sh` 全绿（32 测试文件）。下一步：Phase C feat-admin-006（用户管理，改 user.proto 升级项）。
+> Phase A 自服务收尾**三子 Phase 全部完成**（feat-admin-006 审计+权限目录 / 007 角色管理 / 008 账号管理）。本条 admin.proto 加 7 账号方法；admin-rpc 扩 admin_user repo + 护栏纯函数（自禁用/移除自己 super）+ 事务建号绑角色；admin-api adminuser 模块 7 路由，禁用/重置密码后踢下线、设角色后失效权限缓存。`./init.sh` 全绿。**三条一起提交（用户指定）**。
+
+**运行期遗留**：本会话 DB 未起（3306 未通、docker 不可达），seed 应用与端到端冒烟留运行期，由单测 + 全绿保证。
+
+**规划文件**：`/home/wmr/.claude/plans/clever-wishing-sunset.md`（3 子 Phase 全貌）。
+
+**下一步**：自服务收尾完；后续可接 ADMIN-DESIGN 路线图 feat-admin-009 用户管理（Phase C，改 user.proto 升级项）。
+
+---
+
+## 已完成（feat-admin-008 自服务收尾·管理员账号管理）
+
+**交付**：
+- **admin.proto**：`AdminService` 加 `ListAdmins`（status 筛选+分页，富化 role_codes）/`GetAdminDetail`（含 role_ids）/`CreateAdmin`（username 唯一 + 服务端加盐哈希 + 绑角色）/`UpdateAdmin`（昵称）/`SetAdminStatus`（启禁，护栏禁自禁用）/`ResetAdminPassword`/`SetAdminRoles`（覆盖式，护栏禁移除自己 super）+ `AdminListItem`，goctl 重生成，C 端未动。
+- **admin-rpc**：`admin_user_repository` 加 WithTx + `List/Count`（可选 status）+ `Create` + `UpdateProfile/UpdateStatus/UpdatePassword`；`admin_user_role` 加 `ListRoleIDsByAdminIDs`（列表富化）+ `DeleteByAdminID`；`pkg/utils.GenerateSalt`（crypto/rand hex）。护栏纯函数 `isSelfDisable`/`removesSelfSuper`（后者需「当前确有 super」才拦，避免误伤非 super 自编辑）。`CreateAdmin`/`SetAdminRoles` 走事务。密码沿用 `bcrypt(password+salt)` 口径（与既有登录一致）。
+- **admin-api**：`doc/adminuser` 7 静态路由；`mapStatusAction`（enable/disable→枚举）；`kickAdminSession`（读反向索引拿 token 删双向 session）——**禁用、重置密码后踢下线**；`SetAdminRoles` 后 `rbac.Invalidate` 该 admin；registry 登记 7 路由（list/detail→`admin:user:list`，其余→`admin:user:manage`）。
+
+**验证**：`./init.sh` 全绿；单测：rbac registry 7 账号路由 + 护栏（isSelfDisable/removesSelfSuper/containsInt64）+ mapStatusAction + GenerateSalt 长度/不重复/HashPassword 可被 CheckPassword 校验的 roundtrip。
+
+**遗留**：DB 未起 → 端到端（建账号→登录→无权限 100203→授权即时生效→禁用踢下线→护栏）留运行期。
+
+---
+
+## 已完成（feat-admin-007 自服务收尾·角色管理）
+
+**交付**：
+- **admin.proto**：`AdminService` 加 `ListRoles`/`GetRoleDetail`/`CreateRole`/`UpdateRole`/`SetRolePermissions`（覆盖式，返回 `affected_admin_ids`）/`DeleteRole`（护栏禁删 super，返回 `affected_admin_ids`），goctl 重生成，C 端 service 未动。
+- **admin-rpc**：新建 `admin_role_repository`（getQuery/WithTx、List+Count offset、GetByID/GetByCode 未命中返 nil、ListByIDs、Create、UpdateProfile/SoftDelete 用 `Updates` map + updated_by）；`admin_role_permission` / `admin_user_role` 加 WithTx + `DeleteByRoleID`（**物理删** —— uk 唯一键 `(role_id,permission_id)` 不含 is_deleted，覆盖式重绑若软删会撞唯一键，故绑定表用硬删；模型是 `is_deleted int32` 非 `gorm.DeletedAt`，`.Delete()` 即物理删）+ `BatchCreate` + `ListAdminIDsByRoleID`。`SetRolePermissions` 事务 `{删旧绑定 + 批量插新}`，提交后查 affected；`DeleteRole` 护栏 super → 删前取 affected → 事务 `{软删角色 + 物理删两关系表}`。`SuperRoleCode="super"` 常量。
+- **admin-api**：`doc/role/role.api` 6 静态路由，goctl 重生成；6 BFF logic 从 ctx 取 operatorID；`perm_invalidate.go` 的 `invalidatePerms` 遍历 `rbac.Invalidate`（SetRolePermissions/DeleteRole 后调，失败只 log）；registry 登记 6 路由（list/detail→`admin:role:list`，create/update/permissions/delete→`admin:role:manage`）。
+
+**RBAC 失效连带**：admin-rpc 无 Redis，故权限缓存失效由 admin-api 侧完成——RPC 返回受影响 adminIds，BFF 循环失效 `admin:perms:{id}`，使改权限/删角色后**下一次请求即重新加载**（不必等 5min TTL）。
+
+**验证**：`./init.sh` 全绿；单测：rbac registry 6 角色路由 + `buildRoleItem` 映射。
+
+**遗留**：DB 未起 → 端到端（建 auditor→设权限→绑账号→改权限即时生效→护栏禁删 super）留运行期。绑定表物理删（项目未上线无存量顾虑）。
+
+---
+
+## 已完成（feat-admin-006 自服务收尾·审计日志 + 权限点目录）
+
+**背景**：与用户讨论后确定——Phase A（feat-admin-001~003）建了管理域 6 表、播种超管、装好鉴权/RBAC/审计中间件，但**无任何自服务接口**（admin-api 仅 login/logout/me + content 4 个），加管理员/建角色/分权只能手写 SQL，`operation_log` 只写不读；且 seed 预定义的 5 个 admin:* 权限点**全项目无路由消费**。用户选择先补这块自服务收尾（早于设计路线图的 Phase C 用户管理）。
+
+**已确认决策**：全量 4 模块 · Offset 分页（page+total）· 加安全护栏。分 3 子 Phase 交付，各一次提交。
+
+**关键事实**：管理域 6 表全部已存在 → **无 DDL、无 gorm-gen 重生成**（规避容器坑）。
+
+**本子 Phase 交付**：
+- **admin.proto**：AdminService 加 `ListOperationLogs`（admin_id/action/target_type/start_time/end_time/page/page_size 筛选 + 分页）、`ListPermissions`（module 目录只读），goctl 重生成；C 端 4 方法一行未改。
+- **admin-rpc**：`operation_log_repository` 加 `List`/`Count`（`buildQuery` 组装软删过滤 + 可选 Eq + created_at 毫秒 `time.UnixMilli` 区间 + id.Desc offset 分页，Count/List 分离两 builder 免共享变异）；`admin_permission_repository` 加 `ListAll(module)`；2 logic。
+- **公共分页件**：`pkg/utils/paging.go` `ClampPageSize`（size<=0 默认 / 超上限取上限 / 上限0不设限）+ `NormalizePage`（page<1 归1，复用 ClampPageSize 算 offset）+ 单测。抽取动因：`favorite/followers/followees/comment/user-index` 等 ≥3 处重复 pageSize 钳制（属抽象起点）。admin-rpc consts `DefaultPageSize=20/MaxPageSize=100`。
+- **admin-api**：`doc/audit/audit.api` + `doc/permission/permission.api`（全静态路由，挂 Auth+Rbac+Audit），import 进 admin.api，goctl 重生成 routes/types/swagger；2 BFF logic 调 AdminRpc；registry 登记 `GET /operation-logs→admin:audit:list`、`GET /permissions→admin:permission:list`；`seed_super_admin.sql` 权限点追加 `admin:audit:list`（module=admin，super-bind 块 re-run 自动绑定）。
+
+**验证**：`./init.sh` 全绿（build+vet+test）；单测 paging 边界 + rbac registry 6 路由（含 2 新）。
+
+**遗留**：DB 未起 → seed 应用 + 端到端冒烟留运行期；`pkg/utils` 公共分页件已建，存量 cursor 钳制收敛为 `ClampPageSize` 属可选后续（未做，避免跨 3 服务范围扩大）。
 
 ---
 

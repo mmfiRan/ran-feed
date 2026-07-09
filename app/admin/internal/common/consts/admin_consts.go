@@ -35,6 +35,11 @@ const (
 	ContentReviewApprove = "approve"
 	// ContentReviewReject 审核拒绝 decision 入参约定值
 	ContentReviewReject = "reject"
+
+	// AdminUserActionEnable 启用管理员 action 入参约定值
+	AdminUserActionEnable = "enable"
+	// AdminUserActionDisable 禁用管理员 action 入参约定值
+	AdminUserActionDisable = "disable"
 )
 
 // ErrAdminNotLogin 后台未登录

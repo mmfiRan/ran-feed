@@ -1,0 +1,31 @@
+syntax = "v1"
+
+type (
+	// AdminPermissionListReq module 空表示全量
+	AdminPermissionListReq {
+		Module string `form:"module,optional"`
+	}
+	AdminPermissionItem {
+		Id     int64  `json:"id"`
+		Code   string `json:"code"`
+		Name   string `json:"name"`
+		Module string `json:"module"`
+	}
+	AdminPermissionListRes {
+		Items []AdminPermissionItem `json:"items"`
+	}
+)
+
+@server (
+	tags:       permission
+	group:      permission
+	prefix:     /v1/admin
+	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+)
+service admin-api {
+	@doc (
+		description: "权限点目录 供角色分权选择 权限点 admin:permission:list"
+	)
+	@handler ListPermissions
+	get /permissions (AdminPermissionListReq) returns (AdminPermissionListRes)
+}

@@ -1,0 +1,115 @@
+syntax = "v1"
+
+type (
+	AdminUserListReq {
+		Status   int32 `form:"status,optional"` // 0不限 10启用 20禁用
+		Page     int32 `form:"page,optional"`
+		PageSize int32 `form:"page_size,optional"`
+	}
+	AdminUserItem {
+		Id        int64    `json:"id"`
+		Username  string   `json:"username"`
+		Nickname  string   `json:"nickname"`
+		Status    int32    `json:"status"`
+		RoleCodes []string `json:"role_codes"`
+		CreatedAt int64    `json:"created_at"` // 毫秒
+	}
+	AdminUserListRes {
+		Items []AdminUserItem `json:"items"`
+		Total int64           `json:"total"`
+	}
+
+	AdminUserDetailReq {
+		Id int64 `form:"id"`
+	}
+	AdminUserDetailRes {
+		Admin   AdminUserItem `json:"admin"`
+		RoleIds []int64       `json:"role_ids"`
+	}
+
+	AdminUserCreateReq {
+		Username string  `json:"username,optional" validate:"required"`
+		Password string  `json:"password,optional" validate:"required,min=6"`
+		Nickname string  `json:"nickname,optional"`
+		RoleIds  []int64 `json:"role_ids,optional"`
+	}
+	AdminUserCreateRes {
+		Id int64 `json:"id"`
+	}
+
+	AdminUserUpdateReq {
+		Id       int64  `json:"id,optional" validate:"required,gt=0"`
+		Nickname string `json:"nickname,optional" validate:"required"`
+	}
+	AdminUserUpdateRes {}
+
+	// AdminUserStatusReq action 取 enable(启用) 或 disable(禁用)
+	AdminUserStatusReq {
+		Id     int64  `json:"id,optional" validate:"required,gt=0"`
+		Action string `json:"action,optional" validate:"required,oneof=enable disable"`
+	}
+	AdminUserStatusRes {}
+
+	AdminUserResetPasswordReq {
+		Id          int64  `json:"id,optional" validate:"required,gt=0"`
+		NewPassword string `json:"new_password,optional" validate:"required,min=6"`
+	}
+	AdminUserResetPasswordRes {}
+
+	// AdminUserSetRolesReq role_ids 空表示清空该管理员角色
+	AdminUserSetRolesReq {
+		AdminId int64   `json:"admin_id,optional" validate:"required,gt=0"`
+		RoleIds []int64 `json:"role_ids,optional"`
+	}
+	AdminUserSetRolesRes {}
+)
+
+@server (
+	tags:       adminuser
+	group:      adminuser
+	prefix:     /v1/admin
+	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+)
+service admin-api {
+	@doc (
+		description: "管理员列表 分页 权限点 admin:user:list"
+	)
+	@handler ListAdmins
+	get /admins (AdminUserListReq) returns (AdminUserListRes)
+
+	@doc (
+		description: "管理员详情 含角色ID 权限点 admin:user:list"
+	)
+	@handler GetAdminDetail
+	get /admins/detail (AdminUserDetailReq) returns (AdminUserDetailRes)
+
+	@doc (
+		description: "建管理员 权限点 admin:user:manage"
+	)
+	@handler CreateAdmin
+	post /admins/create (AdminUserCreateReq) returns (AdminUserCreateRes)
+
+	@doc (
+		description: "改管理员昵称 权限点 admin:user:manage"
+	)
+	@handler UpdateAdmin
+	post /admins/update (AdminUserUpdateReq) returns (AdminUserUpdateRes)
+
+	@doc (
+		description: "启用禁用管理员 禁用即踢下线 权限点 admin:user:manage"
+	)
+	@handler SetAdminStatus
+	post /admins/status (AdminUserStatusReq) returns (AdminUserStatusRes)
+
+	@doc (
+		description: "重置管理员密码 重置即踢下线 权限点 admin:user:manage"
+	)
+	@handler ResetAdminPassword
+	post /admins/reset-password (AdminUserResetPasswordReq) returns (AdminUserResetPasswordRes)
+
+	@doc (
+		description: "覆盖式设管理员角色 权限点 admin:user:manage"
+	)
+	@handler SetAdminRoles
+	post /admins/roles (AdminUserSetRolesReq) returns (AdminUserSetRolesRes)
+}

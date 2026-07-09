@@ -6,14 +6,76 @@ package handler
 import (
 	"net/http"
 
+	adminuser "ran-feed/app/admin/internal/handler/adminuser"
+	audit "ran-feed/app/admin/internal/handler/audit"
 	auth "ran-feed/app/admin/internal/handler/auth"
 	content "ran-feed/app/admin/internal/handler/content"
+	permission "ran-feed/app/admin/internal/handler/permission"
+	role "ran-feed/app/admin/internal/handler/role"
 	"ran-feed/app/admin/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
 )
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.AdminAuthMiddleware, serverCtx.AdminRbacMiddleware, serverCtx.AdminAuditMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/admins",
+					Handler: adminuser.ListAdminsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/admins/create",
+					Handler: adminuser.CreateAdminHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/admins/detail",
+					Handler: adminuser.GetAdminDetailHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/admins/reset-password",
+					Handler: adminuser.ResetAdminPasswordHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/admins/roles",
+					Handler: adminuser.SetAdminRolesHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/admins/status",
+					Handler: adminuser.SetAdminStatusHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/admins/update",
+					Handler: adminuser.UpdateAdminHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/admin"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.AdminAuthMiddleware, serverCtx.AdminRbacMiddleware, serverCtx.AdminAuditMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/operation-logs",
+					Handler: audit.ListOperationLogsHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/admin"),
+	)
+
 	server.AddRoutes(
 		[]rest.Route{
 			{
@@ -67,6 +129,59 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Method:  http.MethodPost,
 					Path:    "/contents/status",
 					Handler: content.SetContentStatusHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/admin"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.AdminAuthMiddleware, serverCtx.AdminRbacMiddleware, serverCtx.AdminAuditMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/permissions",
+					Handler: permission.ListPermissionsHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/admin"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.AdminAuthMiddleware, serverCtx.AdminRbacMiddleware, serverCtx.AdminAuditMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/roles",
+					Handler: role.ListRolesHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/roles/create",
+					Handler: role.CreateRoleHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/roles/delete",
+					Handler: role.DeleteRoleHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/roles/detail",
+					Handler: role.GetRoleDetailHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/roles/permissions",
+					Handler: role.SetRolePermissionsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/roles/update",
+					Handler: role.UpdateRoleHandler(serverCtx),
 				},
 			}...,
 		),

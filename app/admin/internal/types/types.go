@@ -105,3 +105,177 @@ type AdminMeRes struct {
 	AdminInfo   AdminInfo `json:"admin_info"`
 	Permissions []string  `json:"permissions"`
 }
+
+type AdminOperationLogItem struct {
+	Id         int64  `json:"id"`
+	AdminId    int64  `json:"admin_id"`
+	Action     string `json:"action"`
+	TargetType string `json:"target_type"`
+	TargetId   int64  `json:"target_id"`
+	Result     string `json:"result"`
+	Ip         string `json:"ip"`
+	CreatedAt  int64  `json:"created_at"` // 毫秒
+}
+
+type AdminOperationLogListReq struct {
+	AdminId    int64  `form:"admin_id,optional"`
+	Action     string `form:"action,optional"`
+	TargetType string `form:"target_type,optional"`
+	StartTime  int64  `form:"start_time,optional"` // 毫秒
+	EndTime    int64  `form:"end_time,optional"`   // 毫秒
+	Page       int32  `form:"page,optional"`
+	PageSize   int32  `form:"page_size,optional"`
+}
+
+type AdminOperationLogListRes struct {
+	Items []AdminOperationLogItem `json:"items"`
+	Total int64                   `json:"total"`
+}
+
+type AdminPermissionItem struct {
+	Id     int64  `json:"id"`
+	Code   string `json:"code"`
+	Name   string `json:"name"`
+	Module string `json:"module"`
+}
+
+type AdminPermissionListReq struct {
+	Module string `form:"module,optional"`
+}
+
+type AdminPermissionListRes struct {
+	Items []AdminPermissionItem `json:"items"`
+}
+
+type AdminRoleCreateReq struct {
+	Code   string `json:"code,optional" validate:"required"`
+	Name   string `json:"name,optional" validate:"required"`
+	Remark string `json:"remark,optional"`
+}
+
+type AdminRoleCreateRes struct {
+	Id int64 `json:"id"`
+}
+
+type AdminRoleDeleteReq struct {
+	Id int64 `json:"id,optional" validate:"required,gt=0"`
+}
+
+type AdminRoleDeleteRes struct {
+}
+
+type AdminRoleDetailReq struct {
+	Id int64 `form:"id"`
+}
+
+type AdminRoleDetailRes struct {
+	Role          AdminRoleItem `json:"role"`
+	PermissionIds []int64       `json:"permission_ids"`
+}
+
+type AdminRoleItem struct {
+	Id        int64  `json:"id"`
+	Code      string `json:"code"`
+	Name      string `json:"name"`
+	Remark    string `json:"remark"`
+	CreatedAt int64  `json:"created_at"` // 毫秒
+}
+
+type AdminRoleListReq struct {
+	Page     int32 `form:"page,optional"`
+	PageSize int32 `form:"page_size,optional"`
+}
+
+type AdminRoleListRes struct {
+	Items []AdminRoleItem `json:"items"`
+	Total int64           `json:"total"`
+}
+
+type AdminRoleSetPermissionsReq struct {
+	RoleId        int64   `json:"role_id,optional" validate:"required,gt=0"`
+	PermissionIds []int64 `json:"permission_ids,optional"`
+}
+
+type AdminRoleSetPermissionsRes struct {
+}
+
+type AdminRoleUpdateReq struct {
+	Id     int64  `json:"id,optional" validate:"required,gt=0"`
+	Name   string `json:"name,optional" validate:"required"`
+	Remark string `json:"remark,optional"`
+}
+
+type AdminRoleUpdateRes struct {
+}
+
+type AdminUserCreateReq struct {
+	Username string  `json:"username,optional" validate:"required"`
+	Password string  `json:"password,optional" validate:"required,min=6"`
+	Nickname string  `json:"nickname,optional"`
+	RoleIds  []int64 `json:"role_ids,optional"`
+}
+
+type AdminUserCreateRes struct {
+	Id int64 `json:"id"`
+}
+
+type AdminUserDetailReq struct {
+	Id int64 `form:"id"`
+}
+
+type AdminUserDetailRes struct {
+	Admin   AdminUserItem `json:"admin"`
+	RoleIds []int64       `json:"role_ids"`
+}
+
+type AdminUserItem struct {
+	Id        int64    `json:"id"`
+	Username  string   `json:"username"`
+	Nickname  string   `json:"nickname"`
+	Status    int32    `json:"status"`
+	RoleCodes []string `json:"role_codes"`
+	CreatedAt int64    `json:"created_at"` // 毫秒
+}
+
+type AdminUserListReq struct {
+	Status   int32 `form:"status,optional"` // 0不限 10启用 20禁用
+	Page     int32 `form:"page,optional"`
+	PageSize int32 `form:"page_size,optional"`
+}
+
+type AdminUserListRes struct {
+	Items []AdminUserItem `json:"items"`
+	Total int64           `json:"total"`
+}
+
+type AdminUserResetPasswordReq struct {
+	Id          int64  `json:"id,optional" validate:"required,gt=0"`
+	NewPassword string `json:"new_password,optional" validate:"required,min=6"`
+}
+
+type AdminUserResetPasswordRes struct {
+}
+
+type AdminUserSetRolesReq struct {
+	AdminId int64   `json:"admin_id,optional" validate:"required,gt=0"`
+	RoleIds []int64 `json:"role_ids,optional"`
+}
+
+type AdminUserSetRolesRes struct {
+}
+
+type AdminUserStatusReq struct {
+	Id     int64  `json:"id,optional" validate:"required,gt=0"`
+	Action string `json:"action,optional" validate:"required,oneof=enable disable"`
+}
+
+type AdminUserStatusRes struct {
+}
+
+type AdminUserUpdateReq struct {
+	Id       int64  `json:"id,optional" validate:"required,gt=0"`
+	Nickname string `json:"nickname,optional" validate:"required"`
+}
+
+type AdminUserUpdateRes struct {
+}

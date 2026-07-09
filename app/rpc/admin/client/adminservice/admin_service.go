@@ -16,10 +16,40 @@ import (
 type (
 	AuthenticateAdminReq    = admin.AuthenticateAdminReq
 	AuthenticateAdminRes    = admin.AuthenticateAdminRes
+	CreateAdminReq          = admin.CreateAdminReq
+	CreateAdminRes          = admin.CreateAdminRes
+	CreateRoleReq           = admin.CreateRoleReq
+	CreateRoleRes           = admin.CreateRoleRes
+	DeleteRoleReq           = admin.DeleteRoleReq
+	DeleteRoleRes           = admin.DeleteRoleRes
+	GetAdminDetailReq       = admin.GetAdminDetailReq
+	GetAdminDetailRes       = admin.GetAdminDetailRes
 	GetAdminReq             = admin.GetAdminReq
 	GetAdminRes             = admin.GetAdminRes
+	GetRoleDetailReq        = admin.GetRoleDetailReq
+	GetRoleDetailRes        = admin.GetRoleDetailRes
 	ListAdminPermissionsReq = admin.ListAdminPermissionsReq
 	ListAdminPermissionsRes = admin.ListAdminPermissionsRes
+	ListAdminsReq           = admin.ListAdminsReq
+	ListAdminsRes           = admin.ListAdminsRes
+	ListOperationLogsReq    = admin.ListOperationLogsReq
+	ListOperationLogsRes    = admin.ListOperationLogsRes
+	ListPermissionsReq      = admin.ListPermissionsReq
+	ListPermissionsRes      = admin.ListPermissionsRes
+	ListRolesReq            = admin.ListRolesReq
+	ListRolesRes            = admin.ListRolesRes
+	ResetAdminPasswordReq   = admin.ResetAdminPasswordReq
+	ResetAdminPasswordRes   = admin.ResetAdminPasswordRes
+	SetAdminRolesReq        = admin.SetAdminRolesReq
+	SetAdminRolesRes        = admin.SetAdminRolesRes
+	SetAdminStatusReq       = admin.SetAdminStatusReq
+	SetAdminStatusRes       = admin.SetAdminStatusRes
+	SetRolePermissionsReq   = admin.SetRolePermissionsReq
+	SetRolePermissionsRes   = admin.SetRolePermissionsRes
+	UpdateAdminReq          = admin.UpdateAdminReq
+	UpdateAdminRes          = admin.UpdateAdminRes
+	UpdateRoleReq           = admin.UpdateRoleReq
+	UpdateRoleRes           = admin.UpdateRoleRes
 	WriteOperationLogReq    = admin.WriteOperationLogReq
 	WriteOperationLogRes    = admin.WriteOperationLogRes
 
@@ -28,6 +58,21 @@ type (
 		GetAdmin(ctx context.Context, in *GetAdminReq, opts ...grpc.CallOption) (*GetAdminRes, error)
 		ListAdminPermissions(ctx context.Context, in *ListAdminPermissionsReq, opts ...grpc.CallOption) (*ListAdminPermissionsRes, error)
 		WriteOperationLog(ctx context.Context, in *WriteOperationLogReq, opts ...grpc.CallOption) (*WriteOperationLogRes, error)
+		ListPermissions(ctx context.Context, in *ListPermissionsReq, opts ...grpc.CallOption) (*ListPermissionsRes, error)
+		ListOperationLogs(ctx context.Context, in *ListOperationLogsReq, opts ...grpc.CallOption) (*ListOperationLogsRes, error)
+		ListRoles(ctx context.Context, in *ListRolesReq, opts ...grpc.CallOption) (*ListRolesRes, error)
+		GetRoleDetail(ctx context.Context, in *GetRoleDetailReq, opts ...grpc.CallOption) (*GetRoleDetailRes, error)
+		CreateRole(ctx context.Context, in *CreateRoleReq, opts ...grpc.CallOption) (*CreateRoleRes, error)
+		UpdateRole(ctx context.Context, in *UpdateRoleReq, opts ...grpc.CallOption) (*UpdateRoleRes, error)
+		SetRolePermissions(ctx context.Context, in *SetRolePermissionsReq, opts ...grpc.CallOption) (*SetRolePermissionsRes, error)
+		DeleteRole(ctx context.Context, in *DeleteRoleReq, opts ...grpc.CallOption) (*DeleteRoleRes, error)
+		ListAdmins(ctx context.Context, in *ListAdminsReq, opts ...grpc.CallOption) (*ListAdminsRes, error)
+		GetAdminDetail(ctx context.Context, in *GetAdminDetailReq, opts ...grpc.CallOption) (*GetAdminDetailRes, error)
+		CreateAdmin(ctx context.Context, in *CreateAdminReq, opts ...grpc.CallOption) (*CreateAdminRes, error)
+		UpdateAdmin(ctx context.Context, in *UpdateAdminReq, opts ...grpc.CallOption) (*UpdateAdminRes, error)
+		SetAdminStatus(ctx context.Context, in *SetAdminStatusReq, opts ...grpc.CallOption) (*SetAdminStatusRes, error)
+		ResetAdminPassword(ctx context.Context, in *ResetAdminPasswordReq, opts ...grpc.CallOption) (*ResetAdminPasswordRes, error)
+		SetAdminRoles(ctx context.Context, in *SetAdminRolesReq, opts ...grpc.CallOption) (*SetAdminRolesRes, error)
 	}
 
 	defaultAdminService struct {
@@ -59,4 +104,79 @@ func (m *defaultAdminService) ListAdminPermissions(ctx context.Context, in *List
 func (m *defaultAdminService) WriteOperationLog(ctx context.Context, in *WriteOperationLogReq, opts ...grpc.CallOption) (*WriteOperationLogRes, error) {
 	client := admin.NewAdminServiceClient(m.cli.Conn())
 	return client.WriteOperationLog(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) ListPermissions(ctx context.Context, in *ListPermissionsReq, opts ...grpc.CallOption) (*ListPermissionsRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.ListPermissions(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) ListOperationLogs(ctx context.Context, in *ListOperationLogsReq, opts ...grpc.CallOption) (*ListOperationLogsRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.ListOperationLogs(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) ListRoles(ctx context.Context, in *ListRolesReq, opts ...grpc.CallOption) (*ListRolesRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.ListRoles(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) GetRoleDetail(ctx context.Context, in *GetRoleDetailReq, opts ...grpc.CallOption) (*GetRoleDetailRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.GetRoleDetail(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) CreateRole(ctx context.Context, in *CreateRoleReq, opts ...grpc.CallOption) (*CreateRoleRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.CreateRole(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) UpdateRole(ctx context.Context, in *UpdateRoleReq, opts ...grpc.CallOption) (*UpdateRoleRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.UpdateRole(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) SetRolePermissions(ctx context.Context, in *SetRolePermissionsReq, opts ...grpc.CallOption) (*SetRolePermissionsRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.SetRolePermissions(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) DeleteRole(ctx context.Context, in *DeleteRoleReq, opts ...grpc.CallOption) (*DeleteRoleRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.DeleteRole(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) ListAdmins(ctx context.Context, in *ListAdminsReq, opts ...grpc.CallOption) (*ListAdminsRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.ListAdmins(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) GetAdminDetail(ctx context.Context, in *GetAdminDetailReq, opts ...grpc.CallOption) (*GetAdminDetailRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.GetAdminDetail(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) CreateAdmin(ctx context.Context, in *CreateAdminReq, opts ...grpc.CallOption) (*CreateAdminRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.CreateAdmin(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) UpdateAdmin(ctx context.Context, in *UpdateAdminReq, opts ...grpc.CallOption) (*UpdateAdminRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.UpdateAdmin(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) SetAdminStatus(ctx context.Context, in *SetAdminStatusReq, opts ...grpc.CallOption) (*SetAdminStatusRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.SetAdminStatus(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) ResetAdminPassword(ctx context.Context, in *ResetAdminPasswordReq, opts ...grpc.CallOption) (*ResetAdminPasswordRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.ResetAdminPassword(ctx, in, opts...)
+}
+
+func (m *defaultAdminService) SetAdminRoles(ctx context.Context, in *SetAdminRolesReq, opts ...grpc.CallOption) (*SetAdminRolesRes, error) {
+	client := admin.NewAdminServiceClient(m.cli.Conn())
+	return client.SetAdminRoles(ctx, in, opts...)
 }

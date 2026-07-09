@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 
+	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/entity/query"
 	"ran-feed/pkg/orm"
 
@@ -11,6 +12,8 @@ import (
 
 type AdminPermissionRepository interface {
 	ListCodesByIDs(ids []int64) ([]string, error)
+	// ListAll 取权限点目录 module 空则全量 module.Desc 后 id 升序
+	ListAll(module string) ([]*model.RanFeedAdminPermission, error)
 }
 
 type adminPermissionRepositoryImpl struct {
@@ -48,4 +51,14 @@ func (r *adminPermissionRepositoryImpl) ListCodesByIDs(ids []int64) ([]string, e
 		}
 	}
 	return codes, nil
+}
+
+// ListAll 取权限点目录 module 空则全量 按 module 加 id 排序供前端分组
+func (r *adminPermissionRepositoryImpl) ListAll(module string) ([]*model.RanFeedAdminPermission, error) {
+	q := query.Q.RanFeedAdminPermission
+	do := q.WithContext(r.ctx).Where(q.IsDeleted.Eq(0))
+	if module != "" {
+		do = do.Where(q.Module.Eq(module))
+	}
+	return do.Order(q.Module, q.ID).Find()
 }

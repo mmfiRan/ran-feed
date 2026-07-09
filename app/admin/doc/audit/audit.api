@@ -1,0 +1,42 @@
+syntax = "v1"
+
+type (
+	// AdminOperationLogListReq 审计日志筛选 各项 0/空 表示不限 时间毫秒 page 从1
+	AdminOperationLogListReq {
+		AdminId    int64  `form:"admin_id,optional"`
+		Action     string `form:"action,optional"`
+		TargetType string `form:"target_type,optional"`
+		StartTime  int64  `form:"start_time,optional"` // 毫秒
+		EndTime    int64  `form:"end_time,optional"`   // 毫秒
+		Page       int32  `form:"page,optional"`
+		PageSize   int32  `form:"page_size,optional"`
+	}
+	AdminOperationLogItem {
+		Id         int64  `json:"id"`
+		AdminId    int64  `json:"admin_id"`
+		Action     string `json:"action"`
+		TargetType string `json:"target_type"`
+		TargetId   int64  `json:"target_id"`
+		Result     string `json:"result"`
+		Ip         string `json:"ip"`
+		CreatedAt  int64  `json:"created_at"` // 毫秒
+	}
+	AdminOperationLogListRes {
+		Items []AdminOperationLogItem `json:"items"`
+		Total int64                   `json:"total"`
+	}
+)
+
+@server (
+	tags:       audit
+	group:      audit
+	prefix:     /v1/admin
+	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+)
+service admin-api {
+	@doc (
+		description: "操作审计日志 多条件筛选 + 分页 权限点 admin:audit:list"
+	)
+	@handler ListOperationLogs
+	get /operation-logs (AdminOperationLogListReq) returns (AdminOperationLogListRes)
+}

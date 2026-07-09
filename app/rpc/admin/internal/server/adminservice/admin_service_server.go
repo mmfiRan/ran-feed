@@ -42,3 +42,78 @@ func (s *AdminServiceServer) WriteOperationLog(ctx context.Context, in *admin.Wr
 	l := adminservicelogic.NewWriteOperationLogLogic(ctx, s.svcCtx)
 	return l.WriteOperationLog(in)
 }
+
+func (s *AdminServiceServer) ListPermissions(ctx context.Context, in *admin.ListPermissionsReq) (*admin.ListPermissionsRes, error) {
+	l := adminservicelogic.NewListPermissionsLogic(ctx, s.svcCtx)
+	return l.ListPermissions(in)
+}
+
+func (s *AdminServiceServer) ListOperationLogs(ctx context.Context, in *admin.ListOperationLogsReq) (*admin.ListOperationLogsRes, error) {
+	l := adminservicelogic.NewListOperationLogsLogic(ctx, s.svcCtx)
+	return l.ListOperationLogs(in)
+}
+
+func (s *AdminServiceServer) ListRoles(ctx context.Context, in *admin.ListRolesReq) (*admin.ListRolesRes, error) {
+	l := adminservicelogic.NewListRolesLogic(ctx, s.svcCtx)
+	return l.ListRoles(in)
+}
+
+func (s *AdminServiceServer) GetRoleDetail(ctx context.Context, in *admin.GetRoleDetailReq) (*admin.GetRoleDetailRes, error) {
+	l := adminservicelogic.NewGetRoleDetailLogic(ctx, s.svcCtx)
+	return l.GetRoleDetail(in)
+}
+
+func (s *AdminServiceServer) CreateRole(ctx context.Context, in *admin.CreateRoleReq) (*admin.CreateRoleRes, error) {
+	l := adminservicelogic.NewCreateRoleLogic(ctx, s.svcCtx)
+	return l.CreateRole(in)
+}
+
+func (s *AdminServiceServer) UpdateRole(ctx context.Context, in *admin.UpdateRoleReq) (*admin.UpdateRoleRes, error) {
+	l := adminservicelogic.NewUpdateRoleLogic(ctx, s.svcCtx)
+	return l.UpdateRole(in)
+}
+
+func (s *AdminServiceServer) SetRolePermissions(ctx context.Context, in *admin.SetRolePermissionsReq) (*admin.SetRolePermissionsRes, error) {
+	l := adminservicelogic.NewSetRolePermissionsLogic(ctx, s.svcCtx)
+	return l.SetRolePermissions(in)
+}
+
+func (s *AdminServiceServer) DeleteRole(ctx context.Context, in *admin.DeleteRoleReq) (*admin.DeleteRoleRes, error) {
+	l := adminservicelogic.NewDeleteRoleLogic(ctx, s.svcCtx)
+	return l.DeleteRole(in)
+}
+
+func (s *AdminServiceServer) ListAdmins(ctx context.Context, in *admin.ListAdminsReq) (*admin.ListAdminsRes, error) {
+	l := adminservicelogic.NewListAdminsLogic(ctx, s.svcCtx)
+	return l.ListAdmins(in)
+}
+
+func (s *AdminServiceServer) GetAdminDetail(ctx context.Context, in *admin.GetAdminDetailReq) (*admin.GetAdminDetailRes, error) {
+	l := adminservicelogic.NewGetAdminDetailLogic(ctx, s.svcCtx)
+	return l.GetAdminDetail(in)
+}
+
+func (s *AdminServiceServer) CreateAdmin(ctx context.Context, in *admin.CreateAdminReq) (*admin.CreateAdminRes, error) {
+	l := adminservicelogic.NewCreateAdminLogic(ctx, s.svcCtx)
+	return l.CreateAdmin(in)
+}
+
+func (s *AdminServiceServer) UpdateAdmin(ctx context.Context, in *admin.UpdateAdminReq) (*admin.UpdateAdminRes, error) {
+	l := adminservicelogic.NewUpdateAdminLogic(ctx, s.svcCtx)
+	return l.UpdateAdmin(in)
+}
+
+func (s *AdminServiceServer) SetAdminStatus(ctx context.Context, in *admin.SetAdminStatusReq) (*admin.SetAdminStatusRes, error) {
+	l := adminservicelogic.NewSetAdminStatusLogic(ctx, s.svcCtx)
+	return l.SetAdminStatus(in)
+}
+
+func (s *AdminServiceServer) ResetAdminPassword(ctx context.Context, in *admin.ResetAdminPasswordReq) (*admin.ResetAdminPasswordRes, error) {
+	l := adminservicelogic.NewResetAdminPasswordLogic(ctx, s.svcCtx)
+	return l.ResetAdminPassword(in)
+}
+
+func (s *AdminServiceServer) SetAdminRoles(ctx context.Context, in *admin.SetAdminRolesReq) (*admin.SetAdminRolesRes, error) {
+	l := adminservicelogic.NewSetAdminRolesLogic(ctx, s.svcCtx)
+	return l.SetAdminRoles(in)
+}

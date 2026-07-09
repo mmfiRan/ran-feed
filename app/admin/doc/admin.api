@@ -2,6 +2,10 @@ syntax = "v1"
 
 import "auth/auth.api"
 import "content/content.api"
+import "permission/permission.api"
+import "audit/audit.api"
+import "role/role.api"
+import "adminuser/adminuser.api"
 
 info (
 	title:        "ran-feed 后台管理接口"

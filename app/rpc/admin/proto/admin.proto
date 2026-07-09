@@ -63,9 +63,238 @@ message WriteOperationLogRes {
   int64 log_id = 1;
 }
 
+// PermissionItem 权限点目录项
+message PermissionItem {
+  int64 id = 1;
+  string code = 2;
+  string name = 3;
+  string module = 4;
+}
+
+// ListPermissionsReq 查询权限点目录 module 空则全量
+message ListPermissionsReq {
+  string module = 1;
+}
+
+// ListPermissionsRes 权限点目录
+message ListPermissionsRes {
+  repeated PermissionItem items = 1;
+}
+
+// OperationLogItem 操作审计日志项 created_at 毫秒
+message OperationLogItem {
+  int64 id = 1;
+  int64 admin_id = 2;
+  string action = 3;
+  string target_type = 4;
+  int64 target_id = 5;
+  string result = 6;
+  string ip = 7;
+  int64 created_at = 8;
+}
+
+// ListOperationLogsReq 查询操作审计日志 可选筛选加分页 start_time/end_time 毫秒
+message ListOperationLogsReq {
+  int64 admin_id = 1;
+  string action = 2;
+  string target_type = 3;
+  int64 start_time = 4;
+  int64 end_time = 5;
+  int32 page = 6;
+  int32 page_size = 7;
+}
+
+// ListOperationLogsRes 审计日志分页结果
+message ListOperationLogsRes {
+  repeated OperationLogItem items = 1;
+  int64 total = 2;
+}
+
+// RoleItem 角色项 created_at 毫秒
+message RoleItem {
+  int64 id = 1;
+  string code = 2;
+  string name = 3;
+  string remark = 4;
+  int64 created_at = 5;
+}
+
+// ListRolesReq 角色分页
+message ListRolesReq {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+// ListRolesRes 角色分页结果
+message ListRolesRes {
+  repeated RoleItem items = 1;
+  int64 total = 2;
+}
+
+// GetRoleDetailReq 角色详情
+message GetRoleDetailReq {
+  int64 id = 1;
+}
+
+// GetRoleDetailRes 角色详情含所绑权限点ID集合
+message GetRoleDetailRes {
+  RoleItem role = 1;
+  repeated int64 permission_ids = 2;
+}
+
+// CreateRoleReq 建角色 code 唯一
+message CreateRoleReq {
+  string code = 1;
+  string name = 2;
+  string remark = 3;
+  int64 operator_id = 4;
+}
+
+// CreateRoleRes 建角色结果
+message CreateRoleRes {
+  int64 id = 1;
+}
+
+// UpdateRoleReq 改角色 不可改 code
+message UpdateRoleReq {
+  int64 id = 1;
+  string name = 2;
+  string remark = 3;
+  int64 operator_id = 4;
+}
+
+// UpdateRoleRes 改角色结果
+message UpdateRoleRes {}
+
+// SetRolePermissionsReq 覆盖式设角色权限点
+message SetRolePermissionsReq {
+  int64 role_id = 1;
+  repeated int64 permission_ids = 2;
+  int64 operator_id = 3;
+}
+
+// SetRolePermissionsRes 返回受影响管理员ID供上层失效权限缓存
+message SetRolePermissionsRes {
+  repeated int64 affected_admin_ids = 1;
+}
+
+// DeleteRoleReq 删角色 护栏禁删 super
+message DeleteRoleReq {
+  int64 id = 1;
+  int64 operator_id = 2;
+}
+
+// DeleteRoleRes 返回受影响管理员ID供上层失效权限缓存
+message DeleteRoleRes {
+  repeated int64 affected_admin_ids = 1;
+}
+
+// AdminListItem 管理员列表项 created_at 毫秒
+message AdminListItem {
+  int64 id = 1;
+  string username = 2;
+  string nickname = 3;
+  AdminStatus status = 4;
+  repeated string role_codes = 5;
+  int64 created_at = 6;
+}
+
+// ListAdminsReq status UNKNOWN(0) 表示不限
+message ListAdminsReq {
+  AdminStatus status = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+// ListAdminsRes 管理员分页结果
+message ListAdminsRes {
+  repeated AdminListItem items = 1;
+  int64 total = 2;
+}
+
+// GetAdminDetailReq 管理员详情
+message GetAdminDetailReq {
+  int64 id = 1;
+}
+
+// GetAdminDetailRes 管理员详情含所绑角色ID集合
+message GetAdminDetailRes {
+  AdminListItem admin = 1;
+  repeated int64 role_ids = 2;
+}
+
+// CreateAdminReq 建管理员 username 唯一 password 明文由服务端加盐哈希
+message CreateAdminReq {
+  string username = 1;
+  string password = 2;
+  string nickname = 3;
+  repeated int64 role_ids = 4;
+  int64 operator_id = 5;
+}
+
+// CreateAdminRes 建管理员结果
+message CreateAdminRes {
+  int64 id = 1;
+}
+
+// UpdateAdminReq 改管理员昵称
+message UpdateAdminReq {
+  int64 id = 1;
+  string nickname = 2;
+  int64 operator_id = 3;
+}
+
+// UpdateAdminRes 改管理员结果
+message UpdateAdminRes {}
+
+// SetAdminStatusReq 启用禁用管理员 护栏禁止禁用自己
+message SetAdminStatusReq {
+  int64 id = 1;
+  AdminStatus status = 2;
+  int64 operator_id = 3;
+}
+
+// SetAdminStatusRes 启禁结果
+message SetAdminStatusRes {}
+
+// ResetAdminPasswordReq 重置管理员密码 明文由服务端加盐哈希
+message ResetAdminPasswordReq {
+  int64 id = 1;
+  string new_password = 2;
+  int64 operator_id = 3;
+}
+
+// ResetAdminPasswordRes 重置密码结果
+message ResetAdminPasswordRes {}
+
+// SetAdminRolesReq 覆盖式设管理员角色 护栏禁止移除自己的 super
+message SetAdminRolesReq {
+  int64 admin_id = 1;
+  repeated int64 role_ids = 2;
+  int64 operator_id = 3;
+}
+
+// SetAdminRolesRes 设角色结果
+message SetAdminRolesRes {}
+
 service AdminService {
   rpc AuthenticateAdmin(AuthenticateAdminReq) returns (AuthenticateAdminRes);
   rpc GetAdmin(GetAdminReq) returns (GetAdminRes);
   rpc ListAdminPermissions(ListAdminPermissionsReq) returns (ListAdminPermissionsRes);
   rpc WriteOperationLog(WriteOperationLogReq) returns (WriteOperationLogRes);
+  rpc ListPermissions(ListPermissionsReq) returns (ListPermissionsRes);
+  rpc ListOperationLogs(ListOperationLogsReq) returns (ListOperationLogsRes);
+  rpc ListRoles(ListRolesReq) returns (ListRolesRes);
+  rpc GetRoleDetail(GetRoleDetailReq) returns (GetRoleDetailRes);
+  rpc CreateRole(CreateRoleReq) returns (CreateRoleRes);
+  rpc UpdateRole(UpdateRoleReq) returns (UpdateRoleRes);
+  rpc SetRolePermissions(SetRolePermissionsReq) returns (SetRolePermissionsRes);
+  rpc DeleteRole(DeleteRoleReq) returns (DeleteRoleRes);
+  rpc ListAdmins(ListAdminsReq) returns (ListAdminsRes);
+  rpc GetAdminDetail(GetAdminDetailReq) returns (GetAdminDetailRes);
+  rpc CreateAdmin(CreateAdminReq) returns (CreateAdminRes);
+  rpc UpdateAdmin(UpdateAdminReq) returns (UpdateAdminRes);
+  rpc SetAdminStatus(SetAdminStatusReq) returns (SetAdminStatusRes);
+  rpc ResetAdminPassword(ResetAdminPasswordReq) returns (ResetAdminPasswordRes);
+  rpc SetAdminRoles(SetAdminRolesReq) returns (SetAdminRolesRes);
 }
