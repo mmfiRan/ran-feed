@@ -1,12 +1,12 @@
 syntax = "v1"
 
 type (
-	// AdminContentListReq 内容列表筛选 各筛选项 0 表示不限 cursor_id 0 表示首页
+	// AdminContentListReq 内容列表筛选 各筛选项 0 表示不限 page 从1
 	AdminContentListReq {
 		Status      int32 `form:"status,optional"`       // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
 		ContentType int32 `form:"content_type,optional"` // 10文章 20视频
 		AuthorId    int64 `form:"author_id,optional"`
-		CursorId    int64 `form:"cursor_id,optional"` // 上页末条 content_id
+		Page        int32 `form:"page,optional"`
 		PageSize    int32 `form:"page_size,optional"`
 	}
 	AdminContentListItem {
@@ -23,9 +23,8 @@ type (
 		CreatedAt     int64  `json:"created_at"`   // 毫秒
 	}
 	AdminContentListRes {
-		Items      []AdminContentListItem `json:"items"`
-		NextCursor int64                  `json:"next_cursor"` // 0 表示无更多
-		HasMore    bool                   `json:"has_more"`
+		Items []AdminContentListItem `json:"items"`
+		Total int64                  `json:"total"`
 	}
 
 	AdminContentDetailReq {
@@ -82,25 +81,29 @@ type (
 )
 service admin-api {
 	@doc (
-		description: "内容列表 多条件筛选 + 游标分页 权限点 content:list"
+		description: "内容列表 多条件筛选 + 分页"
+		permission: "content:list"
 	)
 	@handler ListContents
 	get /contents (AdminContentListReq) returns (AdminContentListRes)
 
 	@doc (
-		description: "内容详情 含非公开与正文 权限点 content:detail"
+		description: "内容详情 含非公开与正文"
+		permission: "content:detail"
 	)
 	@handler GetContentDetail
 	get /contents/detail (AdminContentDetailReq) returns (AdminContentDetailRes)
 
 	@doc (
-		description: "内容下架/恢复 权限点 content:takedown"
+		description: "内容下架/恢复"
+		permission: "content:takedown"
 	)
 	@handler SetContentStatus
 	post /contents/status (AdminContentStatusReq) returns (AdminContentStatusRes)
 
 	@doc (
-		description: "先审后发审核 通过/拒绝 待审队列用 GET /contents?status=60 权限点 content:review"
+		description: "先审后发审核 通过/拒绝 待审队列用 GET /contents?status=60"
+		permission: "content:review"
 	)
 	@handler ReviewContent
 	post /contents/review (AdminContentReviewReq) returns (AdminContentReviewRes)

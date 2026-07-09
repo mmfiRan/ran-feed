@@ -49,14 +49,13 @@ type AdminContentListReq struct {
 	Status      int32 `form:"status,optional"`       // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
 	ContentType int32 `form:"content_type,optional"` // 10文章 20视频
 	AuthorId    int64 `form:"author_id,optional"`
-	CursorId    int64 `form:"cursor_id,optional"` // 上页末条 content_id
+	Page        int32 `form:"page,optional"`
 	PageSize    int32 `form:"page_size,optional"`
 }
 
 type AdminContentListRes struct {
-	Items      []AdminContentListItem `json:"items"`
-	NextCursor int64                  `json:"next_cursor"` // 0 表示无更多
-	HasMore    bool                   `json:"has_more"`
+	Items []AdminContentListItem `json:"items"`
+	Total int64                  `json:"total"`
 }
 
 type AdminContentReviewReq struct {

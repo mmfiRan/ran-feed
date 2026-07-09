@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/consts"
 	"ran-feed/app/rpc/content/internal/entity/model"
 
 	"github.com/stretchr/testify/assert"
@@ -81,13 +80,6 @@ func TestBuildAdminContentItem(t *testing.T) {
 		assert.Equal(t, int64(0), item.PublishedAt)
 		assert.Equal(t, content.ContentType_VIDEO, item.ContentType)
 	})
-}
-
-func TestNormalizePageSize(t *testing.T) {
-	assert.Equal(t, consts.AdminListDefaultPageSize, normalizePageSize(0))
-	assert.Equal(t, consts.AdminListDefaultPageSize, normalizePageSize(-5))
-	assert.Equal(t, 30, normalizePageSize(30))
-	assert.Equal(t, consts.AdminListMaxPageSize, normalizePageSize(consts.AdminListMaxPageSize+1))
 }
 
 func TestOptionalFilters(t *testing.T) {

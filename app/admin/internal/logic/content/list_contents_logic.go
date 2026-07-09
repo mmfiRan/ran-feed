@@ -29,7 +29,7 @@ func NewListContentsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *List
 
 func (l *ListContentsLogic) ListContents(req *types.AdminContentListReq) (resp *types.AdminContentListRes, err error) {
 	in := &content.AdminListContentsReq{
-		CursorId: req.CursorId,
+		Page:     req.Page,
 		PageSize: req.PageSize,
 	}
 	// 各筛选项 0 表示不限 转成可选指针
@@ -69,8 +69,7 @@ func (l *ListContentsLogic) ListContents(req *types.AdminContentListReq) (resp *
 	}
 
 	return &types.AdminContentListRes{
-		Items:      items,
-		NextCursor: rpcRes.GetNextCursor(),
-		HasMore:    rpcRes.GetHasMore(),
+		Items: items,
+		Total: rpcRes.GetTotal(),
 	}, nil
 }

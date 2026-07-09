@@ -9,6 +9,7 @@ import (
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -38,12 +39,21 @@ func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContents
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	pageSize := normalizePageSize(in.GetPageSize())
 	statusFilter := optionalStatus(in)
 	typeFilter := optionalContentType(in)
 	authorFilter := optionalAuthorID(in)
 
-	rows, err := l.contentRepo.AdminListContents(statusFilter, typeFilter, authorFilter, in.GetCursorId(), pageSize)
+	total, err := l.contentRepo.AdminCountContents(statusFilter, typeFilter, authorFilter)
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("统计内容失败"))
+	}
+	res := &content.AdminListContentsRes{Total: total}
+	if total == 0 {
+		return res, nil
+	}
+
+	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()), consts.AdminListDefaultPageSize, consts.AdminListMaxPageSize)
+	rows, err := l.contentRepo.AdminListContents(statusFilter, typeFilter, authorFilter, offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
 	}
@@ -52,17 +62,11 @@ func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContents
 	if err != nil {
 		return nil, err
 	}
-
 	items := make([]*content.AdminContentItem, 0, len(rows))
 	for _, row := range rows {
 		items = append(items, buildAdminContentItem(row, titles[row.ID]))
 	}
-
-	res := &content.AdminListContentsRes{Items: items}
-	if len(rows) == pageSize && len(rows) > 0 {
-		res.NextCursor = rows[len(rows)-1].ID
-		res.HasMore = true
-	}
+	res.Items = items
 	return res, nil
 }
 
@@ -118,16 +122,6 @@ func buildAdminContentItem(row *model.RanFeedContent, title string) *content.Adm
 		item.PublishedAt = row.PublishedAt.UnixMilli()
 	}
 	return item
-}
-
-func normalizePageSize(size int32) int {
-	if size <= 0 {
-		return consts.AdminListDefaultPageSize
-	}
-	if size > consts.AdminListMaxPageSize {
-		return consts.AdminListMaxPageSize
-	}
-	return int(size)
 }
 
 func optionalStatus(in *content.AdminListContentsReq) *int32 {
