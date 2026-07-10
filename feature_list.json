@@ -260,15 +260,13 @@
       "status": "done",
       "evidence": "./init.sh 全绿(build+vet+test 38 测试文件)。①UserRepository 接口加 4 方法(AdminListUsers/AdminCountUsers/AdminGetByID/AdminUpdateStatus);user_repository.go 新增 adminUserQuery 共享筛选(软删+status>0 Eq+keyword LIKE)+ 4 方法实现(AdminListUsers id.Desc offset/limit 返 *model.RanFeedUser;AdminCountUsers 复用 adminUserQuery;AdminGetByID 软删过滤 未命中返 nil;AdminUpdateStatus Updates map 返 RowsAffected)。②session/session_helper.go 加 RemoveByUserID(GET 反向索引取 token 非空调 RemoveSession);session_helper_test.go 单测覆盖有会话删双向/无会话 no-op/空串 no-op。③user_consts.go 加 AdminListDefaultPageSize=20/AdminListMaxPageSize=100。④连带:修复两处测试 mock(usercache/cache_test.go + userservice/login_logic_test.go)补齐 4 个新 admin 方法桩。"
     },
-      "evidence": ""
-    },
     {
       "id": "feat-admin-011",
       "name": "Phase C 用户管理·user-rpc 3 logic 填实",
       "description": "用户管理拆 4 步之第 3 步:填实 adminuserservice 3 logic 使 RPC 真正可用。①AdminListUsers:先 AdminCountUsers 为 0 直返 → utils.NormalizePage(page,pageSize,DefaultPageSize,MaxPageSize) → AdminListUsers → buildAdminUserItem 映射(created_at UnixMilli)。②AdminGetUserDetail:AdminGetByID nil 报『用户不存在』→ 映射详情(含 bio/gender/email/updated_at)。③AdminSetUserStatus:纯函数守卫仅接受 ACTIVE/DISABLED(其它拒『不支持的状态』)→ AdminUpdateStatus affected==0 报『用户不存在』→ status==DISABLED 时 session.RemoveByUserID 踢下线(失败只 log 不阻断);updated_by=operator_id。边缘:model status 有 30=注销不在 proto enum,本轮封禁只 10↔20,restore 不特判 30(注明,后续需要再加守卫)。DoD:./init.sh 全绿 + 单测(buildAdminUserItem 映射、SetUserStatus 状态守卫纯函数)。",
       "dependencies": ["feat-admin-010"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 全绿(build+vet+test 40 测试文件)。①AdminListUsers logic:先 AdminCountUsers 为 0 直返 → utils.NormalizePage → AdminListUsers → buildAdminUserItem 映射(created_at UnixMilli);在 NewAdminListUsersLogic 中创建 userRepo=repositories.NewUserRepository(ctx,svcCtx.MysqlDb)。②AdminGetUserDetail logic:AdminGetByID nil 报 errorx.NewMsg('用户不存在') → 映射 AdminUserDetail(含 bio/gender/email/updated_at UnixMilli);userRepo 字段同上。③AdminSetUserStatus logic:纯函数 isValidStatus 守卫仅接受 ACTIVE/DISABLED → AdminUpdateStatus affected==0 报错 → DISABLED 时 session.RemoveByUserID(ctx,svcCtx.Redis,userId) 踢下线失败只 Errorf;userRepo 字段同上。④单测:admin_list_users_logic_test.go TestBuildAdminUserItem 映射(时间毫秒/字段对齐);admin_set_user_status_logic_test.go TestIsValidStatus(ACTIVE/DISABLED 有效 UNKNOWN 无效)。对齐现有 userservice logic 范式(NewXxxLogic 中创建 userRepo 字段而非从 ServiceContext 获取)。"
     },
     {
       "id": "feat-admin-012",

@@ -3,15 +3,15 @@
 ## 当前状态
 
 **最后更新：** 2026-07-10
-**当前功能：** feat-admin-010 Phase C 用户管理·user-rpc 数据层与踢下线 helper（已完成）
+**当前功能：** feat-admin-011 Phase C 用户管理·user-rpc 3 logic 填实（已完成）
 
-> UserRepository 新增 4 个 admin 方法（AdminListUsers/AdminCountUsers/AdminGetByID/AdminUpdateStatus）+ adminUserQuery 共享筛选；session 包加 RemoveByUserID 踢下线；user-rpc consts 加分页常量；单测覆盖 RemoveByUserID。`./init.sh` 全绿（38 测试文件）。
+> 填实 adminuserservice 3 logic 使 RPC 可用。AdminListUsers（Count 为 0 直返 → NormalizePage → 映射）；AdminGetUserDetail（nil 报错 → 映射详情）；AdminSetUserStatus（状态守卫 → UpdateStatus → DISABLED 时踢下线）。单测覆盖 buildAdminUserItem 映射与 isValidStatus 守卫。`./init.sh` 全绿（40 测试文件）。
 
-**下一步**：feat-admin-011（user-rpc 3 logic 填实）
+**下一步**：feat-admin-012（admin-api 模块 + RBAC + seed，Phase C 收官）
 
 ---
 
-## 已完成（feat-admin-010 Phase C 用户管理·user-rpc 数据层与踢下线 helper）
+## 已完成（feat-admin-011 Phase C 用户管理·user-rpc 3 logic 填实）
 
 **交付**：
 - **admin.proto**：`AdminService` 加 `ListAdmins`（status 筛选+分页，富化 role_codes）/`GetAdminDetail`（含 role_ids）/`CreateAdmin`（username 唯一 + 服务端加盐哈希 + 绑角色）/`UpdateAdmin`（昵称）/`SetAdminStatus`（启禁，护栏禁自禁用）/`ResetAdminPassword`/`SetAdminRoles`（覆盖式，护栏禁移除自己 super）+ `AdminListItem`，goctl 重生成，C 端未动。
