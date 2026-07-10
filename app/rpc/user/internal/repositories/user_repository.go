@@ -31,6 +31,14 @@ type UserRepository interface {
 	ScanActiveForIndex(cursorID int64, limit int) ([]*model.RanFeedUser, error)
 	// Create 创建用户
 	Create(userDO *do.UserDO) (int64, error)
+	// AdminListUsers 后台管理列表用户
+	AdminListUsers(status int32, keyword string, offset, limit int) ([]*model.RanFeedUser, error)
+	// AdminCountUsers 后台管理用户总数
+	AdminCountUsers(status int32, keyword string) (int64, error)
+	// AdminGetByID 后台管理获取用户详情 任意状态
+	AdminGetByID(userID int64) (*model.RanFeedUser, error)
+	// AdminUpdateStatus 后台管理更新用户状态
+	AdminUpdateStatus(userID int64, status int32, updatedBy int64) (int64, error)
 }
 
 type userRepositoryImpl struct {
@@ -241,4 +249,62 @@ func (r *userRepositoryImpl) Create(userDO *do.UserDO) (int64, error) {
 	}
 
 	return row.ID, nil
+}
+
+// adminUserQuery 后台管理用户查询共享筛选
+func (r *userRepositoryImpl) adminUserQuery(status int32, keyword string) query.IRanFeedUserDo {
+	q := r.getQuery()
+	doQuery := q.RanFeedUser.WithContext(r.ctx).Where(q.RanFeedUser.IsDeleted.Eq(0))
+
+	if status > 0 {
+		doQuery = doQuery.Where(q.RanFeedUser.Status.Eq(status))
+	}
+
+	if keyword != "" {
+		doQuery = doQuery.Where(q.RanFeedUser.Nickname.Like("%" + keyword + "%"))
+	}
+
+	return doQuery
+}
+
+func (r *userRepositoryImpl) AdminListUsers(status int32, keyword string, offset, limit int) ([]*model.RanFeedUser, error) {
+	return r.adminUserQuery(status, keyword).Order(r.getQuery().RanFeedUser.ID.Desc()).Offset(offset).Limit(limit).Find()
+}
+
+func (r *userRepositoryImpl) AdminCountUsers(status int32, keyword string) (int64, error) {
+	return r.adminUserQuery(status, keyword).Count()
+}
+
+func (r *userRepositoryImpl) AdminGetByID(userID int64) (*model.RanFeedUser, error) {
+	if userID <= 0 {
+		return nil, nil
+	}
+
+	q := r.getQuery()
+	row, err := q.RanFeedUser.WithContext(r.ctx).
+		Where(q.RanFeedUser.ID.Eq(userID)).
+		Where(q.RanFeedUser.IsDeleted.Eq(0)).
+		First()
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return row, nil
+}
+
+func (r *userRepositoryImpl) AdminUpdateStatus(userID int64, status int32, updatedBy int64) (int64, error) {
+	q := r.getQuery()
+	result, err := q.RanFeedUser.WithContext(r.ctx).
+		Where(q.RanFeedUser.ID.Eq(userID)).
+		Where(q.RanFeedUser.IsDeleted.Eq(0)).
+		Updates(map[string]interface{}{
+			"status":     status,
+			"updated_by": updatedBy,
+		})
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected, nil
 }

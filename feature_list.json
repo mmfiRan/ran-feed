@@ -257,7 +257,9 @@
       "name": "Phase C 用户管理·user-rpc 数据层与踢下线 helper",
       "description": "用户管理拆 4 步之第 2 步:补数据层与踢下线工具(暂不接 logic)。①UserRepository(app/rpc/user/internal/repositories/user_repository.go)抽 adminUserQuery 共享筛选(软删过滤 + status>0 Eq + keyword 非空 Nickname LIKE %kw%)+ AdminListUsers(offset/limit id.Desc 返 *model.RanFeedUser 以带 CreatedAt)/AdminCountUsers(同筛选 .Count() 分离两 builder)/AdminGetByID(任意状态 软删过滤 未命中返 nil,区别于现有返 *do.UserDO 的 GetByID)/AdminUpdateStatus(Updates map{status,updated_by} 返 RowsAffected)。②session 包(internal/common/utils/session/session_helper.go)加 RemoveByUserID(ctx,r,userID):GET rediskey.BuildUserSessionUserKey(userID) 取 token,非空则调现有 RemoveSession(删双向 key)。③user-rpc consts 加 page 默认/上限(20/100)。DoD:./init.sh 全绿 + session RemoveByUserID miniredis 单测(有会话删双向 / 无会话 no-op)。",
       "dependencies": ["feat-admin-009"],
-      "status": "not-started",
+      "status": "done",
+      "evidence": "./init.sh 全绿(build+vet+test 38 测试文件)。①UserRepository 接口加 4 方法(AdminListUsers/AdminCountUsers/AdminGetByID/AdminUpdateStatus);user_repository.go 新增 adminUserQuery 共享筛选(软删+status>0 Eq+keyword LIKE)+ 4 方法实现(AdminListUsers id.Desc offset/limit 返 *model.RanFeedUser;AdminCountUsers 复用 adminUserQuery;AdminGetByID 软删过滤 未命中返 nil;AdminUpdateStatus Updates map 返 RowsAffected)。②session/session_helper.go 加 RemoveByUserID(GET 反向索引取 token 非空调 RemoveSession);session_helper_test.go 单测覆盖有会话删双向/无会话 no-op/空串 no-op。③user_consts.go 加 AdminListDefaultPageSize=20/AdminListMaxPageSize=100。④连带:修复两处测试 mock(usercache/cache_test.go + userservice/login_logic_test.go)补齐 4 个新 admin 方法桩。"
+    },
       "evidence": ""
     },
     {

@@ -3,15 +3,15 @@
 ## 当前状态
 
 **最后更新：** 2026-07-10
-**当前功能：** feat-admin-009 Phase C 用户管理·user.proto AdminUserService 骨架（已完成）
+**当前功能：** feat-admin-010 Phase C 用户管理·user-rpc 数据层与踢下线 helper（已完成）
 
-> user.proto 新增 AdminUserService 与三个方法（AdminListUsers/AdminGetUserDetail/AdminSetUserStatus）+ AdminUserItem/AdminUserDetail 消息；goctl rpc protoc 重生成 pb/grpc/client/server + logic 桩；user.go 注册 AdminUserServiceServer。连带处理 goctl 1.10.1 丢失嵌套类型别名问题（手动补回 UserInfo/UserProfile/UserIndexItem）。`./init.sh` 全绿。
+> UserRepository 新增 4 个 admin 方法（AdminListUsers/AdminCountUsers/AdminGetByID/AdminUpdateStatus）+ adminUserQuery 共享筛选；session 包加 RemoveByUserID 踢下线；user-rpc consts 加分页常量；单测覆盖 RemoveByUserID。`./init.sh` 全绿（38 测试文件）。
 
-**下一步**：feat-admin-010（user-rpc 数据层与踢下线 helper）
+**下一步**：feat-admin-011（user-rpc 3 logic 填实）
 
 ---
 
-## 已完成（feat-admin-009 Phase C 用户管理·user.proto AdminUserService 骨架）
+## 已完成（feat-admin-010 Phase C 用户管理·user-rpc 数据层与踢下线 helper）
 
 **交付**：
 - **admin.proto**：`AdminService` 加 `ListAdmins`（status 筛选+分页，富化 role_codes）/`GetAdminDetail`（含 role_ids）/`CreateAdmin`（username 唯一 + 服务端加盐哈希 + 绑角色）/`UpdateAdmin`（昵称）/`SetAdminStatus`（启禁，护栏禁自禁用）/`ResetAdminPassword`/`SetAdminRoles`（覆盖式，护栏禁移除自己 super）+ `AdminListItem`，goctl 重生成，C 端未动。

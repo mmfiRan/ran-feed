@@ -47,6 +47,16 @@ func (m *mockUserRepository) BatchGetActiveForIndex([]int64) (map[int64]*model.R
 func (m *mockUserRepository) ScanActiveForIndex(int64, int) ([]*model.RanFeedUser, error) {
 	return nil, nil
 }
+func (m *mockUserRepository) AdminListUsers(int32, string, int, int) ([]*model.RanFeedUser, error) {
+	return nil, nil
+}
+func (m *mockUserRepository) AdminCountUsers(int32, string) (int64, error) { return 0, nil }
+func (m *mockUserRepository) AdminGetByID(int64) (*model.RanFeedUser, error) {
+	return nil, nil
+}
+func (m *mockUserRepository) AdminUpdateStatus(int64, int32, int64) (int64, error) {
+	return 0, nil
+}
 
 func newTestLoginLogic(t *testing.T, repo repositories.UserRepository) (*LoginLogic, *miniredis.Miniredis) {
 	t.Helper()

@@ -35,6 +35,12 @@ func (m *mockRepo) BatchGetActiveForIndex([]int64) (map[int64]*model.RanFeedUser
 	return nil, nil
 }
 func (m *mockRepo) ScanActiveForIndex(int64, int) ([]*model.RanFeedUser, error) { return nil, nil }
+func (m *mockRepo) AdminListUsers(int32, string, int, int) ([]*model.RanFeedUser, error) {
+	return nil, nil
+}
+func (m *mockRepo) AdminCountUsers(int32, string) (int64, error)  { return 0, nil }
+func (m *mockRepo) AdminGetByID(int64) (*model.RanFeedUser, error) { return nil, nil }
+func (m *mockRepo) AdminUpdateStatus(int64, int32, int64) (int64, error) { return 0, nil }
 
 func (m *mockRepo) GetByID(userID int64) (*do.UserDO, error) {
 	m.getByIDCalls++

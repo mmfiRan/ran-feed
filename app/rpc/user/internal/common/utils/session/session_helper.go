@@ -54,3 +54,16 @@ func RemoveSession(ctx context.Context, r *redis.Redis, userID int64, token stri
 	)
 	return err
 }
+
+// RemoveByUserID 根据用户ID踢下线 读反向索引拿token后删双向key
+func RemoveByUserID(ctx context.Context, r *redis.Redis, userID int64) error {
+	userKey := rediskey.BuildUserSessionUserKey(userID)
+	token, err := r.GetCtx(ctx, userKey)
+	if err != nil {
+		return err
+	}
+	if token == "" {
+		return nil
+	}
+	return RemoveSession(ctx, r, userID, token)
+}
