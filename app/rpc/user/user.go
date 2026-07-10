@@ -7,6 +7,7 @@ import (
 	"ran-feed/pkg/interceptor"
 
 	"ran-feed/app/rpc/user/internal/config"
+	adminuserserviceServer "ran-feed/app/rpc/user/internal/server/adminuserservice"
 	userserviceServer "ran-feed/app/rpc/user/internal/server/userservice"
 	"ran-feed/app/rpc/user/internal/svc"
 	"ran-feed/app/rpc/user/user"
@@ -31,6 +32,7 @@ func main() {
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		user.RegisterUserServiceServer(grpcServer, userserviceServer.NewUserServiceServer(ctx))
+		user.RegisterAdminUserServiceServer(grpcServer, adminuserserviceServer.NewAdminUserServiceServer(ctx))
 
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
 			reflection.Register(grpcServer)

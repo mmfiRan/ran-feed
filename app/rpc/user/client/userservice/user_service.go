@@ -32,6 +32,7 @@ type (
 	LogoutRes               = user.LogoutRes
 	RegisterReq             = user.RegisterReq
 	RegisterRes             = user.RegisterRes
+	UserIndexItem           = user.UserIndexItem
 	UserInfo                = user.UserInfo
 	UserProfile             = user.UserProfile
 

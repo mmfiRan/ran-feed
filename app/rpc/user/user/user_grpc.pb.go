@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.19.4
-// source: app/rpc/user/proto/user.proto
+// source: proto/user.proto
 
 package user
 
@@ -421,5 +421,187 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "app/rpc/user/proto/user.proto",
+	Metadata: "proto/user.proto",
+}
+
+const (
+	AdminUserService_AdminListUsers_FullMethodName     = "/user.AdminUserService/AdminListUsers"
+	AdminUserService_AdminGetUserDetail_FullMethodName = "/user.AdminUserService/AdminGetUserDetail"
+	AdminUserService_AdminSetUserStatus_FullMethodName = "/user.AdminUserService/AdminSetUserStatus"
+)
+
+// AdminUserServiceClient is the client API for AdminUserService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// 后台管理用户服务
+type AdminUserServiceClient interface {
+	AdminListUsers(ctx context.Context, in *AdminListUsersReq, opts ...grpc.CallOption) (*AdminListUsersRes, error)
+	AdminGetUserDetail(ctx context.Context, in *AdminGetUserDetailReq, opts ...grpc.CallOption) (*AdminGetUserDetailRes, error)
+	AdminSetUserStatus(ctx context.Context, in *AdminSetUserStatusReq, opts ...grpc.CallOption) (*AdminSetUserStatusRes, error)
+}
+
+type adminUserServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAdminUserServiceClient(cc grpc.ClientConnInterface) AdminUserServiceClient {
+	return &adminUserServiceClient{cc}
+}
+
+func (c *adminUserServiceClient) AdminListUsers(ctx context.Context, in *AdminListUsersReq, opts ...grpc.CallOption) (*AdminListUsersRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminListUsersRes)
+	err := c.cc.Invoke(ctx, AdminUserService_AdminListUsers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminUserServiceClient) AdminGetUserDetail(ctx context.Context, in *AdminGetUserDetailReq, opts ...grpc.CallOption) (*AdminGetUserDetailRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminGetUserDetailRes)
+	err := c.cc.Invoke(ctx, AdminUserService_AdminGetUserDetail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminUserServiceClient) AdminSetUserStatus(ctx context.Context, in *AdminSetUserStatusReq, opts ...grpc.CallOption) (*AdminSetUserStatusRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AdminSetUserStatusRes)
+	err := c.cc.Invoke(ctx, AdminUserService_AdminSetUserStatus_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AdminUserServiceServer is the server API for AdminUserService service.
+// All implementations must embed UnimplementedAdminUserServiceServer
+// for forward compatibility.
+//
+// 后台管理用户服务
+type AdminUserServiceServer interface {
+	AdminListUsers(context.Context, *AdminListUsersReq) (*AdminListUsersRes, error)
+	AdminGetUserDetail(context.Context, *AdminGetUserDetailReq) (*AdminGetUserDetailRes, error)
+	AdminSetUserStatus(context.Context, *AdminSetUserStatusReq) (*AdminSetUserStatusRes, error)
+	mustEmbedUnimplementedAdminUserServiceServer()
+}
+
+// UnimplementedAdminUserServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedAdminUserServiceServer struct{}
+
+func (UnimplementedAdminUserServiceServer) AdminListUsers(context.Context, *AdminListUsersReq) (*AdminListUsersRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AdminListUsers not implemented")
+}
+func (UnimplementedAdminUserServiceServer) AdminGetUserDetail(context.Context, *AdminGetUserDetailReq) (*AdminGetUserDetailRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AdminGetUserDetail not implemented")
+}
+func (UnimplementedAdminUserServiceServer) AdminSetUserStatus(context.Context, *AdminSetUserStatusReq) (*AdminSetUserStatusRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AdminSetUserStatus not implemented")
+}
+func (UnimplementedAdminUserServiceServer) mustEmbedUnimplementedAdminUserServiceServer() {}
+func (UnimplementedAdminUserServiceServer) testEmbeddedByValue()                          {}
+
+// UnsafeAdminUserServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AdminUserServiceServer will
+// result in compilation errors.
+type UnsafeAdminUserServiceServer interface {
+	mustEmbedUnimplementedAdminUserServiceServer()
+}
+
+func RegisterAdminUserServiceServer(s grpc.ServiceRegistrar, srv AdminUserServiceServer) {
+	// If the following call pancis, it indicates UnimplementedAdminUserServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&AdminUserService_ServiceDesc, srv)
+}
+
+func _AdminUserService_AdminListUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminListUsersReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminUserServiceServer).AdminListUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminUserService_AdminListUsers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminUserServiceServer).AdminListUsers(ctx, req.(*AdminListUsersReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminUserService_AdminGetUserDetail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminGetUserDetailReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminUserServiceServer).AdminGetUserDetail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminUserService_AdminGetUserDetail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminUserServiceServer).AdminGetUserDetail(ctx, req.(*AdminGetUserDetailReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminUserService_AdminSetUserStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AdminSetUserStatusReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminUserServiceServer).AdminSetUserStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminUserService_AdminSetUserStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminUserServiceServer).AdminSetUserStatus(ctx, req.(*AdminSetUserStatusReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AdminUserService_ServiceDesc is the grpc.ServiceDesc for AdminUserService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AdminUserService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "user.AdminUserService",
+	HandlerType: (*AdminUserServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AdminListUsers",
+			Handler:    _AdminUserService_AdminListUsers_Handler,
+		},
+		{
+			MethodName: "AdminGetUserDetail",
+			Handler:    _AdminUserService_AdminGetUserDetail_Handler,
+		},
+		{
+			MethodName: "AdminSetUserStatus",
+			Handler:    _AdminUserService_AdminSetUserStatus_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/user.proto",
 }

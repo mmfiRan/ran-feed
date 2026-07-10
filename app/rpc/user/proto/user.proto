@@ -150,6 +150,64 @@ message ListUserForIndexRes {
   repeated UserIndexItem items = 1;
 }
 
+// 后台管理用户条目
+message AdminUserItem {
+  int64 user_id = 1;
+  string username = 2;
+  string nickname = 3;
+  string mobile = 4;
+  string avatar = 5;
+  UserStatus status = 6;
+  int64 created_at = 7; // 毫秒
+}
+
+// 后台管理用户详情
+message AdminUserDetail {
+  int64 user_id = 1;
+  string username = 2;
+  string nickname = 3;
+  string mobile = 4;
+  string avatar = 5;
+  UserStatus status = 6;
+  string bio = 7;
+  Gender gender = 8;
+  string email = 9;
+  int64 created_at = 10; // 毫秒
+  int64 updated_at = 11; // 毫秒
+}
+
+// 后台管理列表用户
+message AdminListUsersReq {
+  optional UserStatus status = 1; // UNKNOWN=0 表示不限
+  optional string keyword = 2;    // 昵称模糊搜索
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message AdminListUsersRes {
+  repeated AdminUserItem items = 1;
+  int64 total = 2;
+}
+
+// 后台管理获取用户详情
+message AdminGetUserDetailReq {
+  int64 user_id = 1;
+}
+
+message AdminGetUserDetailRes {
+  AdminUserDetail detail = 1;
+}
+
+// 后台管理设置用户状态
+message AdminSetUserStatusReq {
+  int64 user_id = 1;
+  UserStatus status = 2;
+  int64 operator_id = 3;
+}
+
+message AdminSetUserStatusRes {
+}
+
 service UserService {
   rpc Register(RegisterReq) returns (RegisterRes);
   rpc Login(LoginReq) returns (LoginRes);
@@ -160,4 +218,11 @@ service UserService {
   rpc BatchGetUser(BatchGetUserReq) returns (BatchGetUserRes);
   rpc BatchGetUserForIndex(BatchGetUserForIndexReq) returns (BatchGetUserForIndexRes);
   rpc ListUserForIndex(ListUserForIndexReq) returns (ListUserForIndexRes);
+}
+
+// 后台管理用户服务
+service AdminUserService {
+  rpc AdminListUsers(AdminListUsersReq) returns (AdminListUsersRes);
+  rpc AdminGetUserDetail(AdminGetUserDetailReq) returns (AdminGetUserDetailRes);
+  rpc AdminSetUserStatus(AdminSetUserStatusReq) returns (AdminSetUserStatusRes);
 }

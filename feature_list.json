@@ -249,8 +249,8 @@
       "name": "Phase C 用户管理·user.proto AdminUserService 骨架",
       "description": "见 ADMIN-DESIGN Phase C 与 plans/clever-wishing-sunset.md。用户管理拆 4 步之第 1 步:只搭 user-rpc 的 admin 契约与骨架,不含业务。①user.proto 新增 AdminUserService(决策 D4 与 C 端 UserService 同进程并存)+ 消息:AdminListUsers(status?/keyword?/page/page_size → repeated AdminUserItem + total)、AdminGetUserDetail(user_id → AdminUserDetail)、AdminSetUserStatus(user_id/status/operator_id → 空);AdminUserItem(user_id/username/nickname/mobile/avatar/status/created_at 毫秒)、AdminUserDetail(item + bio/gender/email/updated_at);status 复用现有 UserStatus enum(不加 MUTED enum 不动,UNKNOWN=0 表示不限)。②goctl rpc protoc 重生成 pb/grpc/client/server + logic 桩(桩返回空)。③user.go 加 RegisterAdminUserServiceServer(C 端 UserService 一行不动,参照 content.go 三 service)。升级点:改 user.proto(已确认)。DoD:./init.sh 全绿(桩)。",
       "dependencies": ["feat-admin-008"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 全绿(build+vet+test 37 测试文件)。①user.proto 新增 AdminUserService 三方法(AdminListUsers/AdminGetUserDetail/AdminSetUserStatus) + AdminUserItem/AdminUserDetail 消息 status 复用现有 UserStatus enum(UNKNOWN=0 不限);goctl rpc protoc --multiple 重生成 pb/grpc/client/server + internal/logic/adminuserservice 三 logic 桩(返回空)。②user.go import adminuserserviceServer + RegisterAdminUserServiceServer(C 端 UserService 一行不动)。③连带:goctl 1.10.1 regen 丢嵌套类型别名 手动补回 client/userservice/user_service.go 的 UserIndexItem/UserInfo/UserProfile(对齐 refactor-007 处理方式)使净效果仅新增 AdminUserService 相关别名。纯骨架 logic 桩返回空 业务逻辑留 feat-admin-010~012。"
     },
     {
       "id": "feat-admin-010",
