@@ -51,4 +51,11 @@ ContentRpcClientConf:
     Key: content.rpc
   NonBlock: true
 
+UserRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: user.rpc
+  NonBlock: true
+
 SessionTTL: 86400

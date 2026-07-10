@@ -6,6 +6,7 @@ import "permission/permission.api"
 import "audit/audit.api"
 import "role/role.api"
 import "adminuser/adminuser.api"
+import "user/user.api"
 
 info (
 	title:        "ran-feed 后台管理接口"

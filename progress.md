@@ -3,15 +3,21 @@
 ## 当前状态
 
 **最后更新：** 2026-07-10
-**当前功能：** feat-admin-011 Phase C 用户管理·user-rpc 3 logic 填实（已完成）
+**当前功能：** feat-admin-012 Phase C 用户管理·admin-api 模块 + RBAC + seed（已完成）
 
-> 填实 adminuserservice 3 logic 使 RPC 可用。AdminListUsers（Count 为 0 直返 → NormalizePage → 映射）；AdminGetUserDetail（nil 报错 → 映射详情）；AdminSetUserStatus（状态守卫 → UpdateStatus → DISABLED 时踢下线）。单测覆盖 buildAdminUserItem 映射与 isValidStatus 守卫。`./init.sh` 全绿（40 测试文件）。
+> admin-api 接 user-rpc admin 客户端，user.api 定义 3 路由（CUser* 前缀避免命名冲突），3 BFF logic（mapUserStatusAction 纯函数 + 映射），rbacgen 重生成 docmeta（25 条路由），seed_user_permissions.sql。Phase C 用户管理 4 步全部完成。`./init.sh` 全绿（41 测试文件）。
 
-**下一步**：feat-admin-012（admin-api 模块 + RBAC + seed，Phase C 收官）
+**下一步**：Phase C 收官，剩余 feat-014~018 为新功能
 
 ---
 
-## 已完成（feat-admin-011 Phase C 用户管理·user-rpc 3 logic 填实）
+## 已完成（feat-admin-012 Phase C 用户管理·admin-api 模块 + RBAC + seed）
+
+**Phase C 用户管理 4/4 完成**：
+- ✅ feat-admin-009：user.proto AdminUserService 骨架
+- ✅ feat-admin-010：user-rpc 数据层与踢下线 helper
+- ✅ feat-admin-011：user-rpc 3 logic 填实
+- ✅ feat-admin-012：admin-api 模块 + RBAC + seed
 
 **交付**：
 - **admin.proto**：`AdminService` 加 `ListAdmins`（status 筛选+分页，富化 role_codes）/`GetAdminDetail`（含 role_ids）/`CreateAdmin`（username 唯一 + 服务端加盐哈希 + 绑角色）/`UpdateAdmin`（昵称）/`SetAdminStatus`（启禁，护栏禁自禁用）/`ResetAdminPassword`/`SetAdminRoles`（覆盖式，护栏禁移除自己 super）+ `AdminListItem`，goctl 重生成，C 端未动。

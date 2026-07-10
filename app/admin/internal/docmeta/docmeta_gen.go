@@ -20,6 +20,8 @@ var docMeta = map[string]map[string]string{
 	"GET /v1/admin/permissions":            {"description": "权限点目录 供角色分权选择", "permission": "admin:permission:list"},
 	"GET /v1/admin/roles":                  {"description": "角色列表 分页", "permission": "admin:role:list"},
 	"GET /v1/admin/roles/detail":           {"description": "角色详情 含权限点ID集合", "permission": "admin:role:list"},
+	"GET /v1/admin/users":                  {"description": "C端用户列表 多条件筛选 + 分页", "permission": "user:list"},
+	"GET /v1/admin/users/detail":           {"description": "C端用户详情", "permission": "user:list"},
 	"POST /v1/admin/admins/create":         {"description": "建管理员", "permission": "admin:user:manage"},
 	"POST /v1/admin/admins/reset-password": {"description": "重置管理员密码 重置即踢下线", "permission": "admin:user:manage"},
 	"POST /v1/admin/admins/roles":          {"description": "覆盖式设管理员角色", "permission": "admin:user:manage"},
@@ -33,6 +35,7 @@ var docMeta = map[string]map[string]string{
 	"POST /v1/admin/roles/delete":          {"description": "删角色 禁删 super", "permission": "admin:role:manage"},
 	"POST /v1/admin/roles/permissions":     {"description": "覆盖式设角色权限点", "permission": "admin:role:manage"},
 	"POST /v1/admin/roles/update":          {"description": "改角色名与备注 不可改 code", "permission": "admin:role:manage"},
+	"POST /v1/admin/users/status":          {"description": "C端用户封禁/恢复", "permission": "user:ban"},
 }
 
 type ctxKey struct{}

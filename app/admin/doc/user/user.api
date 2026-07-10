@@ -1,0 +1,82 @@
+syntax = "v1"
+
+type (
+	// CUserListReq C端用户列表筛选 status 0 表示不限
+	CUserListReq {
+		Status   int32  `form:"status,optional"`
+		Keyword  string `form:"keyword,optional"`
+		Page     int32  `form:"page,optional"`
+		PageSize int32  `form:"page_size,optional"`
+	}
+	CUserItem {
+		UserId    int64  `json:"user_id"`
+		Username  string `json:"username"`
+		Nickname  string `json:"nickname"`
+		Mobile    string `json:"mobile"`
+		Avatar    string `json:"avatar"`
+		Status    int32  `json:"status"`
+		CreatedAt int64  `json:"created_at"` // 毫秒
+	}
+	CUserListRes {
+		Items []CUserItem `json:"items"`
+		Total int64       `json:"total"`
+	}
+
+	CUserDetailReq {
+		UserId int64 `form:"user_id"`
+	}
+	CUserDetailData {
+		UserId    int64  `json:"user_id"`
+		Username  string `json:"username"`
+		Nickname  string `json:"nickname"`
+		Mobile    string `json:"mobile"`
+		Avatar    string `json:"avatar"`
+		Status    int32  `json:"status"`
+		Bio       string `json:"bio"`
+		Gender    int32  `json:"gender"`
+		Email     string `json:"email"`
+		CreatedAt int64  `json:"created_at"` // 毫秒
+		UpdatedAt int64  `json:"updated_at"` // 毫秒
+	}
+	CUserDetailRes {
+		Detail CUserDetailData `json:"detail"`
+	}
+
+	// CUserStatusReq action 取 ban(封禁) 或 restore(恢复)
+	CUserStatusReq {
+		UserId int64  `json:"user_id,optional" validate:"required,gt=0"`
+		Action string `json:"action,optional" validate:"required,oneof=ban restore"`
+	}
+	CUserStatusRes {
+		Status int32 `json:"status"` // 变更后状态
+	}
+)
+
+@server (
+	tags:       user
+	group:      user
+	prefix:     /v1/admin
+	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+)
+service admin-api {
+	@doc (
+		description: "C端用户列表 多条件筛选 + 分页"
+		permission: "user:list"
+	)
+	@handler ListUsers
+	get /users (CUserListReq) returns (CUserListRes)
+
+	@doc (
+		description: "C端用户详情"
+		permission: "user:list"
+	)
+	@handler GetUserDetail
+	get /users/detail (CUserDetailReq) returns (CUserDetailRes)
+
+	@doc (
+		description: "C端用户封禁/恢复"
+		permission: "user:ban"
+	)
+	@handler SetUserStatus
+	post /users/status (CUserStatusReq) returns (CUserStatusRes)
+}

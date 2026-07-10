@@ -12,6 +12,7 @@ import (
 	content "ran-feed/app/admin/internal/handler/content"
 	permission "ran-feed/app/admin/internal/handler/permission"
 	role "ran-feed/app/admin/internal/handler/role"
+	user "ran-feed/app/admin/internal/handler/user"
 	"ran-feed/app/admin/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
@@ -182,6 +183,30 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Method:  http.MethodPost,
 					Path:    "/roles/update",
 					Handler: role.UpdateRoleHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/admin"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.AdminAuthMiddleware, serverCtx.AdminRbacMiddleware, serverCtx.AdminAuditMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/users",
+					Handler: user.ListUsersHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/users/detail",
+					Handler: user.GetUserDetailHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/users/status",
+					Handler: user.SetUserStatusHandler(serverCtx),
 				},
 			}...,
 		),

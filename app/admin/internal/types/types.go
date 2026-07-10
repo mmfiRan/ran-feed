@@ -278,3 +278,56 @@ type AdminUserUpdateReq struct {
 
 type AdminUserUpdateRes struct {
 }
+
+type CUserDetailData struct {
+	UserId    int64  `json:"user_id"`
+	Username  string `json:"username"`
+	Nickname  string `json:"nickname"`
+	Mobile    string `json:"mobile"`
+	Avatar    string `json:"avatar"`
+	Status    int32  `json:"status"`
+	Bio       string `json:"bio"`
+	Gender    int32  `json:"gender"`
+	Email     string `json:"email"`
+	CreatedAt int64  `json:"created_at"` // 毫秒
+	UpdatedAt int64  `json:"updated_at"` // 毫秒
+}
+
+type CUserDetailReq struct {
+	UserId int64 `form:"user_id"`
+}
+
+type CUserDetailRes struct {
+	Detail CUserDetailData `json:"detail"`
+}
+
+type CUserItem struct {
+	UserId    int64  `json:"user_id"`
+	Username  string `json:"username"`
+	Nickname  string `json:"nickname"`
+	Mobile    string `json:"mobile"`
+	Avatar    string `json:"avatar"`
+	Status    int32  `json:"status"`
+	CreatedAt int64  `json:"created_at"` // 毫秒
+}
+
+type CUserListReq struct {
+	Status   int32  `form:"status,optional"`
+	Keyword  string `form:"keyword,optional"`
+	Page     int32  `form:"page,optional"`
+	PageSize int32  `form:"page_size,optional"`
+}
+
+type CUserListRes struct {
+	Items []CUserItem `json:"items"`
+	Total int64       `json:"total"`
+}
+
+type CUserStatusReq struct {
+	UserId int64  `json:"user_id,optional" validate:"required,gt=0"`
+	Action string `json:"action,optional" validate:"required,oneof=ban restore"`
+}
+
+type CUserStatusRes struct {
+	Status int32 `json:"status"` // 变更后状态
+}

@@ -13,6 +13,7 @@ type Config struct {
 	rest.RestConf
 	AdminRpcClientConf   zrpc.RpcClientConf
 	ContentRpcClientConf zrpc.RpcClientConf
+	UserRpcClientConf    zrpc.RpcClientConf
 	RedisConfig          redis.RedisConf
 	SessionTTL           int64
 }

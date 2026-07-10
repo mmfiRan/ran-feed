@@ -9,6 +9,7 @@ import (
 	"ran-feed/app/admin/internal/middleware"
 	"ran-feed/app/rpc/admin/client/adminservice"
 	"ran-feed/app/rpc/content/client/admincontentservice"
+	"ran-feed/app/rpc/user/client/adminuserservice"
 	"ran-feed/pkg/interceptor"
 
 	"github.com/zeromicro/go-zero/core/stores/redis"
@@ -21,6 +22,7 @@ type ServiceContext struct {
 	Redis                *redis.Redis
 	AdminRpc             adminservice.AdminService
 	ContentAdminRpc      admincontentservice.AdminContentService
+	UserAdminRpc         adminuserservice.AdminUserService
 	AdminAuthMiddleware  rest.Middleware
 	AdminRbacMiddleware  rest.Middleware
 	AdminAuditMiddleware rest.Middleware
@@ -37,6 +39,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
 	))
 
+	userAdminRpc := adminuserservice.NewAdminUserService(zrpc.MustNewClient(
+		c.UserRpcClientConf,
+		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
+	))
+
 	r := redis.MustNewRedis(c.RedisConfig)
 
 	return &ServiceContext{
@@ -44,6 +51,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		Redis:                r,
 		AdminRpc:             adminRpc,
 		ContentAdminRpc:      contentAdminRpc,
+		UserAdminRpc:         userAdminRpc,
 		AdminAuthMiddleware:  middleware.NewAdminAuthMiddleware(r, c).Handle,
 		AdminRbacMiddleware:  middleware.NewAdminRbacMiddleware(r, adminRpc, consts.RedisAdminPermExpireSeconds).Handle,
 		AdminAuditMiddleware: middleware.NewAdminAuditMiddleware(adminRpc).Handle,
