@@ -13,5 +13,30 @@
       "Bash(git diff *)",
       "Bash(git show *)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '提醒: 编码前必须先查看 /go-coding skill 规范' >&2"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "when": {
+          "argsMatch": "git commit"
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '提醒: git commit 前必须先调用 /git-commit skill' >&2"
+          }
+        ]
+      }
+    ]
   }
 }
