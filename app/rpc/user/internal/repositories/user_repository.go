@@ -260,8 +260,14 @@ func (r *userRepositoryImpl) adminUserQuery(status int32, keyword string) query.
 		doQuery = doQuery.Where(q.RanFeedUser.Status.Eq(status))
 	}
 
+	// keyword 命中 username nickname mobile 任一 子 DO 作为分组条件 OR 被括号包住不破坏外层软删与状态过滤
 	if keyword != "" {
-		doQuery = doQuery.Where(q.RanFeedUser.Nickname.Like("%" + keyword + "%"))
+		kw := "%" + keyword + "%"
+		keywordGroup := q.RanFeedUser.WithContext(r.ctx).
+			Where(q.RanFeedUser.Username.Like(kw)).
+			Or(q.RanFeedUser.Nickname.Like(kw)).
+			Or(q.RanFeedUser.Mobile.Like(kw))
+		doQuery = doQuery.Where(keywordGroup)
 	}
 
 	return doQuery
@@ -294,6 +300,7 @@ func (r *userRepositoryImpl) AdminGetByID(userID int64) (*model.RanFeedUser, err
 	return row, nil
 }
 
+// AdminUpdateStatus 更新用户状态 updatedBy 为管理员 id 与 C 端用户 id 不同域 真实操作审计走 admin AuditMiddleware
 func (r *userRepositoryImpl) AdminUpdateStatus(userID int64, status int32, updatedBy int64) (int64, error) {
 	q := r.getQuery()
 	result, err := q.RanFeedUser.WithContext(r.ctx).

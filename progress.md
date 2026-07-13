@@ -2,12 +2,28 @@
 
 ## 当前状态
 
-**最后更新：** 2026-07-10
-**当前功能：** feat-admin-012 Phase C 用户管理·admin-api 模块 + RBAC + seed（已完成）
+**最后更新：** 2026-07-13
+**当前功能：** feat-admin-013 Phase C 用户管理·状态机加固与收尾梳理（已完成）
 
-> admin-api 接 user-rpc admin 客户端，user.api 定义 3 路由（CUser* 前缀避免命名冲突），3 BFF logic（mapUserStatusAction 纯函数 + 映射），rbacgen 重生成 docmeta（25 条路由），seed_user_permissions.sql。Phase C 用户管理 4 步全部完成。`./init.sh` 全绿（41 测试文件）。
+> 复盘 feat-admin-009~012 发现用户状态机未对齐内容管理的严谨度 且 DoD 打折 补齐 5 点。AdminSetUserStatus 1:1 镜像内容管理（读当前态 + validateUserStatusTransition 幂等/合法翻转/锁死注销 30 + 丢弃 affected 消除误判）；keyword 从只搜 nickname 扩到 username/nickname/mobile 分组 OR；updated_by 语义注释；单测由 isValidStatus 3 例换 transition 8 例。`./init.sh` 全绿（40 测试文件）；运行期 E2E 需 DB 起 标 deferred。
 
-**下一步**：Phase C 收官，剩余 feat-014~018 为新功能
+**下一步**：Phase C 真正收官（含状态机加固），剩余 feat-014~018 为新功能
+
+---
+
+## 已完成（feat-admin-013 Phase C 用户管理·状态机加固与收尾梳理）
+
+**根因**：Phase C 本该 mirror Phase B 内容管理 但用户状态机偷了工。内容管理 `AdminSetContentStatus` 先 `AdminGetByID` → 读当前态 → `validateStatusTransition`（幂等/合法翻转/杜绝越权）；用户管理只校验目标态就直接 update。
+
+**交付**：
+- **状态机（#1+#2）**：`admin_set_user_status_logic.go` 重写 `AdminSetUserStatus`——`AdminGetByID` nil 报用户不存在 → 读 `cur` → `validateUserStatusTransition(cur,target)`（新纯函数替换 `isValidStatus`：封禁仅 ACTIVE→DISABLED、恢复仅 DISABLED→ACTIVE、`cur==target` 幂等 noop、其它拒；净效果锁死注销 30 复活）→ noop 直返 → 否则 `AdminUpdateStatus`（丢弃 affected 只判 err 消除「误报用户不存在」）→ DISABLED 踢下线。
+- **keyword（#3）**：`adminUserQuery` 从只搜 nickname 扩到 username/nickname/mobile 分组 OR（子 DO 作分组条件 括号包住 不破坏外层软删与状态过滤，gorm-gen 全项目首例 OR 分组）。
+- **updated_by（#5）**：`AdminUpdateStatus` 加注释说明写入管理员 id 与 C 端用户 id 不同域 真实审计走 admin AuditMiddleware，不改 Schema。
+- **单测（#4）**：`TestIsValidStatus`→`TestValidateUserStatusTransition` 表驱动镜像 `admin_content_test`，8 例全过。
+
+**验证**：`./init.sh` 全绿（40 测试文件）。
+
+**遗留（需 DB/Redis/etcd 起）**：seed apply 幂等 / 封禁→C 端 /me 立即 401 / 恢复可再登录 / 注销用户 restore 被拒 / 重复封禁幂等成功 / 无 user:ban 调 /users/status 得 100203。
 
 ---
 
