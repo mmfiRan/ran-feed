@@ -1,0 +1,79 @@
+syntax = "v1"
+
+type (
+	NotificationActor {
+		UserId   int64  `json:"user_id,string"`
+		Nickname string `json:"nickname"`
+		Avatar   string `json:"avatar"`
+	}
+	NotificationContent {
+		ContentId int64  `json:"content_id,string"`
+		Title     string `json:"title"`
+		CoverUrl  string `json:"cover_url"`
+	}
+	NotificationItem {
+		Id        int64                `json:"id,string"`
+		Type      int32                `json:"type"` // 10=赞或收藏 20=评论或回复 30=关注
+		Actor     NotificationActor    `json:"actor"`
+		AggCount  int64                `json:"agg_count"` // 聚合触发人数(次数) 单条为1
+		Content   *NotificationContent `json:"content,omitempty"` // 关注类为空 内容已删也为空
+		CommentId int64                `json:"comment_id,string"` // 评论或回复类有值 否则0
+		Snippet   string               `json:"snippet"` // 评论或回复摘要
+		IsRead    bool                 `json:"is_read"`
+		UpdatedAt int64                `json:"updated_at"` // 毫秒时间戳
+	}
+	NotificationListReq {
+		Cursor   string `form:"cursor,optional"` // 上一页返回的 next_cursor 首页留空
+		PageSize int32  `form:"page_size,optional"`
+		Type     int32  `form:"type,optional"` // 0=全部 10/20/30 按类型过滤
+	}
+	NotificationListRes {
+		Items      []NotificationItem `json:"items"`
+		NextCursor string             `json:"next_cursor"`
+		HasMore    bool               `json:"has_more"`
+	}
+	UnreadCountRes {
+		Total int64 `json:"total"`
+	}
+	MarkNotificationReadReq {
+		Ids []string `json:"ids"` // 待标已读的通知 id 列表
+	}
+	MarkNotificationReadRes {
+		Affected int64 `json:"affected"`
+	}
+	MarkAllNotificationReadRes {
+		Affected int64 `json:"affected"`
+	}
+)
+
+@server (
+	tags:   notification
+	group:  notification
+	prefix: /v1/notification
+	middleware: UserLoginStatusAuthMiddleware
+)
+service front-api {
+	@doc (
+		description: "通知列表 游标分页 type 可选按类型过滤"
+	)
+	@handler ListNotifications
+	get /list (NotificationListReq) returns (NotificationListRes)
+
+	@doc (
+		description: "未读通知数"
+	)
+	@handler UnreadCount
+	get /unread-count returns (UnreadCountRes)
+
+	@doc (
+		description: "按 id 标记通知已读"
+	)
+	@handler MarkNotificationRead
+	post /read (MarkNotificationReadReq) returns (MarkNotificationReadRes)
+
+	@doc (
+		description: "全部通知标记已读"
+	)
+	@handler MarkAllNotificationRead
+	post /read-all returns (MarkAllNotificationReadRes)
+}

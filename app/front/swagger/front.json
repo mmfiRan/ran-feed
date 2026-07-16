@@ -1739,6 +1739,256 @@
         }
       }
     },
+    "/v1/notification/list": {
+      "get": {
+        "description": "通知列表 游标分页 type 可选按类型过滤",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "notification"
+        ],
+        "summary": "ListNotifications",
+        "operationId": "notificationListNotifications",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "上一页返回的 next_cursor 首页留空",
+            "name": "cursor",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "page_size",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "description": "0=全部 10/20/30 按类型过滤",
+            "name": "type",
+            "in": "query",
+            "allowEmptyValue": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "has_more": {
+                  "type": "boolean"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "type",
+                      "actor",
+                      "agg_count",
+                      "content",
+                      "comment_id",
+                      "snippet",
+                      "is_read",
+                      "updated_at"
+                    ],
+                    "properties": {
+                      "actor": {
+                        "type": "object",
+                        "required": [
+                          "user_id",
+                          "nickname",
+                          "avatar"
+                        ],
+                        "properties": {
+                          "avatar": {
+                            "type": "string"
+                          },
+                          "nickname": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "agg_count": {
+                        "description": "聚合触发人数(次数) 单条为1",
+                        "type": "integer"
+                      },
+                      "comment_id": {
+                        "description": "评论或回复类有值 否则0",
+                        "type": "integer"
+                      },
+                      "content": {
+                        "description": "关注类为空 内容已删也为空",
+                        "type": "object",
+                        "required": [
+                          "content_id",
+                          "title",
+                          "cover_url"
+                        ],
+                        "properties": {
+                          "content_id": {
+                            "type": "integer"
+                          },
+                          "cover_url": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "id": {
+                        "type": "integer"
+                      },
+                      "is_read": {
+                        "type": "boolean"
+                      },
+                      "snippet": {
+                        "description": "评论或回复摘要",
+                        "type": "string"
+                      },
+                      "type": {
+                        "description": "10=赞或收藏 20=评论或回复 30=关注",
+                        "type": "integer"
+                      },
+                      "updated_at": {
+                        "description": "毫秒时间戳",
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                "next_cursor": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/notification/read": {
+      "post": {
+        "description": "按 id 标记通知已读",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "notification"
+        ],
+        "summary": "MarkNotificationRead",
+        "operationId": "notificationMarkNotificationRead",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "ids"
+              ],
+              "properties": {
+                "ids": {
+                  "description": "待标已读的通知 id 列表",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "affected": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/notification/read-all": {
+      "post": {
+        "description": "全部通知标记已读",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "notification"
+        ],
+        "summary": "MarkAllNotificationRead",
+        "operationId": "notificationMarkAllNotificationRead",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "affected": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/notification/unread-count": {
+      "get": {
+        "description": "未读通知数",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "notification"
+        ],
+        "summary": "UnreadCount",
+        "operationId": "notificationUnreadCount",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/search/content": {
       "get": {
         "description": "搜索内容 全部/图文/视频",
@@ -2379,7 +2629,7 @@
       }
     }
   },
-  "x-date": "2026-07-01 17:47:10",
+  "x-date": "2026-07-16 15:49:44",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

@@ -187,6 +187,54 @@ type LoginRes struct {
 type LogoutRes struct {
 }
 
+type MarkAllNotificationReadRes struct {
+	Affected int64 `json:"affected"`
+}
+
+type MarkNotificationReadReq struct {
+	Ids []string `json:"ids"` // 待标已读的通知 id 列表
+}
+
+type MarkNotificationReadRes struct {
+	Affected int64 `json:"affected"`
+}
+
+type NotificationActor struct {
+	UserId   int64  `json:"user_id,string"`
+	Nickname string `json:"nickname"`
+	Avatar   string `json:"avatar"`
+}
+
+type NotificationContent struct {
+	ContentId int64  `json:"content_id,string"`
+	Title     string `json:"title"`
+	CoverUrl  string `json:"cover_url"`
+}
+
+type NotificationItem struct {
+	Id        int64                `json:"id,string"`
+	Type      int32                `json:"type"` // 10=赞或收藏 20=评论或回复 30=关注
+	Actor     NotificationActor    `json:"actor"`
+	AggCount  int64                `json:"agg_count"`         // 聚合触发人数(次数) 单条为1
+	Content   *NotificationContent `json:"content,omitempty"` // 关注类为空 内容已删也为空
+	CommentId int64                `json:"comment_id,string"` // 评论或回复类有值 否则0
+	Snippet   string               `json:"snippet"`           // 评论或回复摘要
+	IsRead    bool                 `json:"is_read"`
+	UpdatedAt int64                `json:"updated_at"` // 毫秒时间戳
+}
+
+type NotificationListReq struct {
+	Cursor   string `form:"cursor,optional"` // 上一页返回的 next_cursor 首页留空
+	PageSize int32  `form:"page_size,optional"`
+	Type     int32  `form:"type,optional"` // 0=全部 10/20/30 按类型过滤
+}
+
+type NotificationListRes struct {
+	Items      []NotificationItem `json:"items"`
+	NextCursor string             `json:"next_cursor"`
+	HasMore    bool               `json:"has_more"`
+}
+
 type OssFormData struct {
 	Host             string `json:"host"`
 	Policy           string `json:"policy"`
@@ -427,6 +475,10 @@ type UnlikeReq struct {
 }
 
 type UnlikeRes struct {
+}
+
+type UnreadCountRes struct {
+	Total int64 `json:"total"`
 }
 
 type UploadAvatarRes struct {

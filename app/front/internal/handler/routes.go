@@ -9,6 +9,7 @@ import (
 	content "ran-feed/app/front/internal/handler/content"
 	feed "ran-feed/app/front/internal/handler/feed"
 	interaction "ran-feed/app/front/internal/handler/interaction"
+	notification "ran-feed/app/front/internal/handler/notification"
 	search "ran-feed/app/front/internal/handler/search"
 	user "ran-feed/app/front/internal/handler/user"
 	"ran-feed/app/front/internal/svc"
@@ -170,6 +171,35 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			}...,
 		),
 		rest.WithPrefix("/v1/interaction"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.UserLoginStatusAuthMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/list",
+					Handler: notification.ListNotificationsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/read",
+					Handler: notification.MarkNotificationReadHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/read-all",
+					Handler: notification.MarkAllNotificationReadHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/unread-count",
+					Handler: notification.UnreadCountHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/notification"),
 	)
 
 	server.AddRoutes(
