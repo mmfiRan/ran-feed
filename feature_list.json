@@ -1,7 +1,7 @@
 {
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
-  "last_updated": "2026-07-09",
+  "last_updated": "2026-07-16",
   "_meta_note": "重构起点 从零跟踪功能状态",
   "_field_guide": {
     "id": "feat-XXX 新功能 / fix-XXX 修复 / sec-XXX 安全 / opt-XXX 优化 / refactor-XXX 重构",
@@ -283,6 +283,73 @@
       "dependencies": ["feat-admin-012"],
       "status": "done",
       "evidence": "./init.sh 全绿(build+vet+test 40 测试文件 用户 rpc 状态机单测由 isValidStatus 3 例换为 transition 8 例)。①admin_set_user_status_logic.go 重写 AdminSetUserStatus:in nil 或 UserId<=0 报参数错误→AdminGetByID nil 报用户不存在→cur=UserStatus(row.Status)→validateUserStatusTransition noop 幂等直返→AdminUpdateStatus 丢弃 affected 只判 err→DISABLED 踢下线失败只 Errorf;新纯函数 validateUserStatusTransition(cur target)(noop err) 镜像内容管理 封禁仅 ACTIVE 恢复仅 DISABLED cur==target 幂等 default 拒不支持的状态 注销 30 ban/restore 均被拒。②user_repository.go adminUserQuery keyword 分支改为 q.RanFeedUser.WithContext(ctx).Where(Username.Like).Or(Nickname.Like).Or(Mobile.Like) 子 DO 作分组条件传外层 Where(gorm-gen 全项目首例 OR 分组 IRanFeedUserDo 经内嵌 gen.DO 满足 gen.Condition);AdminUpdateStatus 加 updated_by 语义注释。③单测 TestValidateUserStatusTransition 8 例(封禁/恢复合法 幂等*2 注销不可封禁/复活 正常不可恢复 UNKNOWN 目标)全过。已验证:build+vet+test 全绿含新单测。deferred(需 DB/Redis/etcd):seed apply 幂等/封禁→C 端 /me 立即 401/恢复可再登录/注销用户 restore 被拒/重复封禁幂等返回成功/无 user:ban 调 /users/status 得 100203。"
+    },
+    {
+      "id": "feat-notify-000",
+      "name": "通知系统·落地临时设计文档 + feature_list 骨架",
+      "description": "通知系统 Phase 0:与用户逐议题过方案(服务形态/事件源/存储/聚合/未读数/实时层)后落地临时设计文档 NOTIFY-DESIGN.md(对齐 ADMIN-DESIGN.md 结构)并在 feature_list 建 feat-notify-000~007 条目骨架。按用户指令通知类型收敛为 3 类(LIKE_FAVORITE 赞+收藏合并按内容聚合 / COMMENT_REPLY 评论+回复合并单条 / FOLLOW)。不含任何代码改动。",
+      "dependencies": [],
+      "status": "done",
+      "evidence": "./init.sh 基线全绿(build+vet+test 未受影响 仅新增 .md 与 feature_list 条目)。NOTIFY-DESIGN.md 落地含:目标范围、11 条锁定决策(N1~N11)、架构数据流图、事件→通知映射表(3 类)、ran_feed_notification DDL 列定义与索引、proto 草图、front 拉取+SSE 实时层、部署仓交接、8 Phase 清单、复用点。类型合并连带已在文档标注(赞藏合并 agg_count 为互动次数近似人数;评论回复合并 recipient 仍按 parent_id 分流文案统一)。feature_list 建 feat-notify-000~007 骨架。",
+      "notes": "决策真相见 NOTIFY-DESIGN.md;通知类型 3 类 LIKE_FAVORITE/COMMENT_REPLY/FOLLOW"
+    },
+    {
+      "id": "feat-notify-001",
+      "name": "通知系统·notification-rpc 骨架 + DDL + proto 桩",
+      "description": "Phase 1:新建 app/rpc/notification 独立服务(仿 count):script/sql 建 ran_feed_notification 表(agg_key 唯一键 uk_recipient_aggkey + idx_recipient_read)、gen/generator.go 生成 ran_feed_notification + ran_feed_mq_consume_dedup 的 model/query、proto/notification.proto 定义 NotificationService 四方法桩(notify_type 枚举 10 LIKE_FAVORITE/20 COMMENT_REPLY/30 FOLLOW)、goctl 生成 pb/client/server、config/svc/notification.go bootstrap(空 logic 可编译 gate KqConsumerConf.Topic)。端口 5009 etcd notification.rpc Prom 9298。升级点:新服务·新 proto·新 DDL(已确认)。DoD:./init.sh 全绿。",
+      "dependencies": ["feat-notify-000"],
+      "status": "done",
+      "evidence": "./init.sh 全绿(build+vet+test 42 功能)。①DDL script/sql/ran-feed/notification/ran_feed_notification.sql:公共字段对齐 comment 表 + agg_key uk_recipient_aggkey 唯一键 + idx_recipient_updated(列表游标)+ idx_recipient_unread(未读COUNT)。②proto/notification.proto:NotifyType 枚举 10 LIKE_FAVORITE/20 COMMENT_REPLY/30 FOLLOW + NotificationService 四方法(List/GetUnreadCount/MarkRead/MarkAllRead);goctl rpc protoc --style=go_zero --multiple 生成 pb/grpc.pb/client/server/logic 桩。③entity:因本地无 .env DB gorm-gen 用临时 mysql:8.0 容器(--default-character-set=utf8mb4 建表避免注释乱码)对 ran_feed_notification + ran_feed_mq_consume_dedup 生成 model/query.gen.go 后销毁容器 产物为真 gorm-gen 输出(DB 恢复后可原样重生成)。④config 加 RedisConfig/MySQL/KqConsumerConf(无 XxlJob);etc/notification.yaml 端口 5009 Prom 9298 etcd notification.rpc Kq Group/Topic ran-feed-notification-canal(消费者留 feat-notify-003 接);svc query.SetDefault+Redis;main 注册 NotificationService + ServerGrpcInterceptor。logic 桩返回空值 待 feat-notify-004 填实。",
+      "notes": "consumer 与 ServiceGroup 接线留 feat-notify-003;KqConsumerConf 已在 config/yaml 但 main 暂未启动消费者"
+    },
+    {
+      "id": "feat-notify-002",
+      "name": "通知系统·数据层 repository + 单测",
+      "description": "Phase 2:notification_repository.go(仿 count repo interface+Impl+getQuery+WithTx 读加 IsDeleted.Eq(0)):UpsertAggregate(ON DUPLICATE KEY count+1/actor/updated_at/is_read=0)、Insert(单条)、ListByRecipient(updated_at,id 复合游标 over-fetch+1 可选 type_filter)、CountUnread、MarkRead(recipient+ids)、MarkAllRead。单测覆盖聚合 upsert 累加/复合游标翻页/未读 COUNT/标已读。DoD:./init.sh 全绿含单测。",
+      "dependencies": ["feat-notify-001"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-notify-003",
+      "name": "通知系统·Canal 消费者 + strategy + 幂等 + dispatch",
+      "description": "Phase 3:internal/mq/consumer 仿 count 五步管道:canal_message.go(复制)、notification_consumer.go(parse→strategy route→每行 rowEventID dedup 与落库同事务→dispatch)、strategy/(每表策略 复用 presence 翻转判定 输出 NotifyEvent;like/favorite→LIKE_FAVORITE 共用 LF:{content_id} 走 UpsertAggregate;comment→COMMENT_REPLY 按 parent_id 分流 recipient 走 Insert CR:{comment_id};follow→FOLLOW 走 Insert FO:{actor_id};生成时 actor==recipient 自我过滤 snippet 取 comment 文本截断)。dispatch 桩(事务外 GoSafe)先只算未读数占位 PUBLISH 留 feat-notify-006 接。consumerName=notification.canal_consumer。单测:激活/取消/自我过滤/赞藏合并聚合分流/幂等重投不重复计数。DoD:./init.sh 全绿含单测。",
+      "dependencies": ["feat-notify-002"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-notify-004",
+      "name": "通知系统·NotificationService 四 logic 填实",
+      "description": "Phase 4:internal/logic/notificationservice 填实 ListNotifications(复合游标 over-fetch+1 出 next_cursor/has_more 返回原始行不富化 N8)、GetUnreadCount(CountUnread)、MarkRead(recipient 入 where 防越权)、MarkAllRead。DoD:./init.sh 全绿。",
+      "dependencies": ["feat-notify-003"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-notify-005",
+      "name": "通知系统·front 拉取模块 + 读时富化 + 接线",
+      "description": "Phase 5:app/front/doc/notification/notification.api 定义四接口(GET /list、GET /unread-count、POST /read、POST /read-all 挂 UserLoginStatusAuthMiddleware)import 进 front.api goctl 重生成 routes.go/handler;logic 手写读时富化(NotificationRpc 取原始行→去重收集 actor_ids/content_ids→UserRpc.BatchGetUser+ContentRpc 批量→组装 NotificationItem 内容已删 content 置空保留通知);config/front-api.yaml 加 NotificationRpcClientConf(etcd notification.rpc NonBlock)svc 加 NotificationRpc。升级点:改 front.api。DoD:./init.sh 全绿。",
+      "dependencies": ["feat-notify-004"],
+      "status": "not-started",
+      "evidence": "",
+      "notes": "接口契约(notification.api 四接口 + 生成 handler/routes/logic 桩 + swagger)已提前落地供前端并行开发;本条剩余工作为 logic 读时富化 + NotificationRpc 接线"
+    },
+    {
+      "id": "feat-notify-006",
+      "name": "通知系统·SSE 实时层 + Redis Pub/Sub 扇入",
+      "description": "Phase 6:front /v1/notification/stream SSE 端点(登录取 userId→text/event-stream→connManager.Add→阻塞 flush 心跳 ctx.Done Remove);connManager 进程内单例(map[userId][]*conn+RWMutex)启动 goroutine SUBSCRIBE notify:push 收 {recipientId,unread}→本实例持有该 user 则逐连推 SSE {type:notify,unread:N};notification-rpc 消费者 dispatch 补 PUBLISH notify:push(事务外)。SSE 无新依赖(纯 http.Flusher)。DoD:./init.sh 全绿。",
+      "dependencies": ["feat-notify-005"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-notify-007",
+      "name": "通知系统·部署仓 canal 目的地 + topic + 端到端联调",
+      "description": "Phase 7(跨仓 ran-feed-docker + 联调):canal/conf/notification/instance.properties(新 slaveId 1236 filter.regex 四互动表 topic ran-feed-notification-canal 补 canal.instance.global.lazy)、canal 主配置注册 destination、docker-compose 建 topic + notification-rpc 服务、.env 补变量、build/notification-rpc.Dockerfile + CI。端到端联调:A 赞/评/关注 B→B /list 出现通知 /unread-count+1;多人赞或藏同一内容→一条 X 等 N 人;B 开 /stream 秒收 SSE 回拉;标已读归零;自赞不通知。升级点:跨仓·部署。DoD:端到端联调通过。",
+      "dependencies": ["feat-notify-006"],
+      "status": "not-started",
+      "evidence": ""
     }
   ]
 }

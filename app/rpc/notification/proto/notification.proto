@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package notification;
+
+option go_package = "./notification";
+
+// NotifyType 通知类型
+enum NotifyType {
+  NOTIFY_TYPE_UNKNOWN = 0;
+  LIKE_FAVORITE = 10;   // 赞或收藏 按内容聚合
+  COMMENT_REPLY = 20;   // 评论或回复 单条
+  FOLLOW = 30;          // 关注 单条
+}
+
+// NotificationItem 通知原始行 富化在 front BFF 完成
+message NotificationItem {
+  int64 id = 1;
+  int64 recipient_id = 2;
+  int64 actor_id = 3;
+  NotifyType notify_type = 4;
+  int64 agg_count = 5;
+  int64 content_id = 6;
+  int64 comment_id = 7;
+  string snippet = 8;
+  bool is_read = 9;
+  int64 updated_at = 10;  // 毫秒时间戳
+}
+
+// ListNotificationsReq 收件箱列表 updated_at,id 复合游标
+message ListNotificationsReq {
+  int64 recipient_id = 1;
+  int64 cursor_updated_at = 2;  // 0 表示首页
+  int64 cursor_id = 3;
+  int32 page_size = 4;
+  NotifyType type_filter = 5;   // NOTIFY_TYPE_UNKNOWN 表示全部
+}
+
+// ListNotificationsRes 列表结果
+message ListNotificationsRes {
+  repeated NotificationItem items = 1;
+  int64 next_cursor_updated_at = 2;
+  int64 next_cursor_id = 3;
+  bool has_more = 4;
+}
+
+// GetUnreadCountReq 查询未读数
+message GetUnreadCountReq {
+  int64 recipient_id = 1;
+}
+
+// GetUnreadCountRes 未读数结果
+message GetUnreadCountRes {
+  int64 total = 1;
+}
+
+// MarkReadReq 按 id 标已读 recipient_id 限定作用域防越权
+message MarkReadReq {
+  int64 recipient_id = 1;
+  repeated int64 ids = 2;
+}
+
+// MarkReadRes 标已读结果
+message MarkReadRes {
+  int64 affected = 1;
+}
+
+// MarkAllReadReq 全部标已读
+message MarkAllReadReq {
+  int64 recipient_id = 1;
+}
+
+// MarkAllReadRes 全部标已读结果
+message MarkAllReadRes {
+  int64 affected = 1;
+}
+
+service NotificationService {
+  rpc ListNotifications(ListNotificationsReq) returns (ListNotificationsRes);
+  rpc GetUnreadCount(GetUnreadCountReq) returns (GetUnreadCountRes);
+  rpc MarkRead(MarkReadReq) returns (MarkReadRes);
+  rpc MarkAllRead(MarkAllReadReq) returns (MarkAllReadRes);
+}

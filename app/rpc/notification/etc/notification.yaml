@@ -1,0 +1,53 @@
+Name: notification.rpc
+ListenOn: 0.0.0.0:5009
+Etcd:
+  Hosts:
+  - ${ETCD_HOST}:2379
+  Key: notification.rpc
+
+Telemetry:
+  Name: notification.rpc-server
+  Endpoint: ${OTEL_ENDPOINT}
+  Batcher: otlpgrpc
+  Sampler: 1.0
+
+Prometheus:
+  Host: ${PROM_HOST}
+  Port: 9298
+  Path: /metrics
+
+Log:
+  ServiceName: "notification.rpc"
+  Mode: "file"
+  Encoding: "json"
+  TimeFormat: "2006-01-02T15:04:05.000Z07:00"
+  Path: ${LOG_PATH}
+  Level: "info"
+  MaxContentLength: 0
+  Compress: false
+  Stat: true
+  KeepDays: 1
+  StackCooldownMillis: 100
+  MaxBackups: 0
+  MaxSize: 0
+  Rotation: "daily"
+  FileTimeFormat: "2006-01-02T15:04:05.000Z07:00"
+
+RedisConfig:
+  Host: ${REDIS_HOST}:6379
+  Type: node
+  Pass: ${REDIS_PASSWORD}
+
+MySQL:
+  DataSource: ${MYSQL_APP_USER}:${MYSQL_APP_PASSWORD}@tcp(${MYSQL_HOST}:3306)/ran-feed?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+
+# kafka消费者配置 专用 Canal Topic 采集互动表 like/favorite/comment/follow 供通知消费(feat-notify-003 起用)
+KqConsumerConf:
+  Name: notification-canal-consumer
+  Brokers:
+    - ${KAFKA_BROKERS}
+  Group: ran-feed-notification-canal-consumer
+  Topic: ran-feed-notification-canal
+  Offset: last
+  Consumers: 4
+  Processors: 4
