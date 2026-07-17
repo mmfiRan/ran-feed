@@ -6,10 +6,13 @@ package notification
 import (
 	"context"
 
+	"github.com/zeromicro/go-zero/core/logx"
+
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
-
-	"github.com/zeromicro/go-zero/core/logx"
+	notifypb "ran-feed/app/rpc/notification/notification"
+	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/utils"
 )
 
 type MarkAllNotificationReadLogic struct {
@@ -26,8 +29,15 @@ func NewMarkAllNotificationReadLogic(ctx context.Context, svcCtx *svc.ServiceCon
 	}
 }
 
+// MarkAllNotificationRead 全部标记已读 recipient 强制取当前登录
 func (l *MarkAllNotificationReadLogic) MarkAllNotificationRead() (resp *types.MarkAllNotificationReadRes, err error) {
-	// todo: add your logic here and delete this line
-
-	return
+	userID, err := utils.GetContextUserId(l.ctx)
+	if err != nil || userID <= 0 {
+		return nil, errorx.NewMsg("未登录")
+	}
+	rpcResp, err := l.svcCtx.NotificationRpc.MarkAllRead(l.ctx, &notifypb.MarkAllReadReq{RecipientId: userID})
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("全部已读失败"))
+	}
+	return &types.MarkAllNotificationReadRes{Affected: rpcResp.Affected}, nil
 }

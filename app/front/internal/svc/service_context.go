@@ -18,6 +18,7 @@ import (
 	"ran-feed/app/rpc/interaction/client/favoriteservice"
 	"ran-feed/app/rpc/interaction/client/followservice"
 	"ran-feed/app/rpc/interaction/client/likeservice"
+	"ran-feed/app/rpc/notification/client/notificationservice"
 	"ran-feed/app/rpc/search/client/searchservice"
 	"ran-feed/app/rpc/user/client/userservice"
 	"ran-feed/pkg/interceptor"
@@ -41,6 +42,7 @@ type ServiceContext struct {
 	UserRpc                       userservice.UserService
 	CountRpc                      counterservice.CounterService
 	SearchRpc                     searchservice.SearchService
+	NotificationRpc               notificationservice.NotificationService
 	OssContext                    *oss.Context
 }
 
@@ -81,6 +83,10 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		c.SearchRpcClientConf,
 		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
 	))
+	notificationRpc := notificationservice.NewNotificationService(zrpc.MustNewClient(
+		c.NotificationRpcClientConf,
+		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
+	))
 
 	provider := strings.TrimSpace(c.Oss.Provider)
 	if provider == "" {
@@ -112,6 +118,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		UserRpc:                       userRpc,
 		CountRpc:                      countRpc,
 		SearchRpc:                     searchRpc,
+		NotificationRpc:               notificationRpc,
 		OssContext:                    ossContext,
 		Redis:                         r,
 		UserLoginStatusAuthMiddleware: middleware.NewUserLoginStatusAuthMiddleware(r, c).Handle,

@@ -3,11 +3,38 @@
 ## 当前状态
 
 **最后更新：** 2026-07-17
-**当前功能：** feat-notify-004 通知系统·NotificationService 四 logic 填实（已完成）
+**当前功能：** feat-notify-005 通知系统·front 拉取模块 + 读时富化 + 接线（已完成）
 
-> notification_helper.go 抽 3 纯函数(buildNotificationItem/splitOverFetch/parseCursor)+ 分页常量;ListNotifications 复合游标 over-fetch+1 出 next_cursor/has_more 返回原始行不富化(N8);GetUnreadCount 走 CountUnread;MarkRead 空 ids 直返 recipient 入 where 由 repo 侧防越权;MarkAllRead 全部标已读。四 logic 参数守卫统一 errorx.NewMsg(参数错误)+errorx.Wrap 三段式。`./init.sh` 全绿(49 测试文件)。
+> config/yaml 加 NotificationRpcClientConf(etcd notification.rpc)svc 挂 NotificationRpc 客户端。notification_helper.go 抽 4 纯函数(encodeCursor/decodeCursor/parseIDs/collectRefIDs/assembleNotificationItems)。四 logic 填实:list 读时富化 UserRpc.BatchGetUser + FeedRpc.BatchGetContentItems 并行富化 单侧失败退化空 map 不阻断;unread/mark_read/mark_all_read 均从 ctx 取 userId 强制作 recipient 防越权(notification-rpc/repo 侧再入 where 双重防越权)。actor 缺失仍带 UserId(空 nick/avatar) content 找不到 Content 置 nil 保留通知本身。`./init.sh` 全绿(50 测试文件)。
 
-**下一步**：feat-notify-005（front 拉取模块 + 读时富化 + NotificationRpc 接线）
+**下一步**：feat-notify-006（SSE 实时层 + Redis Pub/Sub 扇入 + notification-rpc dispatch 补 PUBLISH）
+
+---
+
+## 已完成（feat-notify-005 通知系统·front 拉取模块 + 读时富化 + 接线）
+
+**关键设计**：
+- **富化位置遵 N8**：notification-rpc 只返原始行；front BFF 收集 actor_ids/content_ids 去重批量调 UserRpc/FeedRpc 组装，避免 notification-rpc 跨域直读。
+- **content 已删/actor 找不到**：保留通知本身，Content 置 nil、actor 昵称/头像空但 UserId 保留（避免通知列表因引用消失而空掉）。
+- **recipient 双重防越权**：front 强制从 ctx 取 userId 作 recipient，notification-rpc 侧 MarkRead/MarkAllRead 再次 recipient 入 where。
+- **游标字符串化**：前端当黑盒回传 `"{ts_millis}:{id}"` 编码；非法/空视首页返 (0, 0) 防翻页死循环。
+- **ids string 传输**：避免 JSON int64 精度丢失（>2^53 场景），本地 parseIDs 转 int64 并 TrimSpace/过滤空非法负/保序去重。
+- **接口契约免重生成**：feat-notify-001 已提前 goctl 生成 routes/handler/logic 桩 + swagger 供前端并行开发；本条仅填 logic 与接线，不再重跑 goctl 避免破坏。
+
+**交付**：
+- `internal/config/config.go` + `etc/front-api.yaml`：加 `NotificationRpcClientConf`（etcd `notification.rpc`）。
+- `internal/svc/service_context.go`：挂 `NotificationRpc` 客户端。
+- `internal/logic/notification/notification_helper.go`：`encodeCursor`/`decodeCursor`/`parseIDs`/`collectRefIDs`/`assembleNotificationItems` 5 个纯函数。
+- 4 个 logic：
+  - `list_notifications_logic.go`：ctx→userID→decodeCursor→NotificationRpc.List→collectRefIDs→并行 UserRpc.BatchGetUser+FeedRpc.BatchGetContentItems→assembleNotificationItems→encodeCursor 出 NextCursor
+  - `unread_count_logic.go`：GetUnreadCount 透传
+  - `mark_notification_read_logic.go`：parseIDs 空守卫→MarkRead
+  - `mark_all_notification_read_logic.go`：MarkAllRead 透传
+- 单测 `notification_helper_test.go`：encodeCursor/decodeCursor 空/非法/往返、parseIDs 边界、collectRefIDs 去重保序 content=0 跳过、assembleNotificationItems 4 项覆盖 actor 缺失/content 已删/FOLLOW 无 content/nil 项。
+
+**验证**：`./init.sh` 全绿（build+vet+test 50 测试文件）。
+
+**遗留**：端到端联调（起 notification-rpc 全栈 → canal + kafka 触发 → front /list 富化）留 feat-notify-007。
 
 ---
 

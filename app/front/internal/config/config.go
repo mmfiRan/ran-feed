@@ -11,14 +11,15 @@ import (
 
 type Config struct {
 	rest.RestConf
-	ContentRpcClientConf     zrpc.RpcClientConf
-	InteractionRpcClientConf zrpc.RpcClientConf
-	UserRpcClientConf        zrpc.RpcClientConf
-	CountRpcClientConf       zrpc.RpcClientConf
-	SearchRpcClientConf      zrpc.RpcClientConf
-	Oss                      OssConfig
-	SessionTTL               int64
-	RedisConfig              redis.RedisConf
+	ContentRpcClientConf      zrpc.RpcClientConf
+	InteractionRpcClientConf  zrpc.RpcClientConf
+	UserRpcClientConf         zrpc.RpcClientConf
+	CountRpcClientConf        zrpc.RpcClientConf
+	SearchRpcClientConf       zrpc.RpcClientConf
+	NotificationRpcClientConf zrpc.RpcClientConf
+	Oss                       OssConfig
+	SessionTTL                int64
+	RedisConfig               redis.RedisConf
 }
 
 type OssConfig struct {

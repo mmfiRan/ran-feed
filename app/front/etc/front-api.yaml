@@ -74,6 +74,13 @@ SearchRpcClientConf:
     Key: search.rpc
   NonBlock: true
 
+NotificationRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: notification.rpc
+  NonBlock: true
+
 Oss:
   Provider: ${OSS_PROVIDER}
   Region: ${OSS_REGION}
