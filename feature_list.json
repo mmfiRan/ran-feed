@@ -1,7 +1,7 @@
 {
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
-  "last_updated": "2026-07-16",
+  "last_updated": "2026-07-17",
   "_meta_note": "重构起点 从零跟踪功能状态",
   "_field_guide": {
     "id": "feat-XXX 新功能 / fix-XXX 修复 / sec-XXX 安全 / opt-XXX 优化 / refactor-XXX 重构",
@@ -307,8 +307,8 @@
       "name": "通知系统·数据层 repository + 单测",
       "description": "Phase 2:notification_repository.go(仿 count repo interface+Impl+getQuery+WithTx 读加 IsDeleted.Eq(0)):UpsertAggregate(ON DUPLICATE KEY count+1/actor/updated_at/is_read=0)、Insert(单条)、ListByRecipient(updated_at,id 复合游标 over-fetch+1 可选 type_filter)、CountUnread、MarkRead(recipient+ids)、MarkAllRead。单测覆盖聚合 upsert 累加/复合游标翻页/未读 COUNT/标已读。DoD:./init.sh 全绿含单测。",
       "dependencies": ["feat-notify-001"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 全绿(build+vet+test 43 测试文件 新增 notification 数据层单测)+ 真库集成测 10/10 全过。①notification_repository.go(仿 count 风格 interface+Impl+getQuery+WithTx 读加 IsDeleted.Eq(0)):UpsertAggregate 用原生 Exec INSERT ... ON DUPLICATE KEY(uk_recipient_aggkey) UPDATE agg_count=agg_count+1 actor_id=VALUES(actor_id) is_read=0(re-surface 老通知变未读) updated_at=VALUES(updated_at) version+1;Insert(单条 直接 Create COMMENT_REPLY 走该路径 agg_key 天然唯一 CR:{comment_id});ListByRecipient(recipient/typeFilter/cursorUpdatedAt/cursorID/limit)复合游标 updated_at DESC id DESC——用子 DO 分组(q.RanFeedNotification.WithContext.Where(UpdatedAt.Lt).Or(UpdatedAt.Eq,ID.Lt))保证 OR 括号包住不破坏外层 recipient/软删/type 过滤;首页 cursorUpdatedAt.IsZero() 跳过游标条件;over-fetch+1 由 logic 层切片判 has_more(照抄项目 interaction/publishbox 风格);CountUnread 走 idx_recipient_unread;MarkRead(recipient+ids)与 MarkAllRead 均 recipient 入 where 防越权+只翻未读(IsRead.Eq(0))避免重复计数 返回 info.RowsAffected 真实变更行数;updated_by 写 recipient(操作方就是收件人)。②mq_consume_dedup_repository.go 复制 count 版 InsertIfAbsent(ErrDuplicatedKey/duplicate 字符串双兜底)。③单测(notification_repository_test.go 纯参数守卫 db=nil 早返回不 panic):UpsertAggregate(nil/recipient<=0/agg_key 空)/Insert(同)/ListByRecipient(recipient<=0/limit<=0)/CountUnread(<=0)/MarkRead(recipient<=0/ids 空)/MarkAllRead(<=0)/Dedup InsertIfAbsent(consumer/eventID 空)——./init.sh 常规跑。④集成测(notification_repository_integration_test.go build tag integration 用户已启 docker mysql apply DDL 后运行 ENV_FILE=/home/wmr/opt/ran-feed-docker/.env go test -tags=integration -count=1 ./app/rpc/notification/internal/repositories/):UpsertAggregate 累加与 ReSurface(首次 count=1 手动改 is_read=1 后二次 upsert 换新 actor→count=2 actor 换 is_read=0 updated_at 前移)/不同 aggkey 独立/Insert 落库校验/复合游标翻页 3 条造好 pageSize=2 首页 top2 游标翻页第 3 条最后空/同 updated_at 按 id DESC tie-break/软删+typeFilter/CountUnread=2(排除已读+软删)/MarkRead 越权拒(攻击者传 victim id 只翻自己那条 victim 仍 0)/MarkRead 只翻未读(传已读+未读 affected=1)/MarkAllRead=2(只翻自己 2 条 别人不动)——10/10 全过。DDL ran_feed_notification 已 apply 到 docker mysql(ran_feed@127.0.0.1:3306 ran-feed 库 uk_recipient_aggkey/idx_recipient_updated/idx_recipient_unread 三索引就位)。"
     },
     {
       "id": "feat-notify-003",

@@ -2,12 +2,36 @@
 
 ## 当前状态
 
-**最后更新：** 2026-07-13
-**当前功能：** feat-admin-013 Phase C 用户管理·状态机加固与收尾梳理（已完成）
+**最后更新：** 2026-07-17
+**当前功能：** feat-notify-002 通知系统·数据层 repository + 单测（已完成）
 
-> 复盘 feat-admin-009~012 发现用户状态机未对齐内容管理的严谨度 且 DoD 打折 补齐 5 点。AdminSetUserStatus 1:1 镜像内容管理（读当前态 + validateUserStatusTransition 幂等/合法翻转/锁死注销 30 + 丢弃 affected 消除误判）；keyword 从只搜 nickname 扩到 username/nickname/mobile 分组 OR；updated_by 语义注释；单测由 isValidStatus 3 例换 transition 8 例。`./init.sh` 全绿（40 测试文件）；运行期 E2E 需 DB 起 标 deferred。
+> 交付 notification_repository.go(仿 count 风格 UpsertAggregate 用原生 Exec ON DUPLICATE KEY UPDATE agg_count+1/actor 换新/re-surface 变未读；Insert 单条；ListByRecipient 复合游标 updated_at DESC id DESC 子 DO 分组 OR 括号包住；CountUnread 走 idx_recipient_unread；MarkRead/MarkAllRead recipient 入 where 防越权 只翻未读避免重复计数)+ mq_consume_dedup_repository.go(复制 count 版)。单测走双轨:①参数守卫纯单测入 `./init.sh` 常规流(db=nil 早返回不 panic);②`//go:build integration` 集成测跑真库(用户已启 docker mysql apply DDL)。集成测 10 例全过覆盖 upsert 累加+re-surface、复合游标翻页、同 updated_at id-DESC tie-break、软删+typeFilter、CountUnread、MarkRead 越权拒/只翻未读、MarkAllRead。`./init.sh` 全绿(43 测试文件)。
 
-**下一步**：Phase C 真正收官（含状态机加固），剩余 feat-014~018 为新功能
+**下一步**：feat-notify-003（Canal 消费者 + strategy + 幂等 + dispatch 桩）
+
+---
+
+## 已完成（feat-notify-002 通知系统·数据层 repository + 单测）
+
+**背景**：feat-notify-001 已生成 model/query 骨架 & DDL 就绪。本条填数据层与单测供 feat-notify-003 消费者消费。
+
+**关键决策（本会话内确认）**：
+- **单测双轨**：常规参数守卫单测走 `./init.sh`（项目无 sqlmock/sqlite 且 `ON DUPLICATE KEY UPDATE` 是 mysql-specific 无法跨库测）；SQL 语义单测走 `//go:build integration` 集成测跑真库，用户开 docker MySQL 后一次性 apply DDL 到 `ran-feed` 库运行验证。
+- **复合游标 OR 分组**：`.Where(subDO).Or(...)` 走 gorm-gen 子 DO 作分组条件传外层 `.Where(subDO)`（feat-admin-013 首例），保证 OR 括号包住不破坏外层 recipient/软删/type 过滤（若直接链式 Where.Or 有优先级坑）。
+- **`updated_by=recipient`**：MarkRead/MarkAllRead 里操作方就是收件人自己，直接写 recipient；C 端 admin 侧无关。
+- **只翻未读**：MarkRead/MarkAllRead 加 `IsRead.Eq(0)` 过滤保证 affected 反映真实变更（重复标已读返 0）。
+
+**交付**：
+- `internal/repositories/notification_repository.go`：UpsertAggregate(原生 Exec)/Insert/ListByRecipient(复合游标)/CountUnread/MarkRead/MarkAllRead + WithTx/getQuery + 软删过滤，全接口与 count 风格对齐。
+- `internal/repositories/mq_consume_dedup_repository.go`：复制 count 版 InsertIfAbsent(ErrDuplicatedKey/duplicate 字符串双兜底) 供 feat-notify-003 dedup 用。
+- `notification_repository_test.go`：参数守卫单测 8 个函数走 `./init.sh` 常规流。
+- `notification_repository_integration_test.go`（`//go:build integration`）：10 个真库用例，运行 `ENV_FILE=/home/wmr/opt/ran-feed-docker/.env go test -tags=integration -count=1 ./app/rpc/notification/internal/repositories/` 全过。
+
+**DDL apply**：`docker exec -i mysql mysql -uran_feed -p123456 ran-feed < script/sql/ran-feed/notification/ran_feed_notification.sql` 已应用真库，三索引(uk_recipient_aggkey/idx_recipient_updated/idx_recipient_unread)就位。
+
+**验证**：`./init.sh` 全绿（43 测试文件）+ 集成测 10/10 全过。
+
+**下一步**：feat-notify-003 —— Canal 消费者五步管道（parse→strategy route→dedup+落库同事务→dispatch 桩）+ strategy 表分流（like/favorite→LIKE_FAVORITE 聚合、comment→COMMENT_REPLY 单条按 parent_id 分流 recipient、follow→FOLLOW 单条）+ 自我过滤 + 单测。
 
 ---
 
