@@ -3,11 +3,35 @@
 ## 当前状态
 
 **最后更新：** 2026-07-17
-**当前功能：** feat-notify-002 通知系统·数据层 repository + 单测（已完成）
+**当前功能：** feat-notify-003 通知系统·Canal 消费者 + strategy + 幂等 + dispatch（已完成）
 
-> 交付 notification_repository.go(仿 count 风格 UpsertAggregate 用原生 Exec ON DUPLICATE KEY UPDATE agg_count+1/actor 换新/re-surface 变未读；Insert 单条；ListByRecipient 复合游标 updated_at DESC id DESC 子 DO 分组 OR 括号包住；CountUnread 走 idx_recipient_unread；MarkRead/MarkAllRead recipient 入 where 防越权 只翻未读避免重复计数)+ mq_consume_dedup_repository.go(复制 count 版)。单测走双轨:①参数守卫纯单测入 `./init.sh` 常规流(db=nil 早返回不 panic);②`//go:build integration` 集成测跑真库(用户已启 docker mysql apply DDL)。集成测 10 例全过覆盖 upsert 累加+re-surface、复合游标翻页、同 updated_at id-DESC tie-break、软删+typeFilter、CountUnread、MarkRead 越权拒/只翻未读、MarkAllRead。`./init.sh` 全绿(43 测试文件)。
+> 五步管道 parse→strategy route→逐行 rowEventID dedup 与落库同事务→事务外 dispatch(桩)。strategy 复用 count presence 翻转判定思想 但产出物为 NotifyEvent。like/favorite 共 aggKey=LF:{content_id} → LIKE_FAVORITE 走 UpsertAggregate(uk 收敛+累加+re-surface);comment 按 parent_id 分流 recipient(顶评→content_user_id 回复→reply_to_user_id)走 Insert CR:{comment_id};follow aggKey=FO:{actor_id} 走 UpsertAggregate 依赖 uk 收敛「取关→再关注」并 re-surface。全策略统一 actor==recipient 自我过滤 + 只在激活态生成(INSERT active 或 UPDATE inactive→active DELETE 不产)。NotifyType 复用 pb 枚举遵 go-coding 规则不重定义。dispatch 桩内 CountUnread log 占位 TODO(feat-notify-006) PUBLISH notify:push。`./init.sh` 全绿(48 测试文件)。
 
-**下一步**：feat-notify-003（Canal 消费者 + strategy + 幂等 + dispatch 桩）
+**下一步**：feat-notify-004（NotificationService 四 logic 填实 List/GetUnreadCount/MarkRead/MarkAllRead 复合游标 over-fetch+1 出 next_cursor/has_more 返回原始行不富化 recipient 入 where 防越权）
+
+---
+
+## 已完成（feat-notify-003 通知系统·Canal 消费者 + strategy + 幂等 + dispatch）
+
+**关键决策**：
+- **FOLLOW 走 UpsertAggregate**：与设计文档「Insert 单条(去重 upsert)」语义一致 依赖 uk_recipient_aggkey 收敛「取关→再关注」到同一行并 re-surface；`agg_count` 在 FOLLOW 语义无产品含义 客户端渲染忽略。复用现有 repo 免加第三种落库方法（若未来 FOLLOW 想严格不累加 再考虑给 repo 加 UpsertUnique 或参数化）。
+- **NotifyType 用 pb 枚举**：`notification.NotifyType_LIKE_FAVORITE/COMMENT_REPLY/FOLLOW` 不在 `common/consts` 再声一份（fix-009 修复的规则）。
+- **snippet 按 rune 截 140**：与 `varchar(140)` 对齐 且避免中文半字节。
+- **dispatch 桩内不 PUBLISH**：只 CountUnread + log 占位 明确 TODO 留 feat-notify-006 SSE 层接。
+- **单测避 import cycle**：strategy 包测试不 import presence（否则 presence → strategy 成环）；四表默认注册验证放 presence 包内借其 init。
+
+**交付**：
+- `internal/mq/consumer/canal_message.go`：复制 count 版 canalMessage + rowEventID（table/op/updatedAt/eventID/rowEventID）。
+- `internal/mq/consumer/strategy/registry.go`：NotifyEvent 中间物 + PersistAction 枚举（PersistAggregate/PersistInsertOne）+ TableStrategy 接口 + Registry + RegisterFactory 自注册 + ParseInt64/ParseString。
+- `internal/mq/consumer/strategy/presence/{presence,like,favorite,comment,follow}.go`：4 表策略 + 共享 isActivation/beforeView/statusActive/statusActiveNotDeleted/alwaysActive/truncateRunes helper。
+- `internal/mq/consumer/notification_consumer.go`：五步管道 + persistEvent 分派 + dispatch 桩（GoSafe + bg 5s + 每 recipient CountUnread + log）。
+- `internal/mq/consumer/init_consumer.go`：Consumers gate KqConsumerConf.Topic。
+- `notification.go` main 改造：service.NewServiceGroup + consumer + gRPC 一起挂（照搬 count 模式）。
+- 单测 4 文件：presence_test（isActivation 7 例 + helpers）/strategies_test（4 表 ExtractEvents 各行为 + snippet 截断）/registry_test（Registry API + ParseInt64/String）/consumer_test（persistEvent 分派 + processRow 幂等/空事件/多事件 全用 mock）。
+
+**验证**：`./init.sh` 全绿（build+vet+test 48 测试文件）。
+
+**运行期遗留**：端到端联调（真 canal 加 notification destination + Kafka topic + 起 notification-rpc）留 feat-notify-007。dispatch 里 PUBLISH notify:push 留 feat-notify-006 SSE 层接入。
 
 ---
 
