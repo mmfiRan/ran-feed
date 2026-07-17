@@ -3,11 +3,37 @@
 ## 当前状态
 
 **最后更新：** 2026-07-17
-**当前功能：** feat-notify-003 通知系统·Canal 消费者 + strategy + 幂等 + dispatch（已完成）
+**当前功能：** feat-notify-004 通知系统·NotificationService 四 logic 填实（已完成）
 
-> 五步管道 parse→strategy route→逐行 rowEventID dedup 与落库同事务→事务外 dispatch(桩)。strategy 复用 count presence 翻转判定思想 但产出物为 NotifyEvent。like/favorite 共 aggKey=LF:{content_id} → LIKE_FAVORITE 走 UpsertAggregate(uk 收敛+累加+re-surface);comment 按 parent_id 分流 recipient(顶评→content_user_id 回复→reply_to_user_id)走 Insert CR:{comment_id};follow aggKey=FO:{actor_id} 走 UpsertAggregate 依赖 uk 收敛「取关→再关注」并 re-surface。全策略统一 actor==recipient 自我过滤 + 只在激活态生成(INSERT active 或 UPDATE inactive→active DELETE 不产)。NotifyType 复用 pb 枚举遵 go-coding 规则不重定义。dispatch 桩内 CountUnread log 占位 TODO(feat-notify-006) PUBLISH notify:push。`./init.sh` 全绿(48 测试文件)。
+> notification_helper.go 抽 3 纯函数(buildNotificationItem/splitOverFetch/parseCursor)+ 分页常量;ListNotifications 复合游标 over-fetch+1 出 next_cursor/has_more 返回原始行不富化(N8);GetUnreadCount 走 CountUnread;MarkRead 空 ids 直返 recipient 入 where 由 repo 侧防越权;MarkAllRead 全部标已读。四 logic 参数守卫统一 errorx.NewMsg(参数错误)+errorx.Wrap 三段式。`./init.sh` 全绿(49 测试文件)。
 
-**下一步**：feat-notify-004（NotificationService 四 logic 填实 List/GetUnreadCount/MarkRead/MarkAllRead 复合游标 over-fetch+1 出 next_cursor/has_more 返回原始行不富化 recipient 入 where 防越权）
+**下一步**：feat-notify-005（front 拉取模块 + 读时富化 + NotificationRpc 接线）
+
+---
+
+## 已完成（feat-notify-004 通知系统·NotificationService 四 logic 填实）
+
+**交付**：
+- `internal/logic/notificationservice/notification_helper.go`：纯函数 helper
+  - `buildNotificationItem`：原始行 → proto NotificationItem（`IsRead int32→bool`、`UpdatedAt→UnixMilli`、`NotifyType` 强转 pb 枚举）
+  - `splitOverFetch`：over-fetch+1 结果切片 → items+hasMore+nextCursor（满页 nextCursor 取本页末条；不满页/末页全 0）
+  - `parseCursor`：`cursorMillis<=0` 首页返 (零 Time, 0)
+  - 常量 `notifyListDefaultPageSize=20 / MaxPageSize=50`
+- `list_notifications_logic.go`：参数守卫 → ClampPageSize → parseCursor → ListByRecipient(over-fetch+1) → splitOverFetch → buildNotificationItem 映射
+- `get_unread_count_logic.go`：CountUnread 直返 total
+- `mark_read_logic.go`：空 ids 直返 affected=0（免空 IN 查询）；否则调 repo（recipient 入 where 由 repo 侧防越权 只翻未读）
+- `mark_all_read_logic.go`：MarkAllRead 只翻未读返 affected
+- 四 logic 均在 New 里创建 notifyRepo，对齐 count/user 现有范式；错误统一 `errorx.Wrap(l.ctx, err, errorx.NewMsg(...))` 三段式
+
+**单测**（notification_helper_test.go）：
+- `buildNotificationItem` 映射 + IsRead=1→true + nil 返 nil
+- `splitOverFetch`：不足一页/刚好一页无 overfetch/over-fetch pageSize+1/nil/pageSize<=0 五路
+- `parseCursor`：首页/负值视首页/正常
+- 四 logic 参数守卫（nil/RecipientId<=0）+ MarkRead 空 ids 直返 affected=0
+
+**验证**：`./init.sh` 全绿（build+vet+test 49 测试文件）。
+
+**运行期遗留**：端到端联调（真 canal → notification-rpc 消费 → 通过 gRPC 调 List/Unread/MarkRead）留 feat-notify-007；本条由 feat-notify-002 集成测（repo SQL 语义）+ 纯函数单测保证行为正确。
 
 ---
 

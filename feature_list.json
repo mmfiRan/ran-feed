@@ -323,8 +323,8 @@
       "name": "通知系统·NotificationService 四 logic 填实",
       "description": "Phase 4:internal/logic/notificationservice 填实 ListNotifications(复合游标 over-fetch+1 出 next_cursor/has_more 返回原始行不富化 N8)、GetUnreadCount(CountUnread)、MarkRead(recipient 入 where 防越权)、MarkAllRead。DoD:./init.sh 全绿。",
       "dependencies": ["feat-notify-003"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "./init.sh 全绿(build+vet+test 49 测试文件 新增 notificationservice logic 层单测)。①notification_helper.go 抽 3 个纯函数:buildNotificationItem(row→proto NotificationItem 映射 IsRead int32→bool UpdatedAt UnixMilli NotifyType 直接强转 pb 枚举)、splitOverFetch(rows []*model, pageSize)(items hasMore nextTime nextID)(over-fetch+1 结果切片 满页 nextCursor 取本页末条 不满页/末页 全 0)、parseCursor(millis,id)(cursorMillis<=0 首页返零 Time+0)+ 常量 notifyListDefaultPageSize=20/MaxPageSize=50。②ListNotifications logic:参数守卫(nil/RecipientId<=0 返 errorx.NewMsg '参数错误')→utils.ClampPageSize 归一 pageSize→parseCursor 解析复合游标→调 ListByRecipient(pageSize+1)→splitOverFetch 切片计 has_more/next_cursor→buildNotificationItem 逐行映射→出 Items+NextCursor+HasMore;typeFilter=NOTIFY_TYPE_UNKNOWN(0)由 repo 视为不限。③GetUnreadCount logic:参数守卫+调 CountUnread(走 idx_recipient_unread)直返 Total;errorx.Wrap(ctx,err,NewMsg) 三段式。④MarkRead logic:参数守卫+空 ids 直返 affected=0 不下探 repo(免空 IN 查询)+调 MarkRead(recipient 入 where 由 repo 侧防越权 只翻未读)返 affected。⑤MarkAllRead logic:参数守卫+调 MarkAllRead(recipient 入 where 只翻未读)返 affected。⑥四 logic 均在 New 里创建 notifyRepo=repositories.NewNotificationRepository(ctx,svcCtx.MysqlDb)对齐 count/user 现有 logic 范式。⑦单测(notification_helper_test.go):buildNotificationItem 映射 + IsRead=1→true;splitOverFetch(不足/满页无 overfetch/满页 over-fetch/nil/pageSize<=0)全覆盖 nextCursor 取本页末条;parseCursor 首页/负值视首页/正常;4 logic 参数守卫(nil/RecipientId<=0)+MarkRead 空 ids 直返 affected=0。⑧运行期(需 canal 加 notification destination + kafka topic 起 notification-rpc 全栈)由 feat-notify-007 联调 由 feat-notify-002 集成测 + 本条纯函数单测保证行为正确。"
     },
     {
       "id": "feat-notify-005",
