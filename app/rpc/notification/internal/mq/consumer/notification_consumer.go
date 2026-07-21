@@ -20,10 +20,16 @@ import (
 )
 
 const (
-	consumerName         = "notification.canal_consumer"
-	dispatchTimeout      = 5 * time.Second
-	notifyPushChannel    = "notify:push"
+	consumerName      = "notification.canal_consumer"
+	dispatchTimeout   = 5 * time.Second
+	notifyPushChannel = "notify:push"
 )
+
+// notifyPushPayload dispatch → SSE 层的信号消息 与 front sse.PubSubMessage 对齐
+type notifyPushPayload struct {
+	RecipientID int64 `json:"recipient_id"`
+	Unread      int64 `json:"unread"`
+}
 
 // CanalNotificationConsumer 五步管道 解析 → strategy 路由 → 每行 rowEventID dedup 与落库同事务 → 事务外 dispatch(桩)
 type CanalNotificationConsumer struct {
@@ -169,8 +175,8 @@ func (c *CanalNotificationConsumer) persistEvent(notifyRepo repositories.Notific
 	}
 }
 
-// dispatch 事务外副作用(桩) 事务提交后异步计每个 recipient 未读数 log 占位
-// PUBLISH notify:push 留 feat-notify-006 SSE 层接入
+// dispatch 事务外副作用 事务提交后异步计每个 recipient 未读数并 PUBLISH notify:push
+// front SSE 层订阅该 channel 收信号后回拉;PUBLISH 失败非致命 log 由拉取兜底
 func (c *CanalNotificationConsumer) dispatch(recipients map[int64]struct{}) {
 	if len(recipients) == 0 {
 		return
@@ -186,8 +192,14 @@ func (c *CanalNotificationConsumer) dispatch(recipients map[int64]struct{}) {
 				logc.Errorf(bg, "dispatch CountUnread 失败 recipient=%d err=%v", recipient, err)
 				continue
 			}
-			// TODO(feat-notify-006) PUBLISH notify:push {recipient, unread}
-			logc.Infof(bg, "dispatch(桩) recipient=%d unread=%d channel=%s", recipient, unread, notifyPushChannel)
+			payload, mErr := json.Marshal(notifyPushPayload{RecipientID: recipient, Unread: unread})
+			if mErr != nil {
+				logc.Errorf(bg, "dispatch payload 序列化失败 recipient=%d err=%v", recipient, mErr)
+				continue
+			}
+			if _, pErr := c.svcContext.Redis.PublishCtx(bg, notifyPushChannel, payload); pErr != nil {
+				logc.Errorf(bg, "dispatch PUBLISH 失败 channel=%s recipient=%d err=%v", notifyPushChannel, recipient, pErr)
+			}
 		}
 	})
 }

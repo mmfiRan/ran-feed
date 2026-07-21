@@ -10,6 +10,7 @@ import (
 	"ran-feed/app/front/internal/common/consts"
 	"ran-feed/app/front/internal/common/oss"
 	"ran-feed/app/front/internal/common/oss/strategy"
+	"ran-feed/app/front/internal/common/sse"
 	"ran-feed/app/front/internal/config"
 	"ran-feed/app/rpc/content/client/contentservice"
 	"ran-feed/app/rpc/content/client/feedservice"
@@ -43,6 +44,7 @@ type ServiceContext struct {
 	CountRpc                      counterservice.CounterService
 	SearchRpc                     searchservice.SearchService
 	NotificationRpc               notificationservice.NotificationService
+	NotifyConnManager             *sse.ConnManager
 	OssContext                    *oss.Context
 }
 
@@ -119,6 +121,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		CountRpc:                      countRpc,
 		SearchRpc:                     searchRpc,
 		NotificationRpc:               notificationRpc,
+		NotifyConnManager:             sse.NewConnManager(),
 		OssContext:                    ossContext,
 		Redis:                         r,
 		UserLoginStatusAuthMiddleware: middleware.NewUserLoginStatusAuthMiddleware(r, c).Handle,

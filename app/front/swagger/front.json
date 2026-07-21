@@ -1960,6 +1960,38 @@
         }
       }
     },
+    "/v1/notification/stream": {
+      "get": {
+        "description": "SSE 实时信号 只推 unread 变更信号 客户端收到即拉 /list",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "notification"
+        ],
+        "summary": "StreamNotification",
+        "operationId": "notificationStreamNotification",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "unread": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/notification/unread-count": {
       "get": {
         "description": "未读通知数",
@@ -2629,7 +2661,7 @@
       }
     }
   },
-  "x-date": "2026-07-16 15:49:44",
+  "x-date": "2026-07-21 14:10:36",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

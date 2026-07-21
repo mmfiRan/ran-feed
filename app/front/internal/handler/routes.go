@@ -204,6 +204,21 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 
 	server.AddRoutes(
 		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.UserLoginStatusAuthMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/stream",
+					Handler: notification.StreamNotificationHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/notification"),
+		rest.WithSSE(),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
 			[]rest.Middleware{serverCtx.OptionalLoginMiddleware},
 			[]rest.Route{
 				{

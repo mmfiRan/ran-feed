@@ -235,6 +235,14 @@ type NotificationListRes struct {
 	HasMore    bool               `json:"has_more"`
 }
 
+type NotifyStreamReq struct {
+}
+
+type NotifyStreamRes struct {
+	Type   string `json:"type"`
+	Unread int64  `json:"unread"`
+}
+
 type OssFormData struct {
 	Host             string `json:"host"`
 	Policy           string `json:"policy"`

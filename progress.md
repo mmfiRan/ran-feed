@@ -2,12 +2,40 @@
 
 ## 当前状态
 
-**最后更新：** 2026-07-17
-**当前功能：** feat-notify-005 通知系统·front 拉取模块 + 读时富化 + 接线（已完成）
+**最后更新：** 2026-07-21
+**当前功能：** feat-notify-006 通知系统·SSE 实时层 + Redis Pub/Sub 扇入（已完成）
 
-> config/yaml 加 NotificationRpcClientConf(etcd notification.rpc)svc 挂 NotificationRpc 客户端。notification_helper.go 抽 4 纯函数(encodeCursor/decodeCursor/parseIDs/collectRefIDs/assembleNotificationItems)。四 logic 填实:list 读时富化 UserRpc.BatchGetUser + FeedRpc.BatchGetContentItems 并行富化 单侧失败退化空 map 不阻断;unread/mark_read/mark_all_read 均从 ctx 取 userId 强制作 recipient 防越权(notification-rpc/repo 侧再入 where 双重防越权)。actor 缺失仍带 UserId(空 nick/avatar) content 找不到 Content 置 nil 保留通知本身。`./init.sh` 全绿(50 测试文件)。
+> notification-rpc dispatch 补 PUBLISH notify:push({recipient_id,unread});front 新增 internal/common/sse(ConnManager map[uid]map[*Conn]{} 缓冲 send chan 慢连丢帧不阻塞广播;独立 go-redis v9 client 订阅 notify:push 分发到 ConnManager;500ms 退避重连);SSE 端点走 goctl 生成:notification.api 加 sse:true @server 段 goctl 生成 routes.go(rest.WithSSE() 兜底三头+清 WriteDeadline)与 handler 标准模板(client chan+GoSafeCtx+data JSON 帧+Flush) 业务下沉 logic/notification/stream_notification_logic.go(GetContextUserId→ConnManager.Add defer Remove→connected 首帧→15s 心跳→conn.Send 转 client→ctx.Done 退出);front.go 仅起 pubsub 订阅。SSE frame 只带 type/unread 不含 recipient_id 防跨 user 泄露;connected/heartbeat 走 data JSON 帧前端按 type 分派;未设 X-Accel-Buffering 靠 nginx proxy_buffering off 部署层关缓冲。`./init.sh` 全绿。
 
-**下一步**：feat-notify-006（SSE 实时层 + Redis Pub/Sub 扇入 + notification-rpc dispatch 补 PUBLISH）
+**下一步**：feat-notify-007（跨仓 ran-feed-docker canal notification 目的地 + kafka topic + notification-rpc 服务配置 + 端到端联调）
+
+---
+
+## 已完成（feat-notify-006 通知系统·SSE 实时层 + Redis Pub/Sub 扇入）
+
+**关键设计**：
+- **只推信号不推明细（N7）**：SSE frame 只带 `{type:'notify', unread:N}`，收到即走 `/list` 回拉。frame 不含 `recipient_id` 防跨 user 泄露。
+- **慢连接丢帧不阻塞广播**：每 Conn 有 `Send chan []byte`（缓冲 8），Broadcast 用 `select-default` 慢连接直接 drop，保证一路慢客户端不拖住其它 client。
+- **PubSub 独立 go-redis client**：go-zero `core/stores/redis` 未导出 `Subscribe`，且订阅是长连接与业务命令池分开更清晰；500ms 退避重连兜底瞬时网络抖动。
+- **头部与 WriteDeadline 由 `rest.WithSSE()` 兜底**：go-zero 1.10 已内建 SSE RouteOption 自动清写超时 + 设 Content-Type/Cache-Control/Connection 三头，不手抠。未设 `X-Accel-Buffering:no`，front 前置 nginx 靠部署层 `proxy_buffering off` 关缓冲。
+- **SSE 端点走 goctl 生成（不手写路由/handler）**：`notification.api` 加 `sse:true` 的 `@server` 段，`goctl api go --style=go_zero` 生成 `routes.go`（自动挂 `rest.WithSSE()`）与 handler 标准 SSE 模板（`client chan` + `threading.GoSafeCtx` + `data: %s\n\n` + `Flusher`），业务下沉 `logic/notification/stream_notification_logic.go`。改 `.api` 后 `goctl api swagger` 重生成 `front.json`。
+- **connected/heartbeat 为 data JSON 帧**：goctl 模板只发 `data:` 无 SSE 注释行，故 connected/heartbeat 走 `{type,unread}` JSON 帧，前端须按 `type` 分派，heartbeat 的 `unread:0` 不可直接用免误清红点。
+- **多 pod 广播语义**：每 pod 都订阅 `notify:push`，但只有持有该 user Conn 的 pod 实际推送；无 user 时 Broadcast 返 (0,0) 静默略过。
+
+**交付**：
+- `app/rpc/notification/internal/mq/consumer/notification_consumer.go`：dispatch 补 `svcContext.Redis.PublishCtx(bg, "notify:push", json{recipient_id, unread})`，事务外 GoSafe 独立 bg ctx + timeout。
+- `app/front/internal/common/sse/conn_manager.go`：`ConnManager` 单例（`Add/Remove/Broadcast/UserCount/ConnCount`）+ `Conn` 结构（send 缓冲 chan + done）。
+- `app/front/internal/common/sse/pubsub.go`：独立 go-redis client 订阅 `notify:push`；`DecodePayload/EncodeMessage`；`Start(ctx)` GoSafe 常驻订阅 + 500ms 退避重连。
+- `app/front/doc/notification/notification.api`：定义 `NotifyStreamReq{}`/`NotifyStreamRes{type,unread}` + `sse:true` 的 `@server` 段；goctl 生成 `routes.go`/handler/logic 桩 + swagger。
+- `app/front/internal/handler/notification/stream_notification_handler.go`：goctl SSE 标准模板，未手改。
+- `app/front/internal/logic/notification/stream_notification_logic.go`：业务主体——GetContextUserId→NewConn(ctx.Done)+ConnManager.Add defer Remove→connected 首帧→15s 心跳→conn.Send Unmarshal 转 client→ctx.Done 退出。
+- `app/front/internal/svc/service_context.go`：挂 `NotifyConnManager *sse.ConnManager`。
+- `app/front/front.go`：仅启动 pubsub 订阅 goroutine（ctx 与 server 生命周期绑）；路由/WithSSE/中间件均在 goctl 生成的 `routes.go` 中。
+- 单测 `sse_test.go`（8 例）：ConnManager Add/Remove（单/多 conn/多 user/空清 map/参数守卫/幂等）+ Broadcast（跨 user 不串/user 缺失 0/慢连丢帧/参数守卫）+ DecodePayload（空/非法/recipient<=0/正常/unread=0 允许）+ EncodeMessage frame + truncate 边界。
+
+**验证**：`./init.sh` 全绿（build+vet+test 含 sse 单测 8 例）。
+
+**遗留**：端到端联调（notification-rpc 全栈 + Redis Pub/Sub + front 起 + 浏览器 EventSource）留 feat-notify-007。
 
 ---
 

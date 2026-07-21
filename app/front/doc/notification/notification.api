@@ -44,6 +44,13 @@ type (
 	MarkAllNotificationReadRes {
 		Affected int64 `json:"affected"`
 	}
+	// SSE 实时层信号帧 只带 type/unread 收到即走 /list 回拉
+	// type: connected=首次连接 notify=未读变更 heartbeat=心跳
+	NotifyStreamReq {}
+	NotifyStreamRes {
+		Type   string `json:"type"`
+		Unread int64  `json:"unread"`
+	}
 )
 
 @server (
@@ -76,4 +83,21 @@ service front-api {
 	)
 	@handler MarkAllNotificationRead
 	post /read-all returns (MarkAllNotificationReadRes)
+}
+
+// SSE 通道单独一个 @server 段(sse: true 会给整段路由挂 rest.WithSSE())
+// 与拉取组同 prefix 同 middleware 客户端建 EventSource /v1/notification/stream
+@server (
+	tags:   notification
+	group:  notification
+	prefix: /v1/notification
+	middleware: UserLoginStatusAuthMiddleware
+	sse: true
+)
+service front-api {
+	@doc (
+		description: "SSE 实时信号 只推 unread 变更信号 客户端收到即拉 /list"
+	)
+	@handler StreamNotification
+	get /stream (NotifyStreamReq) returns (NotifyStreamRes)
 }
