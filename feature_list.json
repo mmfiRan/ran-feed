@@ -1,7 +1,7 @@
 {
   "project": "ran-feed",
   "description": "内容/信息流后台系统 — Go 微服务项目",
-  "last_updated": "2026-07-17",
+  "last_updated": "2026-07-28",
   "_meta_note": "重构起点 从零跟踪功能状态",
   "_field_guide": {
     "id": "feat-XXX 新功能 / fix-XXX 修复 / sec-XXX 安全 / opt-XXX 优化 / refactor-XXX 重构",
@@ -347,8 +347,8 @@
       "name": "通知系统·部署仓 canal 目的地 + topic + 端到端联调",
       "description": "Phase 7(跨仓 ran-feed-docker + 联调):canal/conf/notification/instance.properties(新 slaveId 1236 filter.regex 四互动表 topic ran-feed-notification-canal 补 canal.instance.global.lazy)、canal 主配置注册 destination、docker-compose 建 topic + notification-rpc 服务、.env 补变量、build/notification-rpc.Dockerfile + CI。端到端联调:A 赞/评/关注 B→B /list 出现通知 /unread-count+1;多人赞或藏同一内容→一条 X 等 N 人;B 开 /stream 秒收 SSE 回拉;标已读归零;自赞不通知。升级点:跨仓·部署。DoD:端到端联调通过。",
       "dependencies": ["feat-notify-006"],
-      "status": "not-started",
-      "evidence": ""
+      "status": "done",
+      "evidence": "跨仓部署与真实端到端联调全部通过。①源码仓新增 build/notification-rpc.Dockerfile 构建 notification-rpc 并暴露 5009/9298，CI 自动发现 build/*.Dockerfile。②部署仓提交 b57a5fb：注册 Canal notification destination(slaveId=1236，四互动表，topic=ran-feed-notification-canal)、创建 Kafka topic、接入 notification-rpc 服务与 .env.example 变量；重建 Canal 后确认容器内 instance.properties 与 destination 位点文件存在。③宿主机本地启动 count/user/content/interaction/notification/front，Docker 运行 MySQL/Redis/Kafka/Canal/etcd；真实 HTTP 验收：关注后 unread 0→1，/list 返回 type=30 与正确 actor，/stream 收到 connected+notify；A 点赞+C 收藏同一内容仅一条 type=10 且 agg_count=2、unread 仍 1；评论产生 type=20 与中文 snippet，unread 1→2；read-all affected=2 后 unread=0；作者自赞后 unread=0 且 agg_count 保持 2。④后端 ./init.sh 全绿(build+vet+51 测试文件)，notification repository 真库 integration 测试通过；前端 ./init.sh 全绿(typecheck、lint 0 error、build，NotificationsPage chunk 5.93KB)。⑤E2E 用户/内容/互动/通知/count 派生夹具精确清理，关联表核对 remaining=0。"
     }
   ]
 }

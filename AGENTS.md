@@ -1,6 +1,6 @@
 # AGENTS.md
 
-> 本文件是 Claude Code 在本仓库工作的**路由入口**：只放启动路径、强制规则、项目不变式与文档地图。
+> 本文件是 Agent 在本仓库工作的**路由入口**：只放启动路径、强制规则、项目不变式与文档地图。
 > 可复用的编码/提交方法已抽成 skill，状态真相在 `feature_list.json`。**每次新会话开始必须完整阅读。**
 
 **ran-feed** —— 内容/信息流后台系统，Go 微服务（go-zero · gRPC · MySQL · Redis · Kafka）。

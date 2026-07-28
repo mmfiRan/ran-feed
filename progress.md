@@ -2,12 +2,40 @@
 
 ## 当前状态
 
-**最后更新：** 2026-07-21
-**当前功能：** feat-notify-006 通知系统·SSE 实时层 + Redis Pub/Sub 扇入（已完成）
+**最后更新：** 2026-07-28
+**当前功能：** feat-notify-007 通知系统·部署仓 canal 目的地 + topic + 端到端联调（已完成）
 
-> notification-rpc dispatch 补 PUBLISH notify:push({recipient_id,unread});front 新增 internal/common/sse(ConnManager map[uid]map[*Conn]{} 缓冲 send chan 慢连丢帧不阻塞广播;独立 go-redis v9 client 订阅 notify:push 分发到 ConnManager;500ms 退避重连);SSE 端点走 goctl 生成:notification.api 加 sse:true @server 段 goctl 生成 routes.go(rest.WithSSE() 兜底三头+清 WriteDeadline)与 handler 标准模板(client chan+GoSafeCtx+data JSON 帧+Flush) 业务下沉 logic/notification/stream_notification_logic.go(GetContextUserId→ConnManager.Add defer Remove→connected 首帧→15s 心跳→conn.Send 转 client→ctx.Done 退出);front.go 仅起 pubsub 订阅。SSE frame 只带 type/unread 不含 recipient_id 防跨 user 泄露;connected/heartbeat 走 data JSON 帧前端按 type 分派;未设 X-Accel-Buffering 靠 nginx proxy_buffering off 部署层关缓冲。`./init.sh` 全绿。
+> 部署仓接线、源码镜像构建文件、真实 Canal→Kafka→notification-rpc→Redis Pub/Sub→front-api SSE/HTTP 全链路均已验证。后端与前端标准闸门全绿，E2E 夹具已清理。
 
-**下一步**：feat-notify-007（跨仓 ran-feed-docker canal notification 目的地 + kafka topic + notification-rpc 服务配置 + 端到端联调）
+**下一步**：从 `feature_list.json` 新增或选择下一条功能；当前列表已全部完成
+
+---
+
+## 已完成（feat-notify-007 通知系统·部署仓 canal 目的地 + topic + 端到端联调）
+
+**范围**：跨源码仓 `ran-feed`、部署仓 `ran-feed-docker` 与 C 端前端仓 `zero-feed-front`，完成通知生产侧接线、镜像构建与真实端到端验收。
+
+**交付（源码仓 ran-feed）**：
+- `build/notification-rpc.Dockerfile`：照 `count-rpc.Dockerfile`，构建 `./app/rpc/notification`，`EXPOSE 5009 9298`。CI `.github/workflows/docker-publish.yml` 自动发现 `build/*.Dockerfile`，无需改 workflow 即发布 `ghcr.io/.../ran-feed-notification-rpc`。
+
+**交付（部署仓 ran-feed-docker）**：
+- `canal/conf/notification/instance.properties`（新增）：slaveId `1236`、filter `ran-feed\.(ran_feed_like|ran_feed_favorite|ran_feed_comment|ran_feed_follow)`、topic `ran-feed-notification-canal`，其余照 count。
+- `canal/conf/canal.properties`：`destinations = count,search` → 加 `,notification`（`canal.auto.scan=false` 须显式注册；`global.lazy=false` 全局已关，不需单独补）。
+- `docker-compose.yml`：canal 服务加 `./canal/conf/notification` 挂载；kafka-init 加建 `ran-feed-notification-canal` topic；新增 `notification-rpc` 服务块（照 count-rpc，依赖 etcd/redis/mysql/kafka，端口 5009）。
+- `.env.example` + 本地 `.env`（gitignore 不入库）：补 `NOTIFICATION_RPC_IMAGE`、`NOTIFICATION_RPC_PORT=5009`。
+
+**真实端到端验证**：
+- 宿主机本地启动 `count/user/content/interaction/notification/front`，Docker 仅运行 MySQL、Redis、Kafka、Canal、etcd 等基础设施。
+- 关注：接口返回 200，收件人 unread `0→1`，`/list?type=30` 返回正确 actor，`/stream` 收到 `connected` 与 `notify`。
+- 聚合：A 点赞、C 收藏同一内容后仅一条 type=10，`agg_count=2`，unread 行数保持 1。
+- 评论：type=20 通知带中文 snippet，unread `1→2`。
+- 已读与自我过滤：`read-all affected=2` 后 unread=0；作者自赞后 unread 仍 0，聚合计数仍 2。
+
+**自动验证**：
+- 后端 `./init.sh` 全绿：build、vet、51 个测试文件全部通过。
+- `ENV_FILE=/home/wmr/opt/ran-feed-docker/.env go test -tags=integration -count=1 ./app/rpc/notification/internal/repositories/` 通过。
+- 前端 `./init.sh` 全绿：typecheck、lint 0 error、build 通过，NotificationsPage chunk 5.93KB。
+- E2E 用户 5/6/7、内容 79921888654007171 与关联互动/通知/count 派生记录已精确清理，核对 remaining=0。
 
 ---
 
