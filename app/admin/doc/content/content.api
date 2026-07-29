@@ -1,13 +1,14 @@
 syntax = "v1"
 
+import "../base/base.api"
+
 type (
 	// AdminContentListReq 内容列表筛选 各筛选项 0 表示不限 page 从1
 	AdminContentListReq {
+		AdminPageReq
 		Status      int32 `form:"status,optional"`       // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
 		ContentType int32 `form:"content_type,optional"` // 10文章 20视频
 		AuthorId    int64 `form:"author_id,optional"`
-		Page        int32 `form:"page,optional"`
-		PageSize    int32 `form:"page_size,optional"`
 	}
 	AdminContentListItem {
 		ContentId     int64  `json:"content_id"`

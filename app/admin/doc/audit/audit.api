@@ -1,15 +1,16 @@
 syntax = "v1"
 
+import "../base/base.api"
+
 type (
 	// AdminOperationLogListReq 审计日志筛选 各项 0/空 表示不限 时间毫秒 page 从1
 	AdminOperationLogListReq {
+		AdminPageReq
 		AdminId    int64  `form:"admin_id,optional"`
 		Action     string `form:"action,optional"`
 		TargetType string `form:"target_type,optional"`
 		StartTime  int64  `form:"start_time,optional"` // 毫秒
 		EndTime    int64  `form:"end_time,optional"`   // 毫秒
-		Page       int32  `form:"page,optional"`
-		PageSize   int32  `form:"page_size,optional"`
 	}
 	AdminOperationLogItem {
 		Id         int64  `json:"id"`

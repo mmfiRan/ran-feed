@@ -1,10 +1,11 @@
 syntax = "v1"
 
+import "../base/base.api"
+
 type (
 	AdminUserListReq {
+		AdminPageReq
 		Status   int32 `form:"status,optional"` // 0不限 10启用 20禁用
-		Page     int32 `form:"page,optional"`
-		PageSize int32 `form:"page_size,optional"`
 	}
 	AdminUserItem {
 		Id        int64    `json:"id"`

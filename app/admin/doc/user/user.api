@@ -1,12 +1,13 @@
 syntax = "v1"
 
+import "../base/base.api"
+
 type (
 	// CUserListReq C端用户列表筛选 status 0 表示不限
 	CUserListReq {
+		AdminPageReq
 		Status   int32  `form:"status,optional"`
 		Keyword  string `form:"keyword,optional"`
-		Page     int32  `form:"page,optional"`
-		PageSize int32  `form:"page_size,optional"`
 	}
 	CUserItem {
 		UserId    int64  `json:"user_id"`

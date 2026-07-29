@@ -1,9 +1,10 @@
 syntax = "v1"
 
+import "../base/base.api"
+
 type (
 	AdminRoleListReq {
-		Page     int32 `form:"page,optional"`
-		PageSize int32 `form:"page_size,optional"`
+		AdminPageReq
 	}
 	AdminRoleItem {
 		Id        int64  `json:"id"`

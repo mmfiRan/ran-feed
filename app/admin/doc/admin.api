@@ -1,5 +1,6 @@
 syntax = "v1"
 
+import "base/base.api"
 import "auth/auth.api"
 import "content/content.api"
 import "permission/permission.api"
