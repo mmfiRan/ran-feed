@@ -78,6 +78,19 @@ func TestParseIDs(t *testing.T) {
 	assert.Equal(t, []int64{100, 200}, got)
 }
 
+func TestNilSafeInt64(t *testing.T) {
+	assert.Nil(t, nilSafeInt64(0), "0 → nil")
+	assert.Nil(t, nilSafeInt64(-1), "负 → nil")
+	assert.NotNil(t, nilSafeInt64(1))
+	assert.Equal(t, int64(42), *nilSafeInt64(42))
+}
+
+func TestNilSafeString(t *testing.T) {
+	assert.Nil(t, nilSafeString(""), "空串 → nil")
+	assert.NotNil(t, nilSafeString("hello"))
+	assert.Equal(t, "hello", *nilSafeString("hello"))
+}
+
 func TestCollectRefIDs(t *testing.T) {
 	// 空/nil 输入
 	actors, contents := collectRefIDs(nil)
@@ -98,6 +111,8 @@ func TestCollectRefIDs(t *testing.T) {
 }
 
 func TestAssembleNotificationItems(t *testing.T) {
+	commentID := int64(999)
+	snippet := "点赞"
 	items := []*notifypb.NotificationItem{
 		{
 			Id: 1, ActorId: 100, NotifyType: notifypb.NotifyType_LIKE_FAVORITE,
@@ -105,7 +120,7 @@ func TestAssembleNotificationItems(t *testing.T) {
 		},
 		{
 			Id: 2, ActorId: 200, NotifyType: notifypb.NotifyType_COMMENT_REPLY,
-			AggCount: 1, ContentId: 500, CommentId: 999, Snippet: "点赞", IsRead: true, UpdatedAt: 1720000001000,
+			AggCount: 1, ContentId: 500, CommentId: commentID, Snippet: snippet, IsRead: true, UpdatedAt: 1720000001000,
 		},
 		{
 			Id: 3, ActorId: 300, NotifyType: notifypb.NotifyType_FOLLOW,
@@ -137,16 +152,22 @@ func TestAssembleNotificationItems(t *testing.T) {
 	assert.Equal(t, "小明", out[0].Actor.Nickname)
 	assert.NotNil(t, out[0].Content)
 	assert.Equal(t, "标题500", out[0].Content.Title)
+	assert.Nil(t, out[0].CommentId, "LIKE_FAVORITE CommentId=0 → nil")
+	assert.Nil(t, out[0].Snippet, "LIKE_FAVORITE 无 snippet → nil")
 
 	// item2 COMMENT_REPLY 带 snippet
-	assert.Equal(t, int64(999), out[1].CommentId)
-	assert.Equal(t, "点赞", out[1].Snippet)
+	assert.NotNil(t, out[1].CommentId)
+	assert.Equal(t, int64(999), *out[1].CommentId)
+	assert.NotNil(t, out[1].Snippet)
+	assert.Equal(t, "点赞", *out[1].Snippet)
 	assert.True(t, out[1].IsRead)
 
-	// item3 FOLLOW actor 300 缺失但保留通知 content 恒 nil
+	// item3 FOLLOW actor 300 缺失但保留通知 content 恒 nil commentId/snippet 均为 nil
 	assert.Equal(t, int64(300), out[2].Actor.UserId, "actor 缺失仍带 UserId")
 	assert.Equal(t, "", out[2].Actor.Nickname, "找不到的 actor 昵称空")
 	assert.Nil(t, out[2].Content, "关注类 content 恒 nil")
+	assert.Nil(t, out[2].CommentId, "关注类无 comment")
+	assert.Nil(t, out[2].Snippet, "关注类无 snippet")
 
 	// item4 LIKE_FAVORITE 但 content 已删 Content 置 nil 保留通知
 	assert.Equal(t, int64(4), out[3].Id)

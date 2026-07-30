@@ -77,7 +77,7 @@ func (l *StreamNotificationLogic) StreamNotification(req *types.NotifyStreamReq,
 				continue
 			}
 			select {
-			case client <- &types.NotifyStreamRes{Type: frame.Type, Unread: frame.Unread}:
+			case client <- &types.NotifyStreamRes{Type: frame.Type, Unread: &frame.Unread}:
 			case <-l.ctx.Done():
 				return nil
 			}

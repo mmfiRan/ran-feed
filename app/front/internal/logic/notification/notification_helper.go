@@ -90,6 +90,22 @@ func collectRefIDs(items []*notifypb.NotificationItem) (actorIDs, contentIDs []i
 	return actorIDs, contentIDs
 }
 
+// nilSafeInt64 >0 转指针 nil 则返回 nil 用于 optional 字段映射
+func nilSafeInt64(v int64) *int64 {
+	if v > 0 {
+		return &v
+	}
+	return nil
+}
+
+// nilSafeString 非空转指针 空串返回 nil 用于 optional 字段映射
+func nilSafeString(v string) *string {
+	if v != "" {
+		return &v
+	}
+	return nil
+}
+
 // assembleNotificationItems 按 rpc 出的原始行顺序 富化组装 front 层 NotificationItem
 // - actor 找不到照样返 空 nickname/avatar 但 user_id 仍带回
 // - content 找不到(已删/下架/私密) Content 置 nil 但保留通知本身
@@ -125,8 +141,8 @@ func assembleNotificationItems(
 			Actor:     actor,
 			AggCount:  it.AggCount,
 			Content:   content,
-			CommentId: it.CommentId,
-			Snippet:   it.Snippet,
+			CommentId: nilSafeInt64(it.CommentId),
+			Snippet:   nilSafeString(it.Snippet),
 			IsRead:    it.IsRead,
 			UpdatedAt: it.UpdatedAt,
 		})

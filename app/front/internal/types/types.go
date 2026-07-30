@@ -215,18 +215,18 @@ type NotificationItem struct {
 	Id        int64                `json:"id,string"`
 	Type      int32                `json:"type"` // 10=赞或收藏 20=评论或回复 30=关注
 	Actor     NotificationActor    `json:"actor"`
-	AggCount  int64                `json:"agg_count"`         // 聚合触发人数(次数) 单条为1
-	Content   *NotificationContent `json:"content,omitempty"` // 关注类为空 内容已删也为空
-	CommentId int64                `json:"comment_id,string"` // 评论或回复类有值 否则0
-	Snippet   string               `json:"snippet"`           // 评论或回复摘要
+	AggCount  int64                `json:"agg_count"`                  // 聚合触发人数(次数) 单条为1
+	Content   *NotificationContent `json:"content,optional"`           // 关注类为空 内容已删也为空
+	CommentId *int64               `json:"comment_id,string,optional"` // 评论或回复类有值
+	Snippet   *string              `json:"snippet,optional"`           // 评论或回复摘要
 	IsRead    bool                 `json:"is_read"`
 	UpdatedAt int64                `json:"updated_at"` // 毫秒时间戳
 }
 
 type NotificationListReq struct {
 	Cursor   string `form:"cursor,optional"` // 上一页返回的 next_cursor 首页留空
-	PageSize int32  `form:"page_size,optional"`
-	Type     int32  `form:"type,optional"` // 0=全部 10/20/30 按类型过滤
+	PageSize int32  `form:"page_size,optional,default=20"`
+	Type     int32  `form:"type,optional,default=0"` // 0=全部 10/20/30 按类型过滤
 }
 
 type NotificationListRes struct {
@@ -240,7 +240,7 @@ type NotifyStreamReq struct {
 
 type NotifyStreamRes struct {
 	Type   string `json:"type"`
-	Unread int64  `json:"unread"`
+	Unread *int64 `json:"unread,optional"`
 }
 
 type OssFormData struct {
