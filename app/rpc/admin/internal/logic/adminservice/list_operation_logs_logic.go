@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/consts"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -48,7 +47,7 @@ func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsRe
 		return res, nil
 	}
 
-	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()), consts.DefaultPageSize, consts.MaxPageSize)
+	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()))
 	rows, err := l.operationLogRepo.List(filter, offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询审计日志失败"))

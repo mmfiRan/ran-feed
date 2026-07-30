@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/consts"
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
@@ -46,7 +45,7 @@ func (l *ListAdminsLogic) ListAdmins(in *admin.ListAdminsReq) (*admin.ListAdmins
 		return res, nil
 	}
 
-	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()), consts.DefaultPageSize, consts.MaxPageSize)
+	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()))
 	rows, err := l.adminUserRepo.List(status, offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询管理员失败"))

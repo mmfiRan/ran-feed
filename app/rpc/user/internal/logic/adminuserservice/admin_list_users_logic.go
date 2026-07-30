@@ -3,7 +3,6 @@ package adminuserservicelogic
 import (
 	"context"
 
-	"ran-feed/app/rpc/user/internal/common/consts"
 	"ran-feed/app/rpc/user/internal/entity/model"
 	"ran-feed/app/rpc/user/internal/repositories"
 	"ran-feed/app/rpc/user/internal/svc"
@@ -47,12 +46,7 @@ func (l *AdminListUsersLogic) AdminListUsers(in *user.AdminListUsersReq) (*user.
 		return &user.AdminListUsersRes{Items: []*user.AdminUserItem{}, Total: 0}, nil
 	}
 
-	offset, pageSize := utils.NormalizePage(
-		int(in.Page),
-		int(in.PageSize),
-		consts.AdminListDefaultPageSize,
-		consts.AdminListMaxPageSize,
-	)
+	offset, pageSize := utils.NormalizePage(int(in.Page), int(in.PageSize))
 
 	rows, err := l.userRepo.AdminListUsers(status, keyword, offset, pageSize)
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/consts"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -40,7 +39,7 @@ func (l *ListRolesLogic) ListRoles(in *admin.ListRolesReq) (*admin.ListRolesRes,
 		return res, nil
 	}
 
-	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()), consts.DefaultPageSize, consts.MaxPageSize)
+	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()))
 	rows, err := l.roleRepo.List(offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询角色失败"))

@@ -8,6 +8,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 
+	"ran-feed/app/front/internal/common/consts"
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
 	notifypb "ran-feed/app/rpc/notification/notification"
@@ -34,7 +35,7 @@ func NewMarkNotificationReadLogic(ctx context.Context, svcCtx *svc.ServiceContex
 func (l *MarkNotificationReadLogic) MarkNotificationRead(req *types.MarkNotificationReadReq) (resp *types.MarkNotificationReadRes, err error) {
 	userID, err := utils.GetContextUserId(l.ctx)
 	if err != nil || userID <= 0 {
-		return nil, errorx.NewMsg("未登录")
+		return nil, consts.ErrUserNotLogin
 	}
 	ids := parseIDs(req.Ids)
 	if len(ids) == 0 {

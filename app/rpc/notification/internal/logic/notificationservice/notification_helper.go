@@ -7,15 +7,7 @@ import (
 	"ran-feed/app/rpc/notification/notification"
 )
 
-const (
-	// notifyListDefaultPageSize/MaxPageSize 通知列表分页边界
-	// v1 是无限下拉 页大小前端能覆盖首屏即可 上限防脏输入放大回源
-	notifyListDefaultPageSize = 20
-	notifyListMaxPageSize     = 50
-)
-
-// buildNotificationItem 原始行 → proto NotificationItem 映射器
-// 富化(actor/content 详情)按 N8 留 front BFF 做 此处只做类型/时间/bool 换算
+// buildNotificationItem
 func buildNotificationItem(row *model.RanFeedNotification) *notification.NotificationItem {
 	if row == nil {
 		return nil
@@ -35,10 +27,6 @@ func buildNotificationItem(row *model.RanFeedNotification) *notification.Notific
 }
 
 // splitOverFetch 处理 over-fetch+1 结果 切出真实页 + next cursor + has_more
-// rows 由 repo 用 pageSize+1 查询得来 若长度>pageSize 则代表还有下一页
-// 返回:items(≤pageSize) hasMore(有下一页) nextCursorUpdatedAt(毫秒) nextCursorID
-// 满页时 nextCursor 取本页末条(rows[pageSize-1])的 (updated_at,id) 保证游标续接
-// 不满页/末页 nextCursor 全 0 供前端识别到底
 func splitOverFetch(rows []*model.RanFeedNotification, pageSize int) ([]*model.RanFeedNotification, bool, int64, int64) {
 	if len(rows) == 0 || pageSize <= 0 {
 		return nil, false, 0, 0
@@ -54,7 +42,7 @@ func splitOverFetch(rows []*model.RanFeedNotification, pageSize int) ([]*model.R
 	return rows, true, last.UpdatedAt.UnixMilli(), last.ID
 }
 
-// parseCursor 复合游标解析 cursorUpdatedAt=0 视首页返 (零值, 0)
+// parseCursor 复合游标解析 cursorUpdatedAt=0 视首页返
 func parseCursor(cursorUpdatedAtMillis, cursorID int64) (time.Time, int64) {
 	if cursorUpdatedAtMillis <= 0 {
 		return time.Time{}, 0

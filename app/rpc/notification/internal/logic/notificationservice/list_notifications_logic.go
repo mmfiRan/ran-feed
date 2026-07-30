@@ -28,15 +28,15 @@ func NewListNotificationsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 	}
 }
 
-// ListNotifications 收件箱复合游标列表 返回原始行 富化交给 front(N8)
+// ListNotifications 收件箱复合游标列表
 func (l *ListNotificationsLogic) ListNotifications(in *notification.ListNotificationsReq) (*notification.ListNotificationsRes, error) {
 	if in == nil || in.RecipientId <= 0 {
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	pageSize := utils.ClampPageSize(int(in.PageSize), notifyListDefaultPageSize, notifyListMaxPageSize)
+	pageSize := utils.ClampPageSize(int(in.PageSize))
 	cursorTime, cursorID := parseCursor(in.CursorUpdatedAt, in.CursorId)
-	typeFilter := int32(in.TypeFilter) // NOTIFY_TYPE_UNKNOWN=0 交由 repo 视为不限
+	typeFilter := int32(in.TypeFilter)
 
 	rows, err := l.notifyRepo.ListByRecipient(in.RecipientId, typeFilter, cursorTime, cursorID, pageSize+1)
 	if err != nil {

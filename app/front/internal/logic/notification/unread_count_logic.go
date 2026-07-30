@@ -8,6 +8,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 
+	"ran-feed/app/front/internal/common/consts"
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
 	notifypb "ran-feed/app/rpc/notification/notification"
@@ -33,7 +34,7 @@ func NewUnreadCountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Unrea
 func (l *UnreadCountLogic) UnreadCount() (resp *types.UnreadCountRes, err error) {
 	userID, err := utils.GetContextUserId(l.ctx)
 	if err != nil || userID <= 0 {
-		return nil, errorx.NewMsg("未登录")
+		return nil, consts.ErrUserNotLogin
 	}
 	rpcResp, err := l.svcCtx.NotificationRpc.GetUnreadCount(l.ctx, &notifypb.GetUnreadCountReq{RecipientId: userID})
 	if err != nil {

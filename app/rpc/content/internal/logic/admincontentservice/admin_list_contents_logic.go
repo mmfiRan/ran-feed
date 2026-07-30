@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/consts"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -52,7 +51,7 @@ func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContents
 		return res, nil
 	}
 
-	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()), consts.AdminListDefaultPageSize, consts.AdminListMaxPageSize)
+	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()))
 	rows, err := l.contentRepo.AdminListContents(statusFilter, typeFilter, authorFilter, offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))

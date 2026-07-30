@@ -12,7 +12,6 @@ import (
 )
 
 // NotificationRepository 通知域数据层
-// 读加 IsDeleted.Eq(0) 软删过滤 遵守 CLAUDE.md 不变式
 type NotificationRepository interface {
 	WithTx(tx *query.Query) NotificationRepository
 	// UpsertAggregate 聚合 upsert LIKE_FAVORITE 与 FOLLOW 走该路径
@@ -129,7 +128,6 @@ func (r *notificationRepositoryImpl) ListByRecipient(recipientID int64, typeFilt
 		doQuery = doQuery.Where(q.RanFeedNotification.NotifyType.Eq(typeFilter))
 	}
 	// 复合游标 updated_at DESC id DESC over-fetch+1 由 logic 层切片判 has_more
-	// 用子 DO 分组 保证 OR 被括号包住不破坏外层 recipient/软删/type 过滤
 	if !cursorUpdatedAt.IsZero() {
 		doQuery = doQuery.Where(
 			q.RanFeedNotification.WithContext(r.ctx).
