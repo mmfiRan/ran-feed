@@ -5,8 +5,8 @@ description: 为本项目编写 Go 单元测试时遵循的规范 — testify �
 
 # ran-feed Go 测试规范
 
-参考 `app/rpc/user/internal/common/utils/usercache/cache_test.go`。提交前 `./init.sh`
-会执行 `go test ./...`，测试必须全绿。
+参考 `app/rpc/user/internal/common/utils/usercache/cache_test.go`。提交前 `go test ./...`
+必须全绿。
 
 ## 测试栈
 

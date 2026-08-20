@@ -1,11 +1,11 @@
 ---
 name: git-commit
-description: 为本项目生成 git 提交信息时遵循的规范 — Conventional Commits 格式 type scope subject body 一次提交对应一个 feature_list 条目 提交前必过 ./init.sh 不带任何 AI 标识。在 commit 前应用。
+description: 为本项目生成 git 提交信息时遵循的规范 — Conventional Commits 格式 type scope subject body 一次提交只做一个功能 提交前通过编译/vet/测试 不带任何 AI 标识。在 commit 前应用。
 ---
 
 # ran-feed Git 提交规范
 
-遵循 [Conventional Commits](https://www.conventionalcommits.org/zh-hans/)，与 `feature_list.json` 联动。
+遵循 [Conventional Commits](https://www.conventionalcommits.org/zh-hans/)。
 **提交描述精简、一句话概括，不写详细描述，不带任何 AI 标识。**
 
 ## 提交格式
@@ -21,15 +21,15 @@ description: 为本项目生成 git 提交信息时遵循的规范 — Conventio
 ```
 <type>(<scope>): <subject>
 
-<一两行说明 why 可引用 feature_list ID>
+<一两行说明 why 可引用功能条目 ID>
 ```
 
 ## Type（必填，一次提交只选一个）
 
 | Type | 用途 | 示例 |
 |------|------|------|
-| `feat` | 新功能（对应 feature_list 的 feat-XXX） | `feat(feed): 实现推拉结合 fan-out` |
-| `fix` | Bug 修复（对应 fix-XXX / sec-XXX） | `fix(user): 登录禁用账号校验` |
+| `feat` | 新功能 | `feat(feed): 实现推拉结合 fan-out` |
+| `fix` | Bug 修复 | `fix(user): 登录禁用账号校验` |
 | `refactor` | 重构（不改变可观察行为） | `refactor(content): 提取 afterPublish` |
 | `perf` | 性能优化 | `perf(comment): 评论列表加 Redis 缓存` |
 | `docs` | 仅文档变更 | `docs: 完善设计模式枚举` |
@@ -68,14 +68,15 @@ fix(content): Redis 操作移出 MySQL 事务
 ❌ "update"                              # 无信息
 ❌ "feat: add some changes"              # 模糊
 ❌ "fix bug"                             # 没说什么 bug
-❌ "feat: fix-010 + fix-011 + feat-019"  # 多条目混合提交
+❌ "feat: 功能A + 功能B 一起提交"         # 多功能混合提交
 ❌ "Updated XXX (no test, no review)"    # 工作日志而非变更说明
 ```
 
 ## 与流程联动
 
-- **一次提交对应一个 feature_list 条目**，与"每次只做一个功能"对齐
-- **提交前必须 `./init.sh` 通过**，编译 / vet / 测试失败不准 commit
-- 可追溯链靠"一次提交一条 feature" 加 `progress.md` 维护；写 body 时才在 body 引用条目 ID
+- **一次提交只做一个功能**，与"一次只做一件事"的节奏对齐
+- **提交前必须通过编译 / vet / 测试**，失败不准 commit
+- 写 body 时才在 body 引用对应功能条目 ID
+- 本地存在 `.harness/` 目录时，以其中内部流程为准（任务条目、验证脚本）
 - 永远不用 `--no-verify` 跳过 git hooks，hook 报错先修问题
 - **绝不在提交信息中加入任何 AI 生成标识或 Co-Authored-By**

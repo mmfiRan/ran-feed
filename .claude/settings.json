@@ -1,7 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./init.sh)",
       "Bash(go build ./...)",
       "Bash(go vet ./...)",
       "Bash(go test ./...)",
