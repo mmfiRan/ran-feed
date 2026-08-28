@@ -1763,12 +1763,16 @@
           },
           {
             "type": "integer",
+            "default": 20,
+            "example": 20,
             "name": "page_size",
             "in": "query",
             "allowEmptyValue": true
           },
           {
             "type": "integer",
+            "default": 0,
+            "example": 0,
             "description": "0=全部 10/20/30 按类型过滤",
             "name": "type",
             "in": "query",
@@ -1793,9 +1797,6 @@
                       "type",
                       "actor",
                       "agg_count",
-                      "content",
-                      "comment_id",
-                      "snippet",
                       "is_read",
                       "updated_at"
                     ],
@@ -1824,7 +1825,7 @@
                         "type": "integer"
                       },
                       "comment_id": {
-                        "description": "评论或回复类有值 否则0",
+                        "description": "评论或回复类有值",
                         "type": "integer"
                       },
                       "content": {
@@ -2661,7 +2662,7 @@
       }
     }
   },
-  "x-date": "2026-07-21 14:10:36",
+  "x-date": "2026-08-28 16:50:26",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

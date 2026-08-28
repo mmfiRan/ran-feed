@@ -46,7 +46,7 @@ type AdminContentListItem struct {
 }
 
 type AdminContentListReq struct {
-	AdminPageReq
+	PageQueryReq
 	Status      int32 `form:"status,optional"`       // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
 	ContentType int32 `form:"content_type,optional"` // 10文章 20视频
 	AuthorId    int64 `form:"author_id,optional"`
@@ -116,7 +116,7 @@ type AdminOperationLogItem struct {
 }
 
 type AdminOperationLogListReq struct {
-	AdminPageReq
+	PageQueryReq
 	AdminId    int64  `form:"admin_id,optional"`
 	Action     string `form:"action,optional"`
 	TargetType string `form:"target_type,optional"`
@@ -127,11 +127,6 @@ type AdminOperationLogListReq struct {
 type AdminOperationLogListRes struct {
 	Items []AdminOperationLogItem `json:"items"`
 	Total int64                   `json:"total"`
-}
-
-type AdminPageReq struct {
-	Page     int32 `form:"page,optional"`
-	PageSize int32 `form:"page_size,optional"`
 }
 
 type AdminPermissionItem struct {
@@ -184,7 +179,7 @@ type AdminRoleItem struct {
 }
 
 type AdminRoleListReq struct {
-	AdminPageReq
+	PageQueryReq
 }
 
 type AdminRoleListRes struct {
@@ -239,7 +234,7 @@ type AdminUserItem struct {
 }
 
 type AdminUserListReq struct {
-	AdminPageReq
+	PageQueryReq
 	Status int32 `form:"status,optional"` // 0不限 10启用 20禁用
 }
 
@@ -313,7 +308,7 @@ type CUserItem struct {
 }
 
 type CUserListReq struct {
-	AdminPageReq
+	PageQueryReq
 	Status  int32  `form:"status,optional"`
 	Keyword string `form:"keyword,optional"`
 }
@@ -330,4 +325,15 @@ type CUserStatusReq struct {
 
 type CUserStatusRes struct {
 	Status int32 `json:"status"` // 变更后状态
+}
+
+type PageQueryReq struct {
+	Page     uint32 `form:"page,default=1"`
+	PageSize uint32 `form:"page_size,default=10"`
+}
+
+type PageQueryResp struct {
+	Page     uint32 `json:"page"`
+	PageSize uint32 `json:"page_size"`
+	Total    uint32 `json:"total"`
 }

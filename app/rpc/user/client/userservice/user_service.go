@@ -32,9 +32,6 @@ type (
 	LogoutRes               = user.LogoutRes
 	RegisterReq             = user.RegisterReq
 	RegisterRes             = user.RegisterRes
-	UserIndexItem           = user.UserIndexItem
-	UserInfo                = user.UserInfo
-	UserProfile             = user.UserProfile
 
 	UserService interface {
 		Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterRes, error)

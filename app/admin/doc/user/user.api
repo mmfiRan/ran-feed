@@ -5,7 +5,7 @@ import "../base/base.api"
 type (
 	// CUserListReq C端用户列表筛选 status 0 表示不限
 	CUserListReq {
-		AdminPageReq
+		PageQueryReq
 		Status   int32  `form:"status,optional"`
 		Keyword  string `form:"keyword,optional"`
 	}

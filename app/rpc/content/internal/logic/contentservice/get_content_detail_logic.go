@@ -13,6 +13,7 @@ import (
 	"ran-feed/app/rpc/interaction/client/likeservice"
 	"ran-feed/app/rpc/interaction/interaction"
 	"ran-feed/app/rpc/user/client/userservice"
+	"ran-feed/app/rpc/user/user"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -159,9 +160,9 @@ func (l *GetContentDetailLogic) fillContentFields(detail *content.ContentDetail,
 	}
 }
 
-func (l *GetContentDetailLogic) loadExtraInfo(authorID, contentID, viewerID int64, scene interaction.Scene) (*userservice.UserInfo, *likeservice.QueryLikeInfoRes, *favoriteservice.QueryFavoriteInfoRes, *followservice.GetFollowSummaryRes, *contentCounts, error) {
+func (l *GetContentDetailLogic) loadExtraInfo(authorID, contentID, viewerID int64, scene interaction.Scene) (*user.UserInfo, *likeservice.QueryLikeInfoRes, *favoriteservice.QueryFavoriteInfoRes, *followservice.GetFollowSummaryRes, *contentCounts, error) {
 	var (
-		author       *userservice.UserInfo
+		author       *user.UserInfo
 		likeInfo     *likeservice.QueryLikeInfoRes
 		favoriteInfo *favoriteservice.QueryFavoriteInfoRes
 		followInfo   *followservice.GetFollowSummaryRes

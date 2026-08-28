@@ -1,7 +1,7 @@
 # AGENTS.md
 
 > 本文件帮助使用 AI 在本仓库工作。
-> 若本地存在 `.harness/` 目录，先阅读其中的 md 文档并以内容为准；不存在则按本文件内容工作。
+> 若本地存在 `.harness/` 目录，先阅读其中的 [DEVELOPER.md](.harness/DEVELOPER.md) 文档并以内容为准；不存在则按本文件内容工作。
 
 **ran-feed** —— 内容/信息流后台系统，Go 微服务（go-zero · gRPC · MySQL · Redis · Kafka）。
 

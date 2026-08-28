@@ -2906,8 +2906,8 @@ type AdminListContentsReq struct {
 	Status        *ContentStatus         `protobuf:"varint,1,opt,name=status,proto3,enum=content.ContentStatus,oneof" json:"status,omitempty"`
 	ContentType   *ContentType           `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=content.ContentType,oneof" json:"content_type,omitempty"`
 	AuthorId      *int64                 `protobuf:"varint,3,opt,name=author_id,json=authorId,proto3,oneof" json:"author_id,omitempty"`
-	Page          int32                  `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"` // 页从1
-	PageSize      int32                  `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Page          uint32                 `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"` // 页从1
+	PageSize      uint32                 `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2963,14 +2963,14 @@ func (x *AdminListContentsReq) GetAuthorId() int64 {
 	return 0
 }
 
-func (x *AdminListContentsReq) GetPage() int32 {
+func (x *AdminListContentsReq) GetPage() uint32 {
 	if x != nil {
 		return x.Page
 	}
 	return 0
 }
 
-func (x *AdminListContentsReq) GetPageSize() int32 {
+func (x *AdminListContentsReq) GetPageSize() uint32 {
 	if x != nil {
 		return x.PageSize
 	}
@@ -3776,8 +3776,8 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\x06status\x18\x01 \x01(\x0e2\x16.content.ContentStatusH\x00R\x06status\x88\x01\x01\x12<\n" +
 	"\fcontent_type\x18\x02 \x01(\x0e2\x14.content.ContentTypeH\x01R\vcontentType\x88\x01\x01\x12 \n" +
 	"\tauthor_id\x18\x03 \x01(\x03H\x02R\bauthorId\x88\x01\x01\x12\x12\n" +
-	"\x04page\x18\x04 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x05 \x01(\x05R\bpageSizeB\t\n" +
+	"\x04page\x18\x04 \x01(\rR\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x05 \x01(\rR\bpageSizeB\t\n" +
 	"\a_statusB\x0f\n" +
 	"\r_content_typeB\f\n" +
 	"\n" +

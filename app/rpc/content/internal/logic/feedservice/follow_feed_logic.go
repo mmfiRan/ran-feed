@@ -15,7 +15,7 @@ import (
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
-	"ran-feed/app/rpc/user/client/userservice"
+	"ran-feed/app/rpc/user/user"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -281,7 +281,7 @@ func (l *FollowFeedLogic) updateInboxCache(inboxKey string, rows []*model.RanFee
 }
 
 // buildFollowItems 按 details 顺序把 L2 详情加作者加点赞组装成 FollowFeedItem
-func buildFollowItems(details []*do.ContentDetailDO, userMap map[int64]*userservice.UserInfo, likedMap map[int64]bool, likeCountMap map[int64]int64) []*content.FollowFeedItem {
+func buildFollowItems(details []*do.ContentDetailDO, userMap map[int64]*user.UserInfo, likedMap map[int64]bool, likeCountMap map[int64]int64) []*content.FollowFeedItem {
 	items := make([]*content.FollowFeedItem, 0, len(details))
 	for _, d := range details {
 		authorName := ""

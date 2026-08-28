@@ -197,7 +197,7 @@ type ListNotificationsReq struct {
 	RecipientId     int64                  `protobuf:"varint,1,opt,name=recipient_id,json=recipientId,proto3" json:"recipient_id,omitempty"`
 	CursorUpdatedAt int64                  `protobuf:"varint,2,opt,name=cursor_updated_at,json=cursorUpdatedAt,proto3" json:"cursor_updated_at,omitempty"` // 0 表示首页
 	CursorId        int64                  `protobuf:"varint,3,opt,name=cursor_id,json=cursorId,proto3" json:"cursor_id,omitempty"`
-	PageSize        int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageSize        uint32                 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	TypeFilter      NotifyType             `protobuf:"varint,5,opt,name=type_filter,json=typeFilter,proto3,enum=notification.NotifyType" json:"type_filter,omitempty"` // NOTIFY_TYPE_UNKNOWN 表示全部
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
@@ -254,7 +254,7 @@ func (x *ListNotificationsReq) GetCursorId() int64 {
 	return 0
 }
 
-func (x *ListNotificationsReq) GetPageSize() int32 {
+func (x *ListNotificationsReq) GetPageSize() uint32 {
 	if x != nil {
 		return x.PageSize
 	}
@@ -640,7 +640,7 @@ const file_app_rpc_notification_proto_notification_proto_rawDesc = "" +
 	"\frecipient_id\x18\x01 \x01(\x03R\vrecipientId\x12*\n" +
 	"\x11cursor_updated_at\x18\x02 \x01(\x03R\x0fcursorUpdatedAt\x12\x1b\n" +
 	"\tcursor_id\x18\x03 \x01(\x03R\bcursorId\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x129\n" +
+	"\tpage_size\x18\x04 \x01(\rR\bpageSize\x129\n" +
 	"\vtype_filter\x18\x05 \x01(\x0e2\x18.notification.NotifyTypeR\n" +
 	"typeFilter\"\xc2\x01\n" +
 	"\x14ListNotificationsRes\x124\n" +

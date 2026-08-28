@@ -100,8 +100,8 @@ message ListOperationLogsReq {
   string target_type = 3;
   int64 start_time = 4;
   int64 end_time = 5;
-  int32 page = 6;
-  int32 page_size = 7;
+  uint32 page = 6;
+  uint32 page_size = 7;
 }
 
 // ListOperationLogsRes 审计日志分页结果
@@ -121,8 +121,8 @@ message RoleItem {
 
 // ListRolesReq 角色分页
 message ListRolesReq {
-  int32 page = 1;
-  int32 page_size = 2;
+  uint32 page = 1;
+  uint32 page_size = 2;
 }
 
 // ListRolesRes 角色分页结果
@@ -202,8 +202,8 @@ message AdminListItem {
 // ListAdminsReq status UNKNOWN(0) 表示不限
 message ListAdminsReq {
   AdminStatus status = 1;
-  int32 page = 2;
-  int32 page_size = 3;
+  uint32 page = 2;
+  uint32 page_size = 3;
 }
 
 // ListAdminsRes 管理员分页结果

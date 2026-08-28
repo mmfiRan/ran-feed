@@ -225,7 +225,7 @@ type NotificationItem struct {
 
 type NotificationListReq struct {
 	Cursor   string `form:"cursor,optional"` // 上一页返回的 next_cursor 首页留空
-	PageSize int32  `form:"page_size,optional,default=20"`
+	PageSize uint32 `form:"page_size,optional,default=20"`
 	Type     int32  `form:"type,optional,default=0"` // 0=全部 10/20/30 按类型过滤
 }
 

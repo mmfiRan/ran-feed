@@ -180,8 +180,8 @@ message AdminUserDetail {
 message AdminListUsersReq {
   optional UserStatus status = 1; // UNKNOWN=0 表示不限
   optional string keyword = 2;    // 昵称模糊搜索
-  int32 page = 3;
-  int32 page_size = 4;
+  uint32 page = 3;
+  uint32 page_size = 4;
 }
 
 message AdminListUsersRes {

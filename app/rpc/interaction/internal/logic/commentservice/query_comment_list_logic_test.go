@@ -18,6 +18,7 @@ import (
 	"ran-feed/app/rpc/interaction/internal/repositories"
 	"ran-feed/app/rpc/interaction/internal/svc"
 	"ran-feed/app/rpc/user/client/userservice"
+	"ran-feed/app/rpc/user/user"
 )
 
 // fakeCommentRepo 测试桩 只实现列表读用到的方法 其余 panic 提示误用
@@ -64,7 +65,7 @@ func (f *fakeCommentRepo) BatchCountByRootIDs(_ []int64) (map[int64]int64, error
 // fakeUserRpc 只覆盖 BatchGetUser 其余方法走嵌入接口 未实现 调用即 panic
 type fakeUserRpc struct {
 	userservice.UserService
-	users map[int64]*userservice.UserInfo
+	users map[int64]*user.UserInfo
 }
 
 func (f *fakeUserRpc) BatchGetUser(_ context.Context, in *userservice.BatchGetUserReq, _ ...grpc.CallOption) (*userservice.BatchGetUserRes, error) {
@@ -186,7 +187,7 @@ func TestQueryCommentList_ReplyCountAndUsers(t *testing.T) {
 		},
 		rootCounts: map[int64]int64{30: 5},
 	}
-	user := &fakeUserRpc{users: map[int64]*userservice.UserInfo{
+	user := &fakeUserRpc{users: map[int64]*user.UserInfo{
 		100: {UserId: 100, Nickname: "张三", Avatar: "a.png"},
 	}}
 	logic := newCommentListLogic(repo, user)

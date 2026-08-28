@@ -34,6 +34,7 @@ func main() {
 	defer server.Stop()
 
 	// 全局最先注入 把当前路由 @doc 元数据(含 permission)放进 ctx 供 RBAC 中间件读取
+	// todo 这个问题应该需要给go-zero官方提一个pr适配这种场景，但是分析一下解决方案有点复杂了，有时间再看
 	server.Use(docmeta.Inject)
 
 	ctx := svc.NewServiceContext(c)

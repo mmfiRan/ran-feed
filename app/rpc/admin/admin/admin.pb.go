@@ -795,8 +795,8 @@ type ListOperationLogsReq struct {
 	TargetType    string                 `protobuf:"bytes,3,opt,name=target_type,json=targetType,proto3" json:"target_type,omitempty"`
 	StartTime     int64                  `protobuf:"varint,4,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
 	EndTime       int64                  `protobuf:"varint,5,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
-	Page          int32                  `protobuf:"varint,6,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,7,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Page          uint32                 `protobuf:"varint,6,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      uint32                 `protobuf:"varint,7,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -866,14 +866,14 @@ func (x *ListOperationLogsReq) GetEndTime() int64 {
 	return 0
 }
 
-func (x *ListOperationLogsReq) GetPage() int32 {
+func (x *ListOperationLogsReq) GetPage() uint32 {
 	if x != nil {
 		return x.Page
 	}
 	return 0
 }
 
-func (x *ListOperationLogsReq) GetPageSize() int32 {
+func (x *ListOperationLogsReq) GetPageSize() uint32 {
 	if x != nil {
 		return x.PageSize
 	}
@@ -1013,8 +1013,8 @@ func (x *RoleItem) GetCreatedAt() int64 {
 // ListRolesReq 角色分页
 type ListRolesReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          int32                  `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Page          uint32                 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      uint32                 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1049,14 +1049,14 @@ func (*ListRolesReq) Descriptor() ([]byte, []int) {
 	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *ListRolesReq) GetPage() int32 {
+func (x *ListRolesReq) GetPage() uint32 {
 	if x != nil {
 		return x.Page
 	}
 	return 0
 }
 
-func (x *ListRolesReq) GetPageSize() int32 {
+func (x *ListRolesReq) GetPageSize() uint32 {
 	if x != nil {
 		return x.PageSize
 	}
@@ -1727,8 +1727,8 @@ func (x *AdminListItem) GetCreatedAt() int64 {
 type ListAdminsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        AdminStatus            `protobuf:"varint,1,opt,name=status,proto3,enum=admin.AdminStatus" json:"status,omitempty"`
-	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      int32                  `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Page          uint32                 `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      uint32                 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1770,14 +1770,14 @@ func (x *ListAdminsReq) GetStatus() AdminStatus {
 	return AdminStatus_ADMIN_STATUS_UNKNOWN
 }
 
-func (x *ListAdminsReq) GetPage() int32 {
+func (x *ListAdminsReq) GetPage() uint32 {
 	if x != nil {
 		return x.Page
 	}
 	return 0
 }
 
-func (x *ListAdminsReq) GetPageSize() int32 {
+func (x *ListAdminsReq) GetPageSize() uint32 {
 	if x != nil {
 		return x.PageSize
 	}
@@ -2511,8 +2511,8 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\n" +
 	"start_time\x18\x04 \x01(\x03R\tstartTime\x12\x19\n" +
 	"\bend_time\x18\x05 \x01(\x03R\aendTime\x12\x12\n" +
-	"\x04page\x18\x06 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\a \x01(\x05R\bpageSize\"[\n" +
+	"\x04page\x18\x06 \x01(\rR\x04page\x12\x1b\n" +
+	"\tpage_size\x18\a \x01(\rR\bpageSize\"[\n" +
 	"\x14ListOperationLogsRes\x12-\n" +
 	"\x05items\x18\x01 \x03(\v2\x17.admin.OperationLogItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\"y\n" +
@@ -2524,8 +2524,8 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x05 \x01(\x03R\tcreatedAt\"?\n" +
 	"\fListRolesReq\x12\x12\n" +
-	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\"K\n" +
+	"\x04page\x18\x01 \x01(\rR\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\rR\bpageSize\"K\n" +
 	"\fListRolesRes\x12%\n" +
 	"\x05items\x18\x01 \x03(\v2\x0f.admin.RoleItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\"\"\n" +
@@ -2573,8 +2573,8 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"created_at\x18\x06 \x01(\x03R\tcreatedAt\"l\n" +
 	"\rListAdminsReq\x12*\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x12.admin.AdminStatusR\x06status\x12\x12\n" +
-	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"Q\n" +
+	"\x04page\x18\x02 \x01(\rR\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x03 \x01(\rR\bpageSize\"Q\n" +
 	"\rListAdminsRes\x12*\n" +
 	"\x05items\x18\x01 \x03(\v2\x14.admin.AdminListItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\"#\n" +

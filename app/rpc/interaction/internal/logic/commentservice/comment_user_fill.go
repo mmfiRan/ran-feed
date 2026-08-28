@@ -7,6 +7,7 @@ import (
 	"ran-feed/app/rpc/interaction/internal/common/consts"
 	"ran-feed/app/rpc/interaction/internal/svc"
 	"ran-feed/app/rpc/user/client/userservice"
+	"ran-feed/app/rpc/user/user"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -42,7 +43,7 @@ func fillCommentUsers(ctx context.Context, svcCtx *svc.ServiceContext, logger lo
 		return
 	}
 
-	userMap := make(map[int64]*userservice.UserInfo, len(resp.Users))
+	userMap := make(map[int64]*user.UserInfo, len(resp.Users))
 	for _, u := range resp.Users {
 		if u == nil || u.UserId <= 0 {
 			continue

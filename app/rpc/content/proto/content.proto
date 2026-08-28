@@ -350,8 +350,8 @@ message AdminListContentsReq {
   optional ContentStatus status = 1;
   optional ContentType content_type = 2;
   optional int64 author_id = 3;
-  int32 page = 4;  // 页从1
-  int32 page_size = 5;
+  uint32 page = 4;  // 页从1
+  uint32 page_size = 5;
 }
 
 message AdminListContentsRes {

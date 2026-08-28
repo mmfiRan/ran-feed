@@ -4,7 +4,7 @@ import "../base/base.api"
 
 type (
 	AdminUserListReq {
-		AdminPageReq
+		PageQueryReq
 		Status   int32 `form:"status,optional"` // 0不限 10启用 20禁用
 	}
 	AdminUserItem {

@@ -11,6 +11,7 @@ import (
 	"ran-feed/app/rpc/interaction/client/likeservice"
 	"ran-feed/app/rpc/interaction/interaction"
 	"ran-feed/app/rpc/user/client/userservice"
+	"ran-feed/app/rpc/user/user"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -141,7 +142,7 @@ func (r *contentDetailResolver) loadDetails(missIDs []int64) (map[int64]*do.Cont
 }
 
 // loadAuthorsAndLikes 并行查作者信息走 user usercache 与点赞信息观察者相关不缓存
-func (r *contentDetailResolver) loadAuthorsAndLikes(details []*do.ContentDetailDO, viewerID int64) (map[int64]*userservice.UserInfo, map[int64]bool, map[int64]int64, error) {
+func (r *contentDetailResolver) loadAuthorsAndLikes(details []*do.ContentDetailDO, viewerID int64) (map[int64]*user.UserInfo, map[int64]bool, map[int64]int64, error) {
 	authorIDs := make([]int64, 0, len(details))
 	authorSeen := make(map[int64]struct{}, len(details))
 	likeInfos := make([]*likeservice.LikeInfo, 0, len(details))
@@ -160,14 +161,14 @@ func (r *contentDetailResolver) loadAuthorsAndLikes(details []*do.ContentDetailD
 	}
 
 	var (
-		userMap      map[int64]*userservice.UserInfo
+		userMap      map[int64]*user.UserInfo
 		likedMap     map[int64]bool
 		likeCountMap map[int64]int64
 	)
 
 	err := mr.Finish(
 		func() error {
-			userMap = map[int64]*userservice.UserInfo{}
+			userMap = map[int64]*user.UserInfo{}
 			if len(authorIDs) == 0 {
 				return nil
 			}
@@ -221,7 +222,7 @@ func (r *contentDetailResolver) loadAuthorsAndLikes(details []*do.ContentDetailD
 }
 
 // buildContentItems 按 details 顺序把 L2 详情加作者加点赞组装成 ContentItem
-func buildContentItems(details []*do.ContentDetailDO, userMap map[int64]*userservice.UserInfo, likedMap map[int64]bool, likeCountMap map[int64]int64) []*content.ContentItem {
+func buildContentItems(details []*do.ContentDetailDO, userMap map[int64]*user.UserInfo, likedMap map[int64]bool, likeCountMap map[int64]int64) []*content.ContentItem {
 	items := make([]*content.ContentItem, 0, len(details))
 	for _, d := range details {
 		authorName := ""
