@@ -4,11 +4,13 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
+	"ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/entity/query"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/snowflake"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -47,7 +49,7 @@ func (l *SetRolePermissionsLogic) SetRolePermissions(in *admin.SetRolePermission
 		return nil, errorx.NewMsg("角色不存在")
 	}
 
-	permIDs := dedupInt64(in.GetPermissionIds())
+	permIDs := utils.Dedup(in.GetPermissionIds())
 	err = query.Q.Transaction(func(tx *query.Query) error {
 		if _, e := l.rolePermissionRepo.WithTx(tx).DeleteByRoleID(in.GetRoleId()); e != nil {
 			return e
@@ -61,6 +63,7 @@ func (l *SetRolePermissionsLogic) SetRolePermissions(in *admin.SetRolePermission
 				continue
 			}
 			rows = append(rows, &model.RanFeedAdminRolePermission{
+				ID:           snowflake.GenID(),
 				RoleID:       in.GetRoleId(),
 				PermissionID: pid,
 				CreatedBy:    in.GetOperatorId(),
@@ -77,5 +80,7 @@ func (l *SetRolePermissionsLogic) SetRolePermissions(in *admin.SetRolePermission
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询受影响管理员失败"))
 	}
-	return &admin.SetRolePermissionsRes{AffectedAdminIds: adminIDs}, nil
+	return &admin.SetRolePermissionsRes{
+		AffectedAdminIds: adminIDs,
+	}, nil
 }

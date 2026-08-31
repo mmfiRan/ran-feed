@@ -2,6 +2,7 @@ package rbac
 
 import (
 	"context"
+	"time"
 
 	"ran-feed/app/admin/internal/common/consts"
 
@@ -12,12 +13,15 @@ import (
 // PermissionLoader 回源加载管理员权限点 code
 type PermissionLoader func(ctx context.Context, adminID int64) ([]string, error)
 
-// LoadPermissions cache-aside 取管理员权限点集合 命中读 Redis set 未命中回源写缓存
-// 写入哨兵成员区分缓存未命中与真无权限 缓存故障只降级不阻断
+// LoadPermissions 取管理员权限点集合
 func LoadPermissions(ctx context.Context, r *redis.Redis, adminID int64, ttlSeconds int, loader PermissionLoader) (map[string]struct{}, error) {
 	key := consts.BuildAdminPermKey(adminID)
 
 	if members, err := r.SmembersCtx(ctx, key); err == nil && len(members) > 0 {
+		err = r.ExpireCtx(ctx, key, ttlSeconds)
+		if err != nil {
+			logx.WithContext(ctx).Errorf("刷新权限缓存失败 adminID=%d err=%v", adminID, err)
+		}
 		return toSet(members), nil
 	}
 
@@ -31,10 +35,13 @@ func LoadPermissions(ctx context.Context, r *redis.Redis, adminID int64, ttlSeco
 	for _, c := range codes {
 		values = append(values, c)
 	}
-	if _, aErr := r.SaddCtx(ctx, key, values...); aErr != nil {
-		logx.WithContext(ctx).Errorf("写权限缓存失败 adminID=%d err=%v", adminID, aErr)
-	} else {
-		_ = r.ExpireCtx(ctx, key, ttlSeconds)
+
+	if err = r.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
+		pipe.SAdd(ctx, key, values...)
+		pipe.Expire(ctx, key, time.Duration(ttlSeconds)*time.Second)
+		return nil
+	}); err != nil {
+		logx.WithContext(ctx).Errorf("写权限缓存失败 adminID=%d err=%v", adminID, err)
 	}
 
 	return toSet(codes), nil

@@ -38,7 +38,7 @@ func (l *AuthenticateAdminLogic) AuthenticateAdmin(in *admin.AuthenticateAdminRe
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询管理员失败"))
 	}
-	if row == nil || !utils.CheckPassword(row.PasswordHash, in.GetPassword()+row.PasswordSalt) {
+	if row == nil || !utils.CheckPassword(row.PasswordHash, in.GetPassword()) {
 		return nil, errorx.NewMsg("用户名或密码错误")
 	}
 	if row.Status != int32(admin.AdminStatus_ADMIN_ENABLED) {

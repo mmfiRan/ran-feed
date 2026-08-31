@@ -1,7 +1,3 @@
--- 后台超管播种（手动执行一次）
--- 账号 admin 密码 Admin@123456（password_hash = bcrypt(password + salt) salt=rf_admin_salt_v1）
--- 幂等 可重复执行
-
 -- super 角色
 INSERT INTO ran_feed_admin_role (code, name, remark)
 VALUES ('super', '超级管理员', '拥有全部权限')
@@ -32,8 +28,8 @@ WHERE r.code = 'super'
                     AND rp.permission_id = p.id);
 
 -- 超管账号
-INSERT INTO ran_feed_admin_user (username, password_hash, password_salt, nickname, status)
-VALUES ('admin', '$2a$10$zU8zm2jcSvup8p0y.nlu7ON/PKmX/NHciZDi6EV6SOtrY2jMC15Im', 'rf_admin_salt_v1', '超级管理员', 10)
+INSERT INTO ran_feed_admin_user (username, password_hash, nickname, status)
+VALUES ('admin', '$2a$10$My4IMCvnAmNuPN70wIEYu.dzPy4MmSPnHXpQtgdnjDbVhlzolG6/q', '超级管理员', 10)
 ON DUPLICATE KEY UPDATE nickname = VALUES(nickname);
 
 -- 超管绑定 super 角色

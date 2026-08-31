@@ -1,6 +1,3 @@
--- Phase C 用户管理权限点播种（feat-admin-012 手动执行一次）
--- 幂等 可重复执行；super 角色补绑这批 user 权限点
-
 -- 用户管理权限点
 INSERT INTO ran_feed_admin_permission (code, name, module)
 VALUES ('user:list', '用户列表/详情', 'user'),

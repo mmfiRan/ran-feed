@@ -1,6 +1,3 @@
--- Phase B 内容管理权限点播种（feat-admin-004 手动执行一次）
--- 幂等 可重复执行；super 角色补绑这批 content 权限点
-
 -- 内容管理权限点
 INSERT INTO ran_feed_admin_permission (code, name, module)
 VALUES ('content:list', '内容列表', 'content'),

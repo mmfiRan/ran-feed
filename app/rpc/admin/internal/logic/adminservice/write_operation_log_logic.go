@@ -8,6 +8,7 @@ import (
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/snowflake"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -35,6 +36,7 @@ func (l *WriteOperationLogLogic) WriteOperationLog(in *admin.WriteOperationLogRe
 	}
 
 	row := &model.RanFeedOperationLog{
+		ID:         snowflake.GenID(),
 		AdminID:    in.GetAdminId(),
 		Action:     in.GetAction(),
 		TargetType: in.GetTargetType(),

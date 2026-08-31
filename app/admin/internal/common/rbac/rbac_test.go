@@ -30,7 +30,7 @@ func TestHasPermission(t *testing.T) {
 	}{
 		{name: "命中", required: "content:list", want: true},
 		{name: "未命中", required: "content:takedown", want: false},
-		{name: "空 required 放行", required: "", want: true},
+		{name: "空 required 不放行", required: "", want: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

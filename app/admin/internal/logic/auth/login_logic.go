@@ -74,7 +74,7 @@ func (l *LoginLogic) sessionTTLSeconds() int {
 
 // saveSession 写双向会话 顶掉旧 token 防重复登录遗留
 func (l *LoginLogic) saveSession(adminID int64, token string, ttlSeconds int) error {
-	adminKey := consts.BuildAdminSessionAdminKey(adminID)
+	adminKey := consts.BuildAdminSessionUIDKey(adminID)
 	if oldToken, gErr := l.svcCtx.Redis.GetCtx(l.ctx, adminKey); gErr == nil && oldToken != "" {
 		_, _ = l.svcCtx.Redis.DelCtx(l.ctx, consts.BuildAdminSessionKey(oldToken))
 	}

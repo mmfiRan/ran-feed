@@ -24,8 +24,8 @@ type AdminRoleRepository interface {
 	GetByCode(code string) (*model.RanFeedAdminRole, error)
 	// ListByIDs 按ID集合取角色 供列表富化
 	ListByIDs(ids []int64) ([]*model.RanFeedAdminRole, error)
-	// Create 建角色 返回自增ID
-	Create(row *model.RanFeedAdminRole) (int64, error)
+	// Create 建角色
+	Create(row *model.RanFeedAdminRole) error
 	// UpdateProfile 改角色名与备注 返回影响行数
 	UpdateProfile(id int64, name, remark string, operatorID int64) (int64, error)
 	// SoftDelete 软删角色 返回影响行数
@@ -110,15 +110,15 @@ func (r *adminRoleRepositoryImpl) ListByIDs(ids []int64) ([]*model.RanFeedAdminR
 	return q.WithContext(r.ctx).Where(q.ID.In(ids...)).Where(q.IsDeleted.Eq(0)).Find()
 }
 
-// Create 建角色 返回自增ID
-func (r *adminRoleRepositoryImpl) Create(row *model.RanFeedAdminRole) (int64, error) {
+// Create 建角色
+func (r *adminRoleRepositoryImpl) Create(row *model.RanFeedAdminRole) error {
 	if row == nil {
-		return 0, nil
+		return nil
 	}
 	if err := r.getQuery().RanFeedAdminRole.WithContext(r.ctx).Create(row); err != nil {
-		return 0, err
+		return err
 	}
-	return row.ID, nil
+	return nil
 }
 
 // UpdateProfile 改角色名与备注 返回影响行数

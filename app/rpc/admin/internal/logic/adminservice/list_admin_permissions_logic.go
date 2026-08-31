@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
+	"ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -53,7 +54,7 @@ func (l *ListAdminPermissionsLogic) ListAdminPermissions(in *admin.ListAdminPerm
 		return &admin.ListAdminPermissionsRes{}, nil
 	}
 
-	codes, err := l.permissionRepo.ListCodesByIDs(dedupInt64(permissionIDs))
+	codes, err := l.permissionRepo.ListCodesByIDs(utils.Dedup(permissionIDs))
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询权限点失败"))
 	}
@@ -61,17 +62,4 @@ func (l *ListAdminPermissionsLogic) ListAdminPermissions(in *admin.ListAdminPerm
 	return &admin.ListAdminPermissionsRes{
 		Codes: codes,
 	}, nil
-}
-
-func dedupInt64(ids []int64) []int64 {
-	seen := make(map[int64]struct{}, len(ids))
-	out := make([]int64, 0, len(ids))
-	for _, id := range ids {
-		if _, ok := seen[id]; ok {
-			continue
-		}
-		seen[id] = struct{}{}
-		out = append(out, id)
-	}
-	return out
 }

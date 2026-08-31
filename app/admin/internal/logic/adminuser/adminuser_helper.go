@@ -25,7 +25,7 @@ func mapStatusAction(action string) (admin.AdminStatus, bool) {
 // kickAdminSession 踢管理员下线 读反向索引拿 token 删双向会话 失败只 log
 func kickAdminSession(ctx context.Context, svcCtx *svc.ServiceContext, adminID int64) {
 	r := svcCtx.Redis
-	adminKey := consts.BuildAdminSessionAdminKey(adminID)
+	adminKey := consts.BuildAdminSessionUIDKey(adminID)
 	token, err := r.GetCtx(ctx, adminKey)
 	if err != nil {
 		logx.WithContext(ctx).Errorf("踢下线读会话失败 adminID=%d err=%v", adminID, err)

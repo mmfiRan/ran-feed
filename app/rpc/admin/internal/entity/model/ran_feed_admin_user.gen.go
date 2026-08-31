@@ -15,7 +15,6 @@ type RanFeedAdminUser struct {
 	ID           int64     `gorm:"column:id;primaryKey;autoIncrement:true;comment:管理员ID" json:"id"`                     // 管理员ID
 	Username     string    `gorm:"column:username;not null;comment:登录用户名唯一" json:"username"`                            // 登录用户名唯一
 	PasswordHash string    `gorm:"column:password_hash;not null;comment:密码哈希" json:"password_hash"`                     // 密码哈希
-	PasswordSalt string    `gorm:"column:password_salt;not null;comment:密码盐" json:"password_salt"`                      // 密码盐
 	Nickname     string    `gorm:"column:nickname;not null;comment:昵称" json:"nickname"`                                 // 昵称
 	Status       int32     `gorm:"column:status;not null;default:10;comment:状态 10=启用 20=禁用" json:"status"`              // 状态 10=启用 20=禁用
 	Version      int32     `gorm:"column:version;not null;default:1;comment:版本号（乐观锁）" json:"version"`                   // 版本号（乐观锁）

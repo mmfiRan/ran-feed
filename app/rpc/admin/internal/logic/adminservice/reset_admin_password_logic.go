@@ -28,22 +28,18 @@ func NewResetAdminPasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	}
 }
 
-// ResetAdminPassword 重置管理员密码 重新生成盐加哈希
+// ResetAdminPassword 重置管理员密码 bcrypt 重新哈希
 func (l *ResetAdminPasswordLogic) ResetAdminPassword(in *admin.ResetAdminPasswordReq) (*admin.ResetAdminPasswordRes, error) {
 	if in.GetId() <= 0 || in.GetNewPassword() == "" {
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	salt, err := utils.GenerateSalt(adminSaltBytes)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("生成密码盐失败"))
-	}
-	hash, err := utils.HashPassword(in.GetNewPassword() + salt)
+	hash, err := utils.HashPassword(in.GetNewPassword())
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("生成密码哈希失败"))
 	}
 
-	affected, err := l.adminUserRepo.UpdatePassword(in.GetId(), hash, salt, in.GetOperatorId())
+	affected, err := l.adminUserRepo.UpdatePassword(in.GetId(), hash, in.GetOperatorId())
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("重置密码失败"))
 	}

@@ -54,6 +54,12 @@ Handler / Server  →  Logic  →  Repository
 改了 `.api` 还要重生成 swagger。命令 格式约束（`XxxReq`/`XxxRes` 字段风格 swagger 步骤）见
 [references/new-interface.md](references/new-interface.md)。改 `.proto` 属升级处理，先与用户确认。
 
+**HTTP 接口遵循 RESTful 风格**：
+
+- 写操作（增删改）用 POST / PUT / DELETE，**GET 不产生副作用**
+- 例外：**条件查询参数很多（超过 3 个查询条件）时**，可以用 POST 表示查询（避免超长 query string 与可读性差）
+- 判断依据：改数据的接口必须是非 GET；只有纯读且条件少的查询才用 GET
+
 ## 并发与 context
 
 ```go

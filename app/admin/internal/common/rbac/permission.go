@@ -2,11 +2,8 @@ package rbac
 
 import "ran-feed/app/admin/internal/common/consts"
 
-// HasPermission 权限点集合是否包含 required 空 required 视为放行
+// HasPermission 权限点集合是否包含 required 空
 func HasPermission(perms map[string]struct{}, required string) bool {
-	if required == "" {
-		return true
-	}
 	_, ok := perms[required]
 	return ok
 }

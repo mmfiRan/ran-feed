@@ -5,18 +5,17 @@ import (
 	"strings"
 
 	"ran-feed/app/rpc/admin/admin"
+	adminutils "ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/entity/query"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/snowflake"
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
-
-// adminSaltBytes 管理员密码盐字节数
-const adminSaltBytes = 16
 
 type CreateAdminLogic struct {
 	ctx    context.Context
@@ -36,11 +35,11 @@ func NewCreateAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 	}
 }
 
-// CreateAdmin 建管理员 username 唯一 生成盐加哈希 事务内建账号并绑角色
+// CreateAdmin 创建管理员
 func (l *CreateAdminLogic) CreateAdmin(in *admin.CreateAdminReq) (*admin.CreateAdminRes, error) {
 	username := strings.TrimSpace(in.GetUsername())
 	if username == "" || in.GetPassword() == "" {
-		return nil, errorx.NewMsg("参数错误")
+		return nil, errorx.NewMsg("用户名或密码不能为空")
 	}
 
 	existing, err := l.adminUserRepo.GetByUsername(username)
@@ -51,40 +50,36 @@ func (l *CreateAdminLogic) CreateAdmin(in *admin.CreateAdminReq) (*admin.CreateA
 		return nil, errorx.NewMsg("用户名已存在")
 	}
 
-	salt, err := utils.GenerateSalt(adminSaltBytes)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("生成密码盐失败"))
-	}
-	hash, err := utils.HashPassword(in.GetPassword() + salt)
+	hash, err := utils.HashPassword(in.GetPassword())
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("生成密码哈希失败"))
 	}
 
-	roleIDs := dedupInt64(in.GetRoleIds())
-	var newID int64
+	roleIDs := adminutils.Dedup[int64](in.GetRoleIds())
+	adminID := snowflake.GenID()
 	err = query.Q.Transaction(func(tx *query.Query) error {
-		id, e := l.adminUserRepo.WithTx(tx).Create(&model.RanFeedAdminUser{
+		if e := l.adminUserRepo.WithTx(tx).Create(&model.RanFeedAdminUser{
+			ID:           adminID,
 			Username:     username,
 			PasswordHash: hash,
-			PasswordSalt: salt,
 			Nickname:     in.GetNickname(),
 			Status:       int32(admin.AdminStatus_ADMIN_ENABLED),
 			CreatedBy:    in.GetOperatorId(),
 			UpdatedBy:    in.GetOperatorId(),
-		})
-		if e != nil {
+		}); e != nil {
 			return e
 		}
-		newID = id
-		return l.userRoleRepo.WithTx(tx).BatchCreate(buildUserRoleRows(id, roleIDs, in.GetOperatorId()))
+		return l.userRoleRepo.WithTx(tx).BatchCreate(buildUserRoleRows(adminID, roleIDs, in.GetOperatorId()))
 	})
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("创建管理员失败"))
 	}
-	return &admin.CreateAdminRes{Id: newID}, nil
+	return &admin.CreateAdminRes{
+		Id: adminID,
+	}, nil
 }
 
-// buildUserRoleRows 组装管理员角色绑定行 跳过非正 roleID
+// buildUserRoleRows 组装管理员角色绑定行 跳过非正 roleID 每行预生成雪花ID
 func buildUserRoleRows(adminID int64, roleIDs []int64, operatorID int64) []*model.RanFeedAdminUserRole {
 	rows := make([]*model.RanFeedAdminUserRole, 0, len(roleIDs))
 	for _, rid := range roleIDs {
@@ -92,6 +87,7 @@ func buildUserRoleRows(adminID int64, roleIDs []int64, operatorID int64) []*mode
 			continue
 		}
 		rows = append(rows, &model.RanFeedAdminUserRole{
+			ID:          snowflake.GenID(),
 			AdminUserID: adminID,
 			RoleID:      rid,
 			CreatedBy:   operatorID,

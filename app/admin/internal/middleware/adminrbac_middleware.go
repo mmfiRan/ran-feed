@@ -25,7 +25,11 @@ func NewAdminRbacMiddleware(r *redis.Redis, adminRpc adminservice.AdminService, 
 	if permTTL <= 0 {
 		permTTL = consts.RedisAdminPermExpireSeconds
 	}
-	return &AdminRbacMiddleware{redis: r, adminRpc: adminRpc, permTTL: permTTL}
+	return &AdminRbacMiddleware{
+		redis:    r,
+		adminRpc: adminRpc,
+		permTTL:  permTTL,
+	}
 }
 
 func (m *AdminRbacMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
@@ -37,15 +41,18 @@ func (m *AdminRbacMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		// 所需权限点由 docmeta.Inject 从路由 @doc 注入 ctx
-		required, _ := docmeta.Value(r.Context(), "permission")
-		if required == "" {
-			logx.WithContext(r.Context()).Errorf("路由挂了 RBAC 中间件却无 permission 声明 拒绝 path=%s", r.URL.Path)
+		required, ok := docmeta.Value(r.Context(), "permission")
+		if !ok || required == "" {
+			logx.WithContext(r.Context()).Errorf("路由缺少 permission 声明 需在 api 文件补 @doc 并重跑 rbacgen path=%s", r.URL.Path)
 			httpx.ErrorCtx(r.Context(), w, consts.ErrAdminForbidden)
 			return
 		}
 
 		perms, err := rbac.LoadPermissions(r.Context(), m.redis, adminID, m.permTTL, m.loadPermissions)
-		if err != nil || !rbac.HasPermission(perms, required) {
+		if err != nil {
+			logx.WithContext(r.Context()).Errorf("加载权限时出错 err=%s", err.Error())
+		}
+		if !rbac.HasPermission(perms, required) {
 			httpx.ErrorCtx(r.Context(), w, consts.ErrAdminForbidden)
 			return
 		}
@@ -55,7 +62,9 @@ func (m *AdminRbacMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (m *AdminRbacMiddleware) loadPermissions(ctx context.Context, adminID int64) ([]string, error) {
-	res, err := m.adminRpc.ListAdminPermissions(ctx, &admin.ListAdminPermissionsReq{AdminId: adminID})
+	res, err := m.adminRpc.ListAdminPermissions(ctx, &admin.ListAdminPermissionsReq{
+		AdminId: adminID,
+	})
 	if err != nil {
 		return nil, err
 	}

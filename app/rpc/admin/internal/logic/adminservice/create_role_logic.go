@@ -9,6 +9,7 @@ import (
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/snowflake"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -45,7 +46,9 @@ func (l *CreateRoleLogic) CreateRole(in *admin.CreateRoleReq) (*admin.CreateRole
 		return nil, errorx.NewMsg("角色码已存在")
 	}
 
-	id, err := l.roleRepo.Create(&model.RanFeedAdminRole{
+	id := snowflake.GenID()
+	err = l.roleRepo.Create(&model.RanFeedAdminRole{
+		ID:        id,
 		Code:      code,
 		Name:      name,
 		Remark:    in.GetRemark(),

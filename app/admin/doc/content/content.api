@@ -82,7 +82,7 @@ type (
 )
 service admin-api {
 	@doc (
-		description: "内容列表 多条件筛选 + 分页"
+		description: "内容列表"
 		permission: "content:list"
 	)
 	@handler ListContents
@@ -103,7 +103,7 @@ service admin-api {
 	post /contents/status (AdminContentStatusReq) returns (AdminContentStatusRes)
 
 	@doc (
-		description: "先审后发审核 通过/拒绝 待审队列用 GET /contents?status=60"
+		description: "先审后发审核"
 		permission: "content:review"
 	)
 	@handler ReviewContent

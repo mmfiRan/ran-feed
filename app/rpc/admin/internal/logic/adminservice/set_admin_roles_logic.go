@@ -5,6 +5,7 @@ import (
 
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/app/rpc/admin/internal/common/consts"
+	"ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/entity/query"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
@@ -47,7 +48,7 @@ func (l *SetAdminRolesLogic) SetAdminRoles(in *admin.SetAdminRolesReq) (*admin.S
 		return nil, errorx.NewMsg("管理员不存在")
 	}
 
-	roleIDs := dedupInt64(in.GetRoleIds())
+	roleIDs := utils.Dedup(in.GetRoleIds())
 
 	// 护栏 操作者给自己设角色时不得移除自己已有的 super
 	if in.GetAdminId() == in.GetOperatorId() {

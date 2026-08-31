@@ -9,15 +9,15 @@ import (
 const (
 	// RedisAdminSessionPrefix 后台登录态 token 前缀 admin:session:{token}
 	RedisAdminSessionPrefix = "admin:session"
-	// RedisAdminSessionAdminPrefix 后台登录态 adminId 前缀 admin:session:admin:{adminId}
-	RedisAdminSessionAdminPrefix = "admin:session:admin"
+	// RedisAdminSessionUIDPrefix 后台登录态 admin:session:uid:{adminId}
+	RedisAdminSessionUIDPrefix = "admin:session:uid"
 	// RedisAdminSessionExpireSecondsDefault 后台登录态默认过期 7 天
 	RedisAdminSessionExpireSecondsDefault = 7 * 24 * 60 * 60
 
 	// RedisAdminPermPrefix 管理员权限点集合缓存前缀 admin:perms:{adminId}
 	RedisAdminPermPrefix = "admin:perms"
-	// RedisAdminPermExpireSeconds 权限缓存过期 5 分钟 role/permission 变更时主动失效
-	RedisAdminPermExpireSeconds = 5 * 60
+	// RedisAdminPermExpireSeconds 权限缓存过期 1 天 命中时滑动续期 角色/权限变更时主动失效
+	RedisAdminPermExpireSeconds = 24 * 60 * 60
 	// RedisAdminPermLoadedSentinel 零权限管理员的哨兵成员 区分缓存未命中与真无权限
 	RedisAdminPermLoadedSentinel = "__loaded__"
 
@@ -52,8 +52,8 @@ func BuildAdminSessionKey(token string) string {
 	return RedisAdminSessionPrefix + ":" + token
 }
 
-func BuildAdminSessionAdminKey(adminID int64) string {
-	return RedisAdminSessionAdminPrefix + ":" + strconv.FormatInt(adminID, 10)
+func BuildAdminSessionUIDKey(adminID int64) string {
+	return RedisAdminSessionUIDPrefix + ":" + strconv.FormatInt(adminID, 10)
 }
 
 func BuildAdminPermKey(adminID int64) string {

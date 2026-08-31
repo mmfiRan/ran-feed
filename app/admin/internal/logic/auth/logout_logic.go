@@ -36,7 +36,7 @@ func (l *LogoutLogic) Logout() (resp *types.AdminLogoutRes, err error) {
 		keys = append(keys, consts.BuildAdminSessionKey(token))
 	}
 	if adminID > 0 {
-		keys = append(keys, consts.BuildAdminSessionAdminKey(adminID))
+		keys = append(keys, consts.BuildAdminSessionUIDKey(adminID))
 	}
 	if len(keys) > 0 {
 		if _, err = l.svcCtx.Redis.DelCtx(l.ctx, keys...); err != nil {

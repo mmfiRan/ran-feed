@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
+	adminutils "ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
@@ -84,7 +85,7 @@ func (l *ListAdminsLogic) loadRoleCodes(rows []*model.RanFeedAdminUser) (map[int
 	for _, ids := range roleIDsByAdmin {
 		allRoleIDs = append(allRoleIDs, ids...)
 	}
-	roles, err := l.roleRepo.ListByIDs(dedupInt64(allRoleIDs))
+	roles, err := l.roleRepo.ListByIDs(adminutils.Dedup(allRoleIDs))
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询角色失败"))
 	}

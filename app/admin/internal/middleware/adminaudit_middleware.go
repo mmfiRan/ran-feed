@@ -33,7 +33,10 @@ func (m *AdminAuditMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		sw := &statusWriter{ResponseWriter: w, status: http.StatusOK}
+		sw := &statusWriter{
+			ResponseWriter: w,
+			status:         http.StatusOK,
+		}
 		next(sw, r)
 
 		adminID, _ := r.Context().Value(consts.CtxKeyAdminID).(int64)
@@ -44,7 +47,7 @@ func (m *AdminAuditMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// write 异步落审计 脱离请求 ctx 加超时 失败只 log
+// write 异步落审计
 func (m *AdminAuditMiddleware) write(adminID int64, action, ip, result string) {
 	threading.GoSafe(func() {
 		ctx, cancel := context.WithTimeout(context.Background(), auditWriteTimeout)

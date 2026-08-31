@@ -30,7 +30,6 @@ func newRanFeedAdminUser(db *gorm.DB, opts ...gen.DOOption) ranFeedAdminUser {
 	_ranFeedAdminUser.ID = field.NewInt64(tableName, "id")
 	_ranFeedAdminUser.Username = field.NewString(tableName, "username")
 	_ranFeedAdminUser.PasswordHash = field.NewString(tableName, "password_hash")
-	_ranFeedAdminUser.PasswordSalt = field.NewString(tableName, "password_salt")
 	_ranFeedAdminUser.Nickname = field.NewString(tableName, "nickname")
 	_ranFeedAdminUser.Status = field.NewInt32(tableName, "status")
 	_ranFeedAdminUser.Version = field.NewInt32(tableName, "version")
@@ -53,7 +52,6 @@ type ranFeedAdminUser struct {
 	ID           field.Int64  // 管理员ID
 	Username     field.String // 登录用户名唯一
 	PasswordHash field.String // 密码哈希
-	PasswordSalt field.String // 密码盐
 	Nickname     field.String // 昵称
 	Status       field.Int32  // 状态 10=启用 20=禁用
 	Version      field.Int32  // 版本号（乐观锁）
@@ -81,7 +79,6 @@ func (r *ranFeedAdminUser) updateTableName(table string) *ranFeedAdminUser {
 	r.ID = field.NewInt64(table, "id")
 	r.Username = field.NewString(table, "username")
 	r.PasswordHash = field.NewString(table, "password_hash")
-	r.PasswordSalt = field.NewString(table, "password_salt")
 	r.Nickname = field.NewString(table, "nickname")
 	r.Status = field.NewInt32(table, "status")
 	r.Version = field.NewInt32(table, "version")
@@ -118,11 +115,10 @@ func (r *ranFeedAdminUser) GetFieldByName(fieldName string) (field.OrderExpr, bo
 }
 
 func (r *ranFeedAdminUser) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 12)
+	r.fieldMap = make(map[string]field.Expr, 11)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["username"] = r.Username
 	r.fieldMap["password_hash"] = r.PasswordHash
-	r.fieldMap["password_salt"] = r.PasswordSalt
 	r.fieldMap["nickname"] = r.Nickname
 	r.fieldMap["status"] = r.Status
 	r.fieldMap["version"] = r.Version

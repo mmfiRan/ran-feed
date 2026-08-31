@@ -22,7 +22,10 @@ type AdminAuthMiddleware struct {
 }
 
 func NewAdminAuthMiddleware(r *redis.Redis, c config.Config) *AdminAuthMiddleware {
-	return &AdminAuthMiddleware{redis: r, config: c}
+	return &AdminAuthMiddleware{
+		redis:  r,
+		config: c,
+	}
 }
 
 func (m *AdminAuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
@@ -64,9 +67,16 @@ func (m *AdminAuthMiddleware) verifyAndRenew(ctx context.Context, token string) 
 		return 0, nil
 	}
 
-	ttl := int(m.sessionTTL().Seconds())
-	_ = m.redis.ExpireCtx(ctx, consts.BuildAdminSessionKey(token), ttl)
-	_ = m.redis.ExpireCtx(ctx, consts.BuildAdminSessionAdminKey(adminID), ttl)
+	ttl := time.Duration(m.sessionTTL().Seconds()) * time.Second
+
+	// 滑动续期
+	if err = m.redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
+		pipe.Expire(ctx, consts.BuildAdminSessionKey(token), ttl)
+		pipe.Expire(ctx, consts.BuildAdminSessionUIDKey(adminID), ttl)
+		return nil
+	}); err != nil {
+		return 0, err
+	}
 	return adminID, nil
 }
 

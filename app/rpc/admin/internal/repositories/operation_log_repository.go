@@ -42,7 +42,7 @@ func NewOperationLogRepository(ctx context.Context, db *orm.DB) OperationLogRepo
 	}
 }
 
-// Create 落一条操作审计日志 返回自增ID
+// Create 落一条操作审计日志 返回ID
 func (r *operationLogRepositoryImpl) Create(row *model.RanFeedOperationLog) (int64, error) {
 	if row == nil {
 		return 0, nil
