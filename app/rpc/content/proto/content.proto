@@ -356,7 +356,9 @@ message AdminListContentsReq {
 
 message AdminListContentsRes {
   repeated AdminContentItem items = 1;
-  int64 total = 2;
+  uint32 total = 2;
+  uint32 page = 3;
+  uint32 page_size = 4;
 }
 
 message AdminGetContentDetailReq {

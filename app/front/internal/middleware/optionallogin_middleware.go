@@ -6,7 +6,9 @@ package middleware
 import (
 	"context"
 	"net/http"
+
 	"ran-feed/app/front/internal/config"
+	"ran-feed/pkg/consts"
 
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
@@ -38,8 +40,8 @@ func (m *OptionalLoginMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ctxKeyUserID, userID)
-		ctx = context.WithValue(ctx, ctxKeyToken, token)
+		ctx := context.WithValue(r.Context(), consts.CtxKeyUserID, userID)
+		ctx = context.WithValue(ctx, consts.CtxKeyToken, token)
 		next(w, r.WithContext(ctx))
 	}
 }

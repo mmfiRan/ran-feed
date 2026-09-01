@@ -11,6 +11,13 @@ enum AdminStatus {
   ADMIN_DISABLED = 20;
 }
 
+// EnumValue 统一枚举响应结构 code 数字 name 英文 message 中文
+message EnumValue {
+  int32 code = 1;
+  string name = 2;
+  string message = 3;
+}
+
 // AuthenticateAdminReq 校验管理员账号密码
 message AuthenticateAdminReq {
   string username = 1;
@@ -21,7 +28,7 @@ message AuthenticateAdminReq {
 message AuthenticateAdminRes {
   int64 admin_id = 1;
   string nickname = 2;
-  AdminStatus status = 3;
+  EnumValue status = 3;
 }
 
 // GetAdminReq 查询管理员基本信息
@@ -34,7 +41,7 @@ message GetAdminRes {
   int64 admin_id = 1;
   string username = 2;
   string nickname = 3;
-  AdminStatus status = 4;
+  EnumValue status = 4;
 }
 
 // ListAdminPermissionsReq 查询管理员权限点集合
@@ -107,7 +114,9 @@ message ListOperationLogsReq {
 // ListOperationLogsRes 审计日志分页结果
 message ListOperationLogsRes {
   repeated OperationLogItem items = 1;
-  int64 total = 2;
+  uint32 total = 2;
+  uint32 page = 3;
+  uint32 page_size = 4;
 }
 
 // RoleItem 角色项 created_at 毫秒
@@ -128,7 +137,9 @@ message ListRolesReq {
 // ListRolesRes 角色分页结果
 message ListRolesRes {
   repeated RoleItem items = 1;
-  int64 total = 2;
+  uint32 total = 2;
+  uint32 page = 3;
+  uint32 page_size = 4;
 }
 
 // GetRoleDetailReq 角色详情
@@ -189,27 +200,29 @@ message DeleteRoleRes {
   repeated int64 affected_admin_ids = 1;
 }
 
-// AdminListItem 管理员列表项 created_at 毫秒
+// AdminListItem 管理员信息
 message AdminListItem {
   int64 id = 1;
   string username = 2;
   string nickname = 3;
-  AdminStatus status = 4;
+  EnumValue status = 4;
   repeated string role_codes = 5;
   int64 created_at = 6;
 }
 
-// ListAdminsReq status UNKNOWN(0) 表示不限
+// ListAdminsReq
 message ListAdminsReq {
   AdminStatus status = 1;
   uint32 page = 2;
   uint32 page_size = 3;
 }
 
-// ListAdminsRes 管理员分页结果
+// ListAdminsRes 管理员分页查询结果
 message ListAdminsRes {
   repeated AdminListItem items = 1;
-  int64 total = 2;
+  uint32 total = 2;
+  uint32 page = 3;
+  uint32 page_size = 4;
 }
 
 // GetAdminDetailReq 管理员详情
@@ -223,7 +236,7 @@ message GetAdminDetailRes {
   repeated int64 role_ids = 2;
 }
 
-// CreateAdminReq 建管理员 username 唯一 password 明文由服务端加盐哈希
+// CreateAdminReq 创建管理员
 message CreateAdminReq {
   string username = 1;
   string password = 2;
@@ -237,14 +250,14 @@ message CreateAdminRes {
   int64 id = 1;
 }
 
-// UpdateAdminReq 改管理员昵称
+// UpdateAdminReq 修改管理员昵称
 message UpdateAdminReq {
   int64 id = 1;
   string nickname = 2;
   int64 operator_id = 3;
 }
 
-// UpdateAdminRes 改管理员结果
+// UpdateAdminRes
 message UpdateAdminRes {}
 
 // SetAdminStatusReq 启用禁用管理员 护栏禁止禁用自己

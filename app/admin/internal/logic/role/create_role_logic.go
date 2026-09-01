@@ -6,10 +6,10 @@ package role
 import (
 	"context"
 
-	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -29,7 +29,7 @@ func NewCreateRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 }
 
 func (l *CreateRoleLogic) CreateRole(req *types.AdminRoleCreateReq) (resp *types.AdminRoleCreateRes, err error) {
-	operatorID, _ := l.ctx.Value(consts.CtxKeyAdminID).(int64)
+	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
 	rpcRes, err := l.svcCtx.AdminRpc.CreateRole(l.ctx, &admin.CreateRoleReq{
 		Code:       req.Code,
 		Name:       req.Name,

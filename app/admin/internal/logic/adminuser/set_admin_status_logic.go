@@ -6,11 +6,11 @@ package adminuser
 import (
 	"context"
 
-	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -30,12 +30,12 @@ func NewSetAdminStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Se
 }
 
 func (l *SetAdminStatusLogic) SetAdminStatus(req *types.AdminUserStatusReq) (resp *types.AdminUserStatusRes, err error) {
-	status, ok := mapStatusAction(req.Action)
-	if !ok {
-		return nil, errorx.NewMsg("不支持的操作")
+	status := admin.AdminStatus(req.Status)
+	if status != admin.AdminStatus_ADMIN_ENABLED && status != admin.AdminStatus_ADMIN_DISABLED {
+		return nil, errorx.NewMsg("不支持的状态")
 	}
 
-	operatorID, _ := l.ctx.Value(consts.CtxKeyAdminID).(int64)
+	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
 	_, err = l.svcCtx.AdminRpc.SetAdminStatus(l.ctx, &admin.SetAdminStatusReq{
 		Id:         req.Id,
 		Status:     status,

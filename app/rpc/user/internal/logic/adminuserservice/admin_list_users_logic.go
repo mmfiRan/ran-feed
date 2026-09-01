@@ -38,19 +38,18 @@ func (l *AdminListUsersLogic) AdminListUsers(in *user.AdminListUsersReq) (*user.
 		keyword = *in.Keyword
 	}
 
-	total, err := l.userRepo.AdminCountUsers(status, keyword)
+	offset, pageSize := utils.NormalizePage(in.GetPage(), in.GetPageSize())
+	rows, total, err := l.userRepo.AdminPageUsers(status, keyword, offset, pageSize)
 	if err != nil {
 		return nil, err
 	}
 	if total == 0 {
-		return &user.AdminListUsersRes{Items: []*user.AdminUserItem{}, Total: 0}, nil
-	}
-
-	offset, pageSize := utils.NormalizePage(int(in.Page), int(in.PageSize))
-
-	rows, err := l.userRepo.AdminListUsers(status, keyword, offset, pageSize)
-	if err != nil {
-		return nil, err
+		return &user.AdminListUsersRes{
+			Items:    []*user.AdminUserItem{},
+			Total:    0,
+			Page:     in.GetPage(),
+			PageSize: in.GetPageSize(),
+		}, nil
 	}
 
 	items := make([]*user.AdminUserItem, 0, len(rows))
@@ -62,8 +61,10 @@ func (l *AdminListUsersLogic) AdminListUsers(in *user.AdminListUsersReq) (*user.
 	}
 
 	return &user.AdminListUsersRes{
-		Items: items,
-		Total: total,
+		Items:    items,
+		Total:    uint32(total),
+		Page:     in.GetPage(),
+		PageSize: in.GetPageSize(),
 	}, nil
 }
 

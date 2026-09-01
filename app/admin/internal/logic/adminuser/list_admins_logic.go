@@ -43,10 +43,17 @@ func (l *ListAdminsLogic) ListAdmins(req *types.AdminUserListReq) (resp *types.A
 			Id:        it.GetId(),
 			Username:  it.GetUsername(),
 			Nickname:  it.GetNickname(),
-			Status:    int32(it.GetStatus()),
+			Status:    toEnumValue(it.GetStatus()),
 			RoleCodes: it.GetRoleCodes(),
 			CreatedAt: it.GetCreatedAt(),
 		})
 	}
-	return &types.AdminUserListRes{Items: items, Total: rpcRes.GetTotal()}, nil
+	return &types.AdminUserListRes{
+		Items: items,
+		PageQueryResp: types.PageQueryResp{
+			Page:     rpcRes.GetPage(),
+			PageSize: rpcRes.GetPageSize(),
+			Total:    rpcRes.GetTotal(),
+		},
+	}, nil
 }

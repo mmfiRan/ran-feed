@@ -62,6 +62,10 @@ func (l *ListUsersLogic) ListUsers(req *types.CUserListReq) (resp *types.CUserLi
 
 	return &types.CUserListRes{
 		Items: items,
-		Total: rpcRes.GetTotal(),
+		PageQueryResp: types.PageQueryResp{
+			Page:     rpcRes.GetPage(),
+			PageSize: rpcRes.GetPageSize(),
+			Total:    rpcRes.GetTotal(),
+		},
 	}, nil
 }

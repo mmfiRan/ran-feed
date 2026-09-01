@@ -45,6 +45,6 @@ func (l *GetAdminLogic) GetAdmin(in *admin.GetAdminReq) (*admin.GetAdminRes, err
 		AdminId:  row.ID,
 		Username: row.Username,
 		Nickname: row.Nickname,
-		Status:   admin.AdminStatus(row.Status),
+		Status:   adminStatusValue(row.Status),
 	}, nil
 }

@@ -48,6 +48,6 @@ func (l *AuthenticateAdminLogic) AuthenticateAdmin(in *admin.AuthenticateAdminRe
 	return &admin.AuthenticateAdminRes{
 		AdminId:  row.ID,
 		Nickname: row.Nickname,
-		Status:   admin.AdminStatus(row.Status),
+		Status:   adminStatusValue(row.Status),
 	}, nil
 }

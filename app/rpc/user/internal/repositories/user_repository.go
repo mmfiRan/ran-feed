@@ -31,10 +31,8 @@ type UserRepository interface {
 	ScanActiveForIndex(cursorID int64, limit int) ([]*model.RanFeedUser, error)
 	// Create 创建用户
 	Create(userDO *do.UserDO) (int64, error)
-	// AdminListUsers 后台管理列表用户
-	AdminListUsers(status int32, keyword string, offset, limit int) ([]*model.RanFeedUser, error)
-	// AdminCountUsers 后台管理用户总数
-	AdminCountUsers(status int32, keyword string) (int64, error)
+	// AdminPageUsers 后台管理分页列表用户 返回列表与总数
+	AdminPageUsers(status int32, keyword string, offset, limit int) ([]*model.RanFeedUser, int64, error)
 	// AdminGetByID 后台管理获取用户详情 任意状态
 	AdminGetByID(userID int64) (*model.RanFeedUser, error)
 	// AdminUpdateStatus 后台管理更新用户状态
@@ -273,12 +271,9 @@ func (r *userRepositoryImpl) adminUserQuery(status int32, keyword string) query.
 	return doQuery
 }
 
-func (r *userRepositoryImpl) AdminListUsers(status int32, keyword string, offset, limit int) ([]*model.RanFeedUser, error) {
-	return r.adminUserQuery(status, keyword).Order(r.getQuery().RanFeedUser.ID.Desc()).Offset(offset).Limit(limit).Find()
-}
-
-func (r *userRepositoryImpl) AdminCountUsers(status int32, keyword string) (int64, error) {
-	return r.adminUserQuery(status, keyword).Count()
+func (r *userRepositoryImpl) AdminPageUsers(status int32, keyword string, offset, limit int) ([]*model.RanFeedUser, int64, error) {
+	q := r.getQuery().RanFeedUser
+	return r.adminUserQuery(status, keyword).Order(q.ID.Desc()).FindByPage(offset, limit)
 }
 
 func (r *userRepositoryImpl) AdminGetByID(userID int64) (*model.RanFeedUser, error) {

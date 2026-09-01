@@ -8,16 +8,16 @@ type (
 		Status   int32 `form:"status,optional"` // 0不限 10启用 20禁用
 	}
 	AdminUserItem {
-		Id        int64    `json:"id"`
-		Username  string   `json:"username"`
-		Nickname  string   `json:"nickname"`
-		Status    int32    `json:"status"`
-		RoleCodes []string `json:"role_codes"`
-		CreatedAt int64    `json:"created_at"` // 毫秒
+		Id        int64     `json:"id"`
+		Username  string    `json:"username"`
+		Nickname  string    `json:"nickname"`
+		Status    EnumValue `json:"status"`
+		RoleCodes []string  `json:"role_codes"`
+		CreatedAt int64     `json:"created_at"`
 	}
 	AdminUserListRes {
+		PageQueryResp
 		Items []AdminUserItem `json:"items"`
-		Total int64           `json:"total"`
 	}
 
 	AdminUserDetailReq {
@@ -44,10 +44,10 @@ type (
 	}
 	AdminUserUpdateRes {}
 
-	// AdminUserStatusReq action 取 enable(启用) 或 disable(禁用)
+	// AdminUserStatusReq status 取 10(启用) 或 20(禁用)
 	AdminUserStatusReq {
-		Id     int64  `json:"id,optional" validate:"required,gt=0"`
-		Action string `json:"action,optional" validate:"required,oneof=enable disable"`
+		Id     int64 `json:"id,optional" validate:"required,gt=0"`
+		Status int32 `json:"status,optional" validate:"required"`
 	}
 	AdminUserStatusRes {}
 
@@ -73,7 +73,7 @@ type (
 )
 service admin-api {
 	@doc (
-		description: "管理员列表 分页"
+		description: "分页查询管理员列表"
 		permission: "admin:user:list"
 	)
 	@handler ListAdmins
@@ -81,42 +81,42 @@ service admin-api {
 
 	@doc (
 		description: "管理员详情 含角色ID"
-		permission: "admin:user:list"
+		permission: "admin:user:detail"
 	)
 	@handler GetAdminDetail
 	get /admins/detail (AdminUserDetailReq) returns (AdminUserDetailRes)
 
 	@doc (
-		description: "建管理员"
-		permission: "admin:user:manage"
+		description: "创建管理员"
+		permission: "admin:user:create"
 	)
 	@handler CreateAdmin
 	post /admins/create (AdminUserCreateReq) returns (AdminUserCreateRes)
 
 	@doc (
-		description: "改管理员昵称"
-		permission: "admin:user:manage"
+		description: "修改管理员昵称"
+		permission: "admin:user:update"
 	)
 	@handler UpdateAdmin
 	post /admins/update (AdminUserUpdateReq) returns (AdminUserUpdateRes)
 
 	@doc (
 		description: "启用禁用管理员 禁用即踢下线"
-		permission: "admin:user:manage"
+		permission: "admin:user:status"
 	)
 	@handler SetAdminStatus
 	post /admins/status (AdminUserStatusReq) returns (AdminUserStatusRes)
 
 	@doc (
 		description: "重置管理员密码 重置即踢下线"
-		permission: "admin:user:manage"
+		permission: "admin:user:reset-password"
 	)
 	@handler ResetAdminPassword
 	post /admins/reset-password (AdminUserResetPasswordReq) returns (AdminUserResetPasswordRes)
 
 	@doc (
 		description: "覆盖式设管理员角色"
-		permission: "admin:user:manage"
+		permission: "admin:user:set-roles"
 	)
 	@handler SetAdminRoles
 	post /admins/roles (AdminUserSetRolesReq) returns (AdminUserSetRolesRes)

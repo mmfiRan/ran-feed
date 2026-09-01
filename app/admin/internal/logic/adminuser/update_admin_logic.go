@@ -6,10 +6,10 @@ package adminuser
 import (
 	"context"
 
-	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -29,7 +29,7 @@ func NewUpdateAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Updat
 }
 
 func (l *UpdateAdminLogic) UpdateAdmin(req *types.AdminUserUpdateReq) (resp *types.AdminUserUpdateRes, err error) {
-	operatorID, _ := l.ctx.Value(consts.CtxKeyAdminID).(int64)
+	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
 	_, err = l.svcCtx.AdminRpc.UpdateAdmin(l.ctx, &admin.UpdateAdminReq{
 		Id:         req.Id,
 		Nickname:   req.Nickname,

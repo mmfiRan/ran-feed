@@ -1,28 +1,34 @@
 package utils
 
+type Integer interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
+}
+
 const (
 	// DefaultPageSize 统一分页默认条数
 	DefaultPageSize = 20
-	// MaxPageSize 统一分页上限 防脏输入放大回源
+	// MaxPageSize 统一分页上限
 	MaxPageSize = 50
 )
 
 // ClampPageSize 归一每页条数 size<=0 取 DefaultPageSize 超 MaxPageSize 取 MaxPageSize
-func ClampPageSize(size int) int {
-	if size <= 0 {
-		size = DefaultPageSize
+func ClampPageSize[T Integer](size T) int {
+	s := int(size)
+	if s <= 0 {
+		s = DefaultPageSize
 	}
-	if size > MaxPageSize {
-		size = MaxPageSize
+	if s > MaxPageSize {
+		s = MaxPageSize
 	}
-	return size
+	return s
 }
 
-// NormalizePage offset分页
-func NormalizePage(page, pageSize int) (offset, limit int) {
+// NormalizePage offset分页 返回归一后的 offset 与 limit
+func NormalizePage[T Integer, S Integer](page T, pageSize S) (offset, limit int) {
 	limit = ClampPageSize(pageSize)
-	if page < 1 {
-		page = 1
+	p := int(page)
+	if p < 1 {
+		p = 1
 	}
-	return (page - 1) * limit, limit
+	return (p - 1) * limit, limit
 }

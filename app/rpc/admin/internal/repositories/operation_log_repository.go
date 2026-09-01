@@ -22,10 +22,8 @@ type OperationLogFilter struct {
 
 type OperationLogRepository interface {
 	Create(row *model.RanFeedOperationLog) (int64, error)
-	// List 按条件分页查审计日志 id 倒序
-	List(filter OperationLogFilter, offset, limit int) ([]*model.RanFeedOperationLog, error)
-	// Count 按条件统计总数
-	Count(filter OperationLogFilter) (int64, error)
+	// Page 按条件分页查审计日志 id 倒序 返回列表与总数
+	Page(filter OperationLogFilter, offset, limit int) ([]*model.RanFeedOperationLog, int64, error)
 }
 
 type operationLogRepositoryImpl struct {
@@ -76,13 +74,8 @@ func (r *operationLogRepositoryImpl) buildQuery(filter OperationLogFilter) query
 	return do
 }
 
-// List 按条件分页查审计日志 id 倒序
-func (r *operationLogRepositoryImpl) List(filter OperationLogFilter, offset, limit int) ([]*model.RanFeedOperationLog, error) {
+// Page 按条件分页查审计日志 id 倒序 复用 gen FindByPage 末页不满免 COUNT
+func (r *operationLogRepositoryImpl) Page(filter OperationLogFilter, offset, limit int) ([]*model.RanFeedOperationLog, int64, error) {
 	q := query.Q.RanFeedOperationLog
-	return r.buildQuery(filter).Order(q.ID.Desc()).Offset(offset).Limit(limit).Find()
-}
-
-// Count 按条件统计总数
-func (r *operationLogRepositoryImpl) Count(filter OperationLogFilter) (int64, error) {
-	return r.buildQuery(filter).Count()
+	return r.buildQuery(filter).Order(q.ID.Desc()).FindByPage(offset, limit)
 }

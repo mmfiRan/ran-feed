@@ -9,16 +9,16 @@ import (
 	"github.com/zeromicro/go-zero/core/logc"
 
 	"ran-feed/app/rpc/count/count"
-	countenum "ran-feed/app/rpc/count/internal/common/enum"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
-	"ran-feed/pkg/enum"
+	"ran-feed/pkg/enums"
 )
 
 // presenceCounterStrategy 把一行互动变更映射为若干计数目标上的同一增量
 type presenceCounterStrategy struct {
 	tableName string
-	isActive  func(row map[string]interface{}) bool                                    // 轴A 判活谓词
-	targetsOf func(ctx context.Context, row map[string]interface{}) []countTarget       // 轴B 行到计数目标
+	isActive  func(row map[string]interface{}) bool                               // 轴A 判活谓词
+	targetsOf func(ctx context.Context, row map[string]interface{}) []countTarget // 轴B 行到计数目标
 }
 
 // countTarget 一条增量要落到的计数对象
@@ -118,7 +118,7 @@ func statusActiveNotDeleted(row map[string]interface{}) bool {
 	if !ok {
 		return true
 	}
-	return !enum.IsDeleted(int32(v)).IsDel()
+	return !enums.IsDeleted(int32(v)).IsDel()
 }
 
 // alwaysActive 无状态字段的表恒计数 如 favorite

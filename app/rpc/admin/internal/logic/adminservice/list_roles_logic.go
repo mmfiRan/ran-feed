@@ -28,21 +28,20 @@ func NewListRolesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListRol
 	}
 }
 
-// ListRoles 角色分页 先统计总数为0直接返回
+// ListRoles 角色分页
 func (l *ListRolesLogic) ListRoles(in *admin.ListRolesReq) (*admin.ListRolesRes, error) {
-	total, err := l.roleRepo.Count()
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("统计角色失败"))
-	}
-	res := &admin.ListRolesRes{Total: total}
-	if total == 0 {
-		return res, nil
-	}
-
-	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()))
-	rows, err := l.roleRepo.List(offset, limit)
+	offset, limit := utils.NormalizePage(in.GetPage(), in.GetPageSize())
+	rows, total, err := l.roleRepo.Page(offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询角色失败"))
+	}
+	res := &admin.ListRolesRes{
+		Total:    uint32(total),
+		Page:     in.GetPage(),
+		PageSize: in.GetPageSize(),
+	}
+	if total == 0 {
+		return res, nil
 	}
 
 	items := make([]*admin.RoleItem, 0, len(rows))

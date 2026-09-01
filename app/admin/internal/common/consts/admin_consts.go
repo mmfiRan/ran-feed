@@ -3,6 +3,7 @@ package consts
 import (
 	"strconv"
 
+	"ran-feed/pkg/consts"
 	"ran-feed/pkg/errorx"
 )
 
@@ -23,8 +24,10 @@ const (
 
 	HeaderAuthorization = "Authorization"
 
-	CtxKeyAdminID = "admin_id"
-	CtxKeyToken   = "token"
+	// CtxKeyAdminID 后台管理员ID 统一引用公共常量
+	CtxKeyAdminID = consts.CtxKeyAdminID
+	// CtxKeyToken 登录 token 统一引用公共常量
+	CtxKeyToken = consts.CtxKeyToken
 
 	// ContentActionTakedown 内容下架 action 入参约定值
 	ContentActionTakedown = "takedown"

@@ -1,6 +1,6 @@
 package do
 
-import "ran-feed/app/rpc/interaction/internal/enums"
+import "ran-feed/app/rpc/interaction/internal/common/enums"
 
 // LikeDO 点赞领域对象
 type LikeDO struct {

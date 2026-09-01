@@ -11,6 +11,7 @@ import (
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -45,7 +46,7 @@ func (l *SetContentStatusLogic) SetContentStatus(req *types.AdminContentStatusRe
 		return nil, errorx.NewMsg("不支持的操作")
 	}
 
-	operatorID, _ := l.ctx.Value(consts.CtxKeyAdminID).(int64)
+	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
 
 	rpcRes, err := l.svcCtx.ContentAdminRpc.AdminSetContentStatus(l.ctx, &content.AdminSetContentStatusReq{
 		ContentId:  req.ContentId,

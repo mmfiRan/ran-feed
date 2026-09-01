@@ -42,19 +42,18 @@ func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContents
 	typeFilter := optionalContentType(in)
 	authorFilter := optionalAuthorID(in)
 
-	total, err := l.contentRepo.AdminCountContents(statusFilter, typeFilter, authorFilter)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("统计内容失败"))
-	}
-	res := &content.AdminListContentsRes{Total: total}
-	if total == 0 {
-		return res, nil
-	}
-
-	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()))
-	rows, err := l.contentRepo.AdminListContents(statusFilter, typeFilter, authorFilter, offset, limit)
+	offset, limit := utils.NormalizePage(in.GetPage(), in.GetPageSize())
+	rows, total, err := l.contentRepo.AdminPageContents(statusFilter, typeFilter, authorFilter, offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
+	}
+	res := &content.AdminListContentsRes{
+		Total:    uint32(total),
+		Page:     in.GetPage(),
+		PageSize: in.GetPageSize(),
+	}
+	if total == 0 {
+		return res, nil
 	}
 
 	titles, err := l.loadTitles(rows)

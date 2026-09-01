@@ -10,4 +10,9 @@ type (
 		PageSize uint32 `json:"page_size"`
 		Total    uint32 `json:"total"`
 	}
+	EnumValue {
+		Code    int32  `json:"code"`
+		Name    string `json:"name"`
+		Message string `json:"message"`
+	}
 )

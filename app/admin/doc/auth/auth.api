@@ -14,10 +14,10 @@ type (
 	}
 	AdminLogoutRes  {}
 	AdminInfo {
-		AdminId  int64  `json:"admin_id"`
-		Username string `json:"username"`
-		Nickname string `json:"nickname"`
-		Status   int32  `json:"status"`
+		AdminId  int64     `json:"admin_id"`
+		Username string    `json:"username"`
+		Nickname string    `json:"nickname"`
+		Status   EnumValue `json:"status"`
 	}
 	AdminMeRes {
 		AdminInfo   AdminInfo `json:"admin_info"`

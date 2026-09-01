@@ -2,8 +2,6 @@ package adminservicelogic
 
 import (
 	"context"
-	"strings"
-
 	"ran-feed/app/rpc/admin/admin"
 	adminutils "ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/entity/model"
@@ -37,11 +35,7 @@ func NewCreateAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 
 // CreateAdmin 创建管理员
 func (l *CreateAdminLogic) CreateAdmin(in *admin.CreateAdminReq) (*admin.CreateAdminRes, error) {
-	username := strings.TrimSpace(in.GetUsername())
-	if username == "" || in.GetPassword() == "" {
-		return nil, errorx.NewMsg("用户名或密码不能为空")
-	}
-
+	username := in.GetUsername()
 	existing, err := l.adminUserRepo.GetByUsername(username)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询管理员失败"))

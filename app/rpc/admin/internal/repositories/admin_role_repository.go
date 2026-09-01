@@ -14,15 +14,15 @@ import (
 
 type AdminRoleRepository interface {
 	WithTx(tx *query.Query) AdminRoleRepository
-	// List 角色分页 id 倒序
-	List(offset, limit int) ([]*model.RanFeedAdminRole, error)
-	// Count 角色总数
-	Count() (int64, error)
+	// Page 角色分页 id 倒序 返回列表与总数
+	Page(offset, limit int) ([]*model.RanFeedAdminRole, int64, error)
+	// ListByAdminID 取管理员绑定的角色
+	ListByAdminID(adminID int64) ([]*model.RanFeedAdminRole, error)
 	// GetByID 按ID取角色 未命中返 nil
 	GetByID(id int64) (*model.RanFeedAdminRole, error)
 	// GetByCode 按 code 取角色 未命中返 nil
 	GetByCode(code string) (*model.RanFeedAdminRole, error)
-	// ListByIDs 按ID集合取角色 供列表富化
+	// ListByIDs 按ID集合取角色
 	ListByIDs(ids []int64) ([]*model.RanFeedAdminRole, error)
 	// Create 建角色
 	Create(row *model.RanFeedAdminRole) error
@@ -63,16 +63,34 @@ func (r *adminRoleRepositoryImpl) WithTx(tx *query.Query) AdminRoleRepository {
 	}
 }
 
-// List 角色分页 id 倒序
-func (r *adminRoleRepositoryImpl) List(offset, limit int) ([]*model.RanFeedAdminRole, error) {
+// Page 角色分页 id 倒序 复用 gen FindByPage 末页不满免 COUNT
+func (r *adminRoleRepositoryImpl) Page(offset, limit int) ([]*model.RanFeedAdminRole, int64, error) {
 	q := r.getQuery().RanFeedAdminRole
-	return q.WithContext(r.ctx).Where(q.IsDeleted.Eq(0)).Order(q.ID.Desc()).Offset(offset).Limit(limit).Find()
+	return q.WithContext(r.ctx).Where(q.IsDeleted.Eq(0)).Order(q.ID.Desc()).FindByPage(offset, limit)
 }
 
-// Count 角色总数
-func (r *adminRoleRepositoryImpl) Count() (int64, error) {
-	q := r.getQuery().RanFeedAdminRole
-	return q.WithContext(r.ctx).Where(q.IsDeleted.Eq(0)).Count()
+// ListByAdminID 取管理员绑定的角色
+func (r *adminRoleRepositoryImpl) ListByAdminID(adminID int64) ([]*model.RanFeedAdminRole, error) {
+	role := r.getQuery().RanFeedAdminRole
+	ur := r.getQuery().RanFeedAdminUserRole
+	rows := make([]*model.RanFeedAdminRole, 0)
+	err := role.WithContext(r.ctx).
+		Select(role.ID, role.Code).
+		LeftJoin(ur, ur.RoleID.EqCol(role.ID)).
+		Where(ur.AdminUserID.Eq(adminID)).
+		Where(ur.IsDeleted.Eq(0)).
+		Where(role.IsDeleted.Eq(0)).
+		Scan(&rows)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]*model.RanFeedAdminRole, 0, len(rows))
+	for _, row := range rows {
+		if row != nil && row.ID > 0 {
+			out = append(out, row)
+		}
+	}
+	return out, nil
 }
 
 // GetByID 按ID取角色 未命中返 nil
@@ -101,7 +119,7 @@ func (r *adminRoleRepositoryImpl) GetByCode(code string) (*model.RanFeedAdminRol
 	return row, nil
 }
 
-// ListByIDs 按ID集合取角色 供列表富化
+// ListByIDs 按ID集合取角色
 func (r *adminRoleRepositoryImpl) ListByIDs(ids []int64) ([]*model.RanFeedAdminRole, error) {
 	if len(ids) == 0 {
 		return nil, nil

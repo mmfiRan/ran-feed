@@ -34,7 +34,7 @@ func (l *ListNotificationsLogic) ListNotifications(in *notification.ListNotifica
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	pageSize := utils.ClampPageSize(int(in.PageSize))
+	pageSize := utils.ClampPageSize(in.PageSize)
 	cursorTime, cursorID := parseCursor(in.CursorUpdatedAt, in.CursorId)
 	typeFilter := int32(in.TypeFilter)
 

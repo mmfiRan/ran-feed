@@ -6,11 +6,11 @@ package user
 import (
 	"context"
 
-	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/user/user"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -35,8 +35,8 @@ func (l *SetUserStatusLogic) SetUserStatus(req *types.CUserStatusReq) (resp *typ
 		return nil, err
 	}
 
-	operatorID, ok := l.ctx.Value(consts.CtxKeyAdminID).(int64)
-	if !ok || operatorID <= 0 {
+	operatorID, err := utils.GetContextAdminId(l.ctx)
+	if err != nil || operatorID <= 0 {
 		return nil, errorx.NewMsg("操作者ID获取失败")
 	}
 

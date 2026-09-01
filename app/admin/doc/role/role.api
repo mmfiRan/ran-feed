@@ -14,8 +14,8 @@ type (
 		CreatedAt int64  `json:"created_at"` // 毫秒
 	}
 	AdminRoleListRes {
+		PageQueryResp
 		Items []AdminRoleItem `json:"items"`
-		Total int64           `json:"total"`
 	}
 
 	AdminRoleDetailReq {
@@ -71,35 +71,35 @@ service admin-api {
 
 	@doc (
 		description: "角色详情 含权限点ID集合"
-		permission: "admin:role:list"
+		permission: "admin:role:detail"
 	)
 	@handler GetRoleDetail
 	get /roles/detail (AdminRoleDetailReq) returns (AdminRoleDetailRes)
 
 	@doc (
 		description: "建角色"
-		permission: "admin:role:manage"
+		permission: "admin:role:create"
 	)
 	@handler CreateRole
 	post /roles/create (AdminRoleCreateReq) returns (AdminRoleCreateRes)
 
 	@doc (
 		description: "改角色名与备注 不可改 code"
-		permission: "admin:role:manage"
+		permission: "admin:role:update"
 	)
 	@handler UpdateRole
 	post /roles/update (AdminRoleUpdateReq) returns (AdminRoleUpdateRes)
 
 	@doc (
 		description: "覆盖式设角色权限点"
-		permission: "admin:role:manage"
+		permission: "admin:role:set-permissions"
 	)
 	@handler SetRolePermissions
 	post /roles/permissions (AdminRoleSetPermissionsReq) returns (AdminRoleSetPermissionsRes)
 
 	@doc (
 		description: "删角色 禁删 super"
-		permission: "admin:role:manage"
+		permission: "admin:role:delete"
 	)
 	@handler DeleteRole
 	post /roles/delete (AdminRoleDeleteReq) returns (AdminRoleDeleteRes)

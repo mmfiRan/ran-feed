@@ -38,19 +38,18 @@ func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsRe
 		EndMillis:   in.GetEndTime(),
 	}
 
-	total, err := l.operationLogRepo.Count(filter)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("统计审计日志失败"))
-	}
-	res := &admin.ListOperationLogsRes{Total: total}
-	if total == 0 {
-		return res, nil
-	}
-
-	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()))
-	rows, err := l.operationLogRepo.List(filter, offset, limit)
+	offset, limit := utils.NormalizePage(in.GetPage(), in.GetPageSize())
+	rows, total, err := l.operationLogRepo.Page(filter, offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询审计日志失败"))
+	}
+	res := &admin.ListOperationLogsRes{
+		Total:    uint32(total),
+		Page:     in.GetPage(),
+		PageSize: in.GetPageSize(),
+	}
+	if total == 0 {
+		return res, nil
 	}
 
 	items := make([]*admin.OperationLogItem, 0, len(rows))

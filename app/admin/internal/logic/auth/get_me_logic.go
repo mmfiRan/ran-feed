@@ -11,6 +11,7 @@ import (
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -30,7 +31,7 @@ func NewGetMeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetMeLogic 
 }
 
 func (l *GetMeLogic) GetMe() (resp *types.AdminMeRes, err error) {
-	adminID, _ := l.ctx.Value(consts.CtxKeyAdminID).(int64)
+	adminID := utils.GetContextAdminIdWithDefault(l.ctx)
 	if adminID <= 0 {
 		return nil, consts.ErrAdminNotLogin
 	}
@@ -55,8 +56,19 @@ func (l *GetMeLogic) GetMe() (resp *types.AdminMeRes, err error) {
 			AdminId:  adminRes.GetAdminId(),
 			Username: adminRes.GetUsername(),
 			Nickname: adminRes.GetNickname(),
-			Status:   int32(adminRes.GetStatus()),
+			Status:   toEnumValue(adminRes.GetStatus()),
 		},
 		Permissions: permissions,
 	}, nil
+}
+
+func toEnumValue(v *admin.EnumValue) types.EnumValue {
+	if v == nil {
+		return types.EnumValue{}
+	}
+	return types.EnumValue{
+		Code:    v.GetCode(),
+		Name:    v.GetName(),
+		Message: v.GetMessage(),
+	}
 }

@@ -19,8 +19,8 @@ type (
 		CreatedAt int64  `json:"created_at"` // 毫秒
 	}
 	CUserListRes {
+		PageQueryResp
 		Items []CUserItem `json:"items"`
-		Total int64       `json:"total"`
 	}
 
 	CUserDetailReq {
@@ -69,7 +69,7 @@ service admin-api {
 
 	@doc (
 		description: "C端用户详情"
-		permission: "user:list"
+		permission: "user:detail"
 	)
 	@handler GetUserDetail
 	get /users/detail (CUserDetailReq) returns (CUserDetailRes)

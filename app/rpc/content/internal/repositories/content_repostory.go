@@ -34,10 +34,8 @@ type ContentRepository interface {
 	BatchGetIndexableByIDs(contentIDs []int64) (map[int64]*model.RanFeedContent, error)
 	ScanIndexableByIDCursor(cursorID int64, limit int) ([]*model.RanFeedContent, error)
 	BatchUpdateHotScores(ids []int64, scores []float64, updatedAt time.Time) error
-	// AdminListContents 管理端多条件筛选 + id 倒序 offset 分页 不限状态/可见性 仅软删过滤
-	AdminListContents(status *int32, contentType *int32, authorID *int64, offset, limit int) ([]*model.RanFeedContent, error)
-	// AdminCountContents 管理端多条件筛选下的总数 仅软删过滤
-	AdminCountContents(status *int32, contentType *int32, authorID *int64) (int64, error)
+	// AdminPageContents 管理端多条件筛选 + id 倒序 offset 分页 返回列表与总数
+	AdminPageContents(status *int32, contentType *int32, authorID *int64, offset, limit int) ([]*model.RanFeedContent, int64, error)
 	// AdminGetByID 管理端取任意状态内容(含非公开) 仅软删过滤
 	AdminGetByID(contentID int64) (*model.RanFeedContent, error)
 	// AdminUpdateStatus 管理端翻转状态 落 updated_by 返回受影响行数
@@ -487,10 +485,10 @@ func (r *ContentRepositoryImpl) adminContentQuery(status *int32, contentType *in
 	return stmt
 }
 
-// AdminListContents 管理端列表 id 倒序 offset 分页 不限状态/可见性 仅软删过滤
-func (r *ContentRepositoryImpl) AdminListContents(status *int32, contentType *int32, authorID *int64, offset, limit int) ([]*model.RanFeedContent, error) {
+// AdminPageContents 管理端分页列表 id 倒序 不限状态/可见性 仅软删过滤 复用 FindByPage 末页不满免 COUNT
+func (r *ContentRepositoryImpl) AdminPageContents(status *int32, contentType *int32, authorID *int64, offset, limit int) ([]*model.RanFeedContent, int64, error) {
 	if limit <= 0 {
-		return []*model.RanFeedContent{}, nil
+		return []*model.RanFeedContent{}, 0, nil
 	}
 	q := r.getQuery()
 	return r.adminContentQuery(status, contentType, authorID).
@@ -507,14 +505,7 @@ func (r *ContentRepositoryImpl) AdminListContents(status *int32, contentType *in
 			q.RanFeedContent.CreatedAt,
 		).
 		Order(q.RanFeedContent.ID.Desc()).
-		Offset(offset).
-		Limit(limit).
-		Find()
-}
-
-// AdminCountContents 管理端多条件筛选下的总数 仅软删过滤
-func (r *ContentRepositoryImpl) AdminCountContents(status *int32, contentType *int32, authorID *int64) (int64, error) {
-	return r.adminContentQuery(status, contentType, authorID).Count()
+		FindByPage(offset, limit)
 }
 
 // AdminGetByID 管理端取任意状态内容(含非公开) 仅软删过滤 未命中返回 nil

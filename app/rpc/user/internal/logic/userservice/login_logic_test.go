@@ -22,10 +22,10 @@ import (
 
 // mockUserRepository 实现 repositories.UserRepository，仅用于测试
 type mockUserRepository struct {
-	getByMobileFn  func(mobile string) (*do.UserDO, error)
-	getByIDFn      func(userID int64) (*do.UserDO, error)
-	batchGetByIDs  func(userIDs []int64) (map[int64]*do.UserDO, error)
-	createFn       func(userDO *do.UserDO) (int64, error)
+	getByMobileFn func(mobile string) (*do.UserDO, error)
+	getByIDFn     func(userID int64) (*do.UserDO, error)
+	batchGetByIDs func(userIDs []int64) (map[int64]*do.UserDO, error)
+	createFn      func(userDO *do.UserDO) (int64, error)
 }
 
 func (m *mockUserRepository) WithTx(_ *query.Query) repositories.UserRepository { return m }
@@ -47,10 +47,9 @@ func (m *mockUserRepository) BatchGetActiveForIndex([]int64) (map[int64]*model.R
 func (m *mockUserRepository) ScanActiveForIndex(int64, int) ([]*model.RanFeedUser, error) {
 	return nil, nil
 }
-func (m *mockUserRepository) AdminListUsers(int32, string, int, int) ([]*model.RanFeedUser, error) {
-	return nil, nil
+func (m *mockUserRepository) AdminPageUsers(int32, string, int, int) ([]*model.RanFeedUser, int64, error) {
+	return nil, 0, nil
 }
-func (m *mockUserRepository) AdminCountUsers(int32, string) (int64, error) { return 0, nil }
 func (m *mockUserRepository) AdminGetByID(int64) (*model.RanFeedUser, error) {
 	return nil, nil
 }

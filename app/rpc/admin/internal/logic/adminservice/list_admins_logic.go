@@ -34,22 +34,21 @@ func NewListAdminsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListAd
 	}
 }
 
-// ListAdmins 管理员分页 富化各自角色码 先统计总数为0直接返回
+// ListAdmins 管理员分页查询
 func (l *ListAdminsLogic) ListAdmins(in *admin.ListAdminsReq) (*admin.ListAdminsRes, error) {
 	status := int32(in.GetStatus())
-	total, err := l.adminUserRepo.Count(status)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("统计管理员失败"))
-	}
-	res := &admin.ListAdminsRes{Total: total}
-	if total == 0 {
-		return res, nil
-	}
-
-	offset, limit := utils.NormalizePage(int(in.GetPage()), int(in.GetPageSize()))
-	rows, err := l.adminUserRepo.List(status, offset, limit)
+	offset, limit := utils.NormalizePage[uint32, uint32](in.GetPage(), in.GetPageSize())
+	rows, total, err := l.adminUserRepo.Page(status, offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询管理员失败"))
+	}
+	res := &admin.ListAdminsRes{
+		Total:    uint32(total),
+		Page:     in.GetPage(),
+		PageSize: in.GetPageSize(),
+	}
+	if total == 0 {
+		return res, nil
 	}
 
 	roleCodesByAdmin, err := l.loadRoleCodes(rows)
@@ -68,7 +67,7 @@ func (l *ListAdminsLogic) ListAdmins(in *admin.ListAdminsReq) (*admin.ListAdmins
 	return res, nil
 }
 
-// loadRoleCodes 批量取各管理员的角色码 一次查绑定再一次查角色
+// loadRoleCodes 批量取各管理员的角色码
 func (l *ListAdminsLogic) loadRoleCodes(rows []*model.RanFeedAdminUser) (map[int64][]string, error) {
 	adminIDs := make([]int64, 0, len(rows))
 	for _, row := range rows {

@@ -46,5 +46,12 @@ func (l *ListRolesLogic) ListRoles(req *types.AdminRoleListReq) (resp *types.Adm
 			CreatedAt: it.GetCreatedAt(),
 		})
 	}
-	return &types.AdminRoleListRes{Items: items, Total: rpcRes.GetTotal()}, nil
+	return &types.AdminRoleListRes{
+		Items: items,
+		PageQueryResp: types.PageQueryResp{
+			Page:     rpcRes.GetPage(),
+			PageSize: rpcRes.GetPageSize(),
+			Total:    rpcRes.GetTotal(),
+		},
+	}, nil
 }

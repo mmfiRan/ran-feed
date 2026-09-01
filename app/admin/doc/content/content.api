@@ -24,8 +24,8 @@ type (
 		CreatedAt     int64  `json:"created_at"`   // 毫秒
 	}
 	AdminContentListRes {
+		PageQueryResp
 		Items []AdminContentListItem `json:"items"`
-		Total int64                  `json:"total"`
 	}
 
 	AdminContentDetailReq {

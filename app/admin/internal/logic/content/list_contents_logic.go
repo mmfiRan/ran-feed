@@ -70,6 +70,10 @@ func (l *ListContentsLogic) ListContents(req *types.AdminContentListReq) (resp *
 
 	return &types.AdminContentListRes{
 		Items: items,
-		Total: rpcRes.GetTotal(),
+		PageQueryResp: types.PageQueryResp{
+			Page:     rpcRes.GetPage(),
+			PageSize: rpcRes.GetPageSize(),
+			Total:    rpcRes.GetTotal(),
+		},
 	}, nil
 }

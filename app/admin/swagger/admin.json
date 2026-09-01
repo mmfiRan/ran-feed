@@ -22,7 +22,7 @@
   "paths": {
     "/v1/admin/admins": {
       "get": {
-        "description": "管理员列表 分页",
+        "description": "分页查询管理员列表",
         "produces": [
           "application/json"
         ],
@@ -37,20 +37,24 @@
         "parameters": [
           {
             "type": "integer",
-            "description": "0不限 10启用 20禁用",
-            "name": "status",
-            "in": "query",
-            "allowEmptyValue": true
-          },
-          {
-            "type": "integer",
+            "default": 1,
+            "example": 1,
             "name": "page",
             "in": "query",
-            "allowEmptyValue": true
+            "required": true
           },
           {
             "type": "integer",
+            "default": 10,
+            "example": 10,
             "name": "page_size",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "0不限 10启用 20禁用",
+            "name": "status",
             "in": "query",
             "allowEmptyValue": true
           }
@@ -75,7 +79,6 @@
                     ],
                     "properties": {
                       "created_at": {
-                        "description": "毫秒",
                         "type": "integer"
                       },
                       "id": {
@@ -91,13 +94,35 @@
                         }
                       },
                       "status": {
-                        "type": "integer"
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
                       },
                       "username": {
                         "type": "string"
                       }
                     }
                   }
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "page_size": {
+                  "type": "integer"
                 },
                 "total": {
                   "type": "integer"
@@ -110,7 +135,7 @@
     },
     "/v1/admin/admins/create": {
       "post": {
-        "description": "建管理员",
+        "description": "创建管理员",
         "consumes": [
           "application/json"
         ],
@@ -207,7 +232,6 @@
                   ],
                   "properties": {
                     "created_at": {
-                      "description": "毫秒",
                       "type": "integer"
                     },
                     "id": {
@@ -223,7 +247,23 @@
                       }
                     },
                     "status": {
-                      "type": "integer"
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "name",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
                     },
                     "username": {
                       "type": "string"
@@ -360,10 +400,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "action": {
-                  "type": "string"
-                },
                 "id": {
+                  "type": "integer"
+                },
+                "status": {
                   "type": "integer"
                 }
               }
@@ -382,7 +422,7 @@
     },
     "/v1/admin/admins/update": {
       "post": {
-        "description": "改管理员昵称",
+        "description": "修改管理员昵称",
         "consumes": [
           "application/json"
         ],
@@ -427,7 +467,7 @@
     },
     "/v1/admin/contents": {
       "get": {
-        "description": "内容列表 多条件筛选 + 分页",
+        "description": "内容列表",
         "produces": [
           "application/json"
         ],
@@ -440,6 +480,22 @@
         "summary": "ListContents",
         "operationId": "contentListContents",
         "parameters": [
+          {
+            "type": "integer",
+            "default": 1,
+            "example": 1,
+            "name": "page",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "example": 10,
+            "name": "page_size",
+            "in": "query",
+            "required": true
+          },
           {
             "type": "integer",
             "description": "状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝",
@@ -457,18 +513,6 @@
           {
             "type": "integer",
             "name": "author_id",
-            "in": "query",
-            "allowEmptyValue": true
-          },
-          {
-            "type": "integer",
-            "name": "page",
-            "in": "query",
-            "allowEmptyValue": true
-          },
-          {
-            "type": "integer",
-            "name": "page_size",
             "in": "query",
             "allowEmptyValue": true
           }
@@ -534,6 +578,12 @@
                       }
                     }
                   }
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "page_size": {
+                  "type": "integer"
                 },
                 "total": {
                   "type": "integer"
@@ -655,7 +705,7 @@
     },
     "/v1/admin/contents/review": {
       "post": {
-        "description": "先审后发审核 通过/拒绝 待审队列用 GET /contents?status=60",
+        "description": "先审后发审核",
         "consumes": [
           "application/json"
         ],
@@ -883,7 +933,23 @@
                       "type": "string"
                     },
                     "status": {
-                      "type": "integer"
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "name",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
                     },
                     "username": {
                       "type": "string"
@@ -904,7 +970,7 @@
     },
     "/v1/admin/operation-logs": {
       "get": {
-        "description": "操作审计日志 多条件筛选 + 分页",
+        "description": "操作审计日志",
         "produces": [
           "application/json"
         ],
@@ -917,6 +983,22 @@
         "summary": "ListOperationLogs",
         "operationId": "auditListOperationLogs",
         "parameters": [
+          {
+            "type": "integer",
+            "default": 1,
+            "example": 1,
+            "name": "page",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "example": 10,
+            "name": "page_size",
+            "in": "query",
+            "required": true
+          },
           {
             "type": "integer",
             "name": "admin_id",
@@ -946,18 +1028,6 @@
             "type": "integer",
             "description": "毫秒",
             "name": "end_time",
-            "in": "query",
-            "allowEmptyValue": true
-          },
-          {
-            "type": "integer",
-            "name": "page",
-            "in": "query",
-            "allowEmptyValue": true
-          },
-          {
-            "type": "integer",
-            "name": "page_size",
             "in": "query",
             "allowEmptyValue": true
           }
@@ -1010,6 +1080,12 @@
                       }
                     }
                   }
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "page_size": {
+                  "type": "integer"
                 },
                 "total": {
                   "type": "integer"
@@ -1097,15 +1173,19 @@
         "parameters": [
           {
             "type": "integer",
+            "default": 1,
+            "example": 1,
             "name": "page",
             "in": "query",
-            "allowEmptyValue": true
+            "required": true
           },
           {
             "type": "integer",
+            "default": 10,
+            "example": 10,
             "name": "page_size",
             "in": "query",
-            "allowEmptyValue": true
+            "required": true
           }
         ],
         "responses": {
@@ -1144,6 +1224,12 @@
                       }
                     }
                   }
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "page_size": {
+                  "type": "integer"
                 },
                 "total": {
                   "type": "integer"
@@ -1412,9 +1498,251 @@
           }
         }
       }
+    },
+    "/v1/admin/users": {
+      "get": {
+        "description": "C端用户列表 多条件筛选 + 分页",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "ListUsers",
+        "operationId": "userListUsers",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 1,
+            "example": 1,
+            "name": "page",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "example": 10,
+            "name": "page_size",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "status",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "string",
+            "name": "keyword",
+            "in": "query",
+            "allowEmptyValue": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "user_id",
+                      "username",
+                      "nickname",
+                      "mobile",
+                      "avatar",
+                      "status",
+                      "created_at"
+                    ],
+                    "properties": {
+                      "avatar": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "description": "毫秒",
+                        "type": "integer"
+                      },
+                      "mobile": {
+                        "type": "string"
+                      },
+                      "nickname": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "integer"
+                      },
+                      "user_id": {
+                        "type": "integer"
+                      },
+                      "username": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "page_size": {
+                  "type": "integer"
+                },
+                "total": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/users/detail": {
+      "get": {
+        "description": "C端用户详情",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "GetUserDetail",
+        "operationId": "userGetUserDetail",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "user_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "detail": {
+                  "type": "object",
+                  "required": [
+                    "user_id",
+                    "username",
+                    "nickname",
+                    "mobile",
+                    "avatar",
+                    "status",
+                    "bio",
+                    "gender",
+                    "email",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "properties": {
+                    "avatar": {
+                      "type": "string"
+                    },
+                    "bio": {
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "description": "毫秒",
+                      "type": "integer"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "gender": {
+                      "type": "integer"
+                    },
+                    "mobile": {
+                      "type": "string"
+                    },
+                    "nickname": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "integer"
+                    },
+                    "updated_at": {
+                      "description": "毫秒",
+                      "type": "integer"
+                    },
+                    "user_id": {
+                      "type": "integer"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/users/status": {
+      "post": {
+        "description": "C端用户封禁/恢复",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "SetUserStatus",
+        "operationId": "userSetUserStatus",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "action": {
+                  "type": "string"
+                },
+                "user_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "description": "变更后状态",
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
-  "x-date": "2026-07-09 15:34:37",
+  "x-date": "2026-09-01 17:42:04",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

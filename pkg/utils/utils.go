@@ -5,11 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"net/http"
-	"strconv"
 	"time"
 
-	"google.golang.org/grpc/metadata"
+	"ran-feed/pkg/consts"
 )
 
 func GetSixDigitsVerificationCode(length ...int) string {
@@ -33,86 +31,34 @@ func GetContextUserIdWithDefault(ctx context.Context) int64 {
 	return id
 }
 
-// GetContextUserId 仅从 context 中获取 int64 类型的 "user_id"，并返回 (id, error)
-// - 当 ctx 为空、未找到 user_id、或类型不是 int64 时返回错误；不再发生 panic
+// GetContextUserId 仅从 context 中获取 int64 类型的 C 端用户ID
 func GetContextUserId(ctx context.Context) (int64, error) {
-	//// 默认返回一个固定的用户ID，用于测试
-	//return snowflake.GenID(), nil
+	return GetContextID(ctx, consts.CtxKeyUserID)
+}
+
+// GetContextAdminId 仅从 context 中获取 int64 类型的后台管理员ID
+func GetContextAdminId(ctx context.Context) (int64, error) {
+	return GetContextID(ctx, consts.CtxKeyAdminID)
+}
+
+// GetContextAdminIdWithDefault 从 context 中获取后台管理员ID
+func GetContextAdminIdWithDefault(ctx context.Context) int64 {
+	id, _ := GetContextAdminId(ctx)
+	return id
+}
+
+// GetContextID 从 context 中按 key 取 int64 类型的 ID
+func GetContextID(ctx context.Context, key string) (int64, error) {
 	if ctx == nil {
 		return 0, errors.New("上下文ctx为空")
 	}
-	v := ctx.Value("user_id")
+	v := ctx.Value(key)
 	if v == nil {
-		return 0, errors.New("user_id不存在于上下文ctx中")
+		return 0, fmt.Errorf("%s不存在于上下文ctx中", key)
 	}
 	id, ok := v.(int64)
 	if !ok {
-		return 0, fmt.Errorf("user_id类型不是int64，实际类型为%T", v)
+		return 0, fmt.Errorf("%s类型不是int64，实际类型为%T", key, v)
 	}
 	return id, nil
-}
-
-func CombinedErrorAndMessage(err error, message string) (error, string) {
-	if err == nil {
-		return errors.New(message), message
-	}
-	err = fmt.Errorf("%s: %w", message, err)
-	return err, message
-}
-
-// GetUserIDFromRpcMetadata 从RPC的metadata中获取用户id
-func GetUserIDFromRpcMetadata(ctx context.Context, metadataKey ...string) (int64, error) {
-	if ctx == nil {
-		return 0, errors.New("上下文ctx为空")
-	}
-
-	// 设置默认的metadata键名
-	key := "x-user-id"
-	if len(metadataKey) > 0 && metadataKey[0] != "" {
-		key = metadataKey[0]
-	}
-
-	// 从上下文获取metadata
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return 0, errors.New("无法从上下文获取metadata")
-	}
-
-	// 获取用户ID值
-	vals := md.Get(key)
-	if len(vals) == 0 {
-		return 0, fmt.Errorf("metadata中未找到键: %s", key)
-	}
-
-	// 解析用户ID
-	userID, err := strconv.ParseInt(vals[0], 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("解析用户ID失败: %w", err)
-	}
-
-	// 验证用户ID有效性
-	if userID <= 0 {
-		return 0, errors.New("用户ID必须大于0")
-	}
-
-	return userID, nil
-}
-
-// GetUserIDFromRpcMetadataSafe 从RPC的metadata中安全获取用户id，不会返回错误
-func GetUserIDFromRpcMetadataSafe(ctx context.Context, metadataKey ...string) int64 {
-	userID, _ := GetUserIDFromRpcMetadata(ctx, metadataKey...)
-	return userID
-}
-
-func GetUserIdFromHttpHeader(r *http.Request) (int64, error) {
-	val := r.Header.Get("X-User-Id")
-	if val == "" {
-		return 0, errors.New("用户ID不存在于请求头中")
-	}
-	// 获取出来之后设置到请求上下文中
-	userID, err := strconv.ParseInt(val, 10, 64)
-	if err != nil {
-		return 0, fmt.Errorf("解析X-User-Id失败: %w", err)
-	}
-	return userID, nil
 }

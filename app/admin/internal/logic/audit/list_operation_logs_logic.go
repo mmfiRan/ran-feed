@@ -57,6 +57,10 @@ func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogL
 
 	return &types.AdminOperationLogListRes{
 		Items: items,
-		Total: rpcRes.GetTotal(),
+		PageQueryResp: types.PageQueryResp{
+			Page:     rpcRes.GetPage(),
+			PageSize: rpcRes.GetPageSize(),
+			Total:    rpcRes.GetTotal(),
+		},
 	}, nil
 }

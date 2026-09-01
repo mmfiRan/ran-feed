@@ -25,6 +25,13 @@ func TestClampPageSize(t *testing.T) {
 	}
 }
 
+func TestClampPageSizeTyped(t *testing.T) {
+	assert.Equal(t, 20, ClampPageSize(uint32(0)))
+	assert.Equal(t, 20, ClampPageSize(int64(-5)))
+	assert.Equal(t, 50, ClampPageSize(uint16(500)))
+	assert.Equal(t, 30, ClampPageSize(uint8(30)))
+}
+
 func TestNormalizePage(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -47,4 +54,14 @@ func TestNormalizePage(t *testing.T) {
 			assert.Equal(t, tt.wantLimit, limit)
 		})
 	}
+}
+
+func TestNormalizePageTyped(t *testing.T) {
+	offset, limit := NormalizePage(uint32(3), uint32(20))
+	assert.Equal(t, 40, offset)
+	assert.Equal(t, 20, limit)
+
+	offset, limit = NormalizePage(uint32(2), uint32(0))
+	assert.Equal(t, 20, offset)
+	assert.Equal(t, 20, limit)
 }

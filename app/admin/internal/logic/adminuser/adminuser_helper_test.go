@@ -5,26 +5,30 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
 )
 
-func TestMapStatusAction(t *testing.T) {
+func TestToEnumValue(t *testing.T) {
 	tests := []struct {
-		name       string
-		action     string
-		wantStatus admin.AdminStatus
-		wantOk     bool
+		name string
+		in   *admin.EnumValue
+		want types.EnumValue
 	}{
-		{name: "启用", action: "enable", wantStatus: admin.AdminStatus_ADMIN_ENABLED, wantOk: true},
-		{name: "禁用", action: "disable", wantStatus: admin.AdminStatus_ADMIN_DISABLED, wantOk: true},
-		{name: "非法", action: "ban", wantStatus: admin.AdminStatus_ADMIN_STATUS_UNKNOWN, wantOk: false},
-		{name: "空", action: "", wantStatus: admin.AdminStatus_ADMIN_STATUS_UNKNOWN, wantOk: false},
+		{
+			name: "正常",
+			in:   &admin.EnumValue{Code: 10, Name: "ENABLED", Message: "启用"},
+			want: types.EnumValue{Code: 10, Name: "ENABLED", Message: "启用"},
+		},
+		{
+			name: "nil 返回零值",
+			in:   nil,
+			want: types.EnumValue{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			status, ok := mapStatusAction(tt.action)
-			assert.Equal(t, tt.wantOk, ok)
-			assert.Equal(t, tt.wantStatus, status)
+			assert.Equal(t, tt.want, toEnumValue(tt.in))
 		})
 	}
 }

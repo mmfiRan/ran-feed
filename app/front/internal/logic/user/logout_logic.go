@@ -6,6 +6,7 @@ package user
 import (
 	"context"
 
+	"ran-feed/app/front/internal/common/consts"
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
 	"ran-feed/app/rpc/user/user"
@@ -35,7 +36,7 @@ func (l *LogoutLogic) Logout() (resp *types.LogoutRes, err error) {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("获取用户id失败"))
 	}
 
-	tokenVal := l.ctx.Value("token")
+	tokenVal := l.ctx.Value(consts.CtxKeyToken)
 	token, ok := tokenVal.(string)
 	if !ok || token == "" {
 		return nil, errorx.NewMsg("token缺失")

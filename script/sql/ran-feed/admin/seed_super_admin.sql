@@ -6,9 +6,18 @@ ON DUPLICATE KEY UPDATE name = VALUES(name);
 -- Phase A 权限点（管理自身：账号/角色/权限）
 INSERT INTO ran_feed_admin_permission (code, name, module)
 VALUES ('admin:user:list', '管理员列表', 'admin'),
-       ('admin:user:manage', '管理员管理', 'admin'),
+       ('admin:user:detail', '管理员详情', 'admin'),
+       ('admin:user:create', '创建管理员', 'admin'),
+       ('admin:user:update', '修改管理员昵称', 'admin'),
+       ('admin:user:status', '启用禁用管理员', 'admin'),
+       ('admin:user:reset-password', '重置管理员密码', 'admin'),
+       ('admin:user:set-roles', '设置管理员角色', 'admin'),
        ('admin:role:list', '角色列表', 'admin'),
-       ('admin:role:manage', '角色管理', 'admin'),
+       ('admin:role:detail', '角色详情', 'admin'),
+       ('admin:role:create', '创建角色', 'admin'),
+       ('admin:role:update', '修改角色', 'admin'),
+       ('admin:role:set-permissions', '设置角色权限', 'admin'),
+       ('admin:role:delete', '删除角色', 'admin'),
        ('admin:permission:list', '权限点列表', 'admin'),
        ('admin:audit:list', '审计日志查询', 'admin')
 ON DUPLICATE KEY UPDATE name = VALUES(name);

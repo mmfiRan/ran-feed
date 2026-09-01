@@ -2980,7 +2980,9 @@ func (x *AdminListContentsReq) GetPageSize() uint32 {
 type AdminListContentsRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*AdminContentItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	Total         uint32                 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	Page          uint32                 `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      uint32                 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3022,9 +3024,23 @@ func (x *AdminListContentsRes) GetItems() []*AdminContentItem {
 	return nil
 }
 
-func (x *AdminListContentsRes) GetTotal() int64 {
+func (x *AdminListContentsRes) GetTotal() uint32 {
 	if x != nil {
 		return x.Total
+	}
+	return 0
+}
+
+func (x *AdminListContentsRes) GetPage() uint32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *AdminListContentsRes) GetPageSize() uint32 {
+	if x != nil {
+		return x.PageSize
 	}
 	return 0
 }
@@ -3781,10 +3797,12 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\a_statusB\x0f\n" +
 	"\r_content_typeB\f\n" +
 	"\n" +
-	"_author_id\"]\n" +
+	"_author_id\"\x8e\x01\n" +
 	"\x14AdminListContentsRes\x12/\n" +
 	"\x05items\x18\x01 \x03(\v2\x19.content.AdminContentItemR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total\"9\n" +
+	"\x05total\x18\x02 \x01(\rR\x05total\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\rR\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\rR\bpageSize\"9\n" +
 	"\x18AdminGetContentDetailReq\x12\x1d\n" +
 	"\n" +
 	"content_id\x18\x01 \x01(\x03R\tcontentId\"\xfc\x04\n" +

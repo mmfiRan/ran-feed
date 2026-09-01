@@ -5,20 +5,21 @@ import (
 
 	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/admin/internal/svc"
+	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// mapStatusAction 启禁 action 映射状态枚举 第二返回 false 表示不支持
-func mapStatusAction(action string) (admin.AdminStatus, bool) {
-	switch action {
-	case consts.AdminUserActionEnable:
-		return admin.AdminStatus_ADMIN_ENABLED, true
-	case consts.AdminUserActionDisable:
-		return admin.AdminStatus_ADMIN_DISABLED, true
-	default:
-		return admin.AdminStatus_ADMIN_STATUS_UNKNOWN, false
+// toEnumValue pb 枚举值转 HTTP 响应统一枚举结构
+func toEnumValue(v *admin.EnumValue) types.EnumValue {
+	if v == nil {
+		return types.EnumValue{}
+	}
+	return types.EnumValue{
+		Code:    v.GetCode(),
+		Name:    v.GetName(),
+		Message: v.GetMessage(),
 	}
 }
 

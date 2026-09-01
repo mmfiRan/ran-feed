@@ -186,7 +186,9 @@ message AdminListUsersReq {
 
 message AdminListUsersRes {
   repeated AdminUserItem items = 1;
-  int64 total = 2;
+  uint32 total = 2;
+  uint32 page = 3;
+  uint32 page_size = 4;
 }
 
 // 后台管理获取用户详情

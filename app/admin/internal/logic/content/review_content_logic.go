@@ -11,6 +11,7 @@ import (
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -45,7 +46,7 @@ func (l *ReviewContentLogic) ReviewContent(req *types.AdminContentReviewReq) (re
 		return nil, errorx.NewMsg("不支持的审核决策")
 	}
 
-	operatorID, _ := l.ctx.Value(consts.CtxKeyAdminID).(int64)
+	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
 
 	rpcRes, err := l.svcCtx.ContentAdminRpc.AdminReviewContent(l.ctx, &content.AdminReviewContentReq{
 		ContentId:    req.ContentId,

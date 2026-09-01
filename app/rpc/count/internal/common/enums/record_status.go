@@ -1,5 +1,5 @@
-// Package enum count 服务级枚举 实现 pkg/enum.Enum 通用契约
-package enum
+// Package enums count 服务级业务枚举 实现 pkg/enums.Enum 通用契约
+package enums
 
 import "fmt"
 
@@ -16,6 +16,11 @@ var recordStatusNames = map[RecordStatus]string{
 	StatusCancelled: "CANCELLED",
 }
 
+var recordStatusMessages = map[RecordStatus]string{
+	StatusNormal:    "正常",
+	StatusCancelled: "取消",
+}
+
 func (s RecordStatus) Int32() int32 {
 	return int32(s)
 }
@@ -30,6 +35,13 @@ func (s RecordStatus) String() string {
 		return name
 	}
 	return fmt.Sprintf("RecordStatus(%d)", s)
+}
+
+func (s RecordStatus) Message() string {
+	if msg, ok := recordStatusMessages[s]; ok {
+		return msg
+	}
+	return fmt.Sprintf("未知(%d)", s)
 }
 
 // IsActive 记录是否有效 正常即有效

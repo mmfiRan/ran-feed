@@ -1,4 +1,4 @@
-package enum
+package enums
 
 import (
 	"testing"
@@ -8,9 +8,9 @@ import (
 
 func TestRecordStatus(t *testing.T) {
 	tests := []struct {
-		name      string
-		status    RecordStatus
-		wantValid bool
+		name       string
+		status     RecordStatus
+		wantValid  bool
 		wantActive bool
 	}{
 		{name: "正常有效", status: StatusNormal, wantValid: true, wantActive: true},

@@ -14,7 +14,7 @@ type AdminUserRoleRepository interface {
 	WithTx(tx *query.Query) AdminUserRoleRepository
 	// ListRoleIDsByAdminID 取管理员绑定的角色ID集合
 	ListRoleIDsByAdminID(adminID int64) ([]int64, error)
-	// ListRoleIDsByAdminIDs 取管理员集合各自绑定的角色ID 供列表富化
+	// ListRoleIDsByAdminIDs 取管理员集合各自绑定的角色ID
 	ListRoleIDsByAdminIDs(adminIDs []int64) (map[int64][]int64, error)
 	// ListAdminIDsByRoleID 取绑定该角色的管理员ID集合 供失效权限缓存
 	ListAdminIDsByRoleID(roleID int64) ([]int64, error)
@@ -77,7 +77,7 @@ func (r *adminUserRoleRepositoryImpl) ListRoleIDsByAdminID(adminID int64) ([]int
 	return ids, nil
 }
 
-// ListRoleIDsByAdminIDs 取管理员集合各自绑定的角色ID 供列表富化
+// ListRoleIDsByAdminIDs 取管理员集合各自绑定的角色ID
 func (r *adminUserRoleRepositoryImpl) ListRoleIDsByAdminIDs(adminIDs []int64) (map[int64][]int64, error) {
 	if len(adminIDs) == 0 {
 		return map[int64][]int64{}, nil

@@ -1635,7 +1635,9 @@ func (x *AdminListUsersReq) GetPageSize() uint32 {
 type AdminListUsersRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*AdminUserItem       `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	Total         uint32                 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	Page          uint32                 `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      uint32                 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1677,9 +1679,23 @@ func (x *AdminListUsersRes) GetItems() []*AdminUserItem {
 	return nil
 }
 
-func (x *AdminListUsersRes) GetTotal() int64 {
+func (x *AdminListUsersRes) GetTotal() uint32 {
 	if x != nil {
 		return x.Total
+	}
+	return 0
+}
+
+func (x *AdminListUsersRes) GetPage() uint32 {
+	if x != nil {
+		return x.Page
+	}
+	return 0
+}
+
+func (x *AdminListUsersRes) GetPageSize() uint32 {
+	if x != nil {
+		return x.PageSize
 	}
 	return 0
 }
@@ -1989,10 +2005,12 @@ const file_app_rpc_user_proto_user_proto_rawDesc = "" +
 	"\tpage_size\x18\x04 \x01(\rR\bpageSizeB\t\n" +
 	"\a_statusB\n" +
 	"\n" +
-	"\b_keyword\"T\n" +
+	"\b_keyword\"\x85\x01\n" +
 	"\x11AdminListUsersRes\x12)\n" +
 	"\x05items\x18\x01 \x03(\v2\x13.user.AdminUserItemR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x03R\x05total\"0\n" +
+	"\x05total\x18\x02 \x01(\rR\x05total\x12\x12\n" +
+	"\x04page\x18\x03 \x01(\rR\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\rR\bpageSize\"0\n" +
 	"\x15AdminGetUserDetailReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\"F\n" +
 	"\x15AdminGetUserDetailRes\x12-\n" +

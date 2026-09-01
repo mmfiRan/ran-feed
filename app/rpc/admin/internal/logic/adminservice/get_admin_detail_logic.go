@@ -16,7 +16,6 @@ type GetAdminDetailLogic struct {
 	svcCtx *svc.ServiceContext
 	logx.Logger
 	adminUserRepo repositories.AdminUserRepository
-	userRoleRepo  repositories.AdminUserRoleRepository
 	roleRepo      repositories.AdminRoleRepository
 }
 
@@ -26,16 +25,12 @@ func NewGetAdminDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ge
 		svcCtx:        svcCtx,
 		Logger:        logx.WithContext(ctx),
 		adminUserRepo: repositories.NewAdminUserRepository(ctx, svcCtx.MysqlDb),
-		userRoleRepo:  repositories.NewAdminUserRoleRepository(ctx, svcCtx.MysqlDb),
 		roleRepo:      repositories.NewAdminRoleRepository(ctx, svcCtx.MysqlDb),
 	}
 }
 
 // GetAdminDetail 管理员详情含所绑角色ID与角色码
 func (l *GetAdminDetailLogic) GetAdminDetail(in *admin.GetAdminDetailReq) (*admin.GetAdminDetailRes, error) {
-	if in.GetId() <= 0 {
-		return nil, errorx.NewMsg("参数错误")
-	}
 
 	row, err := l.adminUserRepo.GetByID(in.GetId())
 	if err != nil {
@@ -45,19 +40,18 @@ func (l *GetAdminDetailLogic) GetAdminDetail(in *admin.GetAdminDetailReq) (*admi
 		return nil, errorx.NewMsg("管理员不存在")
 	}
 
-	roleIDs, err := l.userRoleRepo.ListRoleIDsByAdminID(in.GetId())
+	roles, err := l.roleRepo.ListByAdminID(in.GetId())
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询管理员角色失败"))
 	}
-	roles, err := l.roleRepo.ListByIDs(roleIDs)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询角色失败"))
-	}
+	roleIDs := make([]int64, 0, len(roles))
 	codes := make([]string, 0, len(roles))
 	for _, role := range roles {
-		if role != nil {
-			codes = append(codes, role.Code)
+		if role == nil {
+			continue
 		}
+		roleIDs = append(roleIDs, role.ID)
+		codes = append(codes, role.Code)
 	}
 
 	return &admin.GetAdminDetailRes{

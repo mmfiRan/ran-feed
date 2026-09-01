@@ -2,8 +2,6 @@ package adminservicelogic
 
 import (
 	"context"
-	"strings"
-
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
@@ -30,11 +28,7 @@ func NewUpdateAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Updat
 
 // UpdateAdmin 改管理员昵称
 func (l *UpdateAdminLogic) UpdateAdmin(in *admin.UpdateAdminReq) (*admin.UpdateAdminRes, error) {
-	nickname := strings.TrimSpace(in.GetNickname())
-	if in.GetId() <= 0 || nickname == "" {
-		return nil, errorx.NewMsg("参数错误")
-	}
-
+	nickname := in.GetNickname()
 	affected, err := l.adminUserRepo.UpdateProfile(in.GetId(), nickname, in.GetOperatorId())
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("更新管理员失败"))

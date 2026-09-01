@@ -18,6 +18,11 @@ var likeStatusNames = map[LikeStatus]string{
 	LikeStatusCancel: "CANCEL",
 }
 
+var likeStatusMessages = map[LikeStatus]string{
+	LikeStatusLike:   "点赞",
+	LikeStatusCancel: "取消",
+}
+
 func (s LikeStatus) Int32() int32 {
 	return int32(s)
 }
@@ -32,6 +37,13 @@ func (s LikeStatus) String() string {
 		return name
 	}
 	return fmt.Sprintf("LikeStatus(%d)", s)
+}
+
+func (s LikeStatus) Message() string {
+	if msg, ok := likeStatusMessages[s]; ok {
+		return msg
+	}
+	return fmt.Sprintf("未知(%d)", s)
 }
 
 // IsLiked 是否为点赞态

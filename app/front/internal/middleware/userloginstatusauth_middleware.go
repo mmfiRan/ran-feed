@@ -25,9 +25,6 @@ const (
 	defaultSessionTTL = 7 * 24 * time.Hour
 	renewRatio        = 1.0 / 3.0
 
-	ctxKeyUserID = "user_id"
-	ctxKeyToken  = "token"
-
 	headerAuthorization = "Authorization"
 
 	errNeedLoginMsg = "用户未登录"
@@ -60,8 +57,8 @@ func (m *UserLoginStatusAuthMiddleware) Handle(next http.HandlerFunc) http.Handl
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), ctxKeyUserID, userID)
-		ctx = context.WithValue(ctx, ctxKeyToken, token)
+		ctx := context.WithValue(r.Context(), consts.CtxKeyUserID, userID)
+		ctx = context.WithValue(ctx, consts.CtxKeyToken, token)
 		next(w, r.WithContext(ctx))
 	}
 }

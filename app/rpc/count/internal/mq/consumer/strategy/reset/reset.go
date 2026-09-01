@@ -9,7 +9,7 @@ import (
 
 	"ran-feed/app/rpc/count/count"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
-	"ran-feed/pkg/enum"
+	"ran-feed/pkg/enums"
 )
 
 const contentTableName = "ran_feed_content"
@@ -70,5 +70,5 @@ func isDeletedTransition(row, oldRow map[string]interface{}) bool {
 	if !okOld || !okNew {
 		return false
 	}
-	return !enum.IsDeleted(int32(oldVal)).IsDel() && enum.IsDeleted(int32(newVal)).IsDel()
+	return !enums.IsDeleted(int32(oldVal)).IsDel() && enums.IsDeleted(int32(newVal)).IsDel()
 }

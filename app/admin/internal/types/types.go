@@ -53,8 +53,8 @@ type AdminContentListReq struct {
 }
 
 type AdminContentListRes struct {
+	PageQueryResp
 	Items []AdminContentListItem `json:"items"`
-	Total int64                  `json:"total"`
 }
 
 type AdminContentReviewReq struct {
@@ -77,10 +77,10 @@ type AdminContentStatusRes struct {
 }
 
 type AdminInfo struct {
-	AdminId  int64  `json:"admin_id"`
-	Username string `json:"username"`
-	Nickname string `json:"nickname"`
-	Status   int32  `json:"status"`
+	AdminId  int64     `json:"admin_id"`
+	Username string    `json:"username"`
+	Nickname string    `json:"nickname"`
+	Status   EnumValue `json:"status"`
 }
 
 type AdminLoginReq struct {
@@ -125,8 +125,8 @@ type AdminOperationLogListReq struct {
 }
 
 type AdminOperationLogListRes struct {
+	PageQueryResp
 	Items []AdminOperationLogItem `json:"items"`
-	Total int64                   `json:"total"`
 }
 
 type AdminPermissionItem struct {
@@ -183,8 +183,8 @@ type AdminRoleListReq struct {
 }
 
 type AdminRoleListRes struct {
+	PageQueryResp
 	Items []AdminRoleItem `json:"items"`
-	Total int64           `json:"total"`
 }
 
 type AdminRoleSetPermissionsReq struct {
@@ -225,12 +225,12 @@ type AdminUserDetailRes struct {
 }
 
 type AdminUserItem struct {
-	Id        int64    `json:"id"`
-	Username  string   `json:"username"`
-	Nickname  string   `json:"nickname"`
-	Status    int32    `json:"status"`
-	RoleCodes []string `json:"role_codes"`
-	CreatedAt int64    `json:"created_at"` // 毫秒
+	Id        int64     `json:"id"`
+	Username  string    `json:"username"`
+	Nickname  string    `json:"nickname"`
+	Status    EnumValue `json:"status"`
+	RoleCodes []string  `json:"role_codes"`
+	CreatedAt int64     `json:"created_at"`
 }
 
 type AdminUserListReq struct {
@@ -239,8 +239,8 @@ type AdminUserListReq struct {
 }
 
 type AdminUserListRes struct {
+	PageQueryResp
 	Items []AdminUserItem `json:"items"`
-	Total int64           `json:"total"`
 }
 
 type AdminUserResetPasswordReq struct {
@@ -260,8 +260,8 @@ type AdminUserSetRolesRes struct {
 }
 
 type AdminUserStatusReq struct {
-	Id     int64  `json:"id,optional" validate:"required,gt=0"`
-	Action string `json:"action,optional" validate:"required,oneof=enable disable"`
+	Id     int64 `json:"id,optional" validate:"required,gt=0"`
+	Status int32 `json:"status,optional" validate:"required"`
 }
 
 type AdminUserStatusRes struct {
@@ -314,8 +314,8 @@ type CUserListReq struct {
 }
 
 type CUserListRes struct {
+	PageQueryResp
 	Items []CUserItem `json:"items"`
-	Total int64       `json:"total"`
 }
 
 type CUserStatusReq struct {
@@ -325,6 +325,12 @@ type CUserStatusReq struct {
 
 type CUserStatusRes struct {
 	Status int32 `json:"status"` // 变更后状态
+}
+
+type EnumValue struct {
+	Code    int32  `json:"code"`
+	Name    string `json:"name"`
+	Message string `json:"message"`
 }
 
 type PageQueryReq struct {
