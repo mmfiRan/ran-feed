@@ -3,17 +3,17 @@ package consts
 import (
 	"strconv"
 
-	"ran-feed/pkg/consts"
 	"ran-feed/pkg/errorx"
 )
 
 const (
-	// RedisAdminSessionPrefix 后台登录态 token 前缀 admin:session:{token}
-	RedisAdminSessionPrefix = "admin:session"
-	// RedisAdminSessionUIDPrefix 后台登录态 admin:session:uid:{adminId}
-	RedisAdminSessionUIDPrefix = "admin:session:uid"
 	// RedisAdminSessionExpireSecondsDefault 后台登录态默认过期 7 天
 	RedisAdminSessionExpireSecondsDefault = 7 * 24 * 60 * 60
+
+	// RedisAdminSessionPrefix 后台登录态 token 前缀 admin:session:{token}
+	RedisAdminSessionPrefix = "admin:session"
+	// RedisAdminSessionUIDPrefix 后台登录态反向索引 admin:session:uid:{adminId}
+	RedisAdminSessionUIDPrefix = "admin:session:uid"
 
 	// RedisAdminPermPrefix 管理员权限点集合缓存前缀 admin:perms:{adminId}
 	RedisAdminPermPrefix = "admin:perms"
@@ -24,11 +24,6 @@ const (
 
 	HeaderAuthorization = "Authorization"
 
-	// CtxKeyAdminID 后台管理员ID 统一引用公共常量
-	CtxKeyAdminID = consts.CtxKeyAdminID
-	// CtxKeyToken 登录 token 统一引用公共常量
-	CtxKeyToken = consts.CtxKeyToken
-
 	// ContentActionTakedown 内容下架 action 入参约定值
 	ContentActionTakedown = "takedown"
 	// ContentActionRestore 内容恢复 action 入参约定值
@@ -38,11 +33,6 @@ const (
 	ContentReviewApprove = "approve"
 	// ContentReviewReject 审核拒绝 decision 入参约定值
 	ContentReviewReject = "reject"
-
-	// AdminUserActionEnable 启用管理员 action 入参约定值
-	AdminUserActionEnable = "enable"
-	// AdminUserActionDisable 禁用管理员 action 入参约定值
-	AdminUserActionDisable = "disable"
 )
 
 // ErrAdminNotLogin 后台未登录
@@ -51,14 +41,17 @@ var ErrAdminNotLogin = errorx.New("管理员未登录", 100201)
 // ErrAdminForbidden 后台无权限
 var ErrAdminForbidden = errorx.New("无操作权限", 100203)
 
+// BuildAdminPermKey 管理员权限缓存键 admin:perms:{adminId}
+func BuildAdminPermKey(adminID int64) string {
+	return RedisAdminPermPrefix + ":" + strconv.FormatInt(adminID, 10)
+}
+
+// BuildAdminSessionKey 登录态 token 键
 func BuildAdminSessionKey(token string) string {
 	return RedisAdminSessionPrefix + ":" + token
 }
 
+// BuildAdminSessionUIDKey 登录态反向索引 adminId 键
 func BuildAdminSessionUIDKey(adminID int64) string {
 	return RedisAdminSessionUIDPrefix + ":" + strconv.FormatInt(adminID, 10)
-}
-
-func BuildAdminPermKey(adminID int64) string {
-	return RedisAdminPermPrefix + ":" + strconv.FormatInt(adminID, 10)
 }

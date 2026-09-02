@@ -7,9 +7,13 @@ import (
 	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/admin/internal/config"
 	"ran-feed/app/admin/internal/middleware"
-	"ran-feed/app/rpc/admin/client/adminservice"
+	adminauthservice "ran-feed/app/rpc/admin/client/adminauthservice"
+	adminauditservice "ran-feed/app/rpc/admin/client/adminauditservice"
+	adminpermissionservice "ran-feed/app/rpc/admin/client/adminpermissionservice"
+	adminroleservice "ran-feed/app/rpc/admin/client/adminroleservice"
+	"ran-feed/app/rpc/admin/client/adminuserservice"
 	"ran-feed/app/rpc/content/client/admincontentservice"
-	"ran-feed/app/rpc/user/client/adminuserservice"
+	useradminuserservice "ran-feed/app/rpc/user/client/adminuserservice"
 	"ran-feed/pkg/interceptor"
 
 	"github.com/zeromicro/go-zero/core/stores/redis"
@@ -20,16 +24,36 @@ import (
 type ServiceContext struct {
 	Config               config.Config
 	Redis                *redis.Redis
-	AdminRpc             adminservice.AdminService
+	AdminAuthRpc         adminauthservice.AdminAuthService
+	AdminAuditRpc        adminauditservice.AdminAuditService
+	AdminPermissionRpc   adminpermissionservice.AdminPermissionService
+	AdminRoleRpc         adminroleservice.AdminRoleService
+	AdminUserRpc         adminuserservice.AdminUserService
 	ContentAdminRpc      admincontentservice.AdminContentService
-	UserAdminRpc         adminuserservice.AdminUserService
+	UserAdminRpc        useradminuserservice.AdminUserService
 	AdminAuthMiddleware  rest.Middleware
 	AdminRbacMiddleware  rest.Middleware
 	AdminAuditMiddleware rest.Middleware
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	adminRpc := adminservice.NewAdminService(zrpc.MustNewClient(
+	adminAuthRpc := adminauthservice.NewAdminAuthService(zrpc.MustNewClient(
+		c.AdminRpcClientConf,
+		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
+	))
+	adminAuditRpc := adminauditservice.NewAdminAuditService(zrpc.MustNewClient(
+		c.AdminRpcClientConf,
+		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
+	))
+	adminPermissionRpc := adminpermissionservice.NewAdminPermissionService(zrpc.MustNewClient(
+		c.AdminRpcClientConf,
+		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
+	))
+	adminRoleRpc := adminroleservice.NewAdminRoleService(zrpc.MustNewClient(
+		c.AdminRpcClientConf,
+		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
+	))
+	adminUserRpc := adminuserservice.NewAdminUserService(zrpc.MustNewClient(
 		c.AdminRpcClientConf,
 		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
 	))
@@ -39,7 +63,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
 	))
 
-	userAdminRpc := adminuserservice.NewAdminUserService(zrpc.MustNewClient(
+	userAdminRpc := useradminuserservice.NewAdminUserService(zrpc.MustNewClient(
 		c.UserRpcClientConf,
 		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
 	))
@@ -49,11 +73,15 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
 		Config:               c,
 		Redis:                r,
-		AdminRpc:             adminRpc,
+		AdminAuthRpc:         adminAuthRpc,
+		AdminAuditRpc:        adminAuditRpc,
+		AdminPermissionRpc:   adminPermissionRpc,
+		AdminRoleRpc:         adminRoleRpc,
+		AdminUserRpc:         adminUserRpc,
 		ContentAdminRpc:      contentAdminRpc,
-		UserAdminRpc:         userAdminRpc,
+		UserAdminRpc:        userAdminRpc,
 		AdminAuthMiddleware:  middleware.NewAdminAuthMiddleware(r, c).Handle,
-		AdminRbacMiddleware:  middleware.NewAdminRbacMiddleware(r, adminRpc, consts.RedisAdminPermExpireSeconds).Handle,
-		AdminAuditMiddleware: middleware.NewAdminAuditMiddleware(adminRpc).Handle,
+		AdminRbacMiddleware:  middleware.NewAdminRbacMiddleware(r, adminAuthRpc, consts.RedisAdminPermExpireSeconds).Handle,
+		AdminAuditMiddleware: middleware.NewAdminAuditMiddleware(adminAuditRpc).Handle,
 	}
 }

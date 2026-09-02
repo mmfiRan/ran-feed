@@ -6,10 +6,10 @@ package user
 import (
 	"context"
 
-	"ran-feed/app/front/internal/common/consts"
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
 	"ran-feed/app/rpc/user/user"
+	"ran-feed/pkg/consts"
 	"ran-feed/pkg/errorx"
 	"ran-feed/pkg/utils"
 

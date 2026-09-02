@@ -4,18 +4,13 @@ package admin;
 
 option go_package = "./admin";
 
+import "pkg/commonpb/common.proto";
+
 // AdminStatus 管理员账号状态
 enum AdminStatus {
   ADMIN_STATUS_UNKNOWN = 0;
   ADMIN_ENABLED = 10;
   ADMIN_DISABLED = 20;
-}
-
-// EnumValue 统一枚举响应结构 code 数字 name 英文 message 中文
-message EnumValue {
-  int32 code = 1;
-  string name = 2;
-  string message = 3;
 }
 
 // AuthenticateAdminReq 校验管理员账号密码
@@ -28,7 +23,7 @@ message AuthenticateAdminReq {
 message AuthenticateAdminRes {
   int64 admin_id = 1;
   string nickname = 2;
-  EnumValue status = 3;
+  commonpb.EnumValue status = 3;
 }
 
 // GetAdminReq 查询管理员基本信息
@@ -41,7 +36,7 @@ message GetAdminRes {
   int64 admin_id = 1;
   string username = 2;
   string nickname = 3;
-  EnumValue status = 4;
+  commonpb.EnumValue status = 4;
 }
 
 // ListAdminPermissionsReq 查询管理员权限点集合
@@ -205,7 +200,7 @@ message AdminListItem {
   int64 id = 1;
   string username = 2;
   string nickname = 3;
-  EnumValue status = 4;
+  commonpb.EnumValue status = 4;
   repeated string role_codes = 5;
   int64 created_at = 6;
 }
@@ -280,7 +275,7 @@ message ResetAdminPasswordReq {
 // ResetAdminPasswordRes 重置密码结果
 message ResetAdminPasswordRes {}
 
-// SetAdminRolesReq 覆盖式设管理员角色 护栏禁止移除自己的 super
+// SetAdminRolesReq 设置管理员角色
 message SetAdminRolesReq {
   int64 admin_id = 1;
   repeated int64 role_ids = 2;
@@ -290,19 +285,36 @@ message SetAdminRolesReq {
 // SetAdminRolesRes 设角色结果
 message SetAdminRolesRes {}
 
-service AdminService {
+// AdminAuthService 认证管理
+service AdminAuthService {
   rpc AuthenticateAdmin(AuthenticateAdminReq) returns (AuthenticateAdminRes);
   rpc GetAdmin(GetAdminReq) returns (GetAdminRes);
   rpc ListAdminPermissions(ListAdminPermissionsReq) returns (ListAdminPermissionsRes);
+}
+
+// AdminAuditService 操作审计日志
+service AdminAuditService {
   rpc WriteOperationLog(WriteOperationLogReq) returns (WriteOperationLogRes);
-  rpc ListPermissions(ListPermissionsReq) returns (ListPermissionsRes);
   rpc ListOperationLogs(ListOperationLogsReq) returns (ListOperationLogsRes);
+}
+
+// AdminPermissionService 权限点目录查询
+service AdminPermissionService {
+  rpc ListPermissions(ListPermissionsReq) returns (ListPermissionsRes);
+}
+
+// AdminRoleService 角色管理
+service AdminRoleService {
   rpc ListRoles(ListRolesReq) returns (ListRolesRes);
   rpc GetRoleDetail(GetRoleDetailReq) returns (GetRoleDetailRes);
   rpc CreateRole(CreateRoleReq) returns (CreateRoleRes);
   rpc UpdateRole(UpdateRoleReq) returns (UpdateRoleRes);
   rpc SetRolePermissions(SetRolePermissionsReq) returns (SetRolePermissionsRes);
   rpc DeleteRole(DeleteRoleReq) returns (DeleteRoleRes);
+}
+
+// AdminUserService 管理员账号管理
+service AdminUserService {
   rpc ListAdmins(ListAdminsReq) returns (ListAdminsRes);
   rpc GetAdminDetail(GetAdminDetailReq) returns (GetAdminDetailRes);
   rpc CreateAdmin(CreateAdminReq) returns (CreateAdminRes);

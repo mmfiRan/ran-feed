@@ -5,6 +5,7 @@ package adminuser
 
 import (
 	"context"
+	"ran-feed/app/admin/internal/common/utils"
 
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
@@ -28,7 +29,7 @@ func NewGetAdminDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ge
 }
 
 func (l *GetAdminDetailLogic) GetAdminDetail(req *types.AdminUserDetailReq) (resp *types.AdminUserDetailRes, err error) {
-	rpcRes, err := l.svcCtx.AdminRpc.GetAdminDetail(l.ctx, &admin.GetAdminDetailReq{
+	rpcRes, err := l.svcCtx.AdminUserRpc.GetAdminDetail(l.ctx, &admin.GetAdminDetailReq{
 		Id: req.Id,
 	})
 	if err != nil {
@@ -41,7 +42,7 @@ func (l *GetAdminDetailLogic) GetAdminDetail(req *types.AdminUserDetailReq) (res
 			Id:        adminLists.GetId(),
 			Username:  adminLists.GetUsername(),
 			Nickname:  adminLists.GetNickname(),
-			Status:    toEnumValue(adminLists.GetStatus()),
+			Status:    utils.ToEnumValue(adminLists.GetStatus()),
 			RoleCodes: adminLists.GetRoleCodes(),
 			CreatedAt: adminLists.GetCreatedAt(),
 		},

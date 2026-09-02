@@ -8,7 +8,8 @@ import (
 	"ran-feed/app/admin/internal/common/rbac"
 	"ran-feed/app/admin/internal/docmeta"
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/client/adminservice"
+	adminauthservice "ran-feed/app/rpc/admin/client/adminauthservice"
+	pkgconsts "ran-feed/pkg/consts"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
@@ -17,11 +18,11 @@ import (
 
 type AdminRbacMiddleware struct {
 	redis    *redis.Redis
-	adminRpc adminservice.AdminService
+	adminRpc adminauthservice.AdminAuthService
 	permTTL  int
 }
 
-func NewAdminRbacMiddleware(r *redis.Redis, adminRpc adminservice.AdminService, permTTL int) *AdminRbacMiddleware {
+func NewAdminRbacMiddleware(r *redis.Redis, adminRpc adminauthservice.AdminAuthService, permTTL int) *AdminRbacMiddleware {
 	if permTTL <= 0 {
 		permTTL = consts.RedisAdminPermExpireSeconds
 	}
@@ -34,7 +35,7 @@ func NewAdminRbacMiddleware(r *redis.Redis, adminRpc adminservice.AdminService, 
 
 func (m *AdminRbacMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		adminID, _ := r.Context().Value(consts.CtxKeyAdminID).(int64)
+		adminID, _ := r.Context().Value(pkgconsts.CtxKeyAdminID).(int64)
 		if adminID <= 0 {
 			httpx.ErrorCtx(r.Context(), w, consts.ErrAdminNotLogin)
 			return

@@ -30,7 +30,7 @@ func NewCreateRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 
 func (l *CreateRoleLogic) CreateRole(req *types.AdminRoleCreateReq) (resp *types.AdminRoleCreateRes, err error) {
 	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
-	rpcRes, err := l.svcCtx.AdminRpc.CreateRole(l.ctx, &admin.CreateRoleReq{
+	rpcRes, err := l.svcCtx.AdminRoleRpc.CreateRole(l.ctx, &admin.CreateRoleReq{
 		Code:       req.Code,
 		Name:       req.Name,
 		Remark:     req.Remark,

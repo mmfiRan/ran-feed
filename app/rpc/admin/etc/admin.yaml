@@ -35,3 +35,8 @@ Log:
 
 MySQL:
   DataSource: ${MYSQL_APP_USER}:${MYSQL_APP_PASSWORD}@tcp(${MYSQL_HOST}:3306)/ran-feed?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+
+RedisConfig:
+  Host: ${REDIS_HOST}:6379
+  Type: node
+  Pass: ${REDIS_PASSWORD}

@@ -9,7 +9,7 @@ import (
 	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
-
+	pkgconsts "ran-feed/pkg/consts"
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -31,7 +31,7 @@ func NewLogoutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LogoutLogi
 
 func (l *LogoutLogic) Logout() (resp *types.AdminLogoutRes, err error) {
 	adminID := utils.GetContextAdminIdWithDefault(l.ctx)
-	token, _ := l.ctx.Value(consts.CtxKeyToken).(string)
+	token, _ := l.ctx.Value(pkgconsts.CtxKeyToken).(string)
 
 	keys := make([]string, 0, 2)
 	if token != "" {

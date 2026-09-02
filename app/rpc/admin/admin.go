@@ -9,7 +9,11 @@ import (
 
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/app/rpc/admin/internal/config"
-	adminserviceServer "ran-feed/app/rpc/admin/internal/server/adminservice"
+	adminauthserviceServer "ran-feed/app/rpc/admin/internal/server/adminauthservice"
+	adminauditserviceServer "ran-feed/app/rpc/admin/internal/server/adminauditservice"
+	adminpermissionserviceServer "ran-feed/app/rpc/admin/internal/server/adminpermissionservice"
+	adminroleserviceServer "ran-feed/app/rpc/admin/internal/server/adminroleservice"
+	adminuserserviceServer "ran-feed/app/rpc/admin/internal/server/adminuserservice"
 	"ran-feed/app/rpc/admin/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
@@ -31,7 +35,11 @@ func main() {
 	ctx := svc.NewServiceContext(c)
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
-		admin.RegisterAdminServiceServer(grpcServer, adminserviceServer.NewAdminServiceServer(ctx))
+		admin.RegisterAdminAuthServiceServer(grpcServer, adminauthserviceServer.NewAdminAuthServiceServer(ctx))
+		admin.RegisterAdminAuditServiceServer(grpcServer, adminauditserviceServer.NewAdminAuditServiceServer(ctx))
+		admin.RegisterAdminPermissionServiceServer(grpcServer, adminpermissionserviceServer.NewAdminPermissionServiceServer(ctx))
+		admin.RegisterAdminRoleServiceServer(grpcServer, adminroleserviceServer.NewAdminRoleServiceServer(ctx))
+		admin.RegisterAdminUserServiceServer(grpcServer, adminuserserviceServer.NewAdminUserServiceServer(ctx))
 
 		if c.Mode == service.DevMode || c.Mode == service.TestMode {
 			reflection.Register(grpcServer)

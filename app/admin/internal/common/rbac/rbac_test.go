@@ -99,7 +99,9 @@ func TestLoadPermissions_InvalidateReloads(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, calls)
 
-	require.NoError(t, Invalidate(context.Background(), r, 3))
+	// 外部失效(角色/权限变更后由 admin-rpc 删缓存)后重新回源
+	_, err = r.DelCtx(context.Background(), consts.BuildAdminPermKey(3))
+	require.NoError(t, err)
 
 	// 失效后重新回源
 	_, err = LoadPermissions(context.Background(), r, 3, 600, loader)

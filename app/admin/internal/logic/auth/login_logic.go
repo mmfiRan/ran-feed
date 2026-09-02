@@ -37,7 +37,7 @@ func (l *LoginLogic) Login(req *types.AdminLoginReq) (resp *types.AdminLoginRes,
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	authRes, err := l.svcCtx.AdminRpc.AuthenticateAdmin(l.ctx, &admin.AuthenticateAdminReq{
+	authRes, err := l.svcCtx.AdminAuthRpc.AuthenticateAdmin(l.ctx, &admin.AuthenticateAdminReq{
 		Username: *req.Username,
 		Password: *req.Password,
 	})
@@ -86,7 +86,7 @@ func (l *LoginLogic) saveSession(adminID int64, token string, ttlSeconds int) er
 
 // loadPermissions 权限点集合供前端渲染菜单 失败降级空不阻断登录
 func (l *LoginLogic) loadPermissions(adminID int64) []string {
-	permRes, err := l.svcCtx.AdminRpc.ListAdminPermissions(l.ctx, &admin.ListAdminPermissionsReq{AdminId: adminID})
+	permRes, err := l.svcCtx.AdminAuthRpc.ListAdminPermissions(l.ctx, &admin.ListAdminPermissionsReq{AdminId: adminID})
 	if err != nil {
 		logx.WithContext(l.ctx).Errorf("查询管理员权限失败 adminID=%d err=%v", adminID, err)
 		return nil

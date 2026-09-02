@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"ran-feed/pkg/enums"
 
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/entity/query"
@@ -66,7 +67,10 @@ func (r *adminRoleRepositoryImpl) WithTx(tx *query.Query) AdminRoleRepository {
 // Page 角色分页 id 倒序 复用 gen FindByPage 末页不满免 COUNT
 func (r *adminRoleRepositoryImpl) Page(offset, limit int) ([]*model.RanFeedAdminRole, int64, error) {
 	q := r.getQuery().RanFeedAdminRole
-	return q.WithContext(r.ctx).Where(q.IsDeleted.Eq(0)).Order(q.ID.Desc()).FindByPage(offset, limit)
+	return q.WithContext(r.ctx).
+		Where(q.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Order(q.ID.Desc()).
+		FindByPage(offset, limit)
 }
 
 // ListByAdminID 取管理员绑定的角色
@@ -78,8 +82,8 @@ func (r *adminRoleRepositoryImpl) ListByAdminID(adminID int64) ([]*model.RanFeed
 		Select(role.ID, role.Code).
 		LeftJoin(ur, ur.RoleID.EqCol(role.ID)).
 		Where(ur.AdminUserID.Eq(adminID)).
-		Where(ur.IsDeleted.Eq(0)).
-		Where(role.IsDeleted.Eq(0)).
+		Where(ur.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Where(role.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Scan(&rows)
 	if err != nil {
 		return nil, err
@@ -96,7 +100,10 @@ func (r *adminRoleRepositoryImpl) ListByAdminID(adminID int64) ([]*model.RanFeed
 // GetByID 按ID取角色 未命中返 nil
 func (r *adminRoleRepositoryImpl) GetByID(id int64) (*model.RanFeedAdminRole, error) {
 	q := r.getQuery().RanFeedAdminRole
-	row, err := q.WithContext(r.ctx).Where(q.ID.Eq(id)).Where(q.IsDeleted.Eq(0)).First()
+	row, err := q.WithContext(r.ctx).
+		Where(q.ID.Eq(id)).
+		Where(q.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		First()
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -109,7 +116,10 @@ func (r *adminRoleRepositoryImpl) GetByID(id int64) (*model.RanFeedAdminRole, er
 // GetByCode 按 code 取角色 未命中返 nil
 func (r *adminRoleRepositoryImpl) GetByCode(code string) (*model.RanFeedAdminRole, error) {
 	q := r.getQuery().RanFeedAdminRole
-	row, err := q.WithContext(r.ctx).Where(q.Code.Eq(code)).Where(q.IsDeleted.Eq(0)).First()
+	row, err := q.WithContext(r.ctx).
+		Where(q.Code.Eq(code)).
+		Where(q.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		First()
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -125,7 +135,10 @@ func (r *adminRoleRepositoryImpl) ListByIDs(ids []int64) ([]*model.RanFeedAdminR
 		return nil, nil
 	}
 	q := r.getQuery().RanFeedAdminRole
-	return q.WithContext(r.ctx).Where(q.ID.In(ids...)).Where(q.IsDeleted.Eq(0)).Find()
+	return q.WithContext(r.ctx).
+		Where(q.ID.In(ids...)).
+		Where(q.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Find()
 }
 
 // Create 建角色
@@ -144,7 +157,7 @@ func (r *adminRoleRepositoryImpl) UpdateProfile(id int64, name, remark string, o
 	q := r.getQuery().RanFeedAdminRole
 	res, err := q.WithContext(r.ctx).
 		Where(q.ID.Eq(id)).
-		Where(q.IsDeleted.Eq(0)).
+		Where(q.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Updates(map[string]any{
 			"name":       name,
 			"remark":     remark,
@@ -161,7 +174,7 @@ func (r *adminRoleRepositoryImpl) SoftDelete(id, operatorID int64) (int64, error
 	q := r.getQuery().RanFeedAdminRole
 	res, err := q.WithContext(r.ctx).
 		Where(q.ID.Eq(id)).
-		Where(q.IsDeleted.Eq(0)).
+		Where(q.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Updates(map[string]any{
 			"is_deleted": 1,
 			"updated_by": operatorID,

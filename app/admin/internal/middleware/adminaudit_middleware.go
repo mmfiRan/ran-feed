@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/client/adminservice"
+	adminauditservice "ran-feed/app/rpc/admin/client/adminauditservice"
+	pkgconsts "ran-feed/pkg/consts"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
@@ -18,10 +18,10 @@ import (
 const auditWriteTimeout = 5 * time.Second
 
 type AdminAuditMiddleware struct {
-	adminRpc adminservice.AdminService
+	adminRpc adminauditservice.AdminAuditService
 }
 
-func NewAdminAuditMiddleware(adminRpc adminservice.AdminService) *AdminAuditMiddleware {
+func NewAdminAuditMiddleware(adminRpc adminauditservice.AdminAuditService) *AdminAuditMiddleware {
 	return &AdminAuditMiddleware{adminRpc: adminRpc}
 }
 
@@ -39,7 +39,7 @@ func (m *AdminAuditMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next(sw, r)
 
-		adminID, _ := r.Context().Value(consts.CtxKeyAdminID).(int64)
+		adminID, _ := r.Context().Value(pkgconsts.CtxKeyAdminID).(int64)
 		if adminID <= 0 {
 			return
 		}

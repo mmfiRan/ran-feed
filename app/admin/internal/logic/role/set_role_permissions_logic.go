@@ -30,7 +30,7 @@ func NewSetRolePermissionsLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 
 func (l *SetRolePermissionsLogic) SetRolePermissions(req *types.AdminRoleSetPermissionsReq) (resp *types.AdminRoleSetPermissionsRes, err error) {
 	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
-	rpcRes, err := l.svcCtx.AdminRpc.SetRolePermissions(l.ctx, &admin.SetRolePermissionsReq{
+	_, err = l.svcCtx.AdminRoleRpc.SetRolePermissions(l.ctx, &admin.SetRolePermissionsReq{
 		RoleId:        req.RoleId,
 		PermissionIds: req.PermissionIds,
 		OperatorId:    operatorID,
@@ -38,8 +38,5 @@ func (l *SetRolePermissionsLogic) SetRolePermissions(req *types.AdminRoleSetPerm
 	if err != nil {
 		return nil, err
 	}
-
-	// 角色权限点变更 失效持有该角色的管理员权限缓存 使新权限立即生效
-	invalidatePerms(l.ctx, l.svcCtx, rpcRes.GetAffectedAdminIds())
 	return &types.AdminRoleSetPermissionsRes{}, nil
 }

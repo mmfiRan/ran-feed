@@ -30,7 +30,7 @@ func NewUpdateRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Update
 
 func (l *UpdateRoleLogic) UpdateRole(req *types.AdminRoleUpdateReq) (resp *types.AdminRoleUpdateRes, err error) {
 	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
-	_, err = l.svcCtx.AdminRpc.UpdateRole(l.ctx, &admin.UpdateRoleReq{
+	_, err = l.svcCtx.AdminRoleRpc.UpdateRole(l.ctx, &admin.UpdateRoleReq{
 		Id:         req.Id,
 		Name:       req.Name,
 		Remark:     req.Remark,

@@ -23,9 +23,9 @@ type AdminUserRepository interface {
 	Create(row *model.RanFeedAdminUser) error
 	// UpdateProfile 修改昵称
 	UpdateProfile(id int64, nickname string, operatorID int64) (int64, error)
-	// UpdateStatus 改状态 返回影响行数
+	// UpdateStatus 修改状态
 	UpdateStatus(id int64, status int32, operatorID int64) (int64, error)
-	// UpdatePassword 改密码哈希 返回影响行数
+	// UpdatePassword 修改密码
 	UpdatePassword(id int64, hash string, operatorID int64) (int64, error)
 }
 
@@ -126,7 +126,7 @@ func (r *adminUserRepositoryImpl) UpdateProfile(id int64, nickname string, opera
 	return res.RowsAffected, nil
 }
 
-// UpdateStatus 改状态 返回影响行数
+// UpdateStatus 修改状态
 func (r *adminUserRepositoryImpl) UpdateStatus(id int64, status int32, operatorID int64) (int64, error) {
 	q := r.getQuery().RanFeedAdminUser
 	res, err := q.WithContext(r.ctx).
@@ -139,7 +139,7 @@ func (r *adminUserRepositoryImpl) UpdateStatus(id int64, status int32, operatorI
 	return res.RowsAffected, nil
 }
 
-// UpdatePassword 改密码哈希 返回影响行数
+// UpdatePassword 修改密码
 func (r *adminUserRepositoryImpl) UpdatePassword(id int64, hash string, operatorID int64) (int64, error) {
 	q := r.getQuery().RanFeedAdminUser
 	res, err := q.WithContext(r.ctx).

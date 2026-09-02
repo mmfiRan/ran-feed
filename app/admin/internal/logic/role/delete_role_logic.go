@@ -30,15 +30,12 @@ func NewDeleteRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 
 func (l *DeleteRoleLogic) DeleteRole(req *types.AdminRoleDeleteReq) (resp *types.AdminRoleDeleteRes, err error) {
 	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
-	rpcRes, err := l.svcCtx.AdminRpc.DeleteRole(l.ctx, &admin.DeleteRoleReq{
+	_, err = l.svcCtx.AdminRoleRpc.DeleteRole(l.ctx, &admin.DeleteRoleReq{
 		Id:         req.Id,
 		OperatorId: operatorID,
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	// 角色删除 失效持有该角色的管理员权限缓存
-	invalidatePerms(l.ctx, l.svcCtx, rpcRes.GetAffectedAdminIds())
 	return &types.AdminRoleDeleteRes{}, nil
 }

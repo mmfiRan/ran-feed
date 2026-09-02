@@ -30,7 +30,7 @@ func NewCreateAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 
 func (l *CreateAdminLogic) CreateAdmin(req *types.AdminUserCreateReq) (resp *types.AdminUserCreateRes, err error) {
 	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
-	rpcRes, err := l.svcCtx.AdminRpc.CreateAdmin(l.ctx, &admin.CreateAdminReq{
+	rpcRes, err := l.svcCtx.AdminUserRpc.CreateAdmin(l.ctx, &admin.CreateAdminReq{
 		Username:   req.Username,
 		Password:   req.Password,
 		Nickname:   req.Nickname,

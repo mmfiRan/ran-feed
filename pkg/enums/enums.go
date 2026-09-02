@@ -1,6 +1,4 @@
 // Package enums 项目级枚举基础设施与通用枚举
-// 业务域枚举实现 Enum 接口 各域在 internal/common/enums 自行维护
-// 通用枚举（如软删除标记）在本包维护
 package enums
 
 import "fmt"
@@ -19,7 +17,7 @@ type Enum interface {
 	Int32() int32
 	// Valid 是否为合法定义的枚举值
 	Valid() bool
-	// Message 中文描述 供前端展示
+	// Message 中文描述
 	Message() string
 }
 
@@ -29,7 +27,7 @@ type IntEnum interface {
 	Int
 }
 
-// EnumValue 统一对外枚举结构 响应字段用 前端直接消费
+// EnumValue 统一对外枚举结构 响应字段用
 type EnumValue struct {
 	Code    int32  `json:"code"`
 	Name    string `json:"name"`
@@ -45,7 +43,7 @@ func Value[T IntEnum](e T) EnumValue {
 	}
 }
 
-// Parse 把底层 int32 安全转换为目标枚举 非法返回 (零值, false)
+// Parse 把底层 int32 安全转换为目标枚举
 func Parse[T IntEnum](v int32) (T, bool) {
 	e := T(v)
 	return e, e.Valid()

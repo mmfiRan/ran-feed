@@ -28,7 +28,7 @@ func NewListRolesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListRol
 }
 
 func (l *ListRolesLogic) ListRoles(req *types.AdminRoleListReq) (resp *types.AdminRoleListRes, err error) {
-	rpcRes, err := l.svcCtx.AdminRpc.ListRoles(l.ctx, &admin.ListRolesReq{
+	rpcRes, err := l.svcCtx.AdminRoleRpc.ListRoles(l.ctx, &admin.ListRolesReq{
 		Page:     req.Page,
 		PageSize: req.PageSize,
 	})

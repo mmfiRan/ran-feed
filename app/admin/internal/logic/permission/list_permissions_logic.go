@@ -28,7 +28,7 @@ func NewListPermissionsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *L
 }
 
 func (l *ListPermissionsLogic) ListPermissions(req *types.AdminPermissionListReq) (resp *types.AdminPermissionListRes, err error) {
-	rpcRes, err := l.svcCtx.AdminRpc.ListPermissions(l.ctx, &admin.ListPermissionsReq{Module: req.Module})
+	rpcRes, err := l.svcCtx.AdminPermissionRpc.ListPermissions(l.ctx, &admin.ListPermissionsReq{Module: req.Module})
 	if err != nil {
 		return nil, err
 	}

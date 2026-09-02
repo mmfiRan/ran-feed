@@ -9,6 +9,7 @@ import (
 	"ran-feed/app/front/internal/common/consts"
 	luautils "ran-feed/app/front/internal/common/utils/lua"
 	"ran-feed/app/front/internal/config"
+	pkgconsts "ran-feed/pkg/consts"
 	"ran-feed/pkg/errorx"
 	"strconv"
 	"strings"
@@ -57,8 +58,8 @@ func (m *UserLoginStatusAuthMiddleware) Handle(next http.HandlerFunc) http.Handl
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), consts.CtxKeyUserID, userID)
-		ctx = context.WithValue(ctx, consts.CtxKeyToken, token)
+		ctx := context.WithValue(r.Context(), pkgconsts.CtxKeyUserID, userID)
+		ctx = context.WithValue(ctx, pkgconsts.CtxKeyToken, token)
 		next(w, r.WithContext(ctx))
 	}
 }

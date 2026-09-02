@@ -46,9 +46,3 @@ func LoadPermissions(ctx context.Context, r *redis.Redis, adminID int64, ttlSeco
 
 	return toSet(codes), nil
 }
-
-// Invalidate 失效管理员权限缓存 角色/权限变更后调用
-func Invalidate(ctx context.Context, r *redis.Redis, adminID int64) error {
-	_, err := r.DelCtx(ctx, consts.BuildAdminPermKey(adminID))
-	return err
-}

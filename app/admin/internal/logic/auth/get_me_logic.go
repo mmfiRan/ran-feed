@@ -10,6 +10,7 @@ import (
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
+	"ran-feed/pkg/commonpb"
 	"ran-feed/pkg/errorx"
 	"ran-feed/pkg/utils"
 
@@ -36,7 +37,7 @@ func (l *GetMeLogic) GetMe() (resp *types.AdminMeRes, err error) {
 		return nil, consts.ErrAdminNotLogin
 	}
 
-	adminRes, err := l.svcCtx.AdminRpc.GetAdmin(l.ctx, &admin.GetAdminReq{AdminId: adminID})
+	adminRes, err := l.svcCtx.AdminAuthRpc.GetAdmin(l.ctx, &admin.GetAdminReq{AdminId: adminID})
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +46,7 @@ func (l *GetMeLogic) GetMe() (resp *types.AdminMeRes, err error) {
 	}
 
 	var permissions []string
-	if permRes, pErr := l.svcCtx.AdminRpc.ListAdminPermissions(l.ctx, &admin.ListAdminPermissionsReq{AdminId: adminID}); pErr != nil {
+	if permRes, pErr := l.svcCtx.AdminAuthRpc.ListAdminPermissions(l.ctx, &admin.ListAdminPermissionsReq{AdminId: adminID}); pErr != nil {
 		l.Errorf("查询管理员权限失败 adminID=%d err=%v", adminID, pErr)
 	} else if permRes != nil {
 		permissions = permRes.GetCodes()
@@ -62,7 +63,7 @@ func (l *GetMeLogic) GetMe() (resp *types.AdminMeRes, err error) {
 	}, nil
 }
 
-func toEnumValue(v *admin.EnumValue) types.EnumValue {
+func toEnumValue(v *commonpb.EnumValue) types.EnumValue {
 	if v == nil {
 		return types.EnumValue{}
 	}

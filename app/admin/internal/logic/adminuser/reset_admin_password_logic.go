@@ -30,7 +30,7 @@ func NewResetAdminPasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 
 func (l *ResetAdminPasswordLogic) ResetAdminPassword(req *types.AdminUserResetPasswordReq) (resp *types.AdminUserResetPasswordRes, err error) {
 	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
-	_, err = l.svcCtx.AdminRpc.ResetAdminPassword(l.ctx, &admin.ResetAdminPasswordReq{
+	_, err = l.svcCtx.AdminUserRpc.ResetAdminPassword(l.ctx, &admin.ResetAdminPasswordReq{
 		Id:          req.Id,
 		NewPassword: req.NewPassword,
 		OperatorId:  operatorID,
@@ -38,8 +38,5 @@ func (l *ResetAdminPasswordLogic) ResetAdminPassword(req *types.AdminUserResetPa
 	if err != nil {
 		return nil, err
 	}
-
-	// 重置密码即踢下线 强制用新密码重登
-	kickAdminSession(l.ctx, l.svcCtx, req.Id)
 	return &types.AdminUserResetPasswordRes{}, nil
 }

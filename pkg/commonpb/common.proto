@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package commonpb;
+
+option go_package = "ran-feed/pkg/commonpb";
+
+// EnumValue 统一枚举响应结构
+message EnumValue {
+  int32 code = 1;
+  string name = 2;
+  string message = 3;
+}

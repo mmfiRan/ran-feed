@@ -9,6 +9,7 @@ import (
 
 	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/admin/internal/config"
+	pkgconsts "ran-feed/pkg/consts"
 
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/rest/httpx"
@@ -40,8 +41,8 @@ func (m *AdminAuthMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 			httpx.ErrorCtx(r.Context(), w, consts.ErrAdminNotLogin)
 			return
 		}
-		ctx := context.WithValue(r.Context(), consts.CtxKeyAdminID, adminID)
-		ctx = context.WithValue(ctx, consts.CtxKeyToken, token)
+		ctx := context.WithValue(r.Context(), pkgconsts.CtxKeyAdminID, adminID)
+		ctx = context.WithValue(ctx, pkgconsts.CtxKeyToken, token)
 		next(w, r.WithContext(ctx))
 	}
 }

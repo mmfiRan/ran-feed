@@ -5,7 +5,7 @@ import "../base/base.api"
 type (
 	AdminUserListReq {
 		PageQueryReq
-		Status   int32 `form:"status,optional"` // 0不限 10启用 20禁用
+		Status   int32 `form:"status,optional"`
 	}
 	AdminUserItem {
 		Id        int64     `json:"id"`
@@ -44,7 +44,7 @@ type (
 	}
 	AdminUserUpdateRes {}
 
-	// AdminUserStatusReq status 取 10(启用) 或 20(禁用)
+	// AdminUserStatusReq
 	AdminUserStatusReq {
 		Id     int64 `json:"id,optional" validate:"required,gt=0"`
 		Status int32 `json:"status,optional" validate:"required"`

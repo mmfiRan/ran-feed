@@ -28,7 +28,7 @@ func NewListOperationLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogListReq) (resp *types.AdminOperationLogListRes, err error) {
-	rpcRes, err := l.svcCtx.AdminRpc.ListOperationLogs(l.ctx, &admin.ListOperationLogsReq{
+	rpcRes, err := l.svcCtx.AdminAuditRpc.ListOperationLogs(l.ctx, &admin.ListOperationLogsReq{
 		AdminId:    req.AdminId,
 		Action:     req.Action,
 		TargetType: req.TargetType,

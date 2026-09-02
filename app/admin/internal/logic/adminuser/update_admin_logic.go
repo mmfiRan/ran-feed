@@ -30,7 +30,7 @@ func NewUpdateAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Updat
 
 func (l *UpdateAdminLogic) UpdateAdmin(req *types.AdminUserUpdateReq) (resp *types.AdminUserUpdateRes, err error) {
 	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
-	_, err = l.svcCtx.AdminRpc.UpdateAdmin(l.ctx, &admin.UpdateAdminReq{
+	_, err = l.svcCtx.AdminUserRpc.UpdateAdmin(l.ctx, &admin.UpdateAdminReq{
 		Id:         req.Id,
 		Nickname:   req.Nickname,
 		OperatorId: operatorID,
