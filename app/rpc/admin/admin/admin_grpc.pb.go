@@ -28,7 +28,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// AdminAuthService 管理员认证与当前账号查询
+// AdminAuthService 认证管理
 type AdminAuthServiceClient interface {
 	AuthenticateAdmin(ctx context.Context, in *AuthenticateAdminReq, opts ...grpc.CallOption) (*AuthenticateAdminRes, error)
 	GetAdmin(ctx context.Context, in *GetAdminReq, opts ...grpc.CallOption) (*GetAdminRes, error)
@@ -77,7 +77,7 @@ func (c *adminAuthServiceClient) ListAdminPermissions(ctx context.Context, in *L
 // All implementations must embed UnimplementedAdminAuthServiceServer
 // for forward compatibility.
 //
-// AdminAuthService 管理员认证与当前账号查询
+// AdminAuthService 认证管理
 type AdminAuthServiceServer interface {
 	AuthenticateAdmin(context.Context, *AuthenticateAdminReq) (*AuthenticateAdminRes, error)
 	GetAdmin(context.Context, *GetAdminReq) (*GetAdminRes, error)
@@ -209,7 +209,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// AdminAuditService 操作审计日志写入与查询
+// AdminAuditService 操作审计日志
 type AdminAuditServiceClient interface {
 	WriteOperationLog(ctx context.Context, in *WriteOperationLogReq, opts ...grpc.CallOption) (*WriteOperationLogRes, error)
 	ListOperationLogs(ctx context.Context, in *ListOperationLogsReq, opts ...grpc.CallOption) (*ListOperationLogsRes, error)
@@ -247,7 +247,7 @@ func (c *adminAuditServiceClient) ListOperationLogs(ctx context.Context, in *Lis
 // All implementations must embed UnimplementedAdminAuditServiceServer
 // for forward compatibility.
 //
-// AdminAuditService 操作审计日志写入与查询
+// AdminAuditService 操作审计日志
 type AdminAuditServiceServer interface {
 	WriteOperationLog(context.Context, *WriteOperationLogReq) (*WriteOperationLogRes, error)
 	ListOperationLogs(context.Context, *ListOperationLogsReq) (*ListOperationLogsRes, error)
