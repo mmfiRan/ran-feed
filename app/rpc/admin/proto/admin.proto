@@ -1,16 +1,18 @@
 syntax = "proto3";
 
-package admin;
+package ranfeed.admin;
 
-option go_package = "./admin";
-
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 import "pkg/commonpb/common.proto";
+
+option go_package = "ran-feed/app/rpc/admin/adminpb";
 
 // AdminStatus 管理员账号状态
 enum AdminStatus {
-  ADMIN_STATUS_UNKNOWN = 0;
-  ADMIN_ENABLED = 10;
-  ADMIN_DISABLED = 20;
+  ADMIN_STATUS_UNSPECIFIED = 0;
+  ADMIN_STATUS_ENABLED = 10;
+  ADMIN_STATUS_DISABLED = 20;
 }
 
 // AuthenticateAdminReq 校验管理员账号密码
@@ -23,7 +25,7 @@ message AuthenticateAdminReq {
 message AuthenticateAdminRes {
   int64 admin_id = 1;
   string nickname = 2;
-  commonpb.EnumValue status = 3;
+  ranfeed.commonpb.EnumValue status = 3;
 }
 
 // GetAdminReq 查询管理员基本信息
@@ -36,7 +38,7 @@ message GetAdminRes {
   int64 admin_id = 1;
   string username = 2;
   string nickname = 3;
-  commonpb.EnumValue status = 4;
+  ranfeed.commonpb.EnumValue status = 4;
 }
 
 // ListAdminPermissionsReq 查询管理员权限点集合
@@ -83,7 +85,7 @@ message ListPermissionsRes {
   repeated PermissionItem items = 1;
 }
 
-// OperationLogItem 操作审计日志项 created_at 毫秒
+// OperationLogItem 操作审计日志项
 message OperationLogItem {
   int64 id = 1;
   int64 admin_id = 2;
@@ -92,16 +94,16 @@ message OperationLogItem {
   int64 target_id = 5;
   string result = 6;
   string ip = 7;
-  int64 created_at = 8;
+  google.protobuf.Timestamp created_at = 8;
 }
 
-// ListOperationLogsReq 查询操作审计日志 可选筛选加分页 start_time/end_time 毫秒
+// ListOperationLogsReq 查询操作审计日志 可选筛选加分页
 message ListOperationLogsReq {
   int64 admin_id = 1;
   string action = 2;
   string target_type = 3;
-  int64 start_time = 4;
-  int64 end_time = 5;
+  google.protobuf.Timestamp start_time = 4;
+  google.protobuf.Timestamp end_time = 5;
   uint32 page = 6;
   uint32 page_size = 7;
 }
@@ -109,18 +111,18 @@ message ListOperationLogsReq {
 // ListOperationLogsRes 审计日志分页结果
 message ListOperationLogsRes {
   repeated OperationLogItem items = 1;
-  uint32 total = 2;
+  int64 total = 2;
   uint32 page = 3;
   uint32 page_size = 4;
 }
 
-// RoleItem 角色项 created_at 毫秒
+// RoleItem 角色项
 message RoleItem {
   int64 id = 1;
   string code = 2;
   string name = 3;
   string remark = 4;
-  int64 created_at = 5;
+  google.protobuf.Timestamp created_at = 5;
 }
 
 // ListRolesReq 角色分页
@@ -132,7 +134,7 @@ message ListRolesReq {
 // ListRolesRes 角色分页结果
 message ListRolesRes {
   repeated RoleItem items = 1;
-  uint32 total = 2;
+  int64 total = 2;
   uint32 page = 3;
   uint32 page_size = 4;
 }
@@ -169,9 +171,6 @@ message UpdateRoleReq {
   int64 operator_id = 4;
 }
 
-// UpdateRoleRes 改角色结果
-message UpdateRoleRes {}
-
 // SetRolePermissionsReq 覆盖式设角色权限点
 message SetRolePermissionsReq {
   int64 role_id = 1;
@@ -184,7 +183,7 @@ message SetRolePermissionsRes {
   repeated int64 affected_admin_ids = 1;
 }
 
-// DeleteRoleReq 删角色 护栏禁删 super
+// DeleteRoleReq 删角色
 message DeleteRoleReq {
   int64 id = 1;
   int64 operator_id = 2;
@@ -200,12 +199,12 @@ message AdminListItem {
   int64 id = 1;
   string username = 2;
   string nickname = 3;
-  commonpb.EnumValue status = 4;
+  ranfeed.commonpb.EnumValue status = 4;
   repeated string role_codes = 5;
-  int64 created_at = 6;
+  google.protobuf.Timestamp created_at = 6;
 }
 
-// ListAdminsReq
+// ListAdminsReq 管理员分页查询 status 为空查全部
 message ListAdminsReq {
   AdminStatus status = 1;
   uint32 page = 2;
@@ -215,7 +214,7 @@ message ListAdminsReq {
 // ListAdminsRes 管理员分页查询结果
 message ListAdminsRes {
   repeated AdminListItem items = 1;
-  uint32 total = 2;
+  int64 total = 2;
   uint32 page = 3;
   uint32 page_size = 4;
 }
@@ -252,28 +251,19 @@ message UpdateAdminReq {
   int64 operator_id = 3;
 }
 
-// UpdateAdminRes
-message UpdateAdminRes {}
-
-// SetAdminStatusReq 启用禁用管理员 护栏禁止禁用自己
+// SetAdminStatusReq 启用禁用管理员
 message SetAdminStatusReq {
   int64 id = 1;
   AdminStatus status = 2;
   int64 operator_id = 3;
 }
 
-// SetAdminStatusRes 启禁结果
-message SetAdminStatusRes {}
-
-// ResetAdminPasswordReq 重置管理员密码 明文由服务端加盐哈希
+// ResetAdminPasswordReq 重置管理员密码
 message ResetAdminPasswordReq {
   int64 id = 1;
   string new_password = 2;
   int64 operator_id = 3;
 }
-
-// ResetAdminPasswordRes 重置密码结果
-message ResetAdminPasswordRes {}
 
 // SetAdminRolesReq 设置管理员角色
 message SetAdminRolesReq {
@@ -281,9 +271,6 @@ message SetAdminRolesReq {
   repeated int64 role_ids = 2;
   int64 operator_id = 3;
 }
-
-// SetAdminRolesRes 设角色结果
-message SetAdminRolesRes {}
 
 // AdminAuthService 认证管理
 service AdminAuthService {
@@ -308,7 +295,7 @@ service AdminRoleService {
   rpc ListRoles(ListRolesReq) returns (ListRolesRes);
   rpc GetRoleDetail(GetRoleDetailReq) returns (GetRoleDetailRes);
   rpc CreateRole(CreateRoleReq) returns (CreateRoleRes);
-  rpc UpdateRole(UpdateRoleReq) returns (UpdateRoleRes);
+  rpc UpdateRole(UpdateRoleReq) returns (google.protobuf.Empty);
   rpc SetRolePermissions(SetRolePermissionsReq) returns (SetRolePermissionsRes);
   rpc DeleteRole(DeleteRoleReq) returns (DeleteRoleRes);
 }
@@ -318,8 +305,8 @@ service AdminUserService {
   rpc ListAdmins(ListAdminsReq) returns (ListAdminsRes);
   rpc GetAdminDetail(GetAdminDetailReq) returns (GetAdminDetailRes);
   rpc CreateAdmin(CreateAdminReq) returns (CreateAdminRes);
-  rpc UpdateAdmin(UpdateAdminReq) returns (UpdateAdminRes);
-  rpc SetAdminStatus(SetAdminStatusReq) returns (SetAdminStatusRes);
-  rpc ResetAdminPassword(ResetAdminPasswordReq) returns (ResetAdminPasswordRes);
-  rpc SetAdminRoles(SetAdminRolesReq) returns (SetAdminRolesRes);
+  rpc UpdateAdmin(UpdateAdminReq) returns (google.protobuf.Empty);
+  rpc SetAdminStatus(SetAdminStatusReq) returns (google.protobuf.Empty);
+  rpc ResetAdminPassword(ResetAdminPasswordReq) returns (google.protobuf.Empty);
+  rpc SetAdminRoles(SetAdminRolesReq) returns (google.protobuf.Empty);
 }

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package commonpb;
+package ranfeed.commonpb;
 
 option go_package = "ran-feed/pkg/commonpb";
 

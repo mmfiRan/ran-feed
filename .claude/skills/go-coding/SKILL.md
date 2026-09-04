@@ -1,6 +1,6 @@
 ---
 name: go-coding
-description: 编写或修改本项目 Go 代码时遵循的编码规范 — 命名 错误处理 三层架构 新增接口(goctl 生成 API/RPC) 并发与 context 缓存 cache-aside 配置新增 注释与日志风格 文件组织 设计模式选择。在动手写 logic repository handler proto api 或加缓存/配置/引入新抽象前应用。
+description: 编写或修改本项目 Go 代码时遵循的编码规范 — 命名 错误处理 三层架构 新增接口(goctl 生成 API/RPC) proto 编写规范 并发与 context 缓存 cache-aside 配置新增 注释与日志风格 文件组织 设计模式选择。在动手写 logic repository handler proto api 或加缓存/配置/引入新抽象前应用。
 ---
 
 # ran-feed Go 编码规范
@@ -59,6 +59,12 @@ Handler / Server  →  Logic  →  Repository
 - 写操作（增删改）用 POST / PUT / DELETE，**GET 不产生副作用**
 - 例外：**条件查询参数很多（超过 3 个查询条件）时**，可以用 POST 表示查询（避免超长 query string 与可读性差）
 - 判断依据：改数据的接口必须是非 GET；只有纯读且条件少的查询才用 GET
+
+## proto 编写规范
+
+新增或修改 `.proto`（`app/rpc/**/proto/*.proto`、`pkg/commonpb/common.proto`）时先读
+[references/proto-style.md](references/proto-style.md)：package/go_package 前缀 枚举命名与 UNSPECIFIED
+Timestamp 时间字段 Empty 空响应 定义顺序 reserved total 注释 以及 Go 侧常量命名联动。
 
 ## 并发与 context
 
