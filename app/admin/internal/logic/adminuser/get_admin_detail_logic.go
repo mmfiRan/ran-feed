@@ -44,7 +44,7 @@ func (l *GetAdminDetailLogic) GetAdminDetail(req *types.AdminUserDetailReq) (res
 			Nickname:  adminLists.GetNickname(),
 			Status:    utils.ToEnumValue(adminLists.GetStatus()),
 			RoleCodes: adminLists.GetRoleCodes(),
-			CreatedAt: adminLists.GetCreatedAt(),
+			CreatedAt: adminLists.GetCreatedAt().AsTime().UnixMilli(),
 		},
 		RoleIds: rpcRes.GetRoleIds(),
 	}, nil

@@ -43,7 +43,7 @@ func (l *ListRolesLogic) ListRoles(req *types.AdminRoleListReq) (resp *types.Adm
 			Code:      it.GetCode(),
 			Name:      it.GetName(),
 			Remark:    it.GetRemark(),
-			CreatedAt: it.GetCreatedAt(),
+			CreatedAt: it.GetCreatedAt().AsTime().UnixMilli(),
 		})
 	}
 	return &types.AdminRoleListRes{
@@ -51,7 +51,7 @@ func (l *ListRolesLogic) ListRoles(req *types.AdminRoleListReq) (resp *types.Adm
 		PageQueryResp: types.PageQueryResp{
 			Page:     rpcRes.GetPage(),
 			PageSize: rpcRes.GetPageSize(),
-			Total:    rpcRes.GetTotal(),
+			Total:    uint32(rpcRes.GetTotal()),
 		},
 	}, nil
 }

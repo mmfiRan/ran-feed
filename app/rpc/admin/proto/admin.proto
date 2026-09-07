@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "pkg/commonpb/common.proto";
 
-option go_package = "ran-feed/app/rpc/admin/adminpb";
+option go_package = "ran-feed/app/rpc/admin/admin";
 
 // AdminStatus 管理员账号状态
 enum AdminStatus {

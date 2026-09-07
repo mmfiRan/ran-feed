@@ -44,7 +44,7 @@ func (l *ListAdminsLogic) ListAdmins(in *admin.ListAdminsReq) (*admin.ListAdmins
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询管理员失败"))
 	}
 	res := &admin.ListAdminsRes{
-		Total:    uint32(total),
+		Total:    total,
 		Page:     in.GetPage(),
 		PageSize: in.GetPageSize(),
 	}

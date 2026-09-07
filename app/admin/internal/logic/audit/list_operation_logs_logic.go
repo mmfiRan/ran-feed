@@ -5,12 +5,14 @@ package audit
 
 import (
 	"context"
+	"time"
 
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ListOperationLogsLogic struct {
@@ -28,12 +30,19 @@ func NewListOperationLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogListReq) (resp *types.AdminOperationLogListRes, err error) {
+	var startTime, endTime *timestamppb.Timestamp
+	if req.StartTime > 0 {
+		startTime = timestamppb.New(time.UnixMilli(req.StartTime))
+	}
+	if req.EndTime > 0 {
+		endTime = timestamppb.New(time.UnixMilli(req.EndTime))
+	}
 	rpcRes, err := l.svcCtx.AdminAuditRpc.ListOperationLogs(l.ctx, &admin.ListOperationLogsReq{
 		AdminId:    req.AdminId,
 		Action:     req.Action,
 		TargetType: req.TargetType,
-		StartTime:  req.StartTime,
-		EndTime:    req.EndTime,
+		StartTime:  startTime,
+		EndTime:    endTime,
 		Page:       req.Page,
 		PageSize:   req.PageSize,
 	})
@@ -51,7 +60,7 @@ func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogL
 			TargetId:   it.GetTargetId(),
 			Result:     it.GetResult(),
 			Ip:         it.GetIp(),
-			CreatedAt:  it.GetCreatedAt(),
+			CreatedAt:  it.GetCreatedAt().AsTime().UnixMilli(),
 		})
 	}
 
@@ -60,7 +69,7 @@ func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogL
 		PageQueryResp: types.PageQueryResp{
 			Page:     rpcRes.GetPage(),
 			PageSize: rpcRes.GetPageSize(),
-			Total:    rpcRes.GetTotal(),
+			Total:    uint32(rpcRes.GetTotal()),
 		},
 	}, nil
 }

@@ -40,7 +40,7 @@ func (l *GetRoleDetailLogic) GetRoleDetail(req *types.AdminRoleDetailReq) (resp 
 			Code:      role.GetCode(),
 			Name:      role.GetName(),
 			Remark:    role.GetRemark(),
-			CreatedAt: role.GetCreatedAt(),
+			CreatedAt: role.GetCreatedAt().AsTime().UnixMilli(),
 		},
 		PermissionIds: rpcRes.GetPermissionIds(),
 	}, nil

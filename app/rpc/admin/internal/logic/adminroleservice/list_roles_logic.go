@@ -37,7 +37,7 @@ func (l *ListRolesLogic) ListRoles(in *admin.ListRolesReq) (*admin.ListRolesRes,
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询角色失败"))
 	}
 	res := &admin.ListRolesRes{
-		Total:    uint32(total),
+		Total:    total,
 		Page:     in.GetPage(),
 		PageSize: in.GetPageSize(),
 	}

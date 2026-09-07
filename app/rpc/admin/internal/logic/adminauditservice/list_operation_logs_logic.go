@@ -10,6 +10,7 @@ import (
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ListOperationLogsLogic struct {
@@ -34,8 +35,8 @@ func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsRe
 		AdminID:     in.GetAdminId(),
 		Action:      in.GetAction(),
 		TargetType:  in.GetTargetType(),
-		StartMillis: in.GetStartTime(),
-		EndMillis:   in.GetEndTime(),
+		StartMillis: in.GetStartTime().AsTime().UnixMilli(),
+		EndMillis:   in.GetEndTime().AsTime().UnixMilli(),
 	}
 
 	offset, limit := utils.NormalizePage(in.GetPage(), in.GetPageSize())
@@ -44,7 +45,7 @@ func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsRe
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询审计日志失败"))
 	}
 	res := &admin.ListOperationLogsRes{
-		Total:    uint32(total),
+		Total:    total,
 		Page:     in.GetPage(),
 		PageSize: in.GetPageSize(),
 	}
@@ -65,7 +66,7 @@ func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsRe
 			TargetId:   row.TargetID,
 			Result:     row.Result,
 			Ip:         row.IP,
-			CreatedAt:  row.CreatedAt.UnixMilli(),
+			CreatedAt:  timestamppb.New(row.CreatedAt),
 		})
 	}
 	res.Items = items

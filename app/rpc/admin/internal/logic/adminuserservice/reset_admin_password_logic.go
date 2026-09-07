@@ -11,6 +11,7 @@ import (
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type ResetAdminPasswordLogic struct {
@@ -30,7 +31,7 @@ func NewResetAdminPasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 }
 
 // ResetAdminPassword 重置管理员密码 bcrypt 重新哈希
-func (l *ResetAdminPasswordLogic) ResetAdminPassword(in *admin.ResetAdminPasswordReq) (*admin.ResetAdminPasswordRes, error) {
+func (l *ResetAdminPasswordLogic) ResetAdminPassword(in *admin.ResetAdminPasswordReq) (*emptypb.Empty, error) {
 
 	hash, err := utils.HashPassword(in.GetNewPassword())
 	if err != nil {
@@ -49,5 +50,5 @@ func (l *ResetAdminPasswordLogic) ResetAdminPassword(in *admin.ResetAdminPasswor
 	if e := session.RemoveByAdminID(l.ctx, l.svcCtx.Redis, in.GetId()); e != nil {
 		l.Errorf("重置密码后踢下线失败 adminID=%d err=%v", in.GetId(), e)
 	}
-	return &admin.ResetAdminPasswordRes{}, nil
+	return &emptypb.Empty{}, nil
 }

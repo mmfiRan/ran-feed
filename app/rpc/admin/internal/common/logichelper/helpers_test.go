@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/app/rpc/admin/internal/entity/model"
@@ -18,9 +19,9 @@ func TestIsSelfDisable(t *testing.T) {
 		status     admin.AdminStatus
 		want       bool
 	}{
-		{name: "禁用自己", targetID: 1, operatorID: 1, status: admin.AdminStatus_ADMIN_DISABLED, want: true},
-		{name: "禁用他人", targetID: 2, operatorID: 1, status: admin.AdminStatus_ADMIN_DISABLED, want: false},
-		{name: "启用自己不算", targetID: 1, operatorID: 1, status: admin.AdminStatus_ADMIN_ENABLED, want: false},
+		{name: "禁用自己", targetID: 1, operatorID: 1, status: admin.AdminStatus_ADMIN_STATUS_DISABLED, want: true},
+		{name: "禁用他人", targetID: 2, operatorID: 1, status: admin.AdminStatus_ADMIN_STATUS_DISABLED, want: false},
+		{name: "启用自己不算", targetID: 1, operatorID: 1, status: admin.AdminStatus_ADMIN_STATUS_ENABLED, want: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -60,7 +61,7 @@ func TestContainsInt64(t *testing.T) {
 }
 
 func TestBuildRoleItem(t *testing.T) {
-	t.Run("正常行映射 created_at 转毫秒", func(t *testing.T) {
+	t.Run("正常行映射 created_at 转 Timestamp", func(t *testing.T) {
 		row := &model.RanFeedAdminRole{
 			ID:        7,
 			Code:      "auditor",
@@ -74,7 +75,8 @@ func TestBuildRoleItem(t *testing.T) {
 		assert.Equal(t, "auditor", item.Code)
 		assert.Equal(t, "审核员", item.Name)
 		assert.Equal(t, "只读审核", item.Remark)
-		assert.Equal(t, int64(1700000000000), item.CreatedAt)
+		require.NotNil(t, item.CreatedAt)
+		assert.Equal(t, int64(1700000000000), item.CreatedAt.AsTime().UnixMilli())
 	})
 
 	t.Run("nil 行返回 nil", func(t *testing.T) {

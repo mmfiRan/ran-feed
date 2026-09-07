@@ -11,6 +11,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type SetAdminStatusLogic struct {
@@ -30,12 +31,12 @@ func NewSetAdminStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Se
 }
 
 // SetAdminStatus 启用禁用管理员
-func (l *SetAdminStatusLogic) SetAdminStatus(in *admin.SetAdminStatusReq) (*admin.SetAdminStatusRes, error) {
+func (l *SetAdminStatusLogic) SetAdminStatus(in *admin.SetAdminStatusReq) (*emptypb.Empty, error) {
 	if in.GetId() <= 0 {
 		return nil, errorx.NewMsg("管理员ID错误")
 	}
 	status := in.GetStatus()
-	if status != admin.AdminStatus_ADMIN_ENABLED && status != admin.AdminStatus_ADMIN_DISABLED {
+	if status != admin.AdminStatus_ADMIN_STATUS_ENABLED && status != admin.AdminStatus_ADMIN_STATUS_DISABLED {
 		return nil, errorx.NewMsg("不支持的状态")
 	}
 	if logichelper.IsSelfDisable(in.GetId(), in.GetOperatorId(), status) {
@@ -51,10 +52,10 @@ func (l *SetAdminStatusLogic) SetAdminStatus(in *admin.SetAdminStatusReq) (*admi
 	}
 
 	// 禁用即踢下线
-	if status == admin.AdminStatus_ADMIN_DISABLED {
+	if status == admin.AdminStatus_ADMIN_STATUS_DISABLED {
 		if e := session.RemoveByAdminID(l.ctx, l.svcCtx.Redis, in.GetId()); e != nil {
 			l.Errorf("禁用后踢下线失败 adminID=%d err=%v", in.GetId(), e)
 		}
 	}
-	return &admin.SetAdminStatusRes{}, nil
+	return &emptypb.Empty{}, nil
 }

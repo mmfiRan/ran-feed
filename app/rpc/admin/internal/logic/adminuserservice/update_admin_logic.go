@@ -8,6 +8,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type UpdateAdminLogic struct {
@@ -27,7 +28,7 @@ func NewUpdateAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Updat
 }
 
 // UpdateAdmin 改管理员昵称
-func (l *UpdateAdminLogic) UpdateAdmin(in *admin.UpdateAdminReq) (*admin.UpdateAdminRes, error) {
+func (l *UpdateAdminLogic) UpdateAdmin(in *admin.UpdateAdminReq) (*emptypb.Empty, error) {
 	nickname := in.GetNickname()
 	affected, err := l.adminUserRepo.UpdateProfile(in.GetId(), nickname, in.GetOperatorId())
 	if err != nil {
@@ -36,5 +37,5 @@ func (l *UpdateAdminLogic) UpdateAdmin(in *admin.UpdateAdminReq) (*admin.UpdateA
 	if affected == 0 {
 		return nil, errorx.NewMsg("管理员不存在")
 	}
-	return &admin.UpdateAdminRes{}, nil
+	return &emptypb.Empty{}, nil
 }

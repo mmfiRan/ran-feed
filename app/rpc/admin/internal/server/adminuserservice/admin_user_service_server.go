@@ -7,6 +7,7 @@ package server
 import (
 	"context"
 
+	"google.golang.org/protobuf/types/known/emptypb"
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/app/rpc/admin/internal/logic/adminuserservice"
 	"ran-feed/app/rpc/admin/internal/svc"
@@ -38,22 +39,22 @@ func (s *AdminUserServiceServer) CreateAdmin(ctx context.Context, in *admin.Crea
 	return l.CreateAdmin(in)
 }
 
-func (s *AdminUserServiceServer) UpdateAdmin(ctx context.Context, in *admin.UpdateAdminReq) (*admin.UpdateAdminRes, error) {
+func (s *AdminUserServiceServer) UpdateAdmin(ctx context.Context, in *admin.UpdateAdminReq) (*emptypb.Empty, error) {
 	l := adminuserservicelogic.NewUpdateAdminLogic(ctx, s.svcCtx)
 	return l.UpdateAdmin(in)
 }
 
-func (s *AdminUserServiceServer) SetAdminStatus(ctx context.Context, in *admin.SetAdminStatusReq) (*admin.SetAdminStatusRes, error) {
+func (s *AdminUserServiceServer) SetAdminStatus(ctx context.Context, in *admin.SetAdminStatusReq) (*emptypb.Empty, error) {
 	l := adminuserservicelogic.NewSetAdminStatusLogic(ctx, s.svcCtx)
 	return l.SetAdminStatus(in)
 }
 
-func (s *AdminUserServiceServer) ResetAdminPassword(ctx context.Context, in *admin.ResetAdminPasswordReq) (*admin.ResetAdminPasswordRes, error) {
+func (s *AdminUserServiceServer) ResetAdminPassword(ctx context.Context, in *admin.ResetAdminPasswordReq) (*emptypb.Empty, error) {
 	l := adminuserservicelogic.NewResetAdminPasswordLogic(ctx, s.svcCtx)
 	return l.ResetAdminPassword(in)
 }
 
-func (s *AdminUserServiceServer) SetAdminRoles(ctx context.Context, in *admin.SetAdminRolesReq) (*admin.SetAdminRolesRes, error) {
+func (s *AdminUserServiceServer) SetAdminRoles(ctx context.Context, in *admin.SetAdminRolesReq) (*emptypb.Empty, error) {
 	l := adminuserservicelogic.NewSetAdminRolesLogic(ctx, s.svcCtx)
 	return l.SetAdminRoles(in)
 }

@@ -13,6 +13,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type SetAdminRolesLogic struct {
@@ -36,7 +37,7 @@ func NewSetAdminRolesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Set
 }
 
 // SetAdminRoles 设置管理员角色
-func (l *SetAdminRolesLogic) SetAdminRoles(in *admin.SetAdminRolesReq) (*admin.SetAdminRolesRes, error) {
+func (l *SetAdminRolesLogic) SetAdminRoles(in *admin.SetAdminRolesReq) (*emptypb.Empty, error) {
 	if in.GetAdminId() <= 0 {
 		return nil, errorx.NewMsg("管理员ID不能为空")
 	}
@@ -80,5 +81,5 @@ func (l *SetAdminRolesLogic) SetAdminRoles(in *admin.SetAdminRolesReq) (*admin.S
 
 	// 角色变更 失效该管理员权限缓存使新权限立即生效
 	utils.InvalidateAdminPerm(l.ctx, l.svcCtx.Redis, in.GetAdminId())
-	return &admin.SetAdminRolesRes{}, nil
+	return &emptypb.Empty{}, nil
 }

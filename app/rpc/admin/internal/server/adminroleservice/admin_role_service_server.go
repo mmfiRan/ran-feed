@@ -7,6 +7,7 @@ package server
 import (
 	"context"
 
+	"google.golang.org/protobuf/types/known/emptypb"
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/app/rpc/admin/internal/logic/adminroleservice"
 	"ran-feed/app/rpc/admin/internal/svc"
@@ -38,7 +39,7 @@ func (s *AdminRoleServiceServer) CreateRole(ctx context.Context, in *admin.Creat
 	return l.CreateRole(in)
 }
 
-func (s *AdminRoleServiceServer) UpdateRole(ctx context.Context, in *admin.UpdateRoleReq) (*admin.UpdateRoleRes, error) {
+func (s *AdminRoleServiceServer) UpdateRole(ctx context.Context, in *admin.UpdateRoleReq) (*emptypb.Empty, error) {
 	l := adminroleservicelogic.NewUpdateRoleLogic(ctx, s.svcCtx)
 	return l.UpdateRole(in)
 }

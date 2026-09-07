@@ -8,9 +8,11 @@ import (
 	"ran-feed/pkg/commonpb"
 	"ran-feed/pkg/enums"
 	"ran-feed/pkg/snowflake"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// BuildAdminListItem 管理员行加角色码转出参 created_at 毫秒
+// BuildAdminListItem 管理员行加角色码转出参
 func BuildAdminListItem(row *model.RanFeedAdminUser, roleCodes []string) *admin.AdminListItem {
 	if row == nil {
 		return nil
@@ -21,11 +23,11 @@ func BuildAdminListItem(row *model.RanFeedAdminUser, roleCodes []string) *admin.
 		Nickname:  row.Nickname,
 		Status:    AdminStatusValue(row.Status),
 		RoleCodes: roleCodes,
-		CreatedAt: row.CreatedAt.UnixMilli(),
+		CreatedAt: timestamppb.New(row.CreatedAt),
 	}
 }
 
-// BuildRoleItem 角色行转出参 created_at 毫秒
+// BuildRoleItem 角色行转出参
 func BuildRoleItem(row *model.RanFeedAdminRole) *admin.RoleItem {
 	if row == nil {
 		return nil
@@ -35,7 +37,7 @@ func BuildRoleItem(row *model.RanFeedAdminRole) *admin.RoleItem {
 		Code:      row.Code,
 		Name:      row.Name,
 		Remark:    row.Remark,
-		CreatedAt: row.CreatedAt.UnixMilli(),
+		CreatedAt: timestamppb.New(row.CreatedAt),
 	}
 }
 
@@ -64,7 +66,7 @@ func BuildUserRoleRows(adminID int64, roleIDs []int64, operatorID int64) []*mode
 
 // IsSelfDisable 禁用目标即操作者自己
 func IsSelfDisable(targetID, operatorID int64, status admin.AdminStatus) bool {
-	return status == admin.AdminStatus_ADMIN_DISABLED && targetID == operatorID
+	return status == admin.AdminStatus_ADMIN_STATUS_DISABLED && targetID == operatorID
 }
 
 // RemovesSelfSuper 操作者给自己设角色 当前持有 super 但新集合不含 super

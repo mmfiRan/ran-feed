@@ -9,6 +9,8 @@ import (
 
 	"ran-feed/app/rpc/admin/admin"
 
+	"google.golang.org/protobuf/types/known/emptypb"
+
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
 )
@@ -22,22 +24,18 @@ type (
 	ListAdminsReq         = admin.ListAdminsReq
 	ListAdminsRes         = admin.ListAdminsRes
 	ResetAdminPasswordReq = admin.ResetAdminPasswordReq
-	ResetAdminPasswordRes = admin.ResetAdminPasswordRes
 	SetAdminRolesReq      = admin.SetAdminRolesReq
-	SetAdminRolesRes      = admin.SetAdminRolesRes
 	SetAdminStatusReq     = admin.SetAdminStatusReq
-	SetAdminStatusRes     = admin.SetAdminStatusRes
 	UpdateAdminReq        = admin.UpdateAdminReq
-	UpdateAdminRes        = admin.UpdateAdminRes
 
 	AdminUserService interface {
 		ListAdmins(ctx context.Context, in *ListAdminsReq, opts ...grpc.CallOption) (*ListAdminsRes, error)
 		GetAdminDetail(ctx context.Context, in *GetAdminDetailReq, opts ...grpc.CallOption) (*GetAdminDetailRes, error)
 		CreateAdmin(ctx context.Context, in *CreateAdminReq, opts ...grpc.CallOption) (*CreateAdminRes, error)
-		UpdateAdmin(ctx context.Context, in *UpdateAdminReq, opts ...grpc.CallOption) (*UpdateAdminRes, error)
-		SetAdminStatus(ctx context.Context, in *SetAdminStatusReq, opts ...grpc.CallOption) (*SetAdminStatusRes, error)
-		ResetAdminPassword(ctx context.Context, in *ResetAdminPasswordReq, opts ...grpc.CallOption) (*ResetAdminPasswordRes, error)
-		SetAdminRoles(ctx context.Context, in *SetAdminRolesReq, opts ...grpc.CallOption) (*SetAdminRolesRes, error)
+		UpdateAdmin(ctx context.Context, in *UpdateAdminReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
+		SetAdminStatus(ctx context.Context, in *SetAdminStatusReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
+		ResetAdminPassword(ctx context.Context, in *ResetAdminPasswordReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
+		SetAdminRoles(ctx context.Context, in *SetAdminRolesReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	}
 
 	defaultAdminUserService struct {
@@ -66,22 +64,22 @@ func (m *defaultAdminUserService) CreateAdmin(ctx context.Context, in *CreateAdm
 	return client.CreateAdmin(ctx, in, opts...)
 }
 
-func (m *defaultAdminUserService) UpdateAdmin(ctx context.Context, in *UpdateAdminReq, opts ...grpc.CallOption) (*UpdateAdminRes, error) {
+func (m *defaultAdminUserService) UpdateAdmin(ctx context.Context, in *UpdateAdminReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	client := admin.NewAdminUserServiceClient(m.cli.Conn())
 	return client.UpdateAdmin(ctx, in, opts...)
 }
 
-func (m *defaultAdminUserService) SetAdminStatus(ctx context.Context, in *SetAdminStatusReq, opts ...grpc.CallOption) (*SetAdminStatusRes, error) {
+func (m *defaultAdminUserService) SetAdminStatus(ctx context.Context, in *SetAdminStatusReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	client := admin.NewAdminUserServiceClient(m.cli.Conn())
 	return client.SetAdminStatus(ctx, in, opts...)
 }
 
-func (m *defaultAdminUserService) ResetAdminPassword(ctx context.Context, in *ResetAdminPasswordReq, opts ...grpc.CallOption) (*ResetAdminPasswordRes, error) {
+func (m *defaultAdminUserService) ResetAdminPassword(ctx context.Context, in *ResetAdminPasswordReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	client := admin.NewAdminUserServiceClient(m.cli.Conn())
 	return client.ResetAdminPassword(ctx, in, opts...)
 }
 
-func (m *defaultAdminUserService) SetAdminRoles(ctx context.Context, in *SetAdminRolesReq, opts ...grpc.CallOption) (*SetAdminRolesRes, error) {
+func (m *defaultAdminUserService) SetAdminRoles(ctx context.Context, in *SetAdminRolesReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	client := admin.NewAdminUserServiceClient(m.cli.Conn())
 	return client.SetAdminRoles(ctx, in, opts...)
 }

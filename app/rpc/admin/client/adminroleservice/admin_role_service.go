@@ -9,6 +9,8 @@ import (
 
 	"ran-feed/app/rpc/admin/admin"
 
+	"google.golang.org/protobuf/types/known/emptypb"
+
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
 )
@@ -26,13 +28,12 @@ type (
 	SetRolePermissionsReq = admin.SetRolePermissionsReq
 	SetRolePermissionsRes = admin.SetRolePermissionsRes
 	UpdateRoleReq         = admin.UpdateRoleReq
-	UpdateRoleRes         = admin.UpdateRoleRes
 
 	AdminRoleService interface {
 		ListRoles(ctx context.Context, in *ListRolesReq, opts ...grpc.CallOption) (*ListRolesRes, error)
 		GetRoleDetail(ctx context.Context, in *GetRoleDetailReq, opts ...grpc.CallOption) (*GetRoleDetailRes, error)
 		CreateRole(ctx context.Context, in *CreateRoleReq, opts ...grpc.CallOption) (*CreateRoleRes, error)
-		UpdateRole(ctx context.Context, in *UpdateRoleReq, opts ...grpc.CallOption) (*UpdateRoleRes, error)
+		UpdateRole(ctx context.Context, in *UpdateRoleReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 		SetRolePermissions(ctx context.Context, in *SetRolePermissionsReq, opts ...grpc.CallOption) (*SetRolePermissionsRes, error)
 		DeleteRole(ctx context.Context, in *DeleteRoleReq, opts ...grpc.CallOption) (*DeleteRoleRes, error)
 	}
@@ -63,7 +64,7 @@ func (m *defaultAdminRoleService) CreateRole(ctx context.Context, in *CreateRole
 	return client.CreateRole(ctx, in, opts...)
 }
 
-func (m *defaultAdminRoleService) UpdateRole(ctx context.Context, in *UpdateRoleReq, opts ...grpc.CallOption) (*UpdateRoleRes, error) {
+func (m *defaultAdminRoleService) UpdateRole(ctx context.Context, in *UpdateRoleReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	client := admin.NewAdminRoleServiceClient(m.cli.Conn())
 	return client.UpdateRole(ctx, in, opts...)
 }

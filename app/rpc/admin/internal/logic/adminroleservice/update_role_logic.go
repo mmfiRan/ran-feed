@@ -10,6 +10,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type UpdateRoleLogic struct {
@@ -29,7 +30,7 @@ func NewUpdateRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Update
 }
 
 // UpdateRole 改角色名与备注 不可改 code
-func (l *UpdateRoleLogic) UpdateRole(in *admin.UpdateRoleReq) (*admin.UpdateRoleRes, error) {
+func (l *UpdateRoleLogic) UpdateRole(in *admin.UpdateRoleReq) (*emptypb.Empty, error) {
 	name := strings.TrimSpace(in.GetName())
 	if in.GetId() <= 0 || name == "" {
 		return nil, errorx.NewMsg("参数错误")
@@ -42,5 +43,5 @@ func (l *UpdateRoleLogic) UpdateRole(in *admin.UpdateRoleReq) (*admin.UpdateRole
 	if affected == 0 {
 		return nil, errorx.NewMsg("角色不存在")
 	}
-	return &admin.UpdateRoleRes{}, nil
+	return &emptypb.Empty{}, nil
 }

@@ -58,7 +58,7 @@ func (l *CreateAdminLogic) CreateAdmin(in *admin.CreateAdminReq) (*admin.CreateA
 			Username:     username,
 			PasswordHash: hash,
 			Nickname:     in.GetNickname(),
-			Status:       int32(admin.AdminStatus_ADMIN_ENABLED),
+			Status:       int32(admin.AdminStatus_ADMIN_STATUS_ENABLED),
 			CreatedBy:    in.GetOperatorId(),
 			UpdatedBy:    in.GetOperatorId(),
 		}); e != nil {
