@@ -1,61 +1,63 @@
 # AGENTS.md
 
-> 本文件帮助使用 AI 在本仓库工作。
-> 若本地存在 `.harness/` 目录，先阅读其中的 [DEVELOPER.md](.harness/DEVELOPER.md) 文档并以内容为准；不存在则按本文件内容工作。
+> 本地存在 `.harness/` 时，先读 `.harness/DEVELOPER.md`；该文件补充本文，不放宽下面的约束。不存在则跳过。
 
-**ran-feed** —— 内容/信息流后台系统，Go 微服务（go-zero · gRPC · MySQL · Redis · Kafka）。
+## 项目结构
 
----
+- `app/front` — C 端网关（BFF），聚合各 RPC 组装响应
+- `app/admin` — 后台管理端BFF，含 RBAC 权限校验与操作审计
+- `app/rpc/*` — 各域 RPC 服务（gRPC 通信，Etcd 服务发现）：
+  - `user` 认证 / Session / 个人主页；
+  - `content` 发布 / Feed / 热榜 / OSS 凭证
+  - `interaction` 点赞 / 评论 / 关注 / 收藏；
+  - `count` 聚合计数（Canal 驱动）
+  - `search` 内容与用户检索（ES）；
+  - `notification` 通知（SSE 实时层）；
+  - `admin` 后台管理域
+- `pkg/*` — 跨服务公共代码（consts / enums / utils / errorx / grpcx 等）
 
-## 1. 如何用 AI 阅读与开发本项目
+分层：`Handler → Logic → Repository`，依赖经 `ServiceContext` 注入，不可越层：
 
-1. `pwd` — 确认在项目根目录
-2. 完整阅读本文件
-3. 准备与验证环境：
-   - `go mod download` — 首次克隆后补齐依赖
-   - `go build ./...` — 编译所有服务
-   - `go vet ./...` — 静态分析
-   - `go test ./...` — 运行测试
-4. 阅读 [`docs/architecture.md`](docs/architecture.md) — 服务拓扑与代码模式
-5. `git log --oneline -8` — 回顾最近提交，了解上下文
+- Handler 只做参数绑定与响应序列化，不含业务逻辑
+- Logic 负责业务编排，调 Repository 与外部 RPC，不直接写 SQL
+- Repository 只做数据读写，返回数据或原始错误，不含业务判断
 
----
+## 开发与验证
 
-## 2. 代码约束（项目不变式，违反会引入 Bug）
+```bash
+go build ./...
+go vet ./...
+go test ./...
+```
 
-- **`*.gen.go` 不可手动修改**：`internal/entity/model/*.gen.go`、`internal/entity/query/*.gen.go` 均为 GORM Gen 生成产物
-- **`routes.go` 不可手动修改**：`app/front/internal/handler/routes.go` 由 goctl 生成，只改 `.api` 文件后重新生成
-- **不在代码中硬编码凭据**：本地开发在根目录放 `.env`（参考部署仓库 ran-feed-docker 的 `.env.example`）
-- **软删除必须过滤**：所有 Repository 查询必须加 `IsDeleted.Eq(0)`
-- **事务内不调用外部 RPC 或 Redis**：副作用操作放事务提交后执行
-- **Redis 优先单命令**：能用 go-zero 提供的单条 redis 命令完成就不写 Lua；确需多步原子操作再用 Lua 脚本（参考 `internal/common/utils/lua/`）
+- 提交前必须通过以上命令；跑单个包：`go test ./app/rpc/user/...`
+- 本地起服务依赖 MySQL / Redis / Etcd / Kafka，凭据放根目录 `.env`（不入库）
+- 未执行的验证要如实说明，不把未验证的改动描述为完成
 
----
+## 代码边界
 
-## 3. 编码辅助 skill
+**禁止：**
 
-仓库自带以下 skill，编码 / 测试 / 提交前按需调用（用法与描述由 skill 自身提供）：
+- 手改生成文件——重新生成会被覆盖，只改源定义再重新生成：
+  - `*.gen.go`（`internal/entity/model/`、`internal/entity/query/`）
+  - `routes.go`（`app/front/internal/handler/`、`app/admin/internal/handler/`）
+  - protobuf 生成（`*.pb.go`、`*_grpc.pb.go`、RPC client）、Swagger、admin docmeta
 
-- `go-coding` — Go 编码规范与参考（设计模式、缓存、配置等）
-- `go-testing` — 测试规范
-- `git-commit` — 提交信息规范
+**先问：**
 
----
+- 改 `.proto` / 数据库 Schema / 新增服务 / 新增依赖 / 认证安全逻辑
 
-## 4. 完成标准
+**必须：**
 
-一个功能或修复仅在满足全部条件时才视为完成：
+- 有 `is_deleted` 字段的表，Repository 查询过滤未删除（`IsDeleted.Eq(0)`）
+- 事务内不调 RPC / Redis，缓存失效、消息发送等副作用放事务提交后
+- 跨域数据走对应 RPC 或 Canal 同步链路，不直读别域的表
 
-- [ ] 目标行为已实现
-- [ ] `go build` + `go vet` + `go test` 全部通过
-- [ ] 改动范围最小，不做顺手重构
-- [ ] 仓库可重启（下一会话可直接继续开发）
+## 编码辅助
 
----
+- `go-coding` / `go-testing` / `git-commit`（用法见各 skill 的 description）
 
-## 5. 文档地图
+## 文档地图
 
-| 文件 | 内容 |
-|------|------|
-| [`docs/architecture.md`](docs/architecture.md) | 服务拓扑、架构、代码模式 |
-| [`README.md`](README.md) | 项目简介与部署 |
+- [`docs/architecture.md`](docs/architecture.md) — 服务拓扑、架构、代码模式
+- [`README.md`](README.md) — 项目简介与部署

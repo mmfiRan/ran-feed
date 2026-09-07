@@ -52,12 +52,22 @@ cd pkg/rbacgen && go run . -api ../../app/admin/doc/admin.api -out ../../app/adm
 
 ## gRPC（服务间）
 
-改 `app/rpc/<svc>/proto/<svc>.proto` 后（保持 `--style=go_zero --multiple` 统一文件名风格）：
+改 `app/rpc/<svc>/proto/<svc>.proto` 后重新生成：
 
 ```bash
 goctl rpc protoc app/rpc/user/proto/user.proto \
-  --go_out=app/rpc/user --go-grpc_out=app/rpc/user --zrpc_out=app/rpc/user --style=go_zero --multiple
+  --go_out=. --go-grpc_out=. --zrpc_out=app/rpc/user \
+  --go_opt=module=ran-feed --go-grpc_opt=module=ran-feed --module=ran-feed \
+  --style=go_zero --multiple --name-from-filename
 ```
+
+（`user` 替换为 `count` / `interaction` / `search` / `content` / `notification` / `admin`）
+
+命令三要素，缺一都会出错：
+
+- `--go_out=. --go-grpc_out=.` 是模块根（仓库根），不是 `app/rpc/<svc>`；写错会把生成文件放到错误位置
+- `--go_opt=module=ran-feed` / `--go-grpc_opt=module=ran-feed` 让 protoc 从 go_package 剥掉 `ran-feed/` 前缀再拼到 `--go_out` 后；漏掉会在仓库根多出一个 `ran-feed/` 目录
+- `--name-from-filename` 让服务名取文件名 `<svc>`；否则 `package` 加了 `ranfeed.` 前缀后，服务名会变成 `ranfeedadmin` 这类
 
 格式约束：
 - message 与 rpc 方法 PascalCase，请求/响应固定 `XxxReq` / `XxxRes` 后缀

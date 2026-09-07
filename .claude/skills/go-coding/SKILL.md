@@ -1,6 +1,6 @@
 ---
 name: go-coding
-description: 编写或修改本项目 Go 代码时遵循的编码规范 — 命名 错误处理 三层架构 新增接口(goctl 生成 API/RPC) proto 编写规范 并发与 context 缓存 cache-aside 配置新增 注释与日志风格 文件组织 设计模式选择。在动手写 logic repository handler proto api 或加缓存/配置/引入新抽象前应用。
+description: 编写或修改本项目 Go 代码时遵循的编码规范 — 命名 错误处理 三层架构 新增接口(goctl 生成 API/RPC) proto 编写规范 枚举创建与使用 并发与 context 缓存 cache-aside 配置新增 注释与日志风格 文件组织 设计模式选择。在动手写 logic repository handler proto api、创建或修改枚举、加缓存/配置、引入新抽象前应用；只要碰 Go 生产代码就应先看本规范。
 ---
 
 # ran-feed Go 编码规范
@@ -163,21 +163,14 @@ l.Errorf("RebuildHotSnapshotScript EvalCtx 执行异常, 详见: %+v", err)
 
 ## 常量与枚举
 
-**常量按作用域分级放置，禁止在 logic / handler / repository 里内联散落 `const`**：
+**常量按作用域分级放置，不在 logic / handler / repository 里内联散落 `const`**：
 
-- **全局通用** → `pkg/consts/`（普通常量）或 `pkg/enum/`（枚举类型）。判定：被 ≥2 服务共用，或属项目级通用约定（超时、软删标记）
+- **全局通用** → `pkg/consts/`（普通常量）。判定：被 ≥2 服务共用，或属项目级通用约定（超时、软删标记）
 - **单服务专属** → 该服务 `internal/common/consts/xxx_consts.go`，按主题分文件（`content_consts.go`、`redis/redis_consts.go`）
-- 跨服务但属**某域语义**的枚举（如 content 的 status / visibility）**不算全局**：跟着该域的 pb 走，别的服务 import 那个 pb，不进 `pkg`
 
-**数据库字段的枚举必须复用已有定义，不得自造字面量**：
-
-- DB 持久化字段（`status` `visibility` `content_type` `is_deleted`）一律用 pb 生成的枚举
-  （`content.ContentStatus_PUBLISHED`）或 `pkg/enum`（`enum.IsDeleted`）
-- 反例：`ContentStatusPublished int32 = 30` —— pb 已有该值，重复定义则值一改两处漂移
-- 从 DB 行转枚举直接 `content.ContentStatus(row.Status)`；需拦非法值时用 `enum.Parse` 校验 `Valid`
-
-**非 DB 的业务字面量不强制走 pb**：HTTP 入参约定值（如 `action=takedown/restore`）、第三方标识
-（如 `aliyun`）这类不是 DB 枚举，按「单服务专属」入该服务 `common/consts` 即可。
+**枚举（DB 枚举字段）** 的创建与使用有独立规范，见 [references/enum.md](references/enum.md)。
+核心原则：DB 持久化字段不自造字面量，复用业务枚举或 pb 枚举；从 DB 行转枚举用
+`content.ContentStatus(row.Status)`，需拦非法值用 `Parse` 校验 `Valid`。
 
 ## 设计模式
 
