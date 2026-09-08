@@ -36,18 +36,17 @@ func (l *WriteOperationLogLogic) WriteOperationLog(in *admin.WriteOperationLogRe
 	}
 
 	row := &model.RanFeedOperationLog{
-		ID:         snowflake.GenID(),
-		AdminID:    in.GetAdminId(),
-		Action:     in.GetAction(),
-		TargetType: in.GetTargetType(),
-		TargetID:   in.GetTargetId(),
-		Result:     in.GetResult(),
-		IP:         in.GetIp(),
-		CreatedBy:  in.GetAdminId(),
-		UpdatedBy:  in.GetAdminId(),
-	}
-	if payload := in.GetPayload(); payload != "" {
-		row.Payload = &payload
+		ID:        snowflake.GenID(),
+		AdminID:   in.GetAdminId(),
+		Action:    in.GetAction(),
+		Title:     in.GetTitle(),
+		Status:    int32(in.GetStatus()),
+		ErrorMsg:  in.GetErrorMsg(),
+		CostTime:  int32(in.GetCostTime()),
+		IP:        in.GetIp(),
+		UserAgent: in.GetUserAgent(),
+		CreatedBy: in.GetAdminId(),
+		UpdatedBy: in.GetAdminId(),
 	}
 
 	logID, err := l.operationLogRepo.Create(row)

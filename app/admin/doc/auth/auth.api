@@ -1,5 +1,7 @@
 syntax = "v1"
 
+import "../base/base.api"
+
 type (
 	AdminLoginReq {
 		Username *string `json:"username,optional" validate:"required,max=64"`
@@ -26,9 +28,10 @@ type (
 )
 
 @server (
-	tags:   auth
-	group:  auth
-	prefix: /v1/admin
+	tags:       auth
+	group:      auth
+	prefix:     /v1/admin
+	middleware: AdminLoginLogMiddleware
 )
 service admin-api {
 	@doc (

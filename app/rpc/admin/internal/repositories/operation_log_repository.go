@@ -6,29 +6,23 @@ import (
 
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/entity/query"
+	"ran-feed/app/rpc/admin/internal/types"
 	"ran-feed/pkg/orm"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// OperationLogFilter 审计日志查询条件 零值即不限 时间为毫秒
-type OperationLogFilter struct {
-	AdminID     int64
-	Action      string
-	TargetType  string
-	StartMillis int64
-	EndMillis   int64
-}
-
 type OperationLogRepository interface {
+	WithTx(tx *query.Query) OperationLogRepository
 	Create(row *model.RanFeedOperationLog) (int64, error)
 	// Page 按条件分页查审计日志 id 倒序 返回列表与总数
-	Page(filter OperationLogFilter, offset, limit int) ([]*model.RanFeedOperationLog, int64, error)
+	Page(filter types.OperationLogFilter, offset, limit int) ([]*model.RanFeedOperationLog, int64, error)
 }
 
 type operationLogRepositoryImpl struct {
 	ctx context.Context
 	db  *orm.DB
+	tx  *query.Query
 	logx.Logger
 }
 
@@ -37,6 +31,22 @@ func NewOperationLogRepository(ctx context.Context, db *orm.DB) OperationLogRepo
 		ctx:    ctx,
 		db:     db,
 		Logger: logx.WithContext(ctx),
+	}
+}
+
+func (r *operationLogRepositoryImpl) getQuery() *query.Query {
+	if r.tx != nil {
+		return r.tx
+	}
+	return query.Q
+}
+
+func (r *operationLogRepositoryImpl) WithTx(tx *query.Query) OperationLogRepository {
+	return &operationLogRepositoryImpl{
+		ctx:    r.ctx,
+		db:     r.db,
+		tx:     tx,
+		Logger: r.Logger,
 	}
 }
 
@@ -52,8 +62,8 @@ func (r *operationLogRepositoryImpl) Create(row *model.RanFeedOperationLog) (int
 	return row.ID, nil
 }
 
-// buildQuery 按条件组装查询 软删过滤加可选筛选加时间区间
-func (r *operationLogRepositoryImpl) buildQuery(filter OperationLogFilter) query.IRanFeedOperationLogDo {
+// Page 按条件分页查审计日志 id 倒序 复用 gen FindByPage 末页不满免 COUNT
+func (r *operationLogRepositoryImpl) Page(filter types.OperationLogFilter, offset, limit int) ([]*model.RanFeedOperationLog, int64, error) {
 	q := query.Q.RanFeedOperationLog
 	do := q.WithContext(r.ctx).Where(q.IsDeleted.Eq(0))
 	if filter.AdminID > 0 {
@@ -62,8 +72,8 @@ func (r *operationLogRepositoryImpl) buildQuery(filter OperationLogFilter) query
 	if filter.Action != "" {
 		do = do.Where(q.Action.Eq(filter.Action))
 	}
-	if filter.TargetType != "" {
-		do = do.Where(q.TargetType.Eq(filter.TargetType))
+	if filter.Status > 0 {
+		do = do.Where(q.Status.Eq(filter.Status))
 	}
 	if filter.StartMillis > 0 {
 		do = do.Where(q.CreatedAt.Gte(time.UnixMilli(filter.StartMillis)))
@@ -71,11 +81,5 @@ func (r *operationLogRepositoryImpl) buildQuery(filter OperationLogFilter) query
 	if filter.EndMillis > 0 {
 		do = do.Where(q.CreatedAt.Lte(time.UnixMilli(filter.EndMillis)))
 	}
-	return do
-}
-
-// Page 按条件分页查审计日志 id 倒序 复用 gen FindByPage 末页不满免 COUNT
-func (r *operationLogRepositoryImpl) Page(filter OperationLogFilter, offset, limit int) ([]*model.RanFeedOperationLog, int64, error) {
-	q := query.Q.RanFeedOperationLog
-	return r.buildQuery(filter).Order(q.ID.Desc()).FindByPage(offset, limit)
+	return do.Order(q.ID.Desc()).FindByPage(offset, limit)
 }

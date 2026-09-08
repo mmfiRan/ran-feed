@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
+	"ran-feed/app/rpc/admin/internal/common/logichelper"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
+	"ran-feed/app/rpc/admin/internal/types"
 	"ran-feed/pkg/errorx"
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ListOperationLogsLogic struct {
@@ -31,12 +32,16 @@ func NewListOperationLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 
 // ListOperationLogs 按条件分页查操作审计日志 先统计总数为0直接返回
 func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsReq) (*admin.ListOperationLogsRes, error) {
-	filter := repositories.OperationLogFilter{
-		AdminID:     in.GetAdminId(),
-		Action:      in.GetAction(),
-		TargetType:  in.GetTargetType(),
-		StartMillis: in.GetStartTime().AsTime().UnixMilli(),
-		EndMillis:   in.GetEndTime().AsTime().UnixMilli(),
+	filter := types.OperationLogFilter{
+		AdminID: in.GetAdminId(),
+		Action:  in.GetAction(),
+		Status:  int32(in.GetStatus()),
+	}
+	if st := in.GetStartTime(); st != nil {
+		filter.StartMillis = st.AsTime().UnixMilli()
+	}
+	if et := in.GetEndTime(); et != nil {
+		filter.EndMillis = et.AsTime().UnixMilli()
 	}
 
 	offset, limit := utils.NormalizePage(in.GetPage(), in.GetPageSize())
@@ -55,19 +60,9 @@ func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsRe
 
 	items := make([]*admin.OperationLogItem, 0, len(rows))
 	for _, row := range rows {
-		if row == nil {
-			continue
+		if item := logichelper.BuildOperationLogItem(row); item != nil {
+			items = append(items, item)
 		}
-		items = append(items, &admin.OperationLogItem{
-			Id:         row.ID,
-			AdminId:    row.AdminID,
-			Action:     row.Action,
-			TargetType: row.TargetType,
-			TargetId:   row.TargetID,
-			Result:     row.Result,
-			Ip:         row.IP,
-			CreatedAt:  timestamppb.New(row.CreatedAt),
-		})
 	}
 	res.Items = items
 	return res, nil

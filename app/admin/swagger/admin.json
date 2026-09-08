@@ -53,7 +53,6 @@
           },
           {
             "type": "integer",
-            "description": "0不限 10启用 20禁用",
             "name": "status",
             "in": "query",
             "allowEmptyValue": true
@@ -873,6 +872,148 @@
         }
       }
     },
+    "/v1/admin/login-logs": {
+      "get": {
+        "description": "登录审计日志",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "audit"
+        ],
+        "summary": "ListLoginLogs",
+        "operationId": "auditListLoginLogs",
+        "parameters": [
+          {
+            "type": "integer",
+            "default": 1,
+            "example": 1,
+            "name": "page",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "default": 10,
+            "example": 10,
+            "name": "page_size",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "username",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "string",
+            "name": "ip",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "status",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "start_time",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "end_time",
+            "in": "query",
+            "allowEmptyValue": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "admin_id",
+                      "username",
+                      "ip",
+                      "user_agent",
+                      "status",
+                      "msg",
+                      "created_at"
+                    ],
+                    "properties": {
+                      "admin_id": {
+                        "type": "integer"
+                      },
+                      "created_at": {
+                        "description": "毫秒",
+                        "type": "integer"
+                      },
+                      "id": {
+                        "type": "integer"
+                      },
+                      "ip": {
+                        "type": "string"
+                      },
+                      "msg": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "user_agent": {
+                        "type": "string"
+                      },
+                      "username": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "page": {
+                  "type": "integer"
+                },
+                "page_size": {
+                  "type": "integer"
+                },
+                "total": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/admin/logout": {
       "post": {
         "description": "管理员登出 需带 Authorization: Bearer {token}",
@@ -1012,21 +1153,19 @@
             "allowEmptyValue": true
           },
           {
-            "type": "string",
-            "name": "target_type",
+            "type": "integer",
+            "name": "status",
             "in": "query",
             "allowEmptyValue": true
           },
           {
             "type": "integer",
-            "description": "毫秒",
             "name": "start_time",
             "in": "query",
             "allowEmptyValue": true
           },
           {
             "type": "integer",
-            "description": "毫秒",
             "name": "end_time",
             "in": "query",
             "allowEmptyValue": true
@@ -1046,10 +1185,12 @@
                       "id",
                       "admin_id",
                       "action",
-                      "target_type",
-                      "target_id",
-                      "result",
+                      "title",
+                      "status",
+                      "error_msg",
+                      "cost_time",
                       "ip",
+                      "user_agent",
                       "created_at"
                     ],
                     "properties": {
@@ -1059,9 +1200,14 @@
                       "admin_id": {
                         "type": "integer"
                       },
-                      "created_at": {
-                        "description": "毫秒",
+                      "cost_time": {
                         "type": "integer"
+                      },
+                      "created_at": {
+                        "type": "integer"
+                      },
+                      "error_msg": {
+                        "type": "string"
                       },
                       "id": {
                         "type": "integer"
@@ -1069,13 +1215,29 @@
                       "ip": {
                         "type": "string"
                       },
-                      "result": {
+                      "status": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "title": {
                         "type": "string"
                       },
-                      "target_id": {
-                        "type": "integer"
-                      },
-                      "target_type": {
+                      "user_agent": {
                         "type": "string"
                       }
                     }
@@ -1742,9 +1904,9 @@
       }
     }
   },
-  "x-date": "2026-09-01 17:42:04",
+  "x-date": "2026-09-08 15:31:21",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",
-  "x-goctl-version": "1.10.1"
+  "x-goctl-version": "1.10.2"
 }

@@ -15,6 +15,7 @@ var docMeta = map[string]map[string]string{
 	"GET /v1/admin/admins/detail":          {"description": "管理员详情 含角色ID", "permission": "admin:user:detail"},
 	"GET /v1/admin/contents":               {"description": "内容列表", "permission": "content:list"},
 	"GET /v1/admin/contents/detail":        {"description": "内容详情 含非公开与正文", "permission": "content:detail"},
+	"GET /v1/admin/login-logs":             {"description": "登录审计日志", "permission": "admin:login-log:list"},
 	"GET /v1/admin/me":                     {"description": "获取当前管理员信息与权限点 需带 Authorization: Bearer {token}"},
 	"GET /v1/admin/operation-logs":         {"description": "操作审计日志", "permission": "admin:audit:list"},
 	"GET /v1/admin/permissions":            {"description": "权限点目录 供角色分权选择", "permission": "admin:permission:list"},

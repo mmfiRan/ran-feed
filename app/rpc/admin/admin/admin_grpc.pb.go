@@ -204,16 +204,20 @@ var AdminAuthService_ServiceDesc = grpc.ServiceDesc{
 const (
 	AdminAuditService_WriteOperationLog_FullMethodName = "/ranfeed.admin.AdminAuditService/WriteOperationLog"
 	AdminAuditService_ListOperationLogs_FullMethodName = "/ranfeed.admin.AdminAuditService/ListOperationLogs"
+	AdminAuditService_WriteLoginLog_FullMethodName     = "/ranfeed.admin.AdminAuditService/WriteLoginLog"
+	AdminAuditService_ListLoginLogs_FullMethodName     = "/ranfeed.admin.AdminAuditService/ListLoginLogs"
 )
 
 // AdminAuditServiceClient is the client API for AdminAuditService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// AdminAuditService 操作审计日志
+// AdminAuditService 操作与登录审计日志
 type AdminAuditServiceClient interface {
 	WriteOperationLog(ctx context.Context, in *WriteOperationLogReq, opts ...grpc.CallOption) (*WriteOperationLogRes, error)
 	ListOperationLogs(ctx context.Context, in *ListOperationLogsReq, opts ...grpc.CallOption) (*ListOperationLogsRes, error)
+	WriteLoginLog(ctx context.Context, in *WriteLoginLogReq, opts ...grpc.CallOption) (*WriteLoginLogRes, error)
+	ListLoginLogs(ctx context.Context, in *ListLoginLogsReq, opts ...grpc.CallOption) (*ListLoginLogsRes, error)
 }
 
 type adminAuditServiceClient struct {
@@ -244,14 +248,36 @@ func (c *adminAuditServiceClient) ListOperationLogs(ctx context.Context, in *Lis
 	return out, nil
 }
 
+func (c *adminAuditServiceClient) WriteLoginLog(ctx context.Context, in *WriteLoginLogReq, opts ...grpc.CallOption) (*WriteLoginLogRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(WriteLoginLogRes)
+	err := c.cc.Invoke(ctx, AdminAuditService_WriteLoginLog_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminAuditServiceClient) ListLoginLogs(ctx context.Context, in *ListLoginLogsReq, opts ...grpc.CallOption) (*ListLoginLogsRes, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListLoginLogsRes)
+	err := c.cc.Invoke(ctx, AdminAuditService_ListLoginLogs_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminAuditServiceServer is the server API for AdminAuditService service.
 // All implementations must embed UnimplementedAdminAuditServiceServer
 // for forward compatibility.
 //
-// AdminAuditService 操作审计日志
+// AdminAuditService 操作与登录审计日志
 type AdminAuditServiceServer interface {
 	WriteOperationLog(context.Context, *WriteOperationLogReq) (*WriteOperationLogRes, error)
 	ListOperationLogs(context.Context, *ListOperationLogsReq) (*ListOperationLogsRes, error)
+	WriteLoginLog(context.Context, *WriteLoginLogReq) (*WriteLoginLogRes, error)
+	ListLoginLogs(context.Context, *ListLoginLogsReq) (*ListLoginLogsRes, error)
 	mustEmbedUnimplementedAdminAuditServiceServer()
 }
 
@@ -267,6 +293,12 @@ func (UnimplementedAdminAuditServiceServer) WriteOperationLog(context.Context, *
 }
 func (UnimplementedAdminAuditServiceServer) ListOperationLogs(context.Context, *ListOperationLogsReq) (*ListOperationLogsRes, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListOperationLogs not implemented")
+}
+func (UnimplementedAdminAuditServiceServer) WriteLoginLog(context.Context, *WriteLoginLogReq) (*WriteLoginLogRes, error) {
+	return nil, status.Error(codes.Unimplemented, "method WriteLoginLog not implemented")
+}
+func (UnimplementedAdminAuditServiceServer) ListLoginLogs(context.Context, *ListLoginLogsReq) (*ListLoginLogsRes, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListLoginLogs not implemented")
 }
 func (UnimplementedAdminAuditServiceServer) mustEmbedUnimplementedAdminAuditServiceServer() {}
 func (UnimplementedAdminAuditServiceServer) testEmbeddedByValue()                           {}
@@ -325,6 +357,42 @@ func _AdminAuditService_ListOperationLogs_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminAuditService_WriteLoginLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WriteLoginLogReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminAuditServiceServer).WriteLoginLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminAuditService_WriteLoginLog_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminAuditServiceServer).WriteLoginLog(ctx, req.(*WriteLoginLogReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminAuditService_ListLoginLogs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListLoginLogsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminAuditServiceServer).ListLoginLogs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminAuditService_ListLoginLogs_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminAuditServiceServer).ListLoginLogs(ctx, req.(*ListLoginLogsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminAuditService_ServiceDesc is the grpc.ServiceDesc for AdminAuditService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -339,6 +407,14 @@ var AdminAuditService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListOperationLogs",
 			Handler:    _AdminAuditService_ListOperationLogs_Handler,
+		},
+		{
+			MethodName: "WriteLoginLog",
+			Handler:    _AdminAuditService_WriteLoginLog_Handler,
+		},
+		{
+			MethodName: "ListLoginLogs",
+			Handler:    _AdminAuditService_ListLoginLogs_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

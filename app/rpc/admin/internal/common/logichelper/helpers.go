@@ -91,3 +91,32 @@ func ContainsInt64(ids []int64, target int64) bool {
 	}
 	return false
 }
+
+// BuildOperationLogItem 审计日志行转出参
+func BuildOperationLogItem(row *model.RanFeedOperationLog) *admin.OperationLogItem {
+	if row == nil {
+		return nil
+	}
+	return &admin.OperationLogItem{
+		Id:        row.ID,
+		AdminId:   row.AdminID,
+		Action:    row.Action,
+		Title:     row.Title,
+		Status:    OperateStatusValue(row.Status),
+		ErrorMsg:  row.ErrorMsg,
+		CostTime:  int64(row.CostTime),
+		Ip:        row.IP,
+		UserAgent: row.UserAgent,
+		CreatedAt: timestamppb.New(row.CreatedAt),
+	}
+}
+
+// OperateStatusValue 行状态转统一枚举响应
+func OperateStatusValue(status int32) *commonpb.EnumValue {
+	return enums.ToCommonPB(adminenums.OperateStatusEnum(status))
+}
+
+// LoginStatusValue 行状态转统一枚举响应
+func LoginStatusValue(status int32) *commonpb.EnumValue {
+	return enums.ToCommonPB(adminenums.LoginStatusEnum(status))
+}

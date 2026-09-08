@@ -15,6 +15,20 @@ enum AdminStatus {
   ADMIN_STATUS_DISABLED = 20;
 }
 
+// OperateStatus 操作结果
+enum OperateStatus {
+  OPERATE_STATUS_UNSPECIFIED = 0;
+  OPERATE_STATUS_SUCCESS = 1;
+  OPERATE_STATUS_FAIL = 2;
+}
+
+// LoginStatus 登录结果
+enum LoginStatus {
+  LOGIN_STATUS_UNSPECIFIED = 0;
+  LOGIN_STATUS_SUCCESS = 1;
+  LOGIN_STATUS_FAIL = 2;
+}
+
 // AuthenticateAdminReq 校验管理员账号密码
 message AuthenticateAdminReq {
   string username = 1;
@@ -51,15 +65,16 @@ message ListAdminPermissionsRes {
   repeated string codes = 1;
 }
 
-// WriteOperationLogReq 写操作审计日志
+// WriteOperationLogReq 写操作审计日志 action 为业务权限码 如 content:takedown
 message WriteOperationLogReq {
   int64 admin_id = 1;
   string action = 2;
-  string target_type = 3;
-  int64 target_id = 4;
-  string payload = 5;
-  string result = 6;
-  string ip = 7;
+  string ip = 3;
+  string title = 4;
+  OperateStatus status = 5;
+  string error_msg = 6;
+  int64 cost_time = 7;
+  string user_agent = 8;
 }
 
 // WriteOperationLogRes 写入结果
@@ -90,18 +105,20 @@ message OperationLogItem {
   int64 id = 1;
   int64 admin_id = 2;
   string action = 3;
-  string target_type = 4;
-  int64 target_id = 5;
-  string result = 6;
-  string ip = 7;
-  google.protobuf.Timestamp created_at = 8;
+  string ip = 4;
+  string title = 5;
+  ranfeed.commonpb.EnumValue status = 6;
+  string error_msg = 7;
+  int64 cost_time = 8;
+  string user_agent = 9;
+  google.protobuf.Timestamp created_at = 10;
 }
 
-// ListOperationLogsReq 查询操作审计日志 可选筛选加分页
+// ListOperationLogsReq 查询操作审计日志
 message ListOperationLogsReq {
   int64 admin_id = 1;
   string action = 2;
-  string target_type = 3;
+  OperateStatus status = 3;
   google.protobuf.Timestamp start_time = 4;
   google.protobuf.Timestamp end_time = 5;
   uint32 page = 6;
@@ -111,6 +128,52 @@ message ListOperationLogsReq {
 // ListOperationLogsRes 审计日志分页结果
 message ListOperationLogsRes {
   repeated OperationLogItem items = 1;
+  int64 total = 2;
+  uint32 page = 3;
+  uint32 page_size = 4;
+}
+
+// WriteLoginLogReq 写登录日志 登录发生在认证前 admin_id 成功时填 失败为 0
+message WriteLoginLogReq {
+  int64 admin_id = 1;
+  string username = 2;
+  string ip = 3;
+  string user_agent = 4;
+  LoginStatus status = 5;
+  string msg = 6;
+}
+
+// WriteLoginLogRes 写入结果
+message WriteLoginLogRes {
+  int64 log_id = 1;
+}
+
+// LoginLogItem 登录日志项
+message LoginLogItem {
+  int64 id = 1;
+  int64 admin_id = 2;
+  string username = 3;
+  string ip = 4;
+  string user_agent = 5;
+  ranfeed.commonpb.EnumValue status = 6;
+  string msg = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+// ListLoginLogsReq 查询登录日志
+message ListLoginLogsReq {
+  string username = 1;
+  string ip = 2;
+  LoginStatus status = 3;
+  google.protobuf.Timestamp start_time = 4;
+  google.protobuf.Timestamp end_time = 5;
+  uint32 page = 6;
+  uint32 page_size = 7;
+}
+
+// ListLoginLogsRes 登录日志分页结果
+message ListLoginLogsRes {
+  repeated LoginLogItem items = 1;
   int64 total = 2;
   uint32 page = 3;
   uint32 page_size = 4;
@@ -279,10 +342,12 @@ service AdminAuthService {
   rpc ListAdminPermissions(ListAdminPermissionsReq) returns (ListAdminPermissionsRes);
 }
 
-// AdminAuditService 操作审计日志
+// AdminAuditService 操作与登录审计日志
 service AdminAuditService {
   rpc WriteOperationLog(WriteOperationLogReq) returns (WriteOperationLogRes);
   rpc ListOperationLogs(ListOperationLogsReq) returns (ListOperationLogsRes);
+  rpc WriteLoginLog(WriteLoginLogReq) returns (WriteLoginLogRes);
+  rpc ListLoginLogs(ListLoginLogsReq) returns (ListLoginLogsRes);
 }
 
 // AdminPermissionService 权限点目录查询

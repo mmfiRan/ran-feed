@@ -30,11 +30,12 @@ func newRanFeedOperationLog(db *gorm.DB, opts ...gen.DOOption) ranFeedOperationL
 	_ranFeedOperationLog.ID = field.NewInt64(tableName, "id")
 	_ranFeedOperationLog.AdminID = field.NewInt64(tableName, "admin_id")
 	_ranFeedOperationLog.Action = field.NewString(tableName, "action")
-	_ranFeedOperationLog.TargetType = field.NewString(tableName, "target_type")
-	_ranFeedOperationLog.TargetID = field.NewInt64(tableName, "target_id")
-	_ranFeedOperationLog.Payload = field.NewString(tableName, "payload")
-	_ranFeedOperationLog.Result = field.NewString(tableName, "result")
+	_ranFeedOperationLog.Title = field.NewString(tableName, "title")
+	_ranFeedOperationLog.Status = field.NewInt32(tableName, "status")
+	_ranFeedOperationLog.ErrorMsg = field.NewString(tableName, "error_msg")
+	_ranFeedOperationLog.CostTime = field.NewInt32(tableName, "cost_time")
 	_ranFeedOperationLog.IP = field.NewString(tableName, "ip")
+	_ranFeedOperationLog.UserAgent = field.NewString(tableName, "user_agent")
 	_ranFeedOperationLog.Version = field.NewInt32(tableName, "version")
 	_ranFeedOperationLog.IsDeleted = field.NewInt32(tableName, "is_deleted")
 	_ranFeedOperationLog.CreatedBy = field.NewInt64(tableName, "created_by")
@@ -51,21 +52,22 @@ func newRanFeedOperationLog(db *gorm.DB, opts ...gen.DOOption) ranFeedOperationL
 type ranFeedOperationLog struct {
 	ranFeedOperationLogDo ranFeedOperationLogDo
 
-	ALL        field.Asterisk
-	ID         field.Int64  // 日志ID
-	AdminID    field.Int64  // 操作人管理员ID
-	Action     field.String // 操作动作 如 content:takedown
-	TargetType field.String // 目标类型 如 content/user
-	TargetID   field.Int64  // 目标ID
-	Payload    field.String // 入参摘要 JSON
-	Result     field.String // 操作结果
-	IP         field.String // 来源IP
-	Version    field.Int32  // 版本号（乐观锁）
-	IsDeleted  field.Int32  // 逻辑删除 0=正常 1=删除
-	CreatedBy  field.Int64  // 创建人
-	UpdatedBy  field.Int64  // 最后修改人
-	CreatedAt  field.Time   // 创建时间
-	UpdatedAt  field.Time   // 更新时间
+	ALL       field.Asterisk
+	ID        field.Int64  // 日志ID
+	AdminID   field.Int64  // 操作人管理员ID
+	Action    field.String // 操作动作 如 content:takedown
+	Title     field.String // 模块标题 来自路由 doc 描述
+	Status    field.Int32  // 操作成败 0=失败 1=成功
+	ErrorMsg  field.String // 失败时的业务错误消息
+	CostTime  field.Int32  // 处理耗时 毫秒
+	IP        field.String // 来源IP
+	UserAgent field.String // UA 原始串
+	Version   field.Int32  // 版本号（乐观锁）
+	IsDeleted field.Int32  // 逻辑删除 0=正常 1=删除
+	CreatedBy field.Int64  // 创建人
+	UpdatedBy field.Int64  // 最后修改人
+	CreatedAt field.Time   // 创建时间
+	UpdatedAt field.Time   // 更新时间
 
 	fieldMap map[string]field.Expr
 }
@@ -85,11 +87,12 @@ func (r *ranFeedOperationLog) updateTableName(table string) *ranFeedOperationLog
 	r.ID = field.NewInt64(table, "id")
 	r.AdminID = field.NewInt64(table, "admin_id")
 	r.Action = field.NewString(table, "action")
-	r.TargetType = field.NewString(table, "target_type")
-	r.TargetID = field.NewInt64(table, "target_id")
-	r.Payload = field.NewString(table, "payload")
-	r.Result = field.NewString(table, "result")
+	r.Title = field.NewString(table, "title")
+	r.Status = field.NewInt32(table, "status")
+	r.ErrorMsg = field.NewString(table, "error_msg")
+	r.CostTime = field.NewInt32(table, "cost_time")
 	r.IP = field.NewString(table, "ip")
+	r.UserAgent = field.NewString(table, "user_agent")
 	r.Version = field.NewInt32(table, "version")
 	r.IsDeleted = field.NewInt32(table, "is_deleted")
 	r.CreatedBy = field.NewInt64(table, "created_by")
@@ -124,15 +127,16 @@ func (r *ranFeedOperationLog) GetFieldByName(fieldName string) (field.OrderExpr,
 }
 
 func (r *ranFeedOperationLog) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 14)
+	r.fieldMap = make(map[string]field.Expr, 15)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["admin_id"] = r.AdminID
 	r.fieldMap["action"] = r.Action
-	r.fieldMap["target_type"] = r.TargetType
-	r.fieldMap["target_id"] = r.TargetID
-	r.fieldMap["payload"] = r.Payload
-	r.fieldMap["result"] = r.Result
+	r.fieldMap["title"] = r.Title
+	r.fieldMap["status"] = r.Status
+	r.fieldMap["error_msg"] = r.ErrorMsg
+	r.fieldMap["cost_time"] = r.CostTime
 	r.fieldMap["ip"] = r.IP
+	r.fieldMap["user_agent"] = r.UserAgent
 	r.fieldMap["version"] = r.Version
 	r.fieldMap["is_deleted"] = r.IsDeleted
 	r.fieldMap["created_by"] = r.CreatedBy

@@ -32,3 +32,13 @@ func (s *AdminAuditServiceServer) ListOperationLogs(ctx context.Context, in *adm
 	l := adminauditservicelogic.NewListOperationLogsLogic(ctx, s.svcCtx)
 	return l.ListOperationLogs(in)
 }
+
+func (s *AdminAuditServiceServer) WriteLoginLog(ctx context.Context, in *admin.WriteLoginLogReq) (*admin.WriteLoginLogRes, error) {
+	l := adminauditservicelogic.NewWriteLoginLogLogic(ctx, s.svcCtx)
+	return l.WriteLoginLog(in)
+}
+
+func (s *AdminAuditServiceServer) ListLoginLogs(ctx context.Context, in *admin.ListLoginLogsReq) (*admin.ListLoginLogsRes, error) {
+	l := adminauditservicelogic.NewListLoginLogsLogic(ctx, s.svcCtx)
+	return l.ListLoginLogs(in)
+}

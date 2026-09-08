@@ -31,9 +31,10 @@ type ServiceContext struct {
 	AdminUserRpc         adminuserservice.AdminUserService
 	ContentAdminRpc      admincontentservice.AdminContentService
 	UserAdminRpc        useradminuserservice.AdminUserService
-	AdminAuthMiddleware  rest.Middleware
-	AdminRbacMiddleware  rest.Middleware
-	AdminAuditMiddleware rest.Middleware
+	AdminAuthMiddleware     rest.Middleware
+	AdminRbacMiddleware     rest.Middleware
+	AdminAuditMiddleware    rest.Middleware
+	AdminLoginLogMiddleware rest.Middleware
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -80,8 +81,9 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		AdminUserRpc:         adminUserRpc,
 		ContentAdminRpc:      contentAdminRpc,
 		UserAdminRpc:        userAdminRpc,
-		AdminAuthMiddleware:  middleware.NewAdminAuthMiddleware(r, c).Handle,
-		AdminRbacMiddleware:  middleware.NewAdminRbacMiddleware(r, adminAuthRpc, consts.RedisAdminPermExpireSeconds).Handle,
-		AdminAuditMiddleware: middleware.NewAdminAuditMiddleware(adminAuditRpc).Handle,
+		AdminAuthMiddleware:     middleware.NewAdminAuthMiddleware(r, c).Handle,
+		AdminRbacMiddleware:     middleware.NewAdminRbacMiddleware(r, adminAuthRpc, consts.RedisAdminPermExpireSeconds).Handle,
+		AdminAuditMiddleware:    middleware.NewAdminAuditMiddleware(adminAuditRpc).Handle,
+		AdminLoginLogMiddleware: middleware.NewAdminLoginLogMiddleware(adminAuditRpc).Handle,
 	}
 }

@@ -15,21 +15,21 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type ListOperationLogsLogic struct {
+type ListLoginLogsLogic struct {
 	logx.Logger
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 }
 
-func NewListOperationLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListOperationLogsLogic {
-	return &ListOperationLogsLogic{
+func NewListLoginLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListLoginLogsLogic {
+	return &ListLoginLogsLogic{
 		Logger: logx.WithContext(ctx),
 		ctx:    ctx,
 		svcCtx: svcCtx,
 	}
 }
 
-func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogListReq) (resp *types.AdminOperationLogListRes, err error) {
+func (l *ListLoginLogsLogic) ListLoginLogs(req *types.AdminLoginLogListReq) (resp *types.AdminLoginLogListRes, err error) {
 	var startTime, endTime *timestamppb.Timestamp
 	if req.StartTime > 0 {
 		startTime = timestamppb.New(time.UnixMilli(req.StartTime))
@@ -37,10 +37,10 @@ func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogL
 	if req.EndTime > 0 {
 		endTime = timestamppb.New(time.UnixMilli(req.EndTime))
 	}
-	rpcRes, err := l.svcCtx.AdminAuditRpc.ListOperationLogs(l.ctx, &admin.ListOperationLogsReq{
-		AdminId:   req.AdminId,
-		Action:    req.Action,
-		Status:    admin.OperateStatus(req.Status),
+	rpcRes, err := l.svcCtx.AdminAuditRpc.ListLoginLogs(l.ctx, &admin.ListLoginLogsReq{
+		Username:  req.Username,
+		Ip:        req.Ip,
+		Status:    admin.LoginStatus(req.Status),
 		StartTime: startTime,
 		EndTime:   endTime,
 		Page:      req.Page,
@@ -50,23 +50,21 @@ func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogL
 		return nil, err
 	}
 
-	items := make([]types.AdminOperationLogItem, 0, len(rpcRes.GetItems()))
+	items := make([]types.AdminLoginLogItem, 0, len(rpcRes.GetItems()))
 	for _, it := range rpcRes.GetItems() {
-		items = append(items, types.AdminOperationLogItem{
+		items = append(items, types.AdminLoginLogItem{
 			Id:        it.GetId(),
 			AdminId:   it.GetAdminId(),
-			Action:    it.GetAction(),
-			Title:     it.GetTitle(),
-			Status:    utils.ToEnumValue(it.GetStatus()),
-			ErrorMsg:  it.GetErrorMsg(),
-			CostTime:  it.GetCostTime(),
+			Username:  it.GetUsername(),
 			Ip:        it.GetIp(),
 			UserAgent: it.GetUserAgent(),
+			Status:    utils.ToEnumValue(it.GetStatus()),
+			Msg:       it.GetMsg(),
 			CreatedAt: it.GetCreatedAt().AsTime().UnixMilli(),
 		})
 	}
 
-	return &types.AdminOperationLogListRes{
+	return &types.AdminLoginLogListRes{
 		Items: items,
 		PageQueryResp: types.PageQueryResp{
 			Page:     rpcRes.GetPage(),

@@ -14,15 +14,22 @@ import (
 )
 
 type (
+	ListLoginLogsReq     = admin.ListLoginLogsReq
+	ListLoginLogsRes     = admin.ListLoginLogsRes
 	ListOperationLogsReq = admin.ListOperationLogsReq
 	ListOperationLogsRes = admin.ListOperationLogsRes
+	LoginLogItem         = admin.LoginLogItem
 	OperationLogItem     = admin.OperationLogItem
+	WriteLoginLogReq     = admin.WriteLoginLogReq
+	WriteLoginLogRes     = admin.WriteLoginLogRes
 	WriteOperationLogReq = admin.WriteOperationLogReq
 	WriteOperationLogRes = admin.WriteOperationLogRes
 
 	AdminAuditService interface {
 		WriteOperationLog(ctx context.Context, in *WriteOperationLogReq, opts ...grpc.CallOption) (*WriteOperationLogRes, error)
 		ListOperationLogs(ctx context.Context, in *ListOperationLogsReq, opts ...grpc.CallOption) (*ListOperationLogsRes, error)
+		WriteLoginLog(ctx context.Context, in *WriteLoginLogReq, opts ...grpc.CallOption) (*WriteLoginLogRes, error)
+		ListLoginLogs(ctx context.Context, in *ListLoginLogsReq, opts ...grpc.CallOption) (*ListLoginLogsRes, error)
 	}
 
 	defaultAdminAuditService struct {
@@ -44,4 +51,14 @@ func (m *defaultAdminAuditService) WriteOperationLog(ctx context.Context, in *Wr
 func (m *defaultAdminAuditService) ListOperationLogs(ctx context.Context, in *ListOperationLogsReq, opts ...grpc.CallOption) (*ListOperationLogsRes, error) {
 	client := admin.NewAdminAuditServiceClient(m.cli.Conn())
 	return client.ListOperationLogs(ctx, in, opts...)
+}
+
+func (m *defaultAdminAuditService) WriteLoginLog(ctx context.Context, in *WriteLoginLogReq, opts ...grpc.CallOption) (*WriteLoginLogRes, error) {
+	client := admin.NewAdminAuditServiceClient(m.cli.Conn())
+	return client.WriteLoginLog(ctx, in, opts...)
+}
+
+func (m *defaultAdminAuditService) ListLoginLogs(ctx context.Context, in *ListLoginLogsReq, opts ...grpc.CallOption) (*ListLoginLogsRes, error) {
+	client := admin.NewAdminAuditServiceClient(m.cli.Conn())
+	return client.ListLoginLogs(ctx, in, opts...)
 }

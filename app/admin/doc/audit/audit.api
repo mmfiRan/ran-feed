@@ -5,25 +5,50 @@ import "../base/base.api"
 type (
 	AdminOperationLogListReq {
 		PageQueryReq
-		AdminId    int64  `form:"admin_id,optional"`
-		Action     string `form:"action,optional"`
-		TargetType string `form:"target_type,optional"`
-		StartTime  int64  `form:"start_time,optional"`
-		EndTime    int64  `form:"end_time,optional"`
+		AdminId   int64  `form:"admin_id,optional"`
+		Action    string `form:"action,optional"`
+		Status    int32  `form:"status,optional"`
+		StartTime int64  `form:"start_time,optional"`
+		EndTime   int64  `form:"end_time,optional"`
 	}
 	AdminOperationLogItem {
-		Id         int64  `json:"id"`
-		AdminId    int64  `json:"admin_id"`
-		Action     string `json:"action"`
-		TargetType string `json:"target_type"`
-		TargetId   int64  `json:"target_id"`
-		Result     string `json:"result"`
-		Ip         string `json:"ip"`
-		CreatedAt  int64  `json:"created_at"`
+		Id        int64     `json:"id"`
+		AdminId   int64     `json:"admin_id"`
+		Action    string    `json:"action"`
+		Title     string    `json:"title"`
+		Status    EnumValue `json:"status"`
+		ErrorMsg  string    `json:"error_msg"`
+		CostTime  int64     `json:"cost_time"`
+		Ip        string    `json:"ip"`
+		UserAgent string    `json:"user_agent"`
+		CreatedAt int64     `json:"created_at"`
 	}
 	AdminOperationLogListRes {
 		PageQueryResp
 		Items []AdminOperationLogItem `json:"items"`
+	}
+
+	AdminLoginLogListReq {
+		PageQueryReq
+		Username  string `form:"username,optional"`
+		Ip        string `form:"ip,optional"`
+		Status    int32  `form:"status,optional"`
+		StartTime int64  `form:"start_time,optional"`
+		EndTime   int64  `form:"end_time,optional"`
+	}
+	AdminLoginLogItem {
+		Id        int64     `json:"id"`
+		AdminId   int64     `json:"admin_id"`
+		Username  string    `json:"username"`
+		Ip        string    `json:"ip"`
+		UserAgent string    `json:"user_agent"`
+		Status    EnumValue `json:"status"`
+		Msg       string    `json:"msg"`
+		CreatedAt int64     `json:"created_at"` // 毫秒
+	}
+	AdminLoginLogListRes {
+		PageQueryResp
+		Items []AdminLoginLogItem `json:"items"`
 	}
 )
 
@@ -40,4 +65,11 @@ service admin-api {
 	)
 	@handler ListOperationLogs
 	get /operation-logs (AdminOperationLogListReq) returns (AdminOperationLogListRes)
+
+	@doc (
+		description: "登录审计日志"
+		permission: "admin:login-log:list"
+	)
+	@handler ListLoginLogs
+	get /login-logs (AdminLoginLogListReq) returns (AdminLoginLogListRes)
 }

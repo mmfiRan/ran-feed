@@ -22,6 +22,7 @@ var (
 	RanFeedAdminRolePermission *ranFeedAdminRolePermission
 	RanFeedAdminUser           *ranFeedAdminUser
 	RanFeedAdminUserRole       *ranFeedAdminUserRole
+	RanFeedLoginLog            *ranFeedLoginLog
 	RanFeedOperationLog        *ranFeedOperationLog
 )
 
@@ -32,6 +33,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	RanFeedAdminRolePermission = &Q.RanFeedAdminRolePermission
 	RanFeedAdminUser = &Q.RanFeedAdminUser
 	RanFeedAdminUserRole = &Q.RanFeedAdminUserRole
+	RanFeedLoginLog = &Q.RanFeedLoginLog
 	RanFeedOperationLog = &Q.RanFeedOperationLog
 }
 
@@ -43,6 +45,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		RanFeedAdminRolePermission: newRanFeedAdminRolePermission(db, opts...),
 		RanFeedAdminUser:           newRanFeedAdminUser(db, opts...),
 		RanFeedAdminUserRole:       newRanFeedAdminUserRole(db, opts...),
+		RanFeedLoginLog:            newRanFeedLoginLog(db, opts...),
 		RanFeedOperationLog:        newRanFeedOperationLog(db, opts...),
 	}
 }
@@ -55,6 +58,7 @@ type Query struct {
 	RanFeedAdminRolePermission ranFeedAdminRolePermission
 	RanFeedAdminUser           ranFeedAdminUser
 	RanFeedAdminUserRole       ranFeedAdminUserRole
+	RanFeedLoginLog            ranFeedLoginLog
 	RanFeedOperationLog        ranFeedOperationLog
 }
 
@@ -68,6 +72,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		RanFeedAdminRolePermission: q.RanFeedAdminRolePermission.clone(db),
 		RanFeedAdminUser:           q.RanFeedAdminUser.clone(db),
 		RanFeedAdminUserRole:       q.RanFeedAdminUserRole.clone(db),
+		RanFeedLoginLog:            q.RanFeedLoginLog.clone(db),
 		RanFeedOperationLog:        q.RanFeedOperationLog.clone(db),
 	}
 }
@@ -88,6 +93,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		RanFeedAdminRolePermission: q.RanFeedAdminRolePermission.replaceDB(db),
 		RanFeedAdminUser:           q.RanFeedAdminUser.replaceDB(db),
 		RanFeedAdminUserRole:       q.RanFeedAdminUserRole.replaceDB(db),
+		RanFeedLoginLog:            q.RanFeedLoginLog.replaceDB(db),
 		RanFeedOperationLog:        q.RanFeedOperationLog.replaceDB(db),
 	}
 }
@@ -98,6 +104,7 @@ type queryCtx struct {
 	RanFeedAdminRolePermission IRanFeedAdminRolePermissionDo
 	RanFeedAdminUser           IRanFeedAdminUserDo
 	RanFeedAdminUserRole       IRanFeedAdminUserRoleDo
+	RanFeedLoginLog            IRanFeedLoginLogDo
 	RanFeedOperationLog        IRanFeedOperationLogDo
 }
 
@@ -108,6 +115,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		RanFeedAdminRolePermission: q.RanFeedAdminRolePermission.WithContext(ctx),
 		RanFeedAdminUser:           q.RanFeedAdminUser.WithContext(ctx),
 		RanFeedAdminUserRole:       q.RanFeedAdminUserRole.WithContext(ctx),
+		RanFeedLoginLog:            q.RanFeedLoginLog.WithContext(ctx),
 		RanFeedOperationLog:        q.RanFeedOperationLog.WithContext(ctx),
 	}
 }

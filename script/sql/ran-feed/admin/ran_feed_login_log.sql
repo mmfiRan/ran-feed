@@ -1,14 +1,12 @@
-CREATE TABLE IF NOT EXISTS ran_feed_operation_log
+CREATE TABLE IF NOT EXISTS ran_feed_login_log
 (
-    id          BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '日志ID',
-    admin_id    BIGINT       NOT NULL COMMENT '操作人管理员ID',
-    action      VARCHAR(128) NOT NULL COMMENT '操作动作 权限码 如 content:takedown',
-    title       VARCHAR(128) NOT NULL DEFAULT '' COMMENT '模块标题',
-    status      TINYINT      NOT NULL DEFAULT 0 COMMENT '操作结果 1=成功 2=失败 ',
-    error_msg   VARCHAR(255) NOT NULL DEFAULT '' COMMENT '失败时的业务错误消息',
-    cost_time   INT          NOT NULL DEFAULT 0 COMMENT '处理耗时 毫秒',
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '登录日志ID',
+    admin_id    BIGINT       NOT NULL DEFAULT 0 COMMENT '管理员ID 成功时填 失败为0',
+    username    VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '登录账号 未认证也记 供失败排查',
     ip          VARCHAR(64)  NOT NULL DEFAULT '' COMMENT '来源IP',
     user_agent  VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'UA 原始串',
+    status      TINYINT      NOT NULL DEFAULT 0 COMMENT '登录结果 1=成功 2=失败 ',
+    msg         VARCHAR(255) NOT NULL DEFAULT '' COMMENT '提示消息 成功或失败原因',
     version     INT          NOT NULL DEFAULT 1 COMMENT '版本号（乐观锁）',
     is_deleted  TINYINT      NOT NULL DEFAULT 0 COMMENT '逻辑删除 0=正常 1=删除',
     created_by  BIGINT       NOT NULL DEFAULT 0 COMMENT '创建人',
@@ -17,10 +15,11 @@ CREATE TABLE IF NOT EXISTS ran_feed_operation_log
     updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     INDEX idx_admin (admin_id),
+    INDEX idx_username (username),
     INDEX idx_status (status),
     INDEX idx_created_at (created_at)
 )
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
     COLLATE = utf8mb4_bin
-    COMMENT ='后台操作审计日志表';
+    COMMENT ='后台登录日志表';

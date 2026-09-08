@@ -38,6 +38,7 @@ func main() {
 		g.GenerateModel("ran_feed_admin_user_role"),
 		g.GenerateModel("ran_feed_admin_role_permission"),
 		g.GenerateModel("ran_feed_operation_log"),
+		g.GenerateModel("ran_feed_login_log"),
 	)
 
 	g.Execute()

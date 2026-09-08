@@ -19,7 +19,8 @@ VALUES ('admin:user:list', '管理员列表', 'admin'),
        ('admin:role:set-permissions', '设置角色权限', 'admin'),
        ('admin:role:delete', '删除角色', 'admin'),
        ('admin:permission:list', '权限点列表', 'admin'),
-       ('admin:audit:list', '审计日志查询', 'admin')
+       ('admin:audit:list', '操作日志查询', 'admin'),
+       ('admin:login-log:list', '登录日志查询', 'admin')
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- super 绑定全部权限点

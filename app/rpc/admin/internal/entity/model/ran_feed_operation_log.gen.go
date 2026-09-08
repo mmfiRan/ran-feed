@@ -12,20 +12,21 @@ const TableNameRanFeedOperationLog = "ran_feed_operation_log"
 
 // RanFeedOperationLog 后台操作审计日志表
 type RanFeedOperationLog struct {
-	ID         int64     `gorm:"column:id;primaryKey;autoIncrement:true;comment:日志ID" json:"id"`                      // 日志ID
-	AdminID    int64     `gorm:"column:admin_id;not null;comment:操作人管理员ID" json:"admin_id"`                           // 操作人管理员ID
-	Action     string    `gorm:"column:action;not null;comment:操作动作 如 content:takedown" json:"action"`                // 操作动作 如 content:takedown
-	TargetType string    `gorm:"column:target_type;not null;comment:目标类型 如 content/user" json:"target_type"`          // 目标类型 如 content/user
-	TargetID   int64     `gorm:"column:target_id;not null;comment:目标ID" json:"target_id"`                             // 目标ID
-	Payload    *string   `gorm:"column:payload;comment:入参摘要 JSON" json:"payload"`                                     // 入参摘要 JSON
-	Result     string    `gorm:"column:result;not null;comment:操作结果" json:"result"`                                   // 操作结果
-	IP         string    `gorm:"column:ip;not null;comment:来源IP" json:"ip"`                                           // 来源IP
-	Version    int32     `gorm:"column:version;not null;default:1;comment:版本号（乐观锁）" json:"version"`                   // 版本号（乐观锁）
-	IsDeleted  int32     `gorm:"column:is_deleted;not null;comment:逻辑删除 0=正常 1=删除" json:"is_deleted"`                 // 逻辑删除 0=正常 1=删除
-	CreatedBy  int64     `gorm:"column:created_by;not null;comment:创建人" json:"created_by"`                            // 创建人
-	UpdatedBy  int64     `gorm:"column:updated_by;not null;comment:最后修改人" json:"updated_by"`                          // 最后修改人
-	CreatedAt  time.Time `gorm:"column:created_at;not null;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"` // 创建时间
-	UpdatedAt  time.Time `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP;comment:更新时间" json:"updated_at"` // 更新时间
+	ID        int64     `gorm:"column:id;primaryKey;autoIncrement:true;comment:日志ID" json:"id"`                      // 日志ID
+	AdminID   int64     `gorm:"column:admin_id;not null;comment:操作人管理员ID" json:"admin_id"`                           // 操作人管理员ID
+	Action    string    `gorm:"column:action;not null;comment:操作动作 如 content:takedown" json:"action"`                // 操作动作 如 content:takedown
+	Title     string    `gorm:"column:title;not null;comment:模块标题 来自路由 doc 描述" json:"title"`                         // 模块标题 来自路由 doc 描述
+	Status    int32     `gorm:"column:status;not null;comment:操作成败 0=失败 1=成功" json:"status"`                         // 操作成败 0=失败 1=成功
+	ErrorMsg  string    `gorm:"column:error_msg;not null;comment:失败时的业务错误消息" json:"error_msg"`                       // 失败时的业务错误消息
+	CostTime  int32     `gorm:"column:cost_time;not null;comment:处理耗时 毫秒" json:"cost_time"`                          // 处理耗时 毫秒
+	IP        string    `gorm:"column:ip;not null;comment:来源IP" json:"ip"`                                           // 来源IP
+	UserAgent string    `gorm:"column:user_agent;not null;comment:UA 原始串" json:"user_agent"`                         // UA 原始串
+	Version   int32     `gorm:"column:version;not null;default:1;comment:版本号（乐观锁）" json:"version"`                   // 版本号（乐观锁）
+	IsDeleted int32     `gorm:"column:is_deleted;not null;comment:逻辑删除 0=正常 1=删除" json:"is_deleted"`                 // 逻辑删除 0=正常 1=删除
+	CreatedBy int64     `gorm:"column:created_by;not null;comment:创建人" json:"created_by"`                            // 创建人
+	UpdatedBy int64     `gorm:"column:updated_by;not null;comment:最后修改人" json:"updated_by"`                          // 最后修改人
+	CreatedAt time.Time `gorm:"column:created_at;not null;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"` // 创建时间
+	UpdatedAt time.Time `gorm:"column:updated_at;not null;default:CURRENT_TIMESTAMP;comment:更新时间" json:"updated_at"` // 更新时间
 }
 
 // TableName RanFeedOperationLog's table name
