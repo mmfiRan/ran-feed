@@ -17,7 +17,6 @@ type (
 		PageQueryResp
 		Items []AdminRoleItem `json:"items"`
 	}
-
 	AdminRoleDetailReq {
 		Id int64 `form:"id"`
 	}
@@ -25,7 +24,6 @@ type (
 		Role          AdminRoleItem `json:"role"`
 		PermissionIds []int64       `json:"permission_ids"`
 	}
-
 	AdminRoleCreateReq {
 		Code   string `json:"code,optional" validate:"required"`
 		Name   string `json:"name,optional" validate:"required"`
@@ -34,73 +32,71 @@ type (
 	AdminRoleCreateRes {
 		Id int64 `json:"id"`
 	}
-
 	AdminRoleUpdateReq {
 		Id     int64  `json:"id,optional" validate:"required,gt=0"`
 		Name   string `json:"name,optional" validate:"required"`
 		Remark string `json:"remark,optional"`
 	}
-	AdminRoleUpdateRes {}
-
+	AdminRoleUpdateRes  {}
 	// AdminRoleSetPermissionsReq permission_ids 空表示清空该角色权限点
 	AdminRoleSetPermissionsReq {
 		RoleId        int64   `json:"role_id,optional" validate:"required,gt=0"`
 		PermissionIds []int64 `json:"permission_ids,optional"`
 	}
-	AdminRoleSetPermissionsRes {}
-
+	AdminRoleSetPermissionsRes  {}
 	AdminRoleDeleteReq {
 		Id int64 `json:"id,optional" validate:"required,gt=0"`
 	}
-	AdminRoleDeleteRes {}
+	AdminRoleDeleteRes  {}
 )
 
 @server (
 	tags:       role
 	group:      role
 	prefix:     /v1/admin
-	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+	middleware: AdminAuthMiddleware,AdminRbacMiddleware,AdminAuditMiddleware
 )
 service admin-api {
 	@doc (
 		description: "角色列表 分页 "
-		permission: "admin:role:list"
+		permission:  "admin:role:list"
 	)
 	@handler ListRoles
 	get /roles (AdminRoleListReq) returns (AdminRoleListRes)
 
 	@doc (
 		description: "角色详情 含权限点ID集合"
-		permission: "admin:role:detail"
+		permission:  "admin:role:detail"
 	)
 	@handler GetRoleDetail
 	get /roles/detail (AdminRoleDetailReq) returns (AdminRoleDetailRes)
 
 	@doc (
 		description: "建角色"
-		permission: "admin:role:create"
+		permission:  "admin:role:create"
 	)
 	@handler CreateRole
 	post /roles/create (AdminRoleCreateReq) returns (AdminRoleCreateRes)
 
 	@doc (
 		description: "改角色名与备注 不可改 code"
-		permission: "admin:role:update"
+		permission:  "admin:role:update"
 	)
 	@handler UpdateRole
 	post /roles/update (AdminRoleUpdateReq) returns (AdminRoleUpdateRes)
 
 	@doc (
 		description: "覆盖式设角色权限点"
-		permission: "admin:role:set-permissions"
+		permission:  "admin:role:set-permissions"
 	)
 	@handler SetRolePermissions
 	post /roles/permissions (AdminRoleSetPermissionsReq) returns (AdminRoleSetPermissionsRes)
 
 	@doc (
 		description: "删角色 禁删 super"
-		permission: "admin:role:delete"
+		permission:  "admin:role:delete"
 	)
 	@handler DeleteRole
 	post /roles/delete (AdminRoleDeleteReq) returns (AdminRoleDeleteRes)
 }
+

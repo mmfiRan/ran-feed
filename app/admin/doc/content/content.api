@@ -6,7 +6,7 @@ type (
 	// AdminContentListReq 内容列表筛选 各筛选项 0 表示不限 page 从1
 	AdminContentListReq {
 		PageQueryReq
-		Status      int32 `form:"status,optional"`       // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
+		Status      int32 `form:"status,optional"` // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
 		ContentType int32 `form:"content_type,optional"` // 10文章 20视频
 		AuthorId    int64 `form:"author_id,optional"`
 	}
@@ -21,13 +21,12 @@ type (
 		FavoriteCount int64  `json:"favorite_count"`
 		CommentCount  int64  `json:"comment_count"`
 		PublishedAt   int64  `json:"published_at"` // 毫秒 0 未发布
-		CreatedAt     int64  `json:"created_at"`   // 毫秒
+		CreatedAt     int64  `json:"created_at"` // 毫秒
 	}
 	AdminContentListRes {
 		PageQueryResp
 		Items []AdminContentListItem `json:"items"`
 	}
-
 	AdminContentDetailReq {
 		ContentId int64 `form:"content_id"`
 	}
@@ -53,7 +52,6 @@ type (
 	AdminContentDetailRes {
 		Detail AdminContentDetailData `json:"detail"`
 	}
-
 	// AdminContentStatusReq action 取 takedown(下架) 或 restore(恢复)
 	AdminContentStatusReq {
 		ContentId int64  `json:"content_id,optional" validate:"required,gt=0"`
@@ -62,7 +60,6 @@ type (
 	AdminContentStatusRes {
 		Status int32 `json:"status"` // 变更后状态
 	}
-
 	// AdminContentReviewReq 先审后发审核 decision 取 approve(通过) 或 reject(拒绝)
 	AdminContentReviewReq {
 		ContentId    int64  `json:"content_id,optional" validate:"required,gt=0"`
@@ -78,34 +75,35 @@ type (
 	tags:       content
 	group:      content
 	prefix:     /v1/admin
-	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+	middleware: AdminAuthMiddleware,AdminRbacMiddleware,AdminAuditMiddleware
 )
 service admin-api {
 	@doc (
 		description: "内容列表"
-		permission: "content:list"
+		permission:  "content:list"
 	)
 	@handler ListContents
 	get /contents (AdminContentListReq) returns (AdminContentListRes)
 
 	@doc (
 		description: "内容详情 含非公开与正文"
-		permission: "content:detail"
+		permission:  "content:detail"
 	)
 	@handler GetContentDetail
 	get /contents/detail (AdminContentDetailReq) returns (AdminContentDetailRes)
 
 	@doc (
 		description: "内容下架/恢复"
-		permission: "content:takedown"
+		permission:  "content:takedown"
 	)
 	@handler SetContentStatus
 	post /contents/status (AdminContentStatusReq) returns (AdminContentStatusRes)
 
 	@doc (
 		description: "先审后发审核"
-		permission: "content:review"
+		permission:  "content:review"
 	)
 	@handler ReviewContent
 	post /contents/review (AdminContentReviewReq) returns (AdminContentReviewRes)
 }
+

@@ -16,3 +16,4 @@ type (
 		Message string `json:"message"`
 	}
 )
+

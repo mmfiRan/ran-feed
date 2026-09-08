@@ -39,6 +39,7 @@ func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogL
 	}
 	rpcRes, err := l.svcCtx.AdminAuditRpc.ListOperationLogs(l.ctx, &admin.ListOperationLogsReq{
 		AdminId:   req.AdminId,
+		Username:  req.Username,
 		Action:    req.Action,
 		Status:    admin.OperateStatus(req.Status),
 		StartTime: startTime,
@@ -55,6 +56,7 @@ func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogL
 		items = append(items, types.AdminOperationLogItem{
 			Id:        it.GetId(),
 			AdminId:   it.GetAdminId(),
+			Username:  it.GetUsername(),
 			Action:    it.GetAction(),
 			Title:     it.GetTitle(),
 			Status:    utils.ToEnumValue(it.GetStatus()),

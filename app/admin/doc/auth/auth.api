@@ -45,7 +45,7 @@ service admin-api {
 	tags:       auth
 	group:      auth
 	prefix:     /v1/admin
-	middleware: AdminAuthMiddleware, AdminAuditMiddleware
+	middleware: AdminAuthMiddleware,AdminAuditMiddleware
 )
 service admin-api {
 	@doc (
@@ -60,3 +60,4 @@ service admin-api {
 	@handler GetMe
 	get /me returns (AdminMeRes)
 }
+

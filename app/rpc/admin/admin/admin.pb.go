@@ -810,6 +810,7 @@ type OperationLogItem struct {
 	CostTime      int64                  `protobuf:"varint,8,opt,name=cost_time,json=costTime,proto3" json:"cost_time,omitempty"`
 	UserAgent     string                 `protobuf:"bytes,9,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Username      string                 `protobuf:"bytes,11,opt,name=username,proto3" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -914,6 +915,13 @@ func (x *OperationLogItem) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *OperationLogItem) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
 // ListOperationLogsReq 查询操作审计日志
 type ListOperationLogsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -924,6 +932,7 @@ type ListOperationLogsReq struct {
 	EndTime       *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
 	Page          uint32                 `protobuf:"varint,6,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      uint32                 `protobuf:"varint,7,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Username      string                 `protobuf:"bytes,8,opt,name=username,proto3" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1007,7 +1016,14 @@ func (x *ListOperationLogsReq) GetPageSize() uint32 {
 	return 0
 }
 
-// ListOperationLogsRes 审计日志分页结果
+func (x *ListOperationLogsReq) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+// ListOperationLogsRes 审计日志分页查询结果
 type ListOperationLogsRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*OperationLogItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -2875,7 +2891,7 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\x12ListPermissionsReq\x12\x16\n" +
 	"\x06module\x18\x01 \x01(\tR\x06module\"I\n" +
 	"\x12ListPermissionsRes\x123\n" +
-	"\x05items\x18\x01 \x03(\v2\x1d.ranfeed.admin.PermissionItemR\x05items\"\xc4\x02\n" +
+	"\x05items\x18\x01 \x03(\v2\x1d.ranfeed.admin.PermissionItemR\x05items\"\xe0\x02\n" +
 	"\x10OperationLogItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x19\n" +
 	"\badmin_id\x18\x02 \x01(\x03R\aadminId\x12\x16\n" +
@@ -2889,7 +2905,8 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"user_agent\x18\t \x01(\tR\tuserAgent\x129\n" +
 	"\n" +
 	"created_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xa2\x02\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1a\n" +
+	"\busername\x18\v \x01(\tR\busername\"\xbe\x02\n" +
 	"\x14ListOperationLogsReq\x12\x19\n" +
 	"\badmin_id\x18\x01 \x01(\x03R\aadminId\x12\x16\n" +
 	"\x06action\x18\x02 \x01(\tR\x06action\x124\n" +
@@ -2898,7 +2915,8 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"start_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
 	"\bend_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x12\x12\n" +
 	"\x04page\x18\x06 \x01(\rR\x04page\x12\x1b\n" +
-	"\tpage_size\x18\a \x01(\rR\bpageSize\"\x94\x01\n" +
+	"\tpage_size\x18\a \x01(\rR\bpageSize\x12\x1a\n" +
+	"\busername\x18\b \x01(\tR\busername\"\x94\x01\n" +
 	"\x14ListOperationLogsRes\x125\n" +
 	"\x05items\x18\x01 \x03(\v2\x1f.ranfeed.admin.OperationLogItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +

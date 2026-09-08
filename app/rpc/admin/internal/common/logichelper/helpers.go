@@ -5,6 +5,7 @@ import (
 	"ran-feed/app/rpc/admin/admin"
 	adminenums "ran-feed/app/rpc/admin/internal/common/enums"
 	"ran-feed/app/rpc/admin/internal/entity/model"
+	"ran-feed/app/rpc/admin/internal/types"
 	"ran-feed/pkg/commonpb"
 	"ran-feed/pkg/enums"
 	"ran-feed/pkg/snowflake"
@@ -93,13 +94,14 @@ func ContainsInt64(ids []int64, target int64) bool {
 }
 
 // BuildOperationLogItem 审计日志行转出参
-func BuildOperationLogItem(row *model.RanFeedOperationLog) *admin.OperationLogItem {
+func BuildOperationLogItem(row *types.OperationLogRow) *admin.OperationLogItem {
 	if row == nil {
 		return nil
 	}
 	return &admin.OperationLogItem{
 		Id:        row.ID,
 		AdminId:   row.AdminID,
+		Username:  row.Username,
 		Action:    row.Action,
 		Title:     row.Title,
 		Status:    OperateStatusValue(row.Status),

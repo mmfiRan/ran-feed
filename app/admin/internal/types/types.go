@@ -91,7 +91,7 @@ type AdminLoginLogItem struct {
 	UserAgent string    `json:"user_agent"`
 	Status    EnumValue `json:"status"`
 	Msg       string    `json:"msg"`
-	CreatedAt int64     `json:"created_at"` // 毫秒
+	CreatedAt int64     `json:"created_at"`
 }
 
 type AdminLoginLogListReq struct {
@@ -132,6 +132,7 @@ type AdminMeRes struct {
 type AdminOperationLogItem struct {
 	Id        int64     `json:"id"`
 	AdminId   int64     `json:"admin_id"`
+	Username  string    `json:"username"`
 	Action    string    `json:"action"`
 	Title     string    `json:"title"`
 	Status    EnumValue `json:"status"`
@@ -145,6 +146,7 @@ type AdminOperationLogItem struct {
 type AdminOperationLogListReq struct {
 	PageQueryReq
 	AdminId   int64  `form:"admin_id,optional"`
+	Username  string `form:"username,optional"`
 	Action    string `form:"action,optional"`
 	Status    int32  `form:"status,optional"`
 	StartTime int64  `form:"start_time,optional"`

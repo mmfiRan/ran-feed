@@ -6,8 +6,8 @@ type (
 	// CUserListReq C端用户列表筛选 status 0 表示不限
 	CUserListReq {
 		PageQueryReq
-		Status   int32  `form:"status,optional"`
-		Keyword  string `form:"keyword,optional"`
+		Status  int32  `form:"status,optional"`
+		Keyword string `form:"keyword,optional"`
 	}
 	CUserItem {
 		UserId    int64  `json:"user_id"`
@@ -22,7 +22,6 @@ type (
 		PageQueryResp
 		Items []CUserItem `json:"items"`
 	}
-
 	CUserDetailReq {
 		UserId int64 `form:"user_id"`
 	}
@@ -42,7 +41,6 @@ type (
 	CUserDetailRes {
 		Detail CUserDetailData `json:"detail"`
 	}
-
 	// CUserStatusReq action 取 ban(封禁) 或 restore(恢复)
 	CUserStatusReq {
 		UserId int64  `json:"user_id,optional" validate:"required,gt=0"`
@@ -57,27 +55,28 @@ type (
 	tags:       user
 	group:      user
 	prefix:     /v1/admin
-	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+	middleware: AdminAuthMiddleware,AdminRbacMiddleware,AdminAuditMiddleware
 )
 service admin-api {
 	@doc (
 		description: "C端用户列表 多条件筛选 + 分页"
-		permission: "user:list"
+		permission:  "user:list"
 	)
 	@handler ListUsers
 	get /users (CUserListReq) returns (CUserListRes)
 
 	@doc (
 		description: "C端用户详情"
-		permission: "user:detail"
+		permission:  "user:detail"
 	)
 	@handler GetUserDetail
 	get /users/detail (CUserDetailReq) returns (CUserDetailRes)
 
 	@doc (
 		description: "C端用户封禁/恢复"
-		permission: "user:ban"
+		permission:  "user:ban"
 	)
 	@handler SetUserStatus
 	post /users/status (CUserStatusReq) returns (CUserStatusRes)
 }
+

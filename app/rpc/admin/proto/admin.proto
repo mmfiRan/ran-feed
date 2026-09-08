@@ -112,6 +112,7 @@ message OperationLogItem {
   int64 cost_time = 8;
   string user_agent = 9;
   google.protobuf.Timestamp created_at = 10;
+  string username = 11;
 }
 
 // ListOperationLogsReq 查询操作审计日志
@@ -123,9 +124,10 @@ message ListOperationLogsReq {
   google.protobuf.Timestamp end_time = 5;
   uint32 page = 6;
   uint32 page_size = 7;
+  string username = 8;
 }
 
-// ListOperationLogsRes 审计日志分页结果
+// ListOperationLogsRes 审计日志分页查询结果
 message ListOperationLogsRes {
   repeated OperationLogItem items = 1;
   int64 total = 2;

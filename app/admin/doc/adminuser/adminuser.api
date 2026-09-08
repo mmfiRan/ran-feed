@@ -5,7 +5,7 @@ import "../base/base.api"
 type (
 	AdminUserListReq {
 		PageQueryReq
-		Status   int32 `form:"status,optional"`
+		Status int32 `form:"status,optional"`
 	}
 	AdminUserItem {
 		Id        int64     `json:"id"`
@@ -19,7 +19,6 @@ type (
 		PageQueryResp
 		Items []AdminUserItem `json:"items"`
 	}
-
 	AdminUserDetailReq {
 		Id int64 `form:"id"`
 	}
@@ -27,7 +26,6 @@ type (
 		Admin   AdminUserItem `json:"admin"`
 		RoleIds []int64       `json:"role_ids"`
 	}
-
 	AdminUserCreateReq {
 		Username string  `json:"username,optional" validate:"required"`
 		Password string  `json:"password,optional" validate:"required,min=6"`
@@ -37,87 +35,84 @@ type (
 	AdminUserCreateRes {
 		Id int64 `json:"id"`
 	}
-
 	AdminUserUpdateReq {
 		Id       int64  `json:"id,optional" validate:"required,gt=0"`
 		Nickname string `json:"nickname,optional" validate:"required"`
 	}
-	AdminUserUpdateRes {}
-
+	AdminUserUpdateRes  {}
 	// AdminUserStatusReq
 	AdminUserStatusReq {
 		Id     int64 `json:"id,optional" validate:"required,gt=0"`
 		Status int32 `json:"status,optional" validate:"required"`
 	}
-	AdminUserStatusRes {}
-
+	AdminUserStatusRes  {}
 	AdminUserResetPasswordReq {
 		Id          int64  `json:"id,optional" validate:"required,gt=0"`
 		NewPassword string `json:"new_password,optional" validate:"required,min=6"`
 	}
-	AdminUserResetPasswordRes {}
-
+	AdminUserResetPasswordRes  {}
 	// AdminUserSetRolesReq role_ids 空表示清空该管理员角色
 	AdminUserSetRolesReq {
 		AdminId int64   `json:"admin_id,optional" validate:"required,gt=0"`
 		RoleIds []int64 `json:"role_ids,optional"`
 	}
-	AdminUserSetRolesRes {}
+	AdminUserSetRolesRes  {}
 )
 
 @server (
 	tags:       adminuser
 	group:      adminuser
 	prefix:     /v1/admin
-	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+	middleware: AdminAuthMiddleware,AdminRbacMiddleware,AdminAuditMiddleware
 )
 service admin-api {
 	@doc (
 		description: "分页查询管理员列表"
-		permission: "admin:user:list"
+		permission:  "admin:user:list"
 	)
 	@handler ListAdmins
 	get /admins (AdminUserListReq) returns (AdminUserListRes)
 
 	@doc (
 		description: "管理员详情 含角色ID"
-		permission: "admin:user:detail"
+		permission:  "admin:user:detail"
 	)
 	@handler GetAdminDetail
 	get /admins/detail (AdminUserDetailReq) returns (AdminUserDetailRes)
 
 	@doc (
 		description: "创建管理员"
-		permission: "admin:user:create"
+		permission:  "admin:user:create"
 	)
 	@handler CreateAdmin
 	post /admins/create (AdminUserCreateReq) returns (AdminUserCreateRes)
 
 	@doc (
 		description: "修改管理员昵称"
-		permission: "admin:user:update"
+		permission:  "admin:user:update"
 	)
 	@handler UpdateAdmin
 	post /admins/update (AdminUserUpdateReq) returns (AdminUserUpdateRes)
 
 	@doc (
 		description: "启用禁用管理员 禁用即踢下线"
-		permission: "admin:user:status"
+		permission:  "admin:user:status"
 	)
 	@handler SetAdminStatus
 	post /admins/status (AdminUserStatusReq) returns (AdminUserStatusRes)
 
 	@doc (
 		description: "重置管理员密码 重置即踢下线"
-		permission: "admin:user:reset-password"
+		permission:  "admin:user:reset-password"
 	)
 	@handler ResetAdminPassword
 	post /admins/reset-password (AdminUserResetPasswordReq) returns (AdminUserResetPasswordRes)
 
 	@doc (
 		description: "覆盖式设管理员角色"
-		permission: "admin:user:set-roles"
+		permission:  "admin:user:set-roles"
 	)
 	@handler SetAdminRoles
 	post /admins/roles (AdminUserSetRolesReq) returns (AdminUserSetRolesRes)
 }
+

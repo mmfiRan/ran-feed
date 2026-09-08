@@ -33,9 +33,9 @@ func NewListOperationLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 // ListOperationLogs 按条件分页查操作审计日志 先统计总数为0直接返回
 func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsReq) (*admin.ListOperationLogsRes, error) {
 	filter := types.OperationLogFilter{
-		AdminID: in.GetAdminId(),
-		Action:  in.GetAction(),
-		Status:  int32(in.GetStatus()),
+		Username: in.GetUsername(),
+		Action:   in.GetAction(),
+		Status:   int32(in.GetStatus()),
 	}
 	if st := in.GetStartTime(); st != nil {
 		filter.StartMillis = st.AsTime().UnixMilli()

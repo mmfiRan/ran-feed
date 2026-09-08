@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"ran-feed/pkg/enums"
 	"time"
 
 	"ran-feed/app/rpc/admin/internal/entity/model"
@@ -16,7 +17,7 @@ type OperationLogRepository interface {
 	WithTx(tx *query.Query) OperationLogRepository
 	Create(row *model.RanFeedOperationLog) (int64, error)
 	// Page 按条件分页查审计日志 id 倒序 返回列表与总数
-	Page(filter types.OperationLogFilter, offset, limit int) ([]*model.RanFeedOperationLog, int64, error)
+	Page(filter types.OperationLogFilter, offset, limit int) ([]*types.OperationLogRow, int64, error)
 }
 
 type operationLogRepositoryImpl struct {
@@ -62,24 +63,34 @@ func (r *operationLogRepositoryImpl) Create(row *model.RanFeedOperationLog) (int
 	return row.ID, nil
 }
 
-// Page 按条件分页查审计日志 id 倒序 复用 gen FindByPage 末页不满免 COUNT
-func (r *operationLogRepositoryImpl) Page(filter types.OperationLogFilter, offset, limit int) ([]*model.RanFeedOperationLog, int64, error) {
-	q := query.Q.RanFeedOperationLog
-	do := q.WithContext(r.ctx).Where(q.IsDeleted.Eq(0))
-	if filter.AdminID > 0 {
-		do = do.Where(q.AdminID.Eq(filter.AdminID))
+// Page 按条件分页查审计日志 关联操作人用户名 id 倒序 复用 gen ScanByPage 末页不满免 COUNT
+func (r *operationLogRepositoryImpl) Page(filter types.OperationLogFilter, offset, limit int) ([]*types.OperationLogRow, int64, error) {
+	logT := r.getQuery().RanFeedOperationLog
+	userT := r.getQuery().RanFeedAdminUser
+	do := logT.WithContext(r.ctx).Where(logT.IsDeleted.Eq(enums.NotDeleted.Int32()))
+	do = do.LeftJoin(userT, logT.AdminID.EqCol(userT.ID))
+	do = do.Where(userT.IsDeleted.Eq(enums.NotDeleted.Int32()))
+	if filter.Username != "" {
+		do = do.Where(userT.Username.Like("%" + filter.Username + "%"))
 	}
 	if filter.Action != "" {
-		do = do.Where(q.Action.Eq(filter.Action))
+		do = do.Where(logT.Action.Like("%" + filter.Action + "%"))
 	}
 	if filter.Status > 0 {
-		do = do.Where(q.Status.Eq(filter.Status))
+		do = do.Where(logT.Status.Eq(filter.Status))
 	}
 	if filter.StartMillis > 0 {
-		do = do.Where(q.CreatedAt.Gte(time.UnixMilli(filter.StartMillis)))
+		do = do.Where(logT.CreatedAt.Gte(time.UnixMilli(filter.StartMillis)))
 	}
 	if filter.EndMillis > 0 {
-		do = do.Where(q.CreatedAt.Lte(time.UnixMilli(filter.EndMillis)))
+		do = do.Where(logT.CreatedAt.Lte(time.UnixMilli(filter.EndMillis)))
 	}
-	return do.Order(q.ID.Desc()).FindByPage(offset, limit)
+	rows := make([]*types.OperationLogRow, 0)
+	total, err := do.Select(logT.ALL, userT.Username).
+		Order(logT.ID.Desc()).
+		ScanByPage(&rows, offset, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	return rows, total, nil
 }

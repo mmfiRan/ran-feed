@@ -20,13 +20,14 @@ type (
 	tags:       permission
 	group:      permission
 	prefix:     /v1/admin
-	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+	middleware: AdminAuthMiddleware,AdminRbacMiddleware,AdminAuditMiddleware
 )
 service admin-api {
 	@doc (
 		description: "权限点目录 供角色分权选择"
-		permission: "admin:permission:list"
+		permission:  "admin:permission:list"
 	)
 	@handler ListPermissions
 	get /permissions (AdminPermissionListReq) returns (AdminPermissionListRes)
 }
+

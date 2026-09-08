@@ -6,6 +6,7 @@ type (
 	AdminOperationLogListReq {
 		PageQueryReq
 		AdminId   int64  `form:"admin_id,optional"`
+		Username  string `form:"username,optional"`
 		Action    string `form:"action,optional"`
 		Status    int32  `form:"status,optional"`
 		StartTime int64  `form:"start_time,optional"`
@@ -14,6 +15,7 @@ type (
 	AdminOperationLogItem {
 		Id        int64     `json:"id"`
 		AdminId   int64     `json:"admin_id"`
+		Username  string    `json:"username"`
 		Action    string    `json:"action"`
 		Title     string    `json:"title"`
 		Status    EnumValue `json:"status"`
@@ -27,7 +29,6 @@ type (
 		PageQueryResp
 		Items []AdminOperationLogItem `json:"items"`
 	}
-
 	AdminLoginLogListReq {
 		PageQueryReq
 		Username  string `form:"username,optional"`
@@ -44,7 +45,7 @@ type (
 		UserAgent string    `json:"user_agent"`
 		Status    EnumValue `json:"status"`
 		Msg       string    `json:"msg"`
-		CreatedAt int64     `json:"created_at"` // 毫秒
+		CreatedAt int64     `json:"created_at"`
 	}
 	AdminLoginLogListRes {
 		PageQueryResp
@@ -56,20 +57,21 @@ type (
 	tags:       audit
 	group:      audit
 	prefix:     /v1/admin
-	middleware: AdminAuthMiddleware, AdminRbacMiddleware, AdminAuditMiddleware
+	middleware: AdminAuthMiddleware,AdminRbacMiddleware,AdminAuditMiddleware
 )
 service admin-api {
 	@doc (
 		description: "操作审计日志"
-		permission: "admin:audit:list"
+		permission:  "admin:audit:list"
 	)
 	@handler ListOperationLogs
 	get /operation-logs (AdminOperationLogListReq) returns (AdminOperationLogListRes)
 
 	@doc (
 		description: "登录审计日志"
-		permission: "admin:login-log:list"
+		permission:  "admin:login-log:list"
 	)
 	@handler ListLoginLogs
 	get /login-logs (AdminLoginLogListReq) returns (AdminLoginLogListRes)
 }
+
