@@ -55,7 +55,7 @@ func (l *ListNotificationsLogic) ListNotifications(req *types.NotificationListRe
 
 	userMap := make(map[int64]*userpb.UserInfo)
 	contentMap := make(map[int64]*contentpb.ContentItem)
-	mr.Finish(
+	_ = mr.Finish(
 		func() error {
 			if len(actorIDs) == 0 {
 				return nil

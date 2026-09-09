@@ -33,11 +33,11 @@ type fakeCommentRepo struct {
 }
 
 func (f *fakeCommentRepo) WithTx(_ *query.Query) repositories.CommentRepository { return f }
-func (f *fakeCommentRepo) Create(_ *do.CommentDO) (int64, error)               { panic("not used") }
-func (f *fakeCommentRepo) GetByID(_ int64) (*do.CommentDO, error)              { panic("not used") }
-func (f *fakeCommentRepo) MarkDeleted(_ int64, _ int64) error                  { panic("not used") }
-func (f *fakeCommentRepo) DeleteByID(_ int64) error                            { panic("not used") }
-func (f *fakeCommentRepo) HasReferences(_ int64) (bool, error)                 { panic("not used") }
+func (f *fakeCommentRepo) Create(_ *do.CommentDO) (int64, error)                { panic("not used") }
+func (f *fakeCommentRepo) GetByID(_ int64) (*do.CommentDO, error)               { panic("not used") }
+func (f *fakeCommentRepo) MarkDeleted(_ int64, _ int64) error                   { panic("not used") }
+func (f *fakeCommentRepo) DeleteByID(_ int64) error                             { panic("not used") }
+func (f *fakeCommentRepo) HasReferences(_ int64) (bool, error)                  { panic("not used") }
 func (f *fakeCommentRepo) ListByIDs(_ []int64) ([]*model.RanFeedComment, error) {
 	panic("not used")
 }

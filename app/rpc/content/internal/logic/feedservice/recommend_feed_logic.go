@@ -181,4 +181,3 @@ func parseHotFeedLuaResult(res any) (*hotFeedResult, bool, error) {
 		resolvedSnapshotID: resolvedSnapshotID,
 	}, exists, nil
 }
-

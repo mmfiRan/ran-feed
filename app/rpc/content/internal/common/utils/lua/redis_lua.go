@@ -41,4 +41,3 @@ var BackfillFollowInboxZSetScript string
 //
 //go:embed update_user_publish_zset.lua
 var UpdateUserPublishZSetScript string
-

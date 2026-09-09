@@ -7,8 +7,8 @@ import (
 	"ran-feed/app/admin/internal/common/consts"
 	"ran-feed/app/admin/internal/config"
 	"ran-feed/app/admin/internal/middleware"
-	adminauthservice "ran-feed/app/rpc/admin/client/adminauthservice"
 	adminauditservice "ran-feed/app/rpc/admin/client/adminauditservice"
+	adminauthservice "ran-feed/app/rpc/admin/client/adminauthservice"
 	adminpermissionservice "ran-feed/app/rpc/admin/client/adminpermissionservice"
 	adminroleservice "ran-feed/app/rpc/admin/client/adminroleservice"
 	"ran-feed/app/rpc/admin/client/adminuserservice"
@@ -22,15 +22,15 @@ import (
 )
 
 type ServiceContext struct {
-	Config               config.Config
-	Redis                *redis.Redis
-	AdminAuthRpc         adminauthservice.AdminAuthService
-	AdminAuditRpc        adminauditservice.AdminAuditService
-	AdminPermissionRpc   adminpermissionservice.AdminPermissionService
-	AdminRoleRpc         adminroleservice.AdminRoleService
-	AdminUserRpc         adminuserservice.AdminUserService
-	ContentAdminRpc      admincontentservice.AdminContentService
-	UserAdminRpc        useradminuserservice.AdminUserService
+	Config                  config.Config
+	Redis                   *redis.Redis
+	AdminAuthRpc            adminauthservice.AdminAuthService
+	AdminAuditRpc           adminauditservice.AdminAuditService
+	AdminPermissionRpc      adminpermissionservice.AdminPermissionService
+	AdminRoleRpc            adminroleservice.AdminRoleService
+	AdminUserRpc            adminuserservice.AdminUserService
+	ContentAdminRpc         admincontentservice.AdminContentService
+	UserAdminRpc            useradminuserservice.AdminUserService
 	AdminAuthMiddleware     rest.Middleware
 	AdminRbacMiddleware     rest.Middleware
 	AdminAuditMiddleware    rest.Middleware
@@ -72,15 +72,15 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	r := redis.MustNewRedis(c.RedisConfig)
 
 	return &ServiceContext{
-		Config:               c,
-		Redis:                r,
-		AdminAuthRpc:         adminAuthRpc,
-		AdminAuditRpc:        adminAuditRpc,
-		AdminPermissionRpc:   adminPermissionRpc,
-		AdminRoleRpc:         adminRoleRpc,
-		AdminUserRpc:         adminUserRpc,
-		ContentAdminRpc:      contentAdminRpc,
-		UserAdminRpc:        userAdminRpc,
+		Config:                  c,
+		Redis:                   r,
+		AdminAuthRpc:            adminAuthRpc,
+		AdminAuditRpc:           adminAuditRpc,
+		AdminPermissionRpc:      adminPermissionRpc,
+		AdminRoleRpc:            adminRoleRpc,
+		AdminUserRpc:            adminUserRpc,
+		ContentAdminRpc:         contentAdminRpc,
+		UserAdminRpc:            userAdminRpc,
 		AdminAuthMiddleware:     middleware.NewAdminAuthMiddleware(r, c).Handle,
 		AdminRbacMiddleware:     middleware.NewAdminRbacMiddleware(r, adminAuthRpc, consts.RedisAdminPermExpireSeconds).Handle,
 		AdminAuditMiddleware:    middleware.NewAdminAuditMiddleware(adminAuditRpc).Handle,

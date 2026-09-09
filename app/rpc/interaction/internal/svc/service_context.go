@@ -18,14 +18,14 @@ import (
 )
 
 type ServiceContext struct {
-	Config               config.Config
-	Redis                *redis.Redis
-	KqProducer           *kq.Pusher
-	LikeProducer         *producer.LikeProducer
-	MysqlDb              *orm.DB
-	CountRpc             counterservice.CounterService
-	UserRpc              userservice.UserService
-	ContentRpc            contentservice.ContentService
+	Config       config.Config
+	Redis        *redis.Redis
+	KqProducer   *kq.Pusher
+	LikeProducer *producer.LikeProducer
+	MysqlDb      *orm.DB
+	CountRpc     counterservice.CounterService
+	UserRpc      userservice.UserService
+	ContentRpc   contentservice.ContentService
 	// LikeUserRebuildLocker 用户点赞 hash 缓存重建分布式锁 防跨实例并发重复打 DB
 	LikeUserRebuildLocker *cache.DistLocker
 }

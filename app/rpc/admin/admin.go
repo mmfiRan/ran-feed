@@ -9,8 +9,8 @@ import (
 
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/app/rpc/admin/internal/config"
-	adminauthserviceServer "ran-feed/app/rpc/admin/internal/server/adminauthservice"
 	adminauditserviceServer "ran-feed/app/rpc/admin/internal/server/adminauditservice"
+	adminauthserviceServer "ran-feed/app/rpc/admin/internal/server/adminauthservice"
 	adminpermissionserviceServer "ran-feed/app/rpc/admin/internal/server/adminpermissionservice"
 	adminroleserviceServer "ran-feed/app/rpc/admin/internal/server/adminroleservice"
 	adminuserserviceServer "ran-feed/app/rpc/admin/internal/server/adminuserservice"

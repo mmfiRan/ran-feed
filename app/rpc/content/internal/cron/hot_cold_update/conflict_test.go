@@ -20,13 +20,13 @@ func TestDeriveWindowDays(t *testing.T) {
 		halfLifeHours float64
 		want          int
 	}{
-		{0, defaultWindowDays},    // 非正退化兜底
-		{-5, defaultWindowDays},   // 非正退化兜底
-		{24, 17},                  // 默认 约等于原 15d 现状
-		{48, 34},                  // 半衰期翻倍 窗口跟随放大
-		{72, 50},                  // 线性放大
-		{168, maxWindowDays},      // 7天半衰期 推导超上限 封顶 90
-		{720, maxWindowDays},      // 30天半衰期 仍封顶 防全表扫
+		{0, defaultWindowDays},  // 非正退化兜底
+		{-5, defaultWindowDays}, // 非正退化兜底
+		{24, 17},                // 默认 约等于原 15d 现状
+		{48, 34},                // 半衰期翻倍 窗口跟随放大
+		{72, 50},                // 线性放大
+		{168, maxWindowDays},    // 7天半衰期 推导超上限 封顶 90
+		{720, maxWindowDays},    // 30天半衰期 仍封顶 防全表扫
 	}
 	for _, c := range cases {
 		got := deriveWindowDays(c.halfLifeHours)
@@ -121,4 +121,3 @@ func TestAcquireWriteLockBounded_CtxCancelReturnsPromptly(t *testing.T) {
 	assert.Less(t, time.Since(start), time.Duration(defaultAcquireWaitSeconds)*time.Second,
 		"ctx 取消应及时返回 不死等到 60s 超时")
 }
-
