@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"ran-feed/pkg/enums"
 	"time"
 
 	"ran-feed/app/rpc/admin/internal/entity/model"
@@ -15,7 +16,7 @@ import (
 type LoginLogRepository interface {
 	WithTx(tx *query.Query) LoginLogRepository
 	Create(row *model.RanFeedLoginLog) (int64, error)
-	// Page 按条件分页查登录日志 id 倒序 返回列表与总数
+	// Page 按条件分页查登录日志
 	Page(filter types.LoginLogFilter, offset, limit int) ([]*model.RanFeedLoginLog, int64, error)
 }
 
@@ -61,10 +62,10 @@ func (r *loginLogRepositoryImpl) Create(row *model.RanFeedLoginLog) (int64, erro
 	return row.ID, nil
 }
 
-// Page 按条件分页查登录日志 id 倒序 复用 gen FindByPage 末页不满免 COUNT
+// Page 按条件分页查登录日志
 func (r *loginLogRepositoryImpl) Page(filter types.LoginLogFilter, offset, limit int) ([]*model.RanFeedLoginLog, int64, error) {
 	q := r.getQuery().RanFeedLoginLog
-	do := q.WithContext(r.ctx).Where(q.IsDeleted.Eq(0))
+	do := q.WithContext(r.ctx).Where(q.IsDeleted.Eq(enums.NotDeleted.Int32()))
 	if filter.Username != "" {
 		do = do.Where(q.Username.Like("%" + filter.Username + "%"))
 	}

@@ -29,11 +29,8 @@ func NewWriteOperationLogLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 	}
 }
 
-// WriteOperationLog 落一条后台操作审计日志
+// WriteOperationLog 写后台操作审计日志
 func (l *WriteOperationLogLogic) WriteOperationLog(in *admin.WriteOperationLogReq) (*admin.WriteOperationLogRes, error) {
-	if in == nil || in.GetAdminId() <= 0 || in.GetAction() == "" {
-		return nil, errorx.NewMsg("参数错误")
-	}
 
 	row := &model.RanFeedOperationLog{
 		ID:        snowflake.GenID(),

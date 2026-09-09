@@ -2,9 +2,10 @@ package adminauthservicelogic
 
 import (
 	"context"
+	adminenums "ran-feed/app/rpc/admin/internal/common/enums"
+	"ran-feed/pkg/enums"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/logichelper"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -30,9 +31,6 @@ func NewGetAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetAdmin
 
 // GetAdmin 取管理员基本信息
 func (l *GetAdminLogic) GetAdmin(in *admin.GetAdminReq) (*admin.GetAdminRes, error) {
-	if in == nil || in.GetAdminId() <= 0 {
-		return nil, errorx.NewMsg("参数错误")
-	}
 
 	row, err := l.adminUserRepo.GetByID(in.GetAdminId())
 	if err != nil {
@@ -46,6 +44,6 @@ func (l *GetAdminLogic) GetAdmin(in *admin.GetAdminReq) (*admin.GetAdminRes, err
 		AdminId:  row.ID,
 		Username: row.Username,
 		Nickname: row.Nickname,
-		Status:   logichelper.AdminStatusValue(row.Status),
+		Status:   enums.ToCommonPB(adminenums.AdminStatusEnum(row.Status)),
 	}, nil
 }

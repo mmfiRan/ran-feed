@@ -29,11 +29,8 @@ func NewWriteLoginLogLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Wri
 	}
 }
 
-// WriteLoginLog 落一条登录日志 登录发生在认证前 admin_id 成功时填 失败为 0
+// WriteLoginLog 写登录日志
 func (l *WriteLoginLogLogic) WriteLoginLog(in *admin.WriteLoginLogReq) (*admin.WriteLoginLogRes, error) {
-	if in == nil || in.GetUsername() == "" {
-		return nil, errorx.NewMsg("参数错误")
-	}
 
 	row := &model.RanFeedLoginLog{
 		ID:        snowflake.GenID(),

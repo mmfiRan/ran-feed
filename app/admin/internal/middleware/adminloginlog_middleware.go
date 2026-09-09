@@ -34,7 +34,9 @@ type AdminLoginLogMiddleware struct {
 }
 
 func NewAdminLoginLogMiddleware(adminRpc adminauditservice.AdminAuditService) *AdminLoginLogMiddleware {
-	return &AdminLoginLogMiddleware{adminRpc: adminRpc}
+	return &AdminLoginLogMiddleware{
+		adminRpc: adminRpc,
+	}
 }
 
 func (m *AdminLoginLogMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
@@ -56,7 +58,7 @@ func (m *AdminLoginLogMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc
 	}
 }
 
-// readLoginUsername 读请求体取 username 后恢复 body 供 handler 解析
+// readLoginUsername 从请求体中读取登录用户名
 func readLoginUsername(r *http.Request) string {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {

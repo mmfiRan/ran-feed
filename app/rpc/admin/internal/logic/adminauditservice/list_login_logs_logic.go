@@ -2,9 +2,10 @@ package adminauditservicelogic
 
 import (
 	"context"
+	adminenums "ran-feed/app/rpc/admin/internal/common/enums"
+	"ran-feed/pkg/enums"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/logichelper"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/app/rpc/admin/internal/types"
@@ -31,7 +32,7 @@ func NewListLoginLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Lis
 	}
 }
 
-// ListLoginLogs 按条件分页查登录日志 先统计总数为0直接返回
+// ListLoginLogs 按条件分页查登录日志
 func (l *ListLoginLogsLogic) ListLoginLogs(in *admin.ListLoginLogsReq) (*admin.ListLoginLogsRes, error) {
 	filter := types.LoginLogFilter{
 		Username: in.GetUsername(),
@@ -70,7 +71,7 @@ func (l *ListLoginLogsLogic) ListLoginLogs(in *admin.ListLoginLogsReq) (*admin.L
 			Username:  row.Username,
 			Ip:        row.IP,
 			UserAgent: row.UserAgent,
-			Status:    logichelper.LoginStatusValue(row.Status),
+			Status:    enums.ToCommonPB(adminenums.LoginStatusEnum(row.Status)),
 			Msg:       row.Msg,
 			CreatedAt: timestamppb.New(row.CreatedAt),
 		})

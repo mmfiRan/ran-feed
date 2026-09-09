@@ -10,8 +10,6 @@ import (
 
 const defaultEnvFile = ".env"
 
-// Load tries to load .env for local dev. It will not fail if the file is missing.
-// If ENV_FILE is set, it will try that file and log errors but continue.
 func Load() {
 	envFile := os.Getenv("ENV_FILE")
 	if envFile != "" {
@@ -26,7 +24,6 @@ func Load() {
 	}
 }
 
-// MustLoad loads environment variables and exits on failure.
 func MustLoad() {
 	envFile := os.Getenv("ENV_FILE")
 	if envFile != "" {

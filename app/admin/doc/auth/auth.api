@@ -35,7 +35,7 @@ type (
 )
 service admin-api {
 	@doc (
-		description: "管理员登录 成功返回 token 与权限点集合 后续请求带 Authorization: Bearer {token}"
+		description: "管理员登录 成功返回 token 与权限点集合"
 	)
 	@handler Login
 	post /login (AdminLoginReq) returns (AdminLoginRes)
@@ -49,13 +49,13 @@ service admin-api {
 )
 service admin-api {
 	@doc (
-		description: "管理员登出 需带 Authorization: Bearer {token}"
+		description: "管理员登出"
 	)
 	@handler Logout
 	post /logout returns (AdminLogoutRes)
 
 	@doc (
-		description: "获取当前管理员信息与权限点 需带 Authorization: Bearer {token}"
+		description: "获取当前管理员信息与权限点"
 	)
 	@handler GetMe
 	get /me returns (AdminMeRes)

@@ -14,6 +14,8 @@ const RedisAdminSessionUIDPrefix = "admin:session:uid"
 // RedisAdminPermPrefix 管理员权限点集合缓存前缀 admin:perms:{adminId} 与 admin-api 保持一致
 const RedisAdminPermPrefix = "admin:perms"
 
+const DefaultSessionTTLSeconds = 7 * 24 * 60 * 60
+
 // BuildAdminSessionKey 登录态 token 键
 func BuildAdminSessionKey(token string) string {
 	return RedisAdminSessionPrefix + ":" + token

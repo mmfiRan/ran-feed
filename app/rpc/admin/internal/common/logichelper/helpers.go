@@ -104,21 +104,11 @@ func BuildOperationLogItem(row *types.OperationLogRow) *admin.OperationLogItem {
 		Username:  row.Username,
 		Action:    row.Action,
 		Title:     row.Title,
-		Status:    OperateStatusValue(row.Status),
+		Status:    enums.ToCommonPB(adminenums.OperateStatusEnum(row.Status)),
 		ErrorMsg:  row.ErrorMsg,
 		CostTime:  int64(row.CostTime),
 		Ip:        row.IP,
 		UserAgent: row.UserAgent,
 		CreatedAt: timestamppb.New(row.CreatedAt),
 	}
-}
-
-// OperateStatusValue 行状态转统一枚举响应
-func OperateStatusValue(status int32) *commonpb.EnumValue {
-	return enums.ToCommonPB(adminenums.OperateStatusEnum(status))
-}
-
-// LoginStatusValue 行状态转统一枚举响应
-func LoginStatusValue(status int32) *commonpb.EnumValue {
-	return enums.ToCommonPB(adminenums.LoginStatusEnum(status))
 }

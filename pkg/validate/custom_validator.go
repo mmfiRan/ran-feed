@@ -54,8 +54,6 @@ func NewCustomValidator() (*CustomValidator, error) {
 		translator: trans,
 	}
 
-	// 注册自定义标签翻译：e164 -> "{0} 手机号格式不正确"
-	// {0} 会被替换为字段名（json 标签名）
 	_ = cv.RegisterCustomTranslation("e164", "{0} 手机号格式不正确")
 
 	return cv, nil
@@ -103,12 +101,7 @@ func fallbackGenericMessage() string {
 	return "不满足校验要求"
 }
 
-// RegisterCustomTranslation 为指定标签注册自定义翻译模板，解耦注册方式。
-// 模板占位符：
-//   - {0} 字段名（使用 json 标签名）
-//   - {1} 参数（如 min=3 中的 3）
-//
-// 示例：cv.RegisterCustomTranslation("e164", "{0} 手机号格式不正确")
+// RegisterCustomTranslation 为指定标签注册自定义翻译模板
 func (cv *CustomValidator) RegisterCustomTranslation(tag, tmpl string) error {
 	if tag == "" || tmpl == "" {
 		return errors.New("tag 或 tmpl 不能为空")

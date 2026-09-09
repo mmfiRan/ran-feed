@@ -39,3 +39,4 @@ logs/
 
 .harness/
 .commandcode/
+.env

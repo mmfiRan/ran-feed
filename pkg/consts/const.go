@@ -1,6 +1,6 @@
 package consts
 
-// CtxKey 请求上下文 key 类型，避免与其他 string 键冲突（SA1029）
+// CtxKey 请求上下文 key 类型，
 type CtxKey string
 
 const (
