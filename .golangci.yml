@@ -1,0 +1,23 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - unconvert
+    - nilerr
+  settings:
+    errcheck:
+      exclude-functions:
+        - "(net/http.ResponseWriter).Write"
+        - "(io.Closer).Close"
+        - "(*github.com/zeromicro/go-zero/core/stores/redis.RedisLock).Release"
+        - "(*github.com/zeromicro/go-zero/core/stores/redis.RedisLock).ReleaseCtx"
+  exclusions:
+    rules:
+      - linters: [staticcheck]
+        text: SA5008
