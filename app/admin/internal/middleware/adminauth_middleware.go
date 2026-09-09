@@ -11,6 +11,7 @@ import (
 	"ran-feed/app/admin/internal/config"
 	pkgconsts "ran-feed/pkg/consts"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
@@ -63,8 +64,13 @@ func (m *AdminAuthMiddleware) verifyAndRenew(ctx context.Context, token string) 
 	if val == "" {
 		return 0, nil
 	}
-	adminID, err := strconv.ParseInt(val, 10, 64)
-	if err != nil || adminID <= 0 {
+	adminID, parseErr := strconv.ParseInt(val, 10, 64)
+	if parseErr != nil {
+		// 会话值损坏 记录日志并视为未登录
+		logx.WithContext(ctx).Errorf("管理员会话值损坏 key=%s err=%v", consts.BuildAdminSessionKey(token), parseErr)
+		return 0, nil
+	}
+	if adminID <= 0 {
 		return 0, nil
 	}
 

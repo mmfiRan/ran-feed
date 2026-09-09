@@ -116,7 +116,7 @@ func TestDistLock_WaitTimeoutReturnsErrLockBusy(t *testing.T) {
 	)
 
 	// 提前在 Redis 写入锁 让本次调用拿不到
-	mr.Set(BuildLockKey("k"), "other-owner")
+	assert.NoError(t, mr.Set(BuildLockKey("k"), "other-owner"))
 	mr.SetTTL(BuildLockKey("k"), 30*time.Second)
 
 	_, err := DoWithLock(dl, context.Background(), BuildLockKey("k"),
@@ -135,7 +135,7 @@ func TestDistLock_WaitCachePopulatedDuringPoll(t *testing.T) {
 		WithWaitTimeout(2*time.Second),
 		WithPollInterval(30*time.Millisecond),
 	)
-	mr.Set(BuildLockKey("k"), "other-owner")
+	assert.NoError(t, mr.Set(BuildLockKey("k"), "other-owner"))
 
 	var ready atomic.Bool
 	// 100ms 后模拟别的实例重建完
@@ -166,7 +166,7 @@ func TestDistLock_CtxCancelReturnsImmediately(t *testing.T) {
 		WithWaitTimeout(5*time.Second),
 		WithPollInterval(50*time.Millisecond),
 	)
-	mr.Set(BuildLockKey("k"), "other-owner")
+	assert.NoError(t, mr.Set(BuildLockKey("k"), "other-owner"))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {

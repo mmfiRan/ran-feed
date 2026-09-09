@@ -62,7 +62,7 @@ func formatStack(pcs []uintptr) string {
 	frames := runtime.CallersFrames(pcs)
 	for {
 		f, more := frames.Next()
-		buf.WriteString(fmt.Sprintf("%s:%d %s\n", f.File, f.Line, f.Function))
+		fmt.Fprintf(&buf, "%s:%d %s\n", f.File, f.Line, f.Function)
 		if !more {
 			break
 		}

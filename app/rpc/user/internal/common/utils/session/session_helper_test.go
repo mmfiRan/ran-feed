@@ -24,8 +24,8 @@ func TestRemoveByUserID(t *testing.T) {
 		// 预设双向 key
 		tokenKey := rediskey.BuildUserSessionKey(token)
 		userKey := rediskey.BuildUserSessionUserKey(userID)
-		mr.Set(tokenKey, "123")
-		mr.Set(userKey, token)
+		assert.NoError(t, mr.Set(tokenKey, "123"))
+		assert.NoError(t, mr.Set(userKey, token))
 
 		err := RemoveByUserID(ctx, r, userID)
 		assert.NoError(t, err)
@@ -48,7 +48,7 @@ func TestRemoveByUserID(t *testing.T) {
 	t.Run("反向索引为空串则no-op", func(t *testing.T) {
 		userID := int64(888)
 		userKey := rediskey.BuildUserSessionUserKey(userID)
-		mr.Set(userKey, "")
+		assert.NoError(t, mr.Set(userKey, ""))
 
 		err := RemoveByUserID(ctx, r, userID)
 		assert.NoError(t, err)

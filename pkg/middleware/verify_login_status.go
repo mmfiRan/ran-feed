@@ -8,6 +8,10 @@ import (
 	"ran-feed/pkg/result"
 )
 
+type contextKey string
+
+const ctxKeyUserID contextKey = "userId"
+
 func VerifyLoginStatus(w http.ResponseWriter, r *http.Request) (*http.Request, bool) {
 	userId := getUserIdFromCtx(r.Context())
 	if userId == 0 {
@@ -21,13 +25,13 @@ func VerifyLoginStatus(w http.ResponseWriter, r *http.Request) (*http.Request, b
 	// 您可以在这里添加额外的逻辑，例如去 Redis 校验 Token 是否有效或已过期
 
 	// 将统一处理过的int64类型的userId放回context中，方便后续的handler使用
-	ctx := context.WithValue(r.Context(), "userId", userId)
+	ctx := context.WithValue(r.Context(), ctxKeyUserID, userId)
 	return r.WithContext(ctx), true
 }
 
 func getUserIdFromCtx(ctx context.Context) int64 {
 	var userId int64
-	val := ctx.Value("userId")
+	val := ctx.Value(ctxKeyUserID)
 	if val == nil {
 		return 0
 	}

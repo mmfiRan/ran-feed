@@ -48,7 +48,7 @@ func GetContextAdminIdWithDefault(ctx context.Context) int64 {
 }
 
 // GetContextID 从 context 中按 key 取 int64 类型的 ID
-func GetContextID(ctx context.Context, key string) (int64, error) {
+func GetContextID(ctx context.Context, key any) (int64, error) {
 	if ctx == nil {
 		return 0, errors.New("上下文ctx为空")
 	}

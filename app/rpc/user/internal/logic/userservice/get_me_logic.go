@@ -59,10 +59,11 @@ func (l *GetMeLogic) GetMe(in *user.GetMeReq) (*user.GetMeRes, error) {
 			return nil
 		},
 		func() error {
-			resp, err := l.svcCtx.CountRpc.GetUserProfileCounts(l.ctx, &counterservice.GetUserProfileCountsReq{
+			resp, cErr := l.svcCtx.CountRpc.GetUserProfileCounts(l.ctx, &counterservice.GetUserProfileCountsReq{
 				UserId: in.UserId,
 			})
-			if err != nil {
+			if cErr != nil {
+				l.Errorf("获取用户计数失败 降级为空计数 userID=%d err=%v", in.UserId, cErr)
 				countsReply = &counterservice.GetUserProfileCountsRes{}
 				return nil
 			}

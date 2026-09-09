@@ -79,12 +79,12 @@ func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*conte
 		pipe.ZRem(l.ctx, rediskey.RedisFeedHotGlobalKey, contentIDStr)
 		return nil
 	}); err != nil {
-		l.Logger.Errorf("删除内容缓存失败: %v", err)
+		l.Errorf("删除内容缓存失败: %v", err)
 	}
 
 	// 失效内容详情二级缓存 防止删后仍命中旧详情
 	if err := contentcache.Invalidate(l.ctx, l.svcCtx.Redis, in.ContentId); err != nil {
-		l.Logger.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
+		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
 	return &content.DeleteContentRes{}, nil

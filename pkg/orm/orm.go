@@ -81,7 +81,7 @@ func NewMysql(conf *Config, plugins ...gorm.Plugin) (*DB, error) {
 	sdb.SetMaxOpenConns(conf.MaxOpenConns)
 	sdb.SetConnMaxLifetime(time.Second * time.Duration(conf.MaxLifetime))
 
-	if plugins != nil && len(plugins) > 0 {
+	if len(plugins) > 0 {
 		for _, plugin := range plugins {
 			if err = db.Use(plugin); err != nil {
 				return nil, err

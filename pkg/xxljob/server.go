@@ -114,7 +114,7 @@ func (e *Executor) Start(ctx context.Context) error {
 	}
 	threading.GoSafe(func() {
 		<-ctx.Done()
-		e.Shutdown(context.Background())
+		_ = e.Shutdown(context.Background())
 	})
 	return e.server.Serve(ln)
 }
@@ -342,10 +342,10 @@ func decodeTriggerParam(payload []byte) (TriggerParam, error) {
 	if err := json.Unmarshal(payload, &tmp); err != nil {
 		return TriggerParam{}, err
 	}
-	if tmp.TriggerParam.LogDateTime == 0 {
-		tmp.TriggerParam.LogDateTime = tmp.LogDateTim
+	if tmp.LogDateTime == 0 {
+		tmp.LogDateTime = tmp.LogDateTim
 	}
-	tmp.TriggerParam.Raw = payload
+	tmp.Raw = payload
 	return tmp.TriggerParam, nil
 }
 

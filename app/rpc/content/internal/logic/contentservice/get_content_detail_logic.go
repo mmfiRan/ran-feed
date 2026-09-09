@@ -84,7 +84,7 @@ func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, vi
 		detail.PublishedAt = contentRow.PublishedAt.Unix()
 	}
 
-	scene := interaction.Scene_SCENE_UNKNOWN
+	var scene interaction.Scene
 	if err := l.fillContentFields(detail, contentRow.ID, content.ContentType(contentRow.ContentType)); err != nil {
 		return nil, err
 	}

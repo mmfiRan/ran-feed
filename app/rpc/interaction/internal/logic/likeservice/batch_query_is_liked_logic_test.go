@@ -327,7 +327,7 @@ func TestBatch_LockBusyFallsBackToDB(t *testing.T) {
 	}
 
 	// 模拟另一个实例已持有锁 长期不释放
-	mr.Set(cache.BuildLockKey("like:user:1"), "other-instance-owner")
+	require.NoError(t, mr.Set(cache.BuildLockKey("like:user:1"), "other-instance-owner"))
 	mr.SetTTL(cache.BuildLockKey("like:user:1"), 30*time.Second)
 
 	out, err := logic.BatchQueryIsLiked(batchReq(1, 100, 200))
@@ -352,4 +352,3 @@ func TestBatch_InvalidContentIDsSkipped(t *testing.T) {
 	assert.False(t, m[-1])
 	assert.False(t, m[0])
 }
-

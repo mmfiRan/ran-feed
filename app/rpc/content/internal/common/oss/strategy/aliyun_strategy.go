@@ -165,27 +165,27 @@ func (s *AliyunStrategy) generateSignature(stringToSign, date, accessKeySecret s
 
 	// 第一层：date
 	h1 := hmac.New(hmacHash, []byte(signingKey))
-	io.WriteString(h1, date)
+	_, _ = io.WriteString(h1, date)
 	h1Key := h1.Sum(nil)
 
 	// 第二层：region
 	h2 := hmac.New(hmacHash, h1Key)
-	io.WriteString(h2, s.config.Region)
+	_, _ = io.WriteString(h2, s.config.Region)
 	h2Key := h2.Sum(nil)
 
 	// 第三层：product
 	h3 := hmac.New(hmacHash, h2Key)
-	io.WriteString(h3, product)
+	_, _ = io.WriteString(h3, product)
 	h3Key := h3.Sum(nil)
 
 	// 第四层：request type
 	h4 := hmac.New(hmacHash, h3Key)
-	io.WriteString(h4, aliyunV4Request)
+	_, _ = io.WriteString(h4, aliyunV4Request)
 	h4Key := h4.Sum(nil)
 
 	// 最终签名
 	h := hmac.New(hmacHash, h4Key)
-	io.WriteString(h, stringToSign)
+	_, _ = io.WriteString(h, stringToSign)
 
 	return hex.EncodeToString(h.Sum(nil))
 }

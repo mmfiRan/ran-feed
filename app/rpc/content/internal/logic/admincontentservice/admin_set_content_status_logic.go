@@ -65,7 +65,7 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 
 	// 失效二级缓存 失败不阻断 靠 TTL 收敛
 	if err = contentcache.Invalidate(l.ctx, l.svcCtx.Redis, in.ContentId); err != nil {
-		l.Logger.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
+		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
 	return &content.AdminSetContentStatusRes{Status: target}, nil
