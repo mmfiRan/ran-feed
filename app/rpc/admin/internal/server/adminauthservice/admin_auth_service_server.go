@@ -23,9 +23,9 @@ func NewAdminAuthServiceServer(svcCtx *svc.ServiceContext) *AdminAuthServiceServ
 	}
 }
 
-func (s *AdminAuthServiceServer) AuthenticateAdmin(ctx context.Context, in *admin.AuthenticateAdminReq) (*admin.AuthenticateAdminRes, error) {
-	l := adminauthservicelogic.NewAuthenticateAdminLogic(ctx, s.svcCtx)
-	return l.AuthenticateAdmin(in)
+func (s *AdminAuthServiceServer) Login(ctx context.Context, in *admin.LoginReq) (*admin.LoginRes, error) {
+	l := adminauthservicelogic.NewLoginLogic(ctx, s.svcCtx)
+	return l.Login(in)
 }
 
 func (s *AdminAuthServiceServer) GetAdmin(ctx context.Context, in *admin.GetAdminReq) (*admin.GetAdminRes, error) {

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"ran-feed/pkg/enums"
 
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/entity/query"
@@ -12,6 +13,8 @@ import (
 
 type AdminPermissionRepository interface {
 	ListCodesByIDs(ids []int64) ([]string, error)
+	// ListCodesByAdminID 查询权限集合
+	ListCodesByAdminID(adminID int64) ([]string, error)
 	// ListAll 取权限点目录 module 空则全量 module.Desc 后 id 升序
 	ListAll(module string) ([]*model.RanFeedAdminPermission, error)
 }
@@ -49,6 +52,26 @@ func (r *adminPermissionRepositoryImpl) ListCodesByIDs(ids []int64) ([]string, e
 		if row != nil && row.Code != "" {
 			codes = append(codes, row.Code)
 		}
+	}
+	return codes, nil
+}
+
+// ListCodesByAdminID 查询权限集合
+func (r *adminPermissionRepositoryImpl) ListCodesByAdminID(adminID int64) ([]string, error) {
+	ur := query.Q.RanFeedAdminUserRole
+	rp := query.Q.RanFeedAdminRolePermission
+	p := query.Q.RanFeedAdminPermission
+
+	codes := make([]string, 0)
+	err := ur.WithContext(r.ctx).
+		Select(p.Code).
+		Join(&model.RanFeedAdminRolePermission{}, ur.RoleID.EqCol(rp.RoleID), rp.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Join(&model.RanFeedAdminPermission{}, rp.PermissionID.EqCol(p.ID), p.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Where(ur.AdminUserID.Eq(adminID), ur.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Distinct().
+		Scan(&codes)
+	if err != nil {
+		return nil, err
 	}
 	return codes, nil
 }

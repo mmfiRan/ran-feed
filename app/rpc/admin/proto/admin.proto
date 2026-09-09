@@ -29,19 +29,6 @@ enum LoginStatus {
   LOGIN_STATUS_FAIL = 2;
 }
 
-// AuthenticateAdminReq 校验管理员账号密码
-message AuthenticateAdminReq {
-  string username = 1;
-  string password = 2;
-}
-
-// AuthenticateAdminRes 校验结果
-message AuthenticateAdminRes {
-  int64 admin_id = 1;
-  string nickname = 2;
-  ranfeed.commonpb.EnumValue status = 3;
-}
-
 // GetAdminReq 查询管理员基本信息
 message GetAdminReq {
   int64 admin_id = 1;
@@ -337,9 +324,24 @@ message SetAdminRolesReq {
   int64 operator_id = 3;
 }
 
+// LoginReq 管理员登录
+message LoginReq {
+  string username = 1;
+  string password = 2;
+}
+
+// LoginRes 登录结果
+message LoginRes {
+  int64 admin_id = 1;
+  string nickname = 2;
+  string token = 3;
+  int64 ttl_seconds = 4;
+  repeated string permissions = 5;
+}
+
 // AdminAuthService 认证管理
 service AdminAuthService {
-  rpc AuthenticateAdmin(AuthenticateAdminReq) returns (AuthenticateAdminRes);
+  rpc Login(LoginReq) returns (LoginRes);
   rpc GetAdmin(GetAdminReq) returns (GetAdminRes);
   rpc ListAdminPermissions(ListAdminPermissionsReq) returns (ListAdminPermissionsRes);
 }

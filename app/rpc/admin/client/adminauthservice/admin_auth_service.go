@@ -14,15 +14,15 @@ import (
 )
 
 type (
-	AuthenticateAdminReq    = admin.AuthenticateAdminReq
-	AuthenticateAdminRes    = admin.AuthenticateAdminRes
 	GetAdminReq             = admin.GetAdminReq
 	GetAdminRes             = admin.GetAdminRes
 	ListAdminPermissionsReq = admin.ListAdminPermissionsReq
 	ListAdminPermissionsRes = admin.ListAdminPermissionsRes
+	LoginReq                = admin.LoginReq
+	LoginRes                = admin.LoginRes
 
 	AdminAuthService interface {
-		AuthenticateAdmin(ctx context.Context, in *AuthenticateAdminReq, opts ...grpc.CallOption) (*AuthenticateAdminRes, error)
+		Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginRes, error)
 		GetAdmin(ctx context.Context, in *GetAdminReq, opts ...grpc.CallOption) (*GetAdminRes, error)
 		ListAdminPermissions(ctx context.Context, in *ListAdminPermissionsReq, opts ...grpc.CallOption) (*ListAdminPermissionsRes, error)
 	}
@@ -38,9 +38,9 @@ func NewAdminAuthService(cli zrpc.Client) AdminAuthService {
 	}
 }
 
-func (m *defaultAdminAuthService) AuthenticateAdmin(ctx context.Context, in *AuthenticateAdminReq, opts ...grpc.CallOption) (*AuthenticateAdminRes, error) {
+func (m *defaultAdminAuthService) Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginRes, error) {
 	client := admin.NewAdminAuthServiceClient(m.cli.Conn())
-	return client.AuthenticateAdmin(ctx, in, opts...)
+	return client.Login(ctx, in, opts...)
 }
 
 func (m *defaultAdminAuthService) GetAdmin(ctx context.Context, in *GetAdminReq, opts ...grpc.CallOption) (*GetAdminRes, error) {

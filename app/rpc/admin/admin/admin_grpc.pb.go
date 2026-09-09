@@ -20,7 +20,7 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AdminAuthService_AuthenticateAdmin_FullMethodName    = "/ranfeed.admin.AdminAuthService/AuthenticateAdmin"
+	AdminAuthService_Login_FullMethodName                = "/ranfeed.admin.AdminAuthService/Login"
 	AdminAuthService_GetAdmin_FullMethodName             = "/ranfeed.admin.AdminAuthService/GetAdmin"
 	AdminAuthService_ListAdminPermissions_FullMethodName = "/ranfeed.admin.AdminAuthService/ListAdminPermissions"
 )
@@ -31,7 +31,7 @@ const (
 //
 // AdminAuthService 认证管理
 type AdminAuthServiceClient interface {
-	AuthenticateAdmin(ctx context.Context, in *AuthenticateAdminReq, opts ...grpc.CallOption) (*AuthenticateAdminRes, error)
+	Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginRes, error)
 	GetAdmin(ctx context.Context, in *GetAdminReq, opts ...grpc.CallOption) (*GetAdminRes, error)
 	ListAdminPermissions(ctx context.Context, in *ListAdminPermissionsReq, opts ...grpc.CallOption) (*ListAdminPermissionsRes, error)
 }
@@ -44,10 +44,10 @@ func NewAdminAuthServiceClient(cc grpc.ClientConnInterface) AdminAuthServiceClie
 	return &adminAuthServiceClient{cc}
 }
 
-func (c *adminAuthServiceClient) AuthenticateAdmin(ctx context.Context, in *AuthenticateAdminReq, opts ...grpc.CallOption) (*AuthenticateAdminRes, error) {
+func (c *adminAuthServiceClient) Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginRes, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AuthenticateAdminRes)
-	err := c.cc.Invoke(ctx, AdminAuthService_AuthenticateAdmin_FullMethodName, in, out, cOpts...)
+	out := new(LoginRes)
+	err := c.cc.Invoke(ctx, AdminAuthService_Login_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (c *adminAuthServiceClient) ListAdminPermissions(ctx context.Context, in *L
 //
 // AdminAuthService 认证管理
 type AdminAuthServiceServer interface {
-	AuthenticateAdmin(context.Context, *AuthenticateAdminReq) (*AuthenticateAdminRes, error)
+	Login(context.Context, *LoginReq) (*LoginRes, error)
 	GetAdmin(context.Context, *GetAdminReq) (*GetAdminRes, error)
 	ListAdminPermissions(context.Context, *ListAdminPermissionsReq) (*ListAdminPermissionsRes, error)
 	mustEmbedUnimplementedAdminAuthServiceServer()
@@ -93,8 +93,8 @@ type AdminAuthServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAdminAuthServiceServer struct{}
 
-func (UnimplementedAdminAuthServiceServer) AuthenticateAdmin(context.Context, *AuthenticateAdminReq) (*AuthenticateAdminRes, error) {
-	return nil, status.Error(codes.Unimplemented, "method AuthenticateAdmin not implemented")
+func (UnimplementedAdminAuthServiceServer) Login(context.Context, *LoginReq) (*LoginRes, error) {
+	return nil, status.Error(codes.Unimplemented, "method Login not implemented")
 }
 func (UnimplementedAdminAuthServiceServer) GetAdmin(context.Context, *GetAdminReq) (*GetAdminRes, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAdmin not implemented")
@@ -123,20 +123,20 @@ func RegisterAdminAuthServiceServer(s grpc.ServiceRegistrar, srv AdminAuthServic
 	s.RegisterService(&AdminAuthService_ServiceDesc, srv)
 }
 
-func _AdminAuthService_AuthenticateAdmin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AuthenticateAdminReq)
+func _AdminAuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AdminAuthServiceServer).AuthenticateAdmin(ctx, in)
+		return srv.(AdminAuthServiceServer).Login(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AdminAuthService_AuthenticateAdmin_FullMethodName,
+		FullMethod: AdminAuthService_Login_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AdminAuthServiceServer).AuthenticateAdmin(ctx, req.(*AuthenticateAdminReq))
+		return srv.(AdminAuthServiceServer).Login(ctx, req.(*LoginReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -185,8 +185,8 @@ var AdminAuthService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*AdminAuthServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "AuthenticateAdmin",
-			Handler:    _AdminAuthService_AuthenticateAdmin_Handler,
+			MethodName: "Login",
+			Handler:    _AdminAuthService_Login_Handler,
 		},
 		{
 			MethodName: "GetAdmin",

@@ -76,7 +76,6 @@ func (m *AdminAuthMiddleware) verifyAndRenew(ctx context.Context, token string) 
 
 	ttl := time.Duration(m.sessionTTL().Seconds()) * time.Second
 
-	// 滑动续期
 	if err = m.redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
 		pipe.Expire(ctx, consts.BuildAdminSessionKey(token), ttl)
 		pipe.Expire(ctx, consts.BuildAdminSessionUIDKey(adminID), ttl)

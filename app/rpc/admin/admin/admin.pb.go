@@ -174,120 +174,6 @@ func (LoginStatus) EnumDescriptor() ([]byte, []int) {
 	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{2}
 }
 
-// AuthenticateAdminReq 校验管理员账号密码
-type AuthenticateAdminReq struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
-	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AuthenticateAdminReq) Reset() {
-	*x = AuthenticateAdminReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AuthenticateAdminReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AuthenticateAdminReq) ProtoMessage() {}
-
-func (x *AuthenticateAdminReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AuthenticateAdminReq.ProtoReflect.Descriptor instead.
-func (*AuthenticateAdminReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *AuthenticateAdminReq) GetUsername() string {
-	if x != nil {
-		return x.Username
-	}
-	return ""
-}
-
-func (x *AuthenticateAdminReq) GetPassword() string {
-	if x != nil {
-		return x.Password
-	}
-	return ""
-}
-
-// AuthenticateAdminRes 校验结果
-type AuthenticateAdminRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
-	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
-	Status        *commonpb.EnumValue    `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AuthenticateAdminRes) Reset() {
-	*x = AuthenticateAdminRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AuthenticateAdminRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AuthenticateAdminRes) ProtoMessage() {}
-
-func (x *AuthenticateAdminRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AuthenticateAdminRes.ProtoReflect.Descriptor instead.
-func (*AuthenticateAdminRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *AuthenticateAdminRes) GetAdminId() int64 {
-	if x != nil {
-		return x.AdminId
-	}
-	return 0
-}
-
-func (x *AuthenticateAdminRes) GetNickname() string {
-	if x != nil {
-		return x.Nickname
-	}
-	return ""
-}
-
-func (x *AuthenticateAdminRes) GetStatus() *commonpb.EnumValue {
-	if x != nil {
-		return x.Status
-	}
-	return nil
-}
-
 // GetAdminReq 查询管理员基本信息
 type GetAdminReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -298,7 +184,7 @@ type GetAdminReq struct {
 
 func (x *GetAdminReq) Reset() {
 	*x = GetAdminReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[2]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -310,7 +196,7 @@ func (x *GetAdminReq) String() string {
 func (*GetAdminReq) ProtoMessage() {}
 
 func (x *GetAdminReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[2]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -323,7 +209,7 @@ func (x *GetAdminReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAdminReq.ProtoReflect.Descriptor instead.
 func (*GetAdminReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{2}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *GetAdminReq) GetAdminId() int64 {
@@ -346,7 +232,7 @@ type GetAdminRes struct {
 
 func (x *GetAdminRes) Reset() {
 	*x = GetAdminRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[3]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -358,7 +244,7 @@ func (x *GetAdminRes) String() string {
 func (*GetAdminRes) ProtoMessage() {}
 
 func (x *GetAdminRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[3]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -371,7 +257,7 @@ func (x *GetAdminRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAdminRes.ProtoReflect.Descriptor instead.
 func (*GetAdminRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{3}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetAdminRes) GetAdminId() int64 {
@@ -412,7 +298,7 @@ type ListAdminPermissionsReq struct {
 
 func (x *ListAdminPermissionsReq) Reset() {
 	*x = ListAdminPermissionsReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[4]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -424,7 +310,7 @@ func (x *ListAdminPermissionsReq) String() string {
 func (*ListAdminPermissionsReq) ProtoMessage() {}
 
 func (x *ListAdminPermissionsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[4]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -437,7 +323,7 @@ func (x *ListAdminPermissionsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAdminPermissionsReq.ProtoReflect.Descriptor instead.
 func (*ListAdminPermissionsReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{4}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ListAdminPermissionsReq) GetAdminId() int64 {
@@ -457,7 +343,7 @@ type ListAdminPermissionsRes struct {
 
 func (x *ListAdminPermissionsRes) Reset() {
 	*x = ListAdminPermissionsRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[5]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -469,7 +355,7 @@ func (x *ListAdminPermissionsRes) String() string {
 func (*ListAdminPermissionsRes) ProtoMessage() {}
 
 func (x *ListAdminPermissionsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[5]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -482,7 +368,7 @@ func (x *ListAdminPermissionsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAdminPermissionsRes.ProtoReflect.Descriptor instead.
 func (*ListAdminPermissionsRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{5}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ListAdminPermissionsRes) GetCodes() []string {
@@ -509,7 +395,7 @@ type WriteOperationLogReq struct {
 
 func (x *WriteOperationLogReq) Reset() {
 	*x = WriteOperationLogReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[6]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -521,7 +407,7 @@ func (x *WriteOperationLogReq) String() string {
 func (*WriteOperationLogReq) ProtoMessage() {}
 
 func (x *WriteOperationLogReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[6]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -534,7 +420,7 @@ func (x *WriteOperationLogReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WriteOperationLogReq.ProtoReflect.Descriptor instead.
 func (*WriteOperationLogReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{6}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *WriteOperationLogReq) GetAdminId() int64 {
@@ -603,7 +489,7 @@ type WriteOperationLogRes struct {
 
 func (x *WriteOperationLogRes) Reset() {
 	*x = WriteOperationLogRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[7]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -615,7 +501,7 @@ func (x *WriteOperationLogRes) String() string {
 func (*WriteOperationLogRes) ProtoMessage() {}
 
 func (x *WriteOperationLogRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[7]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -628,7 +514,7 @@ func (x *WriteOperationLogRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WriteOperationLogRes.ProtoReflect.Descriptor instead.
 func (*WriteOperationLogRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{7}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *WriteOperationLogRes) GetLogId() int64 {
@@ -651,7 +537,7 @@ type PermissionItem struct {
 
 func (x *PermissionItem) Reset() {
 	*x = PermissionItem{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[8]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -663,7 +549,7 @@ func (x *PermissionItem) String() string {
 func (*PermissionItem) ProtoMessage() {}
 
 func (x *PermissionItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[8]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -676,7 +562,7 @@ func (x *PermissionItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PermissionItem.ProtoReflect.Descriptor instead.
 func (*PermissionItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{8}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *PermissionItem) GetId() int64 {
@@ -717,7 +603,7 @@ type ListPermissionsReq struct {
 
 func (x *ListPermissionsReq) Reset() {
 	*x = ListPermissionsReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[9]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -729,7 +615,7 @@ func (x *ListPermissionsReq) String() string {
 func (*ListPermissionsReq) ProtoMessage() {}
 
 func (x *ListPermissionsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[9]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -742,7 +628,7 @@ func (x *ListPermissionsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPermissionsReq.ProtoReflect.Descriptor instead.
 func (*ListPermissionsReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{9}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListPermissionsReq) GetModule() string {
@@ -762,7 +648,7 @@ type ListPermissionsRes struct {
 
 func (x *ListPermissionsRes) Reset() {
 	*x = ListPermissionsRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[10]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -774,7 +660,7 @@ func (x *ListPermissionsRes) String() string {
 func (*ListPermissionsRes) ProtoMessage() {}
 
 func (x *ListPermissionsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[10]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -787,7 +673,7 @@ func (x *ListPermissionsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPermissionsRes.ProtoReflect.Descriptor instead.
 func (*ListPermissionsRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{10}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListPermissionsRes) GetItems() []*PermissionItem {
@@ -817,7 +703,7 @@ type OperationLogItem struct {
 
 func (x *OperationLogItem) Reset() {
 	*x = OperationLogItem{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[11]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -829,7 +715,7 @@ func (x *OperationLogItem) String() string {
 func (*OperationLogItem) ProtoMessage() {}
 
 func (x *OperationLogItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[11]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -842,7 +728,7 @@ func (x *OperationLogItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OperationLogItem.ProtoReflect.Descriptor instead.
 func (*OperationLogItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{11}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *OperationLogItem) GetId() int64 {
@@ -939,7 +825,7 @@ type ListOperationLogsReq struct {
 
 func (x *ListOperationLogsReq) Reset() {
 	*x = ListOperationLogsReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[12]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -951,7 +837,7 @@ func (x *ListOperationLogsReq) String() string {
 func (*ListOperationLogsReq) ProtoMessage() {}
 
 func (x *ListOperationLogsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[12]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -964,7 +850,7 @@ func (x *ListOperationLogsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOperationLogsReq.ProtoReflect.Descriptor instead.
 func (*ListOperationLogsReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{12}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *ListOperationLogsReq) GetAdminId() int64 {
@@ -1036,7 +922,7 @@ type ListOperationLogsRes struct {
 
 func (x *ListOperationLogsRes) Reset() {
 	*x = ListOperationLogsRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[13]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1048,7 +934,7 @@ func (x *ListOperationLogsRes) String() string {
 func (*ListOperationLogsRes) ProtoMessage() {}
 
 func (x *ListOperationLogsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[13]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1061,7 +947,7 @@ func (x *ListOperationLogsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOperationLogsRes.ProtoReflect.Descriptor instead.
 func (*ListOperationLogsRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{13}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListOperationLogsRes) GetItems() []*OperationLogItem {
@@ -1107,7 +993,7 @@ type WriteLoginLogReq struct {
 
 func (x *WriteLoginLogReq) Reset() {
 	*x = WriteLoginLogReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[14]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1119,7 +1005,7 @@ func (x *WriteLoginLogReq) String() string {
 func (*WriteLoginLogReq) ProtoMessage() {}
 
 func (x *WriteLoginLogReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[14]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1132,7 +1018,7 @@ func (x *WriteLoginLogReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WriteLoginLogReq.ProtoReflect.Descriptor instead.
 func (*WriteLoginLogReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{14}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *WriteLoginLogReq) GetAdminId() int64 {
@@ -1187,7 +1073,7 @@ type WriteLoginLogRes struct {
 
 func (x *WriteLoginLogRes) Reset() {
 	*x = WriteLoginLogRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[15]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1199,7 +1085,7 @@ func (x *WriteLoginLogRes) String() string {
 func (*WriteLoginLogRes) ProtoMessage() {}
 
 func (x *WriteLoginLogRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[15]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1212,7 +1098,7 @@ func (x *WriteLoginLogRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WriteLoginLogRes.ProtoReflect.Descriptor instead.
 func (*WriteLoginLogRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{15}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *WriteLoginLogRes) GetLogId() int64 {
@@ -1239,7 +1125,7 @@ type LoginLogItem struct {
 
 func (x *LoginLogItem) Reset() {
 	*x = LoginLogItem{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[16]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1251,7 +1137,7 @@ func (x *LoginLogItem) String() string {
 func (*LoginLogItem) ProtoMessage() {}
 
 func (x *LoginLogItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[16]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1264,7 +1150,7 @@ func (x *LoginLogItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginLogItem.ProtoReflect.Descriptor instead.
 func (*LoginLogItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{16}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *LoginLogItem) GetId() int64 {
@@ -1339,7 +1225,7 @@ type ListLoginLogsReq struct {
 
 func (x *ListLoginLogsReq) Reset() {
 	*x = ListLoginLogsReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[17]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1351,7 +1237,7 @@ func (x *ListLoginLogsReq) String() string {
 func (*ListLoginLogsReq) ProtoMessage() {}
 
 func (x *ListLoginLogsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[17]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1364,7 +1250,7 @@ func (x *ListLoginLogsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLoginLogsReq.ProtoReflect.Descriptor instead.
 func (*ListLoginLogsReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{17}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListLoginLogsReq) GetUsername() string {
@@ -1429,7 +1315,7 @@ type ListLoginLogsRes struct {
 
 func (x *ListLoginLogsRes) Reset() {
 	*x = ListLoginLogsRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[18]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1441,7 +1327,7 @@ func (x *ListLoginLogsRes) String() string {
 func (*ListLoginLogsRes) ProtoMessage() {}
 
 func (x *ListLoginLogsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[18]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1454,7 +1340,7 @@ func (x *ListLoginLogsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListLoginLogsRes.ProtoReflect.Descriptor instead.
 func (*ListLoginLogsRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{18}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ListLoginLogsRes) GetItems() []*LoginLogItem {
@@ -1499,7 +1385,7 @@ type RoleItem struct {
 
 func (x *RoleItem) Reset() {
 	*x = RoleItem{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[19]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1511,7 +1397,7 @@ func (x *RoleItem) String() string {
 func (*RoleItem) ProtoMessage() {}
 
 func (x *RoleItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[19]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1524,7 +1410,7 @@ func (x *RoleItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoleItem.ProtoReflect.Descriptor instead.
 func (*RoleItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{19}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *RoleItem) GetId() int64 {
@@ -1573,7 +1459,7 @@ type ListRolesReq struct {
 
 func (x *ListRolesReq) Reset() {
 	*x = ListRolesReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[20]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1585,7 +1471,7 @@ func (x *ListRolesReq) String() string {
 func (*ListRolesReq) ProtoMessage() {}
 
 func (x *ListRolesReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[20]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1598,7 +1484,7 @@ func (x *ListRolesReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRolesReq.ProtoReflect.Descriptor instead.
 func (*ListRolesReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{20}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ListRolesReq) GetPage() uint32 {
@@ -1628,7 +1514,7 @@ type ListRolesRes struct {
 
 func (x *ListRolesRes) Reset() {
 	*x = ListRolesRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[21]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1640,7 +1526,7 @@ func (x *ListRolesRes) String() string {
 func (*ListRolesRes) ProtoMessage() {}
 
 func (x *ListRolesRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[21]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1653,7 +1539,7 @@ func (x *ListRolesRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRolesRes.ProtoReflect.Descriptor instead.
 func (*ListRolesRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{21}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListRolesRes) GetItems() []*RoleItem {
@@ -1694,7 +1580,7 @@ type GetRoleDetailReq struct {
 
 func (x *GetRoleDetailReq) Reset() {
 	*x = GetRoleDetailReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[22]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1706,7 +1592,7 @@ func (x *GetRoleDetailReq) String() string {
 func (*GetRoleDetailReq) ProtoMessage() {}
 
 func (x *GetRoleDetailReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[22]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1719,7 +1605,7 @@ func (x *GetRoleDetailReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRoleDetailReq.ProtoReflect.Descriptor instead.
 func (*GetRoleDetailReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{22}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetRoleDetailReq) GetId() int64 {
@@ -1740,7 +1626,7 @@ type GetRoleDetailRes struct {
 
 func (x *GetRoleDetailRes) Reset() {
 	*x = GetRoleDetailRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[23]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1752,7 +1638,7 @@ func (x *GetRoleDetailRes) String() string {
 func (*GetRoleDetailRes) ProtoMessage() {}
 
 func (x *GetRoleDetailRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[23]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1765,7 +1651,7 @@ func (x *GetRoleDetailRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRoleDetailRes.ProtoReflect.Descriptor instead.
 func (*GetRoleDetailRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{23}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *GetRoleDetailRes) GetRole() *RoleItem {
@@ -1795,7 +1681,7 @@ type CreateRoleReq struct {
 
 func (x *CreateRoleReq) Reset() {
 	*x = CreateRoleReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[24]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1807,7 +1693,7 @@ func (x *CreateRoleReq) String() string {
 func (*CreateRoleReq) ProtoMessage() {}
 
 func (x *CreateRoleReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[24]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1820,7 +1706,7 @@ func (x *CreateRoleReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRoleReq.ProtoReflect.Descriptor instead.
 func (*CreateRoleReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{24}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *CreateRoleReq) GetCode() string {
@@ -1861,7 +1747,7 @@ type CreateRoleRes struct {
 
 func (x *CreateRoleRes) Reset() {
 	*x = CreateRoleRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[25]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1873,7 +1759,7 @@ func (x *CreateRoleRes) String() string {
 func (*CreateRoleRes) ProtoMessage() {}
 
 func (x *CreateRoleRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[25]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1886,7 +1772,7 @@ func (x *CreateRoleRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRoleRes.ProtoReflect.Descriptor instead.
 func (*CreateRoleRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{25}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *CreateRoleRes) GetId() int64 {
@@ -1909,7 +1795,7 @@ type UpdateRoleReq struct {
 
 func (x *UpdateRoleReq) Reset() {
 	*x = UpdateRoleReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[26]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1921,7 +1807,7 @@ func (x *UpdateRoleReq) String() string {
 func (*UpdateRoleReq) ProtoMessage() {}
 
 func (x *UpdateRoleReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[26]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1934,7 +1820,7 @@ func (x *UpdateRoleReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateRoleReq.ProtoReflect.Descriptor instead.
 func (*UpdateRoleReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{26}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *UpdateRoleReq) GetId() int64 {
@@ -1977,7 +1863,7 @@ type SetRolePermissionsReq struct {
 
 func (x *SetRolePermissionsReq) Reset() {
 	*x = SetRolePermissionsReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[27]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1989,7 +1875,7 @@ func (x *SetRolePermissionsReq) String() string {
 func (*SetRolePermissionsReq) ProtoMessage() {}
 
 func (x *SetRolePermissionsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[27]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2002,7 +1888,7 @@ func (x *SetRolePermissionsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetRolePermissionsReq.ProtoReflect.Descriptor instead.
 func (*SetRolePermissionsReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{27}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *SetRolePermissionsReq) GetRoleId() int64 {
@@ -2036,7 +1922,7 @@ type SetRolePermissionsRes struct {
 
 func (x *SetRolePermissionsRes) Reset() {
 	*x = SetRolePermissionsRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[28]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2048,7 +1934,7 @@ func (x *SetRolePermissionsRes) String() string {
 func (*SetRolePermissionsRes) ProtoMessage() {}
 
 func (x *SetRolePermissionsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[28]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2061,7 +1947,7 @@ func (x *SetRolePermissionsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetRolePermissionsRes.ProtoReflect.Descriptor instead.
 func (*SetRolePermissionsRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{28}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *SetRolePermissionsRes) GetAffectedAdminIds() []int64 {
@@ -2082,7 +1968,7 @@ type DeleteRoleReq struct {
 
 func (x *DeleteRoleReq) Reset() {
 	*x = DeleteRoleReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[29]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2094,7 +1980,7 @@ func (x *DeleteRoleReq) String() string {
 func (*DeleteRoleReq) ProtoMessage() {}
 
 func (x *DeleteRoleReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[29]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2107,7 +1993,7 @@ func (x *DeleteRoleReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRoleReq.ProtoReflect.Descriptor instead.
 func (*DeleteRoleReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{29}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *DeleteRoleReq) GetId() int64 {
@@ -2134,7 +2020,7 @@ type DeleteRoleRes struct {
 
 func (x *DeleteRoleRes) Reset() {
 	*x = DeleteRoleRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[30]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2146,7 +2032,7 @@ func (x *DeleteRoleRes) String() string {
 func (*DeleteRoleRes) ProtoMessage() {}
 
 func (x *DeleteRoleRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[30]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2159,7 +2045,7 @@ func (x *DeleteRoleRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRoleRes.ProtoReflect.Descriptor instead.
 func (*DeleteRoleRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{30}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *DeleteRoleRes) GetAffectedAdminIds() []int64 {
@@ -2184,7 +2070,7 @@ type AdminListItem struct {
 
 func (x *AdminListItem) Reset() {
 	*x = AdminListItem{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[31]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2196,7 +2082,7 @@ func (x *AdminListItem) String() string {
 func (*AdminListItem) ProtoMessage() {}
 
 func (x *AdminListItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[31]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2209,7 +2095,7 @@ func (x *AdminListItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListItem.ProtoReflect.Descriptor instead.
 func (*AdminListItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{31}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *AdminListItem) GetId() int64 {
@@ -2266,7 +2152,7 @@ type ListAdminsReq struct {
 
 func (x *ListAdminsReq) Reset() {
 	*x = ListAdminsReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[32]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2278,7 +2164,7 @@ func (x *ListAdminsReq) String() string {
 func (*ListAdminsReq) ProtoMessage() {}
 
 func (x *ListAdminsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[32]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2291,7 +2177,7 @@ func (x *ListAdminsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAdminsReq.ProtoReflect.Descriptor instead.
 func (*ListAdminsReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{32}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ListAdminsReq) GetStatus() AdminStatus {
@@ -2328,7 +2214,7 @@ type ListAdminsRes struct {
 
 func (x *ListAdminsRes) Reset() {
 	*x = ListAdminsRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[33]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2340,7 +2226,7 @@ func (x *ListAdminsRes) String() string {
 func (*ListAdminsRes) ProtoMessage() {}
 
 func (x *ListAdminsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[33]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2353,7 +2239,7 @@ func (x *ListAdminsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAdminsRes.ProtoReflect.Descriptor instead.
 func (*ListAdminsRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{33}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ListAdminsRes) GetItems() []*AdminListItem {
@@ -2394,7 +2280,7 @@ type GetAdminDetailReq struct {
 
 func (x *GetAdminDetailReq) Reset() {
 	*x = GetAdminDetailReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[34]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2406,7 +2292,7 @@ func (x *GetAdminDetailReq) String() string {
 func (*GetAdminDetailReq) ProtoMessage() {}
 
 func (x *GetAdminDetailReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[34]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2419,7 +2305,7 @@ func (x *GetAdminDetailReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAdminDetailReq.ProtoReflect.Descriptor instead.
 func (*GetAdminDetailReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{34}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *GetAdminDetailReq) GetId() int64 {
@@ -2440,7 +2326,7 @@ type GetAdminDetailRes struct {
 
 func (x *GetAdminDetailRes) Reset() {
 	*x = GetAdminDetailRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[35]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2452,7 +2338,7 @@ func (x *GetAdminDetailRes) String() string {
 func (*GetAdminDetailRes) ProtoMessage() {}
 
 func (x *GetAdminDetailRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[35]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2465,7 +2351,7 @@ func (x *GetAdminDetailRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAdminDetailRes.ProtoReflect.Descriptor instead.
 func (*GetAdminDetailRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{35}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetAdminDetailRes) GetAdmin() *AdminListItem {
@@ -2496,7 +2382,7 @@ type CreateAdminReq struct {
 
 func (x *CreateAdminReq) Reset() {
 	*x = CreateAdminReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[36]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2508,7 +2394,7 @@ func (x *CreateAdminReq) String() string {
 func (*CreateAdminReq) ProtoMessage() {}
 
 func (x *CreateAdminReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[36]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2521,7 +2407,7 @@ func (x *CreateAdminReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAdminReq.ProtoReflect.Descriptor instead.
 func (*CreateAdminReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{36}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *CreateAdminReq) GetUsername() string {
@@ -2569,7 +2455,7 @@ type CreateAdminRes struct {
 
 func (x *CreateAdminRes) Reset() {
 	*x = CreateAdminRes{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[37]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2581,7 +2467,7 @@ func (x *CreateAdminRes) String() string {
 func (*CreateAdminRes) ProtoMessage() {}
 
 func (x *CreateAdminRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[37]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2594,7 +2480,7 @@ func (x *CreateAdminRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAdminRes.ProtoReflect.Descriptor instead.
 func (*CreateAdminRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{37}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *CreateAdminRes) GetId() int64 {
@@ -2616,7 +2502,7 @@ type UpdateAdminReq struct {
 
 func (x *UpdateAdminReq) Reset() {
 	*x = UpdateAdminReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[38]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2628,7 +2514,7 @@ func (x *UpdateAdminReq) String() string {
 func (*UpdateAdminReq) ProtoMessage() {}
 
 func (x *UpdateAdminReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[38]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2641,7 +2527,7 @@ func (x *UpdateAdminReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateAdminReq.ProtoReflect.Descriptor instead.
 func (*UpdateAdminReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{38}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *UpdateAdminReq) GetId() int64 {
@@ -2677,7 +2563,7 @@ type SetAdminStatusReq struct {
 
 func (x *SetAdminStatusReq) Reset() {
 	*x = SetAdminStatusReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[39]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2689,7 +2575,7 @@ func (x *SetAdminStatusReq) String() string {
 func (*SetAdminStatusReq) ProtoMessage() {}
 
 func (x *SetAdminStatusReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[39]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2702,7 +2588,7 @@ func (x *SetAdminStatusReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetAdminStatusReq.ProtoReflect.Descriptor instead.
 func (*SetAdminStatusReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{39}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *SetAdminStatusReq) GetId() int64 {
@@ -2738,7 +2624,7 @@ type ResetAdminPasswordReq struct {
 
 func (x *ResetAdminPasswordReq) Reset() {
 	*x = ResetAdminPasswordReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[40]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2750,7 +2636,7 @@ func (x *ResetAdminPasswordReq) String() string {
 func (*ResetAdminPasswordReq) ProtoMessage() {}
 
 func (x *ResetAdminPasswordReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[40]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2763,7 +2649,7 @@ func (x *ResetAdminPasswordReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetAdminPasswordReq.ProtoReflect.Descriptor instead.
 func (*ResetAdminPasswordReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{40}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *ResetAdminPasswordReq) GetId() int64 {
@@ -2799,7 +2685,7 @@ type SetAdminRolesReq struct {
 
 func (x *SetAdminRolesReq) Reset() {
 	*x = SetAdminRolesReq{}
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[41]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2811,7 +2697,7 @@ func (x *SetAdminRolesReq) String() string {
 func (*SetAdminRolesReq) ProtoMessage() {}
 
 func (x *SetAdminRolesReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[41]
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2824,7 +2710,7 @@ func (x *SetAdminRolesReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetAdminRolesReq.ProtoReflect.Descriptor instead.
 func (*SetAdminRolesReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{41}
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *SetAdminRolesReq) GetAdminId() int64 {
@@ -2848,18 +2734,141 @@ func (x *SetAdminRolesReq) GetOperatorId() int64 {
 	return 0
 }
 
+// LoginReq 管理员登录
+type LoginReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginReq) Reset() {
+	*x = LoginReq{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[40]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginReq) ProtoMessage() {}
+
+func (x *LoginReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[40]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginReq.ProtoReflect.Descriptor instead.
+func (*LoginReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *LoginReq) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *LoginReq) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+// LoginRes 登录结果
+type LoginRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
+	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	Token         string                 `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`
+	TtlSeconds    int64                  `protobuf:"varint,4,opt,name=ttl_seconds,json=ttlSeconds,proto3" json:"ttl_seconds,omitempty"`
+	Permissions   []string               `protobuf:"bytes,5,rep,name=permissions,proto3" json:"permissions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LoginRes) Reset() {
+	*x = LoginRes{}
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[41]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LoginRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoginRes) ProtoMessage() {}
+
+func (x *LoginRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_admin_proto_admin_proto_msgTypes[41]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoginRes.ProtoReflect.Descriptor instead.
+func (*LoginRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_admin_proto_admin_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *LoginRes) GetAdminId() int64 {
+	if x != nil {
+		return x.AdminId
+	}
+	return 0
+}
+
+func (x *LoginRes) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
+func (x *LoginRes) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *LoginRes) GetTtlSeconds() int64 {
+	if x != nil {
+		return x.TtlSeconds
+	}
+	return 0
+}
+
+func (x *LoginRes) GetPermissions() []string {
+	if x != nil {
+		return x.Permissions
+	}
+	return nil
+}
+
 var File_app_rpc_admin_proto_admin_proto protoreflect.FileDescriptor
 
 const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\n" +
-	"\x1fapp/rpc/admin/proto/admin.proto\x12\rranfeed.admin\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19pkg/commonpb/common.proto\"N\n" +
-	"\x14AuthenticateAdminReq\x12\x1a\n" +
-	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x82\x01\n" +
-	"\x14AuthenticateAdminRes\x12\x19\n" +
-	"\badmin_id\x18\x01 \x01(\x03R\aadminId\x12\x1a\n" +
-	"\bnickname\x18\x02 \x01(\tR\bnickname\x123\n" +
-	"\x06status\x18\x03 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status\"(\n" +
+	"\x1fapp/rpc/admin/proto/admin.proto\x12\rranfeed.admin\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19pkg/commonpb/common.proto\"(\n" +
 	"\vGetAdminReq\x12\x19\n" +
 	"\badmin_id\x18\x01 \x01(\x03R\aadminId\"\x95\x01\n" +
 	"\vGetAdminRes\x12\x19\n" +
@@ -3055,7 +3064,17 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\badmin_id\x18\x01 \x01(\x03R\aadminId\x12\x19\n" +
 	"\brole_ids\x18\x02 \x03(\x03R\aroleIds\x12\x1f\n" +
 	"\voperator_id\x18\x03 \x01(\x03R\n" +
-	"operatorId*`\n" +
+	"operatorId\"B\n" +
+	"\bLoginReq\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x9a\x01\n" +
+	"\bLoginRes\x12\x19\n" +
+	"\badmin_id\x18\x01 \x01(\x03R\aadminId\x12\x1a\n" +
+	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x14\n" +
+	"\x05token\x18\x03 \x01(\tR\x05token\x12\x1f\n" +
+	"\vttl_seconds\x18\x04 \x01(\x03R\n" +
+	"ttlSeconds\x12 \n" +
+	"\vpermissions\x18\x05 \x03(\tR\vpermissions*`\n" +
 	"\vAdminStatus\x12\x1c\n" +
 	"\x18ADMIN_STATUS_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14ADMIN_STATUS_ENABLED\x10\n" +
@@ -3068,9 +3087,9 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\vLoginStatus\x12\x1c\n" +
 	"\x18LOGIN_STATUS_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14LOGIN_STATUS_SUCCESS\x10\x01\x12\x15\n" +
-	"\x11LOGIN_STATUS_FAIL\x10\x022\x9d\x02\n" +
-	"\x10AdminAuthService\x12]\n" +
-	"\x11AuthenticateAdmin\x12#.ranfeed.admin.AuthenticateAdminReq\x1a#.ranfeed.admin.AuthenticateAdminRes\x12B\n" +
+	"\x11LOGIN_STATUS_FAIL\x10\x022\xf9\x01\n" +
+	"\x10AdminAuthService\x129\n" +
+	"\x05Login\x12\x17.ranfeed.admin.LoginReq\x1a\x17.ranfeed.admin.LoginRes\x12B\n" +
 	"\bGetAdmin\x12\x1a.ranfeed.admin.GetAdminReq\x1a\x1a.ranfeed.admin.GetAdminRes\x12f\n" +
 	"\x14ListAdminPermissions\x12&.ranfeed.admin.ListAdminPermissionsReq\x1a&.ranfeed.admin.ListAdminPermissionsRes2\xf7\x02\n" +
 	"\x11AdminAuditService\x12]\n" +
@@ -3118,126 +3137,125 @@ var file_app_rpc_admin_proto_admin_proto_goTypes = []any{
 	(AdminStatus)(0),                // 0: ranfeed.admin.AdminStatus
 	(OperateStatus)(0),              // 1: ranfeed.admin.OperateStatus
 	(LoginStatus)(0),                // 2: ranfeed.admin.LoginStatus
-	(*AuthenticateAdminReq)(nil),    // 3: ranfeed.admin.AuthenticateAdminReq
-	(*AuthenticateAdminRes)(nil),    // 4: ranfeed.admin.AuthenticateAdminRes
-	(*GetAdminReq)(nil),             // 5: ranfeed.admin.GetAdminReq
-	(*GetAdminRes)(nil),             // 6: ranfeed.admin.GetAdminRes
-	(*ListAdminPermissionsReq)(nil), // 7: ranfeed.admin.ListAdminPermissionsReq
-	(*ListAdminPermissionsRes)(nil), // 8: ranfeed.admin.ListAdminPermissionsRes
-	(*WriteOperationLogReq)(nil),    // 9: ranfeed.admin.WriteOperationLogReq
-	(*WriteOperationLogRes)(nil),    // 10: ranfeed.admin.WriteOperationLogRes
-	(*PermissionItem)(nil),          // 11: ranfeed.admin.PermissionItem
-	(*ListPermissionsReq)(nil),      // 12: ranfeed.admin.ListPermissionsReq
-	(*ListPermissionsRes)(nil),      // 13: ranfeed.admin.ListPermissionsRes
-	(*OperationLogItem)(nil),        // 14: ranfeed.admin.OperationLogItem
-	(*ListOperationLogsReq)(nil),    // 15: ranfeed.admin.ListOperationLogsReq
-	(*ListOperationLogsRes)(nil),    // 16: ranfeed.admin.ListOperationLogsRes
-	(*WriteLoginLogReq)(nil),        // 17: ranfeed.admin.WriteLoginLogReq
-	(*WriteLoginLogRes)(nil),        // 18: ranfeed.admin.WriteLoginLogRes
-	(*LoginLogItem)(nil),            // 19: ranfeed.admin.LoginLogItem
-	(*ListLoginLogsReq)(nil),        // 20: ranfeed.admin.ListLoginLogsReq
-	(*ListLoginLogsRes)(nil),        // 21: ranfeed.admin.ListLoginLogsRes
-	(*RoleItem)(nil),                // 22: ranfeed.admin.RoleItem
-	(*ListRolesReq)(nil),            // 23: ranfeed.admin.ListRolesReq
-	(*ListRolesRes)(nil),            // 24: ranfeed.admin.ListRolesRes
-	(*GetRoleDetailReq)(nil),        // 25: ranfeed.admin.GetRoleDetailReq
-	(*GetRoleDetailRes)(nil),        // 26: ranfeed.admin.GetRoleDetailRes
-	(*CreateRoleReq)(nil),           // 27: ranfeed.admin.CreateRoleReq
-	(*CreateRoleRes)(nil),           // 28: ranfeed.admin.CreateRoleRes
-	(*UpdateRoleReq)(nil),           // 29: ranfeed.admin.UpdateRoleReq
-	(*SetRolePermissionsReq)(nil),   // 30: ranfeed.admin.SetRolePermissionsReq
-	(*SetRolePermissionsRes)(nil),   // 31: ranfeed.admin.SetRolePermissionsRes
-	(*DeleteRoleReq)(nil),           // 32: ranfeed.admin.DeleteRoleReq
-	(*DeleteRoleRes)(nil),           // 33: ranfeed.admin.DeleteRoleRes
-	(*AdminListItem)(nil),           // 34: ranfeed.admin.AdminListItem
-	(*ListAdminsReq)(nil),           // 35: ranfeed.admin.ListAdminsReq
-	(*ListAdminsRes)(nil),           // 36: ranfeed.admin.ListAdminsRes
-	(*GetAdminDetailReq)(nil),       // 37: ranfeed.admin.GetAdminDetailReq
-	(*GetAdminDetailRes)(nil),       // 38: ranfeed.admin.GetAdminDetailRes
-	(*CreateAdminReq)(nil),          // 39: ranfeed.admin.CreateAdminReq
-	(*CreateAdminRes)(nil),          // 40: ranfeed.admin.CreateAdminRes
-	(*UpdateAdminReq)(nil),          // 41: ranfeed.admin.UpdateAdminReq
-	(*SetAdminStatusReq)(nil),       // 42: ranfeed.admin.SetAdminStatusReq
-	(*ResetAdminPasswordReq)(nil),   // 43: ranfeed.admin.ResetAdminPasswordReq
-	(*SetAdminRolesReq)(nil),        // 44: ranfeed.admin.SetAdminRolesReq
+	(*GetAdminReq)(nil),             // 3: ranfeed.admin.GetAdminReq
+	(*GetAdminRes)(nil),             // 4: ranfeed.admin.GetAdminRes
+	(*ListAdminPermissionsReq)(nil), // 5: ranfeed.admin.ListAdminPermissionsReq
+	(*ListAdminPermissionsRes)(nil), // 6: ranfeed.admin.ListAdminPermissionsRes
+	(*WriteOperationLogReq)(nil),    // 7: ranfeed.admin.WriteOperationLogReq
+	(*WriteOperationLogRes)(nil),    // 8: ranfeed.admin.WriteOperationLogRes
+	(*PermissionItem)(nil),          // 9: ranfeed.admin.PermissionItem
+	(*ListPermissionsReq)(nil),      // 10: ranfeed.admin.ListPermissionsReq
+	(*ListPermissionsRes)(nil),      // 11: ranfeed.admin.ListPermissionsRes
+	(*OperationLogItem)(nil),        // 12: ranfeed.admin.OperationLogItem
+	(*ListOperationLogsReq)(nil),    // 13: ranfeed.admin.ListOperationLogsReq
+	(*ListOperationLogsRes)(nil),    // 14: ranfeed.admin.ListOperationLogsRes
+	(*WriteLoginLogReq)(nil),        // 15: ranfeed.admin.WriteLoginLogReq
+	(*WriteLoginLogRes)(nil),        // 16: ranfeed.admin.WriteLoginLogRes
+	(*LoginLogItem)(nil),            // 17: ranfeed.admin.LoginLogItem
+	(*ListLoginLogsReq)(nil),        // 18: ranfeed.admin.ListLoginLogsReq
+	(*ListLoginLogsRes)(nil),        // 19: ranfeed.admin.ListLoginLogsRes
+	(*RoleItem)(nil),                // 20: ranfeed.admin.RoleItem
+	(*ListRolesReq)(nil),            // 21: ranfeed.admin.ListRolesReq
+	(*ListRolesRes)(nil),            // 22: ranfeed.admin.ListRolesRes
+	(*GetRoleDetailReq)(nil),        // 23: ranfeed.admin.GetRoleDetailReq
+	(*GetRoleDetailRes)(nil),        // 24: ranfeed.admin.GetRoleDetailRes
+	(*CreateRoleReq)(nil),           // 25: ranfeed.admin.CreateRoleReq
+	(*CreateRoleRes)(nil),           // 26: ranfeed.admin.CreateRoleRes
+	(*UpdateRoleReq)(nil),           // 27: ranfeed.admin.UpdateRoleReq
+	(*SetRolePermissionsReq)(nil),   // 28: ranfeed.admin.SetRolePermissionsReq
+	(*SetRolePermissionsRes)(nil),   // 29: ranfeed.admin.SetRolePermissionsRes
+	(*DeleteRoleReq)(nil),           // 30: ranfeed.admin.DeleteRoleReq
+	(*DeleteRoleRes)(nil),           // 31: ranfeed.admin.DeleteRoleRes
+	(*AdminListItem)(nil),           // 32: ranfeed.admin.AdminListItem
+	(*ListAdminsReq)(nil),           // 33: ranfeed.admin.ListAdminsReq
+	(*ListAdminsRes)(nil),           // 34: ranfeed.admin.ListAdminsRes
+	(*GetAdminDetailReq)(nil),       // 35: ranfeed.admin.GetAdminDetailReq
+	(*GetAdminDetailRes)(nil),       // 36: ranfeed.admin.GetAdminDetailRes
+	(*CreateAdminReq)(nil),          // 37: ranfeed.admin.CreateAdminReq
+	(*CreateAdminRes)(nil),          // 38: ranfeed.admin.CreateAdminRes
+	(*UpdateAdminReq)(nil),          // 39: ranfeed.admin.UpdateAdminReq
+	(*SetAdminStatusReq)(nil),       // 40: ranfeed.admin.SetAdminStatusReq
+	(*ResetAdminPasswordReq)(nil),   // 41: ranfeed.admin.ResetAdminPasswordReq
+	(*SetAdminRolesReq)(nil),        // 42: ranfeed.admin.SetAdminRolesReq
+	(*LoginReq)(nil),                // 43: ranfeed.admin.LoginReq
+	(*LoginRes)(nil),                // 44: ranfeed.admin.LoginRes
 	(*commonpb.EnumValue)(nil),      // 45: ranfeed.commonpb.EnumValue
 	(*timestamppb.Timestamp)(nil),   // 46: google.protobuf.Timestamp
 	(*emptypb.Empty)(nil),           // 47: google.protobuf.Empty
 }
 var file_app_rpc_admin_proto_admin_proto_depIdxs = []int32{
-	45, // 0: ranfeed.admin.AuthenticateAdminRes.status:type_name -> ranfeed.commonpb.EnumValue
-	45, // 1: ranfeed.admin.GetAdminRes.status:type_name -> ranfeed.commonpb.EnumValue
-	1,  // 2: ranfeed.admin.WriteOperationLogReq.status:type_name -> ranfeed.admin.OperateStatus
-	11, // 3: ranfeed.admin.ListPermissionsRes.items:type_name -> ranfeed.admin.PermissionItem
-	45, // 4: ranfeed.admin.OperationLogItem.status:type_name -> ranfeed.commonpb.EnumValue
-	46, // 5: ranfeed.admin.OperationLogItem.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 6: ranfeed.admin.ListOperationLogsReq.status:type_name -> ranfeed.admin.OperateStatus
-	46, // 7: ranfeed.admin.ListOperationLogsReq.start_time:type_name -> google.protobuf.Timestamp
-	46, // 8: ranfeed.admin.ListOperationLogsReq.end_time:type_name -> google.protobuf.Timestamp
-	14, // 9: ranfeed.admin.ListOperationLogsRes.items:type_name -> ranfeed.admin.OperationLogItem
-	2,  // 10: ranfeed.admin.WriteLoginLogReq.status:type_name -> ranfeed.admin.LoginStatus
-	45, // 11: ranfeed.admin.LoginLogItem.status:type_name -> ranfeed.commonpb.EnumValue
-	46, // 12: ranfeed.admin.LoginLogItem.created_at:type_name -> google.protobuf.Timestamp
-	2,  // 13: ranfeed.admin.ListLoginLogsReq.status:type_name -> ranfeed.admin.LoginStatus
-	46, // 14: ranfeed.admin.ListLoginLogsReq.start_time:type_name -> google.protobuf.Timestamp
-	46, // 15: ranfeed.admin.ListLoginLogsReq.end_time:type_name -> google.protobuf.Timestamp
-	19, // 16: ranfeed.admin.ListLoginLogsRes.items:type_name -> ranfeed.admin.LoginLogItem
-	46, // 17: ranfeed.admin.RoleItem.created_at:type_name -> google.protobuf.Timestamp
-	22, // 18: ranfeed.admin.ListRolesRes.items:type_name -> ranfeed.admin.RoleItem
-	22, // 19: ranfeed.admin.GetRoleDetailRes.role:type_name -> ranfeed.admin.RoleItem
-	45, // 20: ranfeed.admin.AdminListItem.status:type_name -> ranfeed.commonpb.EnumValue
-	46, // 21: ranfeed.admin.AdminListItem.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 22: ranfeed.admin.ListAdminsReq.status:type_name -> ranfeed.admin.AdminStatus
-	34, // 23: ranfeed.admin.ListAdminsRes.items:type_name -> ranfeed.admin.AdminListItem
-	34, // 24: ranfeed.admin.GetAdminDetailRes.admin:type_name -> ranfeed.admin.AdminListItem
-	0,  // 25: ranfeed.admin.SetAdminStatusReq.status:type_name -> ranfeed.admin.AdminStatus
-	3,  // 26: ranfeed.admin.AdminAuthService.AuthenticateAdmin:input_type -> ranfeed.admin.AuthenticateAdminReq
-	5,  // 27: ranfeed.admin.AdminAuthService.GetAdmin:input_type -> ranfeed.admin.GetAdminReq
-	7,  // 28: ranfeed.admin.AdminAuthService.ListAdminPermissions:input_type -> ranfeed.admin.ListAdminPermissionsReq
-	9,  // 29: ranfeed.admin.AdminAuditService.WriteOperationLog:input_type -> ranfeed.admin.WriteOperationLogReq
-	15, // 30: ranfeed.admin.AdminAuditService.ListOperationLogs:input_type -> ranfeed.admin.ListOperationLogsReq
-	17, // 31: ranfeed.admin.AdminAuditService.WriteLoginLog:input_type -> ranfeed.admin.WriteLoginLogReq
-	20, // 32: ranfeed.admin.AdminAuditService.ListLoginLogs:input_type -> ranfeed.admin.ListLoginLogsReq
-	12, // 33: ranfeed.admin.AdminPermissionService.ListPermissions:input_type -> ranfeed.admin.ListPermissionsReq
-	23, // 34: ranfeed.admin.AdminRoleService.ListRoles:input_type -> ranfeed.admin.ListRolesReq
-	25, // 35: ranfeed.admin.AdminRoleService.GetRoleDetail:input_type -> ranfeed.admin.GetRoleDetailReq
-	27, // 36: ranfeed.admin.AdminRoleService.CreateRole:input_type -> ranfeed.admin.CreateRoleReq
-	29, // 37: ranfeed.admin.AdminRoleService.UpdateRole:input_type -> ranfeed.admin.UpdateRoleReq
-	30, // 38: ranfeed.admin.AdminRoleService.SetRolePermissions:input_type -> ranfeed.admin.SetRolePermissionsReq
-	32, // 39: ranfeed.admin.AdminRoleService.DeleteRole:input_type -> ranfeed.admin.DeleteRoleReq
-	35, // 40: ranfeed.admin.AdminUserService.ListAdmins:input_type -> ranfeed.admin.ListAdminsReq
-	37, // 41: ranfeed.admin.AdminUserService.GetAdminDetail:input_type -> ranfeed.admin.GetAdminDetailReq
-	39, // 42: ranfeed.admin.AdminUserService.CreateAdmin:input_type -> ranfeed.admin.CreateAdminReq
-	41, // 43: ranfeed.admin.AdminUserService.UpdateAdmin:input_type -> ranfeed.admin.UpdateAdminReq
-	42, // 44: ranfeed.admin.AdminUserService.SetAdminStatus:input_type -> ranfeed.admin.SetAdminStatusReq
-	43, // 45: ranfeed.admin.AdminUserService.ResetAdminPassword:input_type -> ranfeed.admin.ResetAdminPasswordReq
-	44, // 46: ranfeed.admin.AdminUserService.SetAdminRoles:input_type -> ranfeed.admin.SetAdminRolesReq
-	4,  // 47: ranfeed.admin.AdminAuthService.AuthenticateAdmin:output_type -> ranfeed.admin.AuthenticateAdminRes
-	6,  // 48: ranfeed.admin.AdminAuthService.GetAdmin:output_type -> ranfeed.admin.GetAdminRes
-	8,  // 49: ranfeed.admin.AdminAuthService.ListAdminPermissions:output_type -> ranfeed.admin.ListAdminPermissionsRes
-	10, // 50: ranfeed.admin.AdminAuditService.WriteOperationLog:output_type -> ranfeed.admin.WriteOperationLogRes
-	16, // 51: ranfeed.admin.AdminAuditService.ListOperationLogs:output_type -> ranfeed.admin.ListOperationLogsRes
-	18, // 52: ranfeed.admin.AdminAuditService.WriteLoginLog:output_type -> ranfeed.admin.WriteLoginLogRes
-	21, // 53: ranfeed.admin.AdminAuditService.ListLoginLogs:output_type -> ranfeed.admin.ListLoginLogsRes
-	13, // 54: ranfeed.admin.AdminPermissionService.ListPermissions:output_type -> ranfeed.admin.ListPermissionsRes
-	24, // 55: ranfeed.admin.AdminRoleService.ListRoles:output_type -> ranfeed.admin.ListRolesRes
-	26, // 56: ranfeed.admin.AdminRoleService.GetRoleDetail:output_type -> ranfeed.admin.GetRoleDetailRes
-	28, // 57: ranfeed.admin.AdminRoleService.CreateRole:output_type -> ranfeed.admin.CreateRoleRes
-	47, // 58: ranfeed.admin.AdminRoleService.UpdateRole:output_type -> google.protobuf.Empty
-	31, // 59: ranfeed.admin.AdminRoleService.SetRolePermissions:output_type -> ranfeed.admin.SetRolePermissionsRes
-	33, // 60: ranfeed.admin.AdminRoleService.DeleteRole:output_type -> ranfeed.admin.DeleteRoleRes
-	36, // 61: ranfeed.admin.AdminUserService.ListAdmins:output_type -> ranfeed.admin.ListAdminsRes
-	38, // 62: ranfeed.admin.AdminUserService.GetAdminDetail:output_type -> ranfeed.admin.GetAdminDetailRes
-	40, // 63: ranfeed.admin.AdminUserService.CreateAdmin:output_type -> ranfeed.admin.CreateAdminRes
-	47, // 64: ranfeed.admin.AdminUserService.UpdateAdmin:output_type -> google.protobuf.Empty
-	47, // 65: ranfeed.admin.AdminUserService.SetAdminStatus:output_type -> google.protobuf.Empty
-	47, // 66: ranfeed.admin.AdminUserService.ResetAdminPassword:output_type -> google.protobuf.Empty
-	47, // 67: ranfeed.admin.AdminUserService.SetAdminRoles:output_type -> google.protobuf.Empty
-	47, // [47:68] is the sub-list for method output_type
-	26, // [26:47] is the sub-list for method input_type
-	26, // [26:26] is the sub-list for extension type_name
-	26, // [26:26] is the sub-list for extension extendee
-	0,  // [0:26] is the sub-list for field type_name
+	45, // 0: ranfeed.admin.GetAdminRes.status:type_name -> ranfeed.commonpb.EnumValue
+	1,  // 1: ranfeed.admin.WriteOperationLogReq.status:type_name -> ranfeed.admin.OperateStatus
+	9,  // 2: ranfeed.admin.ListPermissionsRes.items:type_name -> ranfeed.admin.PermissionItem
+	45, // 3: ranfeed.admin.OperationLogItem.status:type_name -> ranfeed.commonpb.EnumValue
+	46, // 4: ranfeed.admin.OperationLogItem.created_at:type_name -> google.protobuf.Timestamp
+	1,  // 5: ranfeed.admin.ListOperationLogsReq.status:type_name -> ranfeed.admin.OperateStatus
+	46, // 6: ranfeed.admin.ListOperationLogsReq.start_time:type_name -> google.protobuf.Timestamp
+	46, // 7: ranfeed.admin.ListOperationLogsReq.end_time:type_name -> google.protobuf.Timestamp
+	12, // 8: ranfeed.admin.ListOperationLogsRes.items:type_name -> ranfeed.admin.OperationLogItem
+	2,  // 9: ranfeed.admin.WriteLoginLogReq.status:type_name -> ranfeed.admin.LoginStatus
+	45, // 10: ranfeed.admin.LoginLogItem.status:type_name -> ranfeed.commonpb.EnumValue
+	46, // 11: ranfeed.admin.LoginLogItem.created_at:type_name -> google.protobuf.Timestamp
+	2,  // 12: ranfeed.admin.ListLoginLogsReq.status:type_name -> ranfeed.admin.LoginStatus
+	46, // 13: ranfeed.admin.ListLoginLogsReq.start_time:type_name -> google.protobuf.Timestamp
+	46, // 14: ranfeed.admin.ListLoginLogsReq.end_time:type_name -> google.protobuf.Timestamp
+	17, // 15: ranfeed.admin.ListLoginLogsRes.items:type_name -> ranfeed.admin.LoginLogItem
+	46, // 16: ranfeed.admin.RoleItem.created_at:type_name -> google.protobuf.Timestamp
+	20, // 17: ranfeed.admin.ListRolesRes.items:type_name -> ranfeed.admin.RoleItem
+	20, // 18: ranfeed.admin.GetRoleDetailRes.role:type_name -> ranfeed.admin.RoleItem
+	45, // 19: ranfeed.admin.AdminListItem.status:type_name -> ranfeed.commonpb.EnumValue
+	46, // 20: ranfeed.admin.AdminListItem.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 21: ranfeed.admin.ListAdminsReq.status:type_name -> ranfeed.admin.AdminStatus
+	32, // 22: ranfeed.admin.ListAdminsRes.items:type_name -> ranfeed.admin.AdminListItem
+	32, // 23: ranfeed.admin.GetAdminDetailRes.admin:type_name -> ranfeed.admin.AdminListItem
+	0,  // 24: ranfeed.admin.SetAdminStatusReq.status:type_name -> ranfeed.admin.AdminStatus
+	43, // 25: ranfeed.admin.AdminAuthService.Login:input_type -> ranfeed.admin.LoginReq
+	3,  // 26: ranfeed.admin.AdminAuthService.GetAdmin:input_type -> ranfeed.admin.GetAdminReq
+	5,  // 27: ranfeed.admin.AdminAuthService.ListAdminPermissions:input_type -> ranfeed.admin.ListAdminPermissionsReq
+	7,  // 28: ranfeed.admin.AdminAuditService.WriteOperationLog:input_type -> ranfeed.admin.WriteOperationLogReq
+	13, // 29: ranfeed.admin.AdminAuditService.ListOperationLogs:input_type -> ranfeed.admin.ListOperationLogsReq
+	15, // 30: ranfeed.admin.AdminAuditService.WriteLoginLog:input_type -> ranfeed.admin.WriteLoginLogReq
+	18, // 31: ranfeed.admin.AdminAuditService.ListLoginLogs:input_type -> ranfeed.admin.ListLoginLogsReq
+	10, // 32: ranfeed.admin.AdminPermissionService.ListPermissions:input_type -> ranfeed.admin.ListPermissionsReq
+	21, // 33: ranfeed.admin.AdminRoleService.ListRoles:input_type -> ranfeed.admin.ListRolesReq
+	23, // 34: ranfeed.admin.AdminRoleService.GetRoleDetail:input_type -> ranfeed.admin.GetRoleDetailReq
+	25, // 35: ranfeed.admin.AdminRoleService.CreateRole:input_type -> ranfeed.admin.CreateRoleReq
+	27, // 36: ranfeed.admin.AdminRoleService.UpdateRole:input_type -> ranfeed.admin.UpdateRoleReq
+	28, // 37: ranfeed.admin.AdminRoleService.SetRolePermissions:input_type -> ranfeed.admin.SetRolePermissionsReq
+	30, // 38: ranfeed.admin.AdminRoleService.DeleteRole:input_type -> ranfeed.admin.DeleteRoleReq
+	33, // 39: ranfeed.admin.AdminUserService.ListAdmins:input_type -> ranfeed.admin.ListAdminsReq
+	35, // 40: ranfeed.admin.AdminUserService.GetAdminDetail:input_type -> ranfeed.admin.GetAdminDetailReq
+	37, // 41: ranfeed.admin.AdminUserService.CreateAdmin:input_type -> ranfeed.admin.CreateAdminReq
+	39, // 42: ranfeed.admin.AdminUserService.UpdateAdmin:input_type -> ranfeed.admin.UpdateAdminReq
+	40, // 43: ranfeed.admin.AdminUserService.SetAdminStatus:input_type -> ranfeed.admin.SetAdminStatusReq
+	41, // 44: ranfeed.admin.AdminUserService.ResetAdminPassword:input_type -> ranfeed.admin.ResetAdminPasswordReq
+	42, // 45: ranfeed.admin.AdminUserService.SetAdminRoles:input_type -> ranfeed.admin.SetAdminRolesReq
+	44, // 46: ranfeed.admin.AdminAuthService.Login:output_type -> ranfeed.admin.LoginRes
+	4,  // 47: ranfeed.admin.AdminAuthService.GetAdmin:output_type -> ranfeed.admin.GetAdminRes
+	6,  // 48: ranfeed.admin.AdminAuthService.ListAdminPermissions:output_type -> ranfeed.admin.ListAdminPermissionsRes
+	8,  // 49: ranfeed.admin.AdminAuditService.WriteOperationLog:output_type -> ranfeed.admin.WriteOperationLogRes
+	14, // 50: ranfeed.admin.AdminAuditService.ListOperationLogs:output_type -> ranfeed.admin.ListOperationLogsRes
+	16, // 51: ranfeed.admin.AdminAuditService.WriteLoginLog:output_type -> ranfeed.admin.WriteLoginLogRes
+	19, // 52: ranfeed.admin.AdminAuditService.ListLoginLogs:output_type -> ranfeed.admin.ListLoginLogsRes
+	11, // 53: ranfeed.admin.AdminPermissionService.ListPermissions:output_type -> ranfeed.admin.ListPermissionsRes
+	22, // 54: ranfeed.admin.AdminRoleService.ListRoles:output_type -> ranfeed.admin.ListRolesRes
+	24, // 55: ranfeed.admin.AdminRoleService.GetRoleDetail:output_type -> ranfeed.admin.GetRoleDetailRes
+	26, // 56: ranfeed.admin.AdminRoleService.CreateRole:output_type -> ranfeed.admin.CreateRoleRes
+	47, // 57: ranfeed.admin.AdminRoleService.UpdateRole:output_type -> google.protobuf.Empty
+	29, // 58: ranfeed.admin.AdminRoleService.SetRolePermissions:output_type -> ranfeed.admin.SetRolePermissionsRes
+	31, // 59: ranfeed.admin.AdminRoleService.DeleteRole:output_type -> ranfeed.admin.DeleteRoleRes
+	34, // 60: ranfeed.admin.AdminUserService.ListAdmins:output_type -> ranfeed.admin.ListAdminsRes
+	36, // 61: ranfeed.admin.AdminUserService.GetAdminDetail:output_type -> ranfeed.admin.GetAdminDetailRes
+	38, // 62: ranfeed.admin.AdminUserService.CreateAdmin:output_type -> ranfeed.admin.CreateAdminRes
+	47, // 63: ranfeed.admin.AdminUserService.UpdateAdmin:output_type -> google.protobuf.Empty
+	47, // 64: ranfeed.admin.AdminUserService.SetAdminStatus:output_type -> google.protobuf.Empty
+	47, // 65: ranfeed.admin.AdminUserService.ResetAdminPassword:output_type -> google.protobuf.Empty
+	47, // 66: ranfeed.admin.AdminUserService.SetAdminRoles:output_type -> google.protobuf.Empty
+	46, // [46:67] is the sub-list for method output_type
+	25, // [25:46] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_app_rpc_admin_proto_admin_proto_init() }

@@ -10,6 +10,7 @@ import (
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	pkgconsts "ran-feed/pkg/consts"
+	"ran-feed/pkg/errorx"
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -42,7 +43,7 @@ func (l *LogoutLogic) Logout() (resp *types.AdminLogoutRes, err error) {
 	}
 	if len(keys) > 0 {
 		if _, err = l.svcCtx.Redis.DelCtx(l.ctx, keys...); err != nil {
-			logx.WithContext(l.ctx).Errorf("删除登录态失败 adminID=%d err=%v", adminID, err)
+			return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除登录态失败"))
 		}
 	}
 

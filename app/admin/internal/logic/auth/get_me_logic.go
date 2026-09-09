@@ -15,6 +15,7 @@ import (
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/mr"
 )
 
 type GetMeLogic struct {
@@ -37,19 +38,40 @@ func (l *GetMeLogic) GetMe() (resp *types.AdminMeRes, err error) {
 		return nil, consts.ErrAdminNotLogin
 	}
 
-	adminRes, err := l.svcCtx.AdminAuthRpc.GetAdmin(l.ctx, &admin.GetAdminReq{AdminId: adminID})
+	var (
+		adminRes    *admin.GetAdminRes
+		permissions []string
+	)
+
+	err = mr.Finish(
+		func() error {
+			res, err := l.svcCtx.AdminAuthRpc.GetAdmin(l.ctx, &admin.GetAdminReq{
+				AdminId: adminID,
+			})
+			if err != nil {
+				return err
+			}
+			if res == nil {
+				return errorx.NewMsg("管理员不存在")
+			}
+			adminRes = res
+			return nil
+		},
+		func() error {
+			permRes, pErr := l.svcCtx.AdminAuthRpc.ListAdminPermissions(l.ctx, &admin.ListAdminPermissionsReq{
+				AdminId: adminID,
+			})
+			if pErr != nil {
+				return err
+			}
+			if permRes != nil {
+				permissions = permRes.GetCodes()
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, err
-	}
-	if adminRes == nil {
-		return nil, errorx.NewMsg("管理员不存在")
-	}
-
-	var permissions []string
-	if permRes, pErr := l.svcCtx.AdminAuthRpc.ListAdminPermissions(l.ctx, &admin.ListAdminPermissionsReq{AdminId: adminID}); pErr != nil {
-		l.Errorf("查询管理员权限失败 adminID=%d err=%v", adminID, pErr)
-	} else if permRes != nil {
-		permissions = permRes.GetCodes()
 	}
 
 	return &types.AdminMeRes{
