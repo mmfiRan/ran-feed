@@ -159,7 +159,23 @@
                       "type": "integer"
                     },
                     "content_type": {
-                      "type": "integer"
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "name",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
                     },
                     "cover_url": {
                       "type": "string"
@@ -471,7 +487,23 @@
                         "type": "integer"
                       },
                       "content_type": {
-                        "type": "integer"
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
                       },
                       "cover_url": {
                         "type": "string"
@@ -577,7 +609,23 @@
                         "type": "integer"
                       },
                       "content_type": {
-                        "type": "integer"
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
                       },
                       "cover_url": {
                         "type": "string"
@@ -686,7 +734,23 @@
                         "type": "integer"
                       },
                       "content_type": {
-                        "type": "integer"
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
                       },
                       "cover_url": {
                         "type": "string"
@@ -795,7 +859,23 @@
                         "type": "integer"
                       },
                       "content_type": {
-                        "type": "integer"
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
                       },
                       "cover_url": {
                         "type": "string"
@@ -2662,9 +2742,9 @@
       }
     }
   },
-  "x-date": "2026-08-28 16:50:26",
+  "x-date": "2026-09-10 17:15:25",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",
-  "x-goctl-version": "1.10.1"
+  "x-goctl-version": "1.10.2"
 }

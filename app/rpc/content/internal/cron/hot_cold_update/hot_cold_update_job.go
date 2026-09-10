@@ -314,8 +314,8 @@ func (j *HotColdUpdateJob) rebuildFromDB(ctx context.Context, calculator hotrank
 	cursorID := int64(0)
 	for {
 		rows, err := j.contentRepo.ListColdUpdateContents(
-			int32(content.ContentStatus_PUBLISHED),
-			int32(content.Visibility_PUBLIC),
+			int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED),
+			int32(content.Visibility_VISIBILITY_PUBLIC),
 			startTime,
 			cursorID,
 			p.PageSize,

@@ -7,6 +7,7 @@ import (
 	"context"
 
 	"ran-feed/app/admin/internal/common/consts"
+	adminutils "ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/content/content"
@@ -39,9 +40,9 @@ func (l *SetContentStatusLogic) SetContentStatus(req *types.AdminContentStatusRe
 	var target content.ContentStatus
 	switch req.Action {
 	case consts.ContentActionTakedown:
-		target = content.ContentStatus_TAKEN_DOWN
+		target = content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN
 	case consts.ContentActionRestore:
-		target = content.ContentStatus_PUBLISHED
+		target = content.ContentStatus_CONTENT_STATUS_PUBLISHED
 	default:
 		return nil, errorx.NewMsg("不支持的操作")
 	}
@@ -58,6 +59,6 @@ func (l *SetContentStatusLogic) SetContentStatus(req *types.AdminContentStatusRe
 	}
 
 	return &types.AdminContentStatusRes{
-		Status: int32(rpcRes.GetStatus()),
+		Status: adminutils.ToEnumValue(rpcRes.GetStatus()),
 	}, nil
 }

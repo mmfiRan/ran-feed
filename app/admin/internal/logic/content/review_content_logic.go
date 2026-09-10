@@ -7,6 +7,7 @@ import (
 	"context"
 
 	"ran-feed/app/admin/internal/common/consts"
+	adminutils "ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/content/content"
@@ -39,9 +40,9 @@ func (l *ReviewContentLogic) ReviewContent(req *types.AdminContentReviewReq) (re
 	var decision content.ReviewDecision
 	switch req.Decision {
 	case consts.ContentReviewApprove:
-		decision = content.ReviewDecision_REVIEW_APPROVE
+		decision = content.ReviewDecision_REVIEW_DECISION_APPROVE
 	case consts.ContentReviewReject:
-		decision = content.ReviewDecision_REVIEW_REJECT
+		decision = content.ReviewDecision_REVIEW_DECISION_REJECT
 	default:
 		return nil, errorx.NewMsg("不支持的审核决策")
 	}
@@ -59,6 +60,6 @@ func (l *ReviewContentLogic) ReviewContent(req *types.AdminContentReviewReq) (re
 	}
 
 	return &types.AdminContentReviewRes{
-		Status: int32(rpcRes.GetStatus()),
+		Status: adminutils.ToEnumValue(rpcRes.GetStatus()),
 	}, nil
 }

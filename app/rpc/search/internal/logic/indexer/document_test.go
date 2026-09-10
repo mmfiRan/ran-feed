@@ -2,25 +2,27 @@ package indexer
 
 import (
 	"testing"
+	"time"
 
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/user/user"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func TestContentIndexItemToItem(t *testing.T) {
 	it := &content.ContentIndexItem{
 		ContentId:   1,
-		ContentType: content.ContentType_ARTICLE,
-		Status:      content.ContentStatus_PUBLISHED,
-		Visibility:  content.Visibility_PUBLIC,
+		ContentType: content.ContentType_CONTENT_TYPE_ARTICLE,
+		Status:      content.ContentStatus_CONTENT_STATUS_PUBLISHED,
+		Visibility:  content.Visibility_VISIBILITY_PUBLIC,
 		AuthorId:    100,
 		Title:       "标题A",
 		Description: "简介A",
 		Body:        "正文A",
-		PublishedAt: 1_700_000_000_000,
+		PublishedAt: timestamppb.New(time.UnixMilli(1_700_000_000_000)),
 		HotScore:    1.5,
 		Version:     1_700_000_123_456,
 	}
@@ -77,7 +79,7 @@ func TestUserIndexItemToItem(t *testing.T) {
 func TestContentIndexItemSuggest(t *testing.T) {
 	// 有标题 weight 取 hot_score 取整
 	item := ContentIndexItemToItem(&content.ContentIndexItem{
-		ContentId: 1, ContentType: content.ContentType_ARTICLE, Title: "露营装备测评", HotScore: 8.9,
+		ContentId: 1, ContentType: content.ContentType_CONTENT_TYPE_ARTICLE, Title: "露营装备测评", HotScore: 8.9,
 	})
 	doc := item.Doc.(ContentDoc)
 	require.NotNil(t, doc.TitleSuggest)
@@ -85,10 +87,10 @@ func TestContentIndexItemSuggest(t *testing.T) {
 	assert.Equal(t, 8, doc.TitleSuggest.Weight)
 
 	// 空标题(异常视频)不产出补全字段 避免 ES 拒绝空 input
-	noTitle := ContentIndexItemToItem(&content.ContentIndexItem{ContentId: 2, ContentType: content.ContentType_VIDEO, Title: ""})
+	noTitle := ContentIndexItemToItem(&content.ContentIndexItem{ContentId: 2, ContentType: content.ContentType_CONTENT_TYPE_VIDEO, Title: ""})
 	assert.Nil(t, noTitle.Doc.(ContentDoc).TitleSuggest)
 
 	// 负 hot_score 归零
-	neg := ContentIndexItemToItem(&content.ContentIndexItem{ContentId: 3, ContentType: content.ContentType_ARTICLE, Title: "x", HotScore: -5})
+	neg := ContentIndexItemToItem(&content.ContentIndexItem{ContentId: 3, ContentType: content.ContentType_CONTENT_TYPE_ARTICLE, Title: "x", HotScore: -5})
 	assert.Equal(t, 0, neg.Doc.(ContentDoc).TitleSuggest.Weight)
 }

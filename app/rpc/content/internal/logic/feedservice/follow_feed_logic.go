@@ -6,9 +6,11 @@ import (
 	"ran-feed/app/rpc/content/internal/logic/publishbox"
 	"strconv"
 	"strings"
+	"time"
 
 	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
+	"ran-feed/app/rpc/content/internal/common/logichelper"
 	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
 	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
 	"ran-feed/app/rpc/content/internal/do"
@@ -19,6 +21,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -205,8 +208,8 @@ func (l *FollowFeedLogic) buildInboxSync(inboxKey string, userID, cursorScore, c
 		return nil, false, nil
 	}
 
-	statusPublished := int32(content.ContentStatus_PUBLISHED)
-	visibilityPublic := int32(content.Visibility_PUBLIC)
+	statusPublished := int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)
+	visibilityPublic := int32(content.Visibility_VISIBILITY_PUBLIC)
 	rows, err := l.contentRepo.ListFollowByAuthorsCursor(statusPublished, visibilityPublic, small, 0, followInboxKeepN)
 	if err != nil {
 		return nil, false, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注内容失败"))
@@ -292,13 +295,13 @@ func buildFollowItems(details []*do.ContentDetailDO, userMap map[int64]*user.Use
 		}
 		items = append(items, &content.FollowFeedItem{
 			ContentId:    d.ContentID,
-			ContentType:  content.ContentType(d.ContentType),
+			ContentType:  logichelper.ContentTypeValue(d.ContentType),
 			AuthorId:     d.AuthorID,
 			AuthorName:   authorName,
 			AuthorAvatar: authorAvatar,
 			Title:        d.Title,
 			CoverUrl:     d.CoverURL,
-			PublishedAt:  d.PublishedAt,
+			PublishedAt:  timestamppb.New(time.Unix(d.PublishedAt, 0)),
 			IsLiked:      likedMap[d.ContentID],
 			LikeCount:    likeCountMap[d.ContentID],
 		})

@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 
+	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/do"
@@ -58,7 +59,7 @@ func newTestEnv(t *testing.T) (*redis.Redis, *miniredis.Miniredis, config.Conten
 func sampleDetail(id int64) *do.ContentDetailDO {
 	return &do.ContentDetailDO{
 		ContentID:   id,
-		ContentType: 1,
+		ContentType: int32(content.ContentType_CONTENT_TYPE_ARTICLE),
 		AuthorID:    100 + id,
 		Title:       "title",
 		CoverURL:    "cover",

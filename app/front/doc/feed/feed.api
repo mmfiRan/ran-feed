@@ -22,9 +22,9 @@ type (
 		PageSize *uint32 `json:"page_size,optional" validate:"required,min=1,max=50"`
 	}
 	RecommendFeedItem {
-		ContentId    int64  `json:"content_id,string"`
-		ContentType  int32  `json:"content_type"`
-		AuthorId     int64  `json:"author_id,string"`
+		ContentId    int64     `json:"content_id,string"`
+		ContentType  EnumValue `json:"content_type"`
+		AuthorId     int64     `json:"author_id,string"`
 		AuthorName   string `json:"author_name"`
 		AuthorAvatar string `json:"author_avatar"`
 		Title        string `json:"title"`
@@ -34,9 +34,9 @@ type (
 		LikeCount    int64  `json:"like_count"`
 	}
 	FollowFeedItem {
-		ContentId    int64  `json:"content_id,string"`
-		ContentType  int32  `json:"content_type"`
-		AuthorId     int64  `json:"author_id,string"`
+		ContentId    int64     `json:"content_id,string"`
+		ContentType  EnumValue `json:"content_type"`
+		AuthorId     int64     `json:"author_id,string"`
 		AuthorName   string `json:"author_name"`
 		AuthorAvatar string `json:"author_avatar"`
 		Title        string `json:"title"`
@@ -46,9 +46,9 @@ type (
 		LikeCount    int64  `json:"like_count"`
 	}
 	UserPublishFeedItem {
-		ContentId    int64  `json:"content_id,string"`
-		ContentType  int32  `json:"content_type"`
-		AuthorId     int64  `json:"author_id,string"`
+		ContentId    int64     `json:"content_id,string"`
+		ContentType  EnumValue `json:"content_type"`
+		AuthorId     int64     `json:"author_id,string"`
 		AuthorName   string `json:"author_name"`
 		AuthorAvatar string `json:"author_avatar"`
 		Title        string `json:"title"`
@@ -58,9 +58,9 @@ type (
 		LikeCount    int64  `json:"like_count"`
 	}
 	UserFavoriteFeedItem {
-		ContentId    int64  `json:"content_id,string"`
-		ContentType  int32  `json:"content_type"`
-		AuthorId     int64  `json:"author_id,string"`
+		ContentId    int64     `json:"content_id,string"`
+		ContentType  EnumValue `json:"content_type"`
+		AuthorId     int64     `json:"author_id,string"`
 		AuthorName   string `json:"author_name"`
 		AuthorAvatar string `json:"author_avatar"`
 		Title        string `json:"title"`

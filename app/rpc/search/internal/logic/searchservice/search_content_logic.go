@@ -68,8 +68,8 @@ func (l *SearchContentLogic) SearchContent(in *search.SearchContentReq) (*search
 // searchAfter 非空时接 search_after 游标翻页 不用 from 偏移
 func (l *SearchContentLogic) buildQuery(in *search.SearchContentReq, size int, searchAfter []any) map[string]any {
 	filters := []map[string]any{
-		{"term": map[string]any{"status": int32(content.ContentStatus_PUBLISHED)}},
-		{"term": map[string]any{"visibility": int32(content.Visibility_PUBLIC)}},
+		{"term": map[string]any{"status": int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)}},
+		{"term": map[string]any{"visibility": int32(content.Visibility_VISIBILITY_PUBLIC)}},
 		{"term": map[string]any{"is_deleted": 0}},
 	}
 	if in.ContentType != search.ContentType_CONTENT_TYPE_UNKNOWN {

@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/logichelper"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type AdminGetContentDetailLogic struct {
@@ -48,18 +50,18 @@ func (l *AdminGetContentDetailLogic) AdminGetContentDetail(in *content.AdminGetC
 
 	detail := &content.AdminContentDetail{
 		ContentId:     row.ID,
-		ContentType:   content.ContentType(row.ContentType),
-		Status:        content.ContentStatus(row.Status),
-		Visibility:    content.Visibility(row.Visibility),
+		ContentType:   logichelper.ContentTypeValue(row.ContentType),
+		Status:        logichelper.ContentStatusValue(row.Status),
+		Visibility:    logichelper.VisibilityValue(row.Visibility),
 		AuthorId:      row.UserID,
 		LikeCount:     row.LikeCount,
 		FavoriteCount: row.FavoriteCount,
 		CommentCount:  row.CommentCount,
-		CreatedAt:     row.CreatedAt.UnixMilli(),
-		UpdatedAt:     row.UpdatedAt.UnixMilli(),
+		CreatedAt:     timestamppb.New(row.CreatedAt),
+		UpdatedAt:     timestamppb.New(row.UpdatedAt),
 	}
 	if row.PublishedAt != nil {
-		detail.PublishedAt = row.PublishedAt.UnixMilli()
+		detail.PublishedAt = timestamppb.New(*row.PublishedAt)
 	}
 
 	if err = l.fillContentFields(detail, row); err != nil {
@@ -72,7 +74,7 @@ func (l *AdminGetContentDetailLogic) AdminGetContentDetail(in *content.AdminGetC
 // fillContentFields 按类型回源 article/video 填标题/正文/封面等本征字段
 func (l *AdminGetContentDetailLogic) fillContentFields(detail *content.AdminContentDetail, row *model.RanFeedContent) error {
 	switch content.ContentType(row.ContentType) {
-	case content.ContentType_ARTICLE:
+	case content.ContentType_CONTENT_TYPE_ARTICLE:
 		articleRow, err := l.articleRepo.GetByContentID(row.ID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
@@ -87,7 +89,7 @@ func (l *AdminGetContentDetailLogic) fillContentFields(detail *content.AdminCont
 		detail.CoverUrl = articleRow.Cover
 		detail.ArticleContent = articleRow.Content
 		return nil
-	case content.ContentType_VIDEO:
+	case content.ContentType_CONTENT_TYPE_VIDEO:
 		videoRow, err := l.videoRepo.GetByContentID(row.ID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))

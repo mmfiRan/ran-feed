@@ -44,8 +44,8 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 		contentDO := &do.ContentDO{
 			ID:          contentId,
 			UserID:      in.UserId,
-			ContentType: int32(content.ContentType_VIDEO),
-			Status:      int32(content.ContentStatus_PENDING_REVIEW),
+			ContentType: int32(content.ContentType_CONTENT_TYPE_VIDEO),
+			Status:      int32(content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW),
 			Visibility:  int32(in.Visibility),
 			CreatedBy:   in.UserId,
 			UpdatedBy:   in.UserId,

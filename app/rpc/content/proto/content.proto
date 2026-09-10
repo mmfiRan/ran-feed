@@ -1,89 +1,97 @@
 syntax = "proto3";
 
-package content;
+package ranfeed.content;
 
-option go_package = "./content";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "pkg/commonpb/common.proto";
+
+option go_package = "ran-feed/app/rpc/content/content";
 
 // 内容类型枚举
 enum ContentType {
-  CONTENT_TYPE_UNKNOWN = 0;
-  ARTICLE = 10;
-  VIDEO = 20;
+  CONTENT_TYPE_UNSPECIFIED = 0;  // 未指定
+  CONTENT_TYPE_ARTICLE = 10;     // 文章
+  CONTENT_TYPE_VIDEO = 20;       // 视频
 }
 
 // 内容状态枚举
 enum ContentStatus {
-  STATUS_UNKNOWN = 0;
-  DRAFT = 10;
-  PROCESSING = 20;
-  PUBLISHED = 30;
-  FAILED = 40;
-  TAKEN_DOWN = 50;      // 管理员下架
-  PENDING_REVIEW = 60;  // 待审核 先审后发 Phase B feat-admin-005 起用
-  REJECTED = 70;        // 审核拒绝 Phase B feat-admin-005 起用
+  CONTENT_STATUS_UNSPECIFIED = 0;   // 未指定
+  CONTENT_STATUS_DRAFT = 10;        // 草稿
+  CONTENT_STATUS_PROCESSING = 20;   // 处理中
+  CONTENT_STATUS_PUBLISHED = 30;    // 已发布
+  CONTENT_STATUS_FAILED = 40;       // 失败
+  CONTENT_STATUS_TAKEN_DOWN = 50;   // 管理员下架
+  CONTENT_STATUS_PENDING_REVIEW = 60;  // 待审核
+  CONTENT_STATUS_REJECTED = 70;     // 审核拒绝
 }
 
 // 可见性枚举
 enum Visibility {
-  VISIBILITY_UNKNOWN = 0;
-  PUBLIC = 10;
-  PRIVATE = 20;
+  VISIBILITY_UNSPECIFIED = 0;  // 未指定
+  VISIBILITY_PUBLIC = 10;      // 公开
+  VISIBILITY_PRIVATE = 20;     // 私密
 }
 
-message PageReq {
-  uint32 page = 1;
-  uint32 page_size = 2;
+// 审核决策枚举
+enum ReviewDecision {
+  REVIEW_DECISION_UNSPECIFIED = 0;  // 未指定
+  REVIEW_DECISION_APPROVE = 10;     // 通过 转 PUBLISHED 并触发进 feed 副作用
+  REVIEW_DECISION_REJECT = 20;      // 拒绝 转 REJECTED
 }
 
-message PageRes {
-  uint32 page = 1;
-  uint32 page_size = 2;
-  uint32 total = 3;
+// 上传场景枚举
+enum UploadScene {
+  UPLOAD_SCENE_UNSPECIFIED = 0;    // 未指定
+  UPLOAD_SCENE_ARTICLE_COVER = 1;  // 文章封面
+  UPLOAD_SCENE_VIDEO = 2;          // 视频
+  UPLOAD_SCENE_AVATAR = 3;         // 头像
 }
 
+// 上传文件扩展名枚举
+enum FileExt {
+  FILE_EXT_UNSPECIFIED = 0;  // 未指定
+  FILE_EXT_JPG = 1;          // jpg
+  FILE_EXT_PNG = 2;          // png
+  FILE_EXT_GIF = 3;          // gif
+  FILE_EXT_MP4 = 4;          // mp4
+  FILE_EXT_MP3 = 5;          // mp3
+  FILE_EXT_DOC = 6;          // doc
+  FILE_EXT_DOCX = 7;         // docx
+  FILE_EXT_PDF = 8;          // pdf
+  FILE_EXT_XLS = 9;          // xls
+}
+
+// ContentUploadsCredentialsReq 获取 OSS 上传凭证
 message ContentUploadsCredentialsReq {
-  int64 user_id = 1;
-  Scene scene = 2;
-  FileExt file_ext = 3;
-  int64 file_size = 4;
-  string file_name = 5;
-  enum Scene{
-    SCENE_UNKNOWN = 0;
-    ARTICLE_COVER = 1;
-    VIDEO = 2;
-    AVATAR = 3;
-  }
-  enum FileExt{
-    FILE_EXT_UNKNOWN = 0;
-    JPG = 1;
-    PNG = 2;
-    GIF = 3;
-    MP4 = 4;
-    MP3 = 5;
-    DOC = 6;
-    DOCX = 7;
-    PDF = 8;
-    XLS = 9;
-  }
+  int64 user_id = 1;        // 上传用户 id
+  UploadScene scene = 2;    // 上传场景
+  FileExt file_ext = 3;     // 文件扩展名
+  int64 file_size = 4;      // 文件大小 字节
+  string file_name = 5;     // 文件名
 }
 
+// ContentUploadsCredentialsRes 上传凭证响应
 message ContentUploadsCredentialsRes {
-  string object_key = 1;
-  OssFormData form_data = 2;
-  int64 expired_at = 3;
+  string object_key = 1;                 // 对象键
+  OssFormData form_data = 2;             // 表单数据
+  google.protobuf.Timestamp expired_at = 3;  // 凭证过期时间 秒
 }
 
+// OssFormData OSS 表单数据
 message OssFormData {
-  string host = 1;
-  string policy = 2;
-  string signature = 3;
-  string security_token = 4;
-  string signature_version = 5;
-  string credential = 6;
-  string date = 7;
-  string key = 8;
+  string host = 1;                // 上传地址
+  string policy = 2;              // Base64 策略
+  string signature = 3;           // 签名
+  string security_token = 4;      // STS 临时凭证
+  string signature_version = 5;   // 签名版本
+  string credential = 6;          // 凭证字符串
+  string date = 7;                // UTC 时间
+  string key = 8;                 // 对象键
 }
 
+// ArticlePublishReq 发布文章
 message ArticlePublishReq {
   int64 user_id = 1;
   string title = 2;
@@ -93,49 +101,53 @@ message ArticlePublishReq {
   Visibility visibility = 6;
 }
 
+// ArticlePublishRes 发布文章响应
 message ArticlePublishRes {
-  int64 content_id = 1;
+  int64 content_id = 1;  // 新内容 id
 }
 
+// VideoPublishReq 发布视频
 message VideoPublishReq {
   int64 user_id = 1;
   string title = 2;
   optional string description = 3;
   string video_url = 4;
   string cover_url = 5;
-  int32 duration = 6;
+  int32 duration = 6;  // 视频时长 秒
   Visibility visibility = 7;
 }
 
+// VideoPublishRes 发布视频响应
 message VideoPublishRes {
-  int64 content_id = 1;
+  int64 content_id = 1;  // 新内容 id
 }
 
+// GetUserContentCountReq 查用户内容数
 message GetUserContentCountReq {
   int64 user_id = 1;
 }
 
+// GetUserContentCountRes 用户内容数
 message GetUserContentCountRes {
   int64 content_count = 1;
 }
 
+// DeleteContentReq 删除内容
 message DeleteContentReq {
   int64 user_id = 1;
   int64 content_id = 2;
 }
 
-message DeleteContentRes {
-}
-
-
+// GetContentDetailReq 内容详情请求 viewer_id 为 0 表示匿名
 message GetContentDetailReq {
   int64 content_id = 1;
   optional int64 viewer_id = 2;
 }
 
+// ContentDetail 内容详情 含 viewer 相关互动字段
 message ContentDetail {
   int64 content_id = 1;
-  ContentType content_type = 2;
+  ranfeed.commonpb.EnumValue content_type = 2;  // 内容类型
   int64 author_id = 3;
   string author_name = 4;
   string author_avatar = 5;
@@ -145,7 +157,7 @@ message ContentDetail {
   string article_content = 9;
   string video_url = 10;
   int32 video_duration = 11;
-  int64 published_at = 12;
+  google.protobuf.Timestamp published_at = 12;  // 发布时间 秒
   int64 like_count = 13;
   int64 favorite_count = 14;
   int64 comment_count = 15;
@@ -154,10 +166,12 @@ message ContentDetail {
   bool is_following_author = 18;
 }
 
+// GetContentDetailRes 内容详情响应
 message GetContentDetailRes {
   ContentDetail detail = 1;
 }
 
+// RecommendFeedReq 推荐流请求
 message RecommendFeedReq {
   optional int64 user_id = 1;
   string cursor = 2;
@@ -165,6 +179,7 @@ message RecommendFeedReq {
   optional string snapshot_id = 4;
 }
 
+// RecommendFeedRes 推荐流响应
 message RecommendFeedRes {
   repeated ContentItem items = 1;
   int64 next_cursor = 2;
@@ -172,37 +187,21 @@ message RecommendFeedRes {
   string snapshot_id = 4;
 }
 
+// FollowFeedReq 关注流请求
 message FollowFeedReq {
   int64 user_id = 1;
   string cursor = 2;
   uint32 page_size = 3;
 }
 
+// FollowFeedRes 关注流响应
 message FollowFeedRes {
   repeated FollowFeedItem items = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }
 
-message BackfillFollowInboxReq {
-  int64 follower_id = 1;
-  int64 followee_id = 2;
-  uint32 limit = 3;
-}
-
-message BackfillFollowInboxRes {
-  int32 added_count = 1;
-}
-
-message PurgeFolloweeFromInboxReq {
-  int64 follower_id = 1;
-  int64 followee_id = 2;
-}
-
-message PurgeFolloweeFromInboxRes {
-  int32 removed_count = 1;
-}
-
+// UserPublishFeedReq 用户发布列表请求
 message UserPublishFeedReq {
   int64 author_id = 1;
   optional int64 viewer_id = 2;
@@ -210,12 +209,14 @@ message UserPublishFeedReq {
   uint32 page_size = 4;
 }
 
+// UserPublishFeedRes 用户发布列表响应
 message UserPublishFeedRes {
   repeated ContentItem items = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }
 
+// UserFavoriteFeedReq 用户收藏列表请求
 message UserFavoriteFeedReq {
   optional int64 viewer_id = 1;
   int64 user_id = 2;
@@ -223,34 +224,60 @@ message UserFavoriteFeedReq {
   uint32 page_size = 4;
 }
 
+// UserFavoriteFeedRes 用户收藏列表响应
 message UserFavoriteFeedRes {
   repeated ContentItem items = 1;
   string next_cursor = 2;
   bool has_more = 3;
 }
 
+// BackfillFollowInboxReq 关注时回填收件箱
+message BackfillFollowInboxReq {
+  int64 follower_id = 1;
+  int64 followee_id = 2;
+  uint32 limit = 3;
+}
+
+// BackfillFollowInboxRes 回填结果
+message BackfillFollowInboxRes {
+  int32 added_count = 1;
+}
+
+// PurgeFolloweeFromInboxReq 取关后清除收件箱
+message PurgeFolloweeFromInboxReq {
+  int64 follower_id = 1;
+  int64 followee_id = 2;
+}
+
+// PurgeFolloweeFromInboxRes 清除结果
+message PurgeFolloweeFromInboxRes {
+  int32 removed_count = 1;
+}
+
+// ContentItem 内容列表项
 message ContentItem {
   int64 content_id = 1;
-  ContentType content_type = 2;
+  ranfeed.commonpb.EnumValue content_type = 2;  // 内容类型
   int64 author_id = 3;
   string author_name = 4;
   string author_avatar = 5;
   string title = 6;
   string cover_url = 7;
-  int64 published_at = 8;
+  google.protobuf.Timestamp published_at = 8;  // 发布时间 秒
   bool is_liked = 9;
   int64 like_count = 10;
 }
 
+// FollowFeedItem 关注流列表项
 message FollowFeedItem {
   int64 content_id = 1;
-  ContentType content_type = 2;
+  ranfeed.commonpb.EnumValue content_type = 2;  // 内容类型
   int64 author_id = 3;
   string author_name = 4;
   string author_avatar = 5;
   string title = 6;
   string cover_url = 7;
-  int64 published_at = 8;
+  google.protobuf.Timestamp published_at = 8;  // 发布时间 秒
   bool is_liked = 9;
   int64 like_count = 10;
 }
@@ -276,7 +303,7 @@ message ContentIndexItem {
   string title = 6;
   string description = 7;        // article.description 视频为空
   string body = 8;               // article.content 正文 视频为空
-  int64 published_at = 9;        // 毫秒
+  google.protobuf.Timestamp published_at = 9;  // 发布时间 毫秒
   double hot_score = 10;
   int64 version = 11;            // content.updated_at 毫秒 供全量重建 ES external version
 }
@@ -286,6 +313,7 @@ message BatchGetContentForIndexReq {
   repeated int64 content_ids = 1;
 }
 
+// BatchGetContentForIndexRes 批量索引投影响应
 message BatchGetContentForIndexRes {
   repeated ContentIndexItem items = 1;
 }
@@ -296,56 +324,29 @@ message ListContentForIndexReq {
   int32 limit = 2;
 }
 
+// ListContentForIndexRes 全量索引投影响应
 message ListContentForIndexRes {
   repeated ContentIndexItem items = 1;
 }
 
-service ContentService{
-  rpc Uploads(ContentUploadsCredentialsReq) returns (ContentUploadsCredentialsRes);
-  rpc PublishArticle(ArticlePublishReq) returns (ArticlePublishRes);
-  rpc PublishVideo(VideoPublishReq) returns (VideoPublishRes);
-  rpc GetUserContentCount(GetUserContentCountReq) returns (GetUserContentCountRes);
-  rpc DeleteContent(DeleteContentReq) returns (DeleteContentRes);
-  rpc GetContentDetail(GetContentDetailReq) returns (GetContentDetailRes);
-  rpc BackfillFollowInbox(BackfillFollowInboxReq) returns (BackfillFollowInboxRes);
-  rpc PurgeFolloweeFromInbox(PurgeFolloweeFromInboxReq) returns (PurgeFolloweeFromInboxRes);
-}
-
-service FeedService{
-  rpc RecommendFeed(RecommendFeedReq) returns (RecommendFeedRes);
-  rpc FollowFeed(FollowFeedReq) returns (FollowFeedRes);
-  rpc UserPublishFeed(UserPublishFeedReq) returns (UserPublishFeedRes);
-  rpc UserFavoriteFeed(UserFavoriteFeedReq) returns (UserFavoriteFeedRes);
-  rpc BatchGetContentItems(BatchGetContentItemsReq) returns (BatchGetContentItemsRes);
-  rpc BatchGetContentForIndex(BatchGetContentForIndexReq) returns (BatchGetContentForIndexRes);
-  rpc ListContentForIndex(ListContentForIndexReq) returns (ListContentForIndexRes);
-}
-
-// ===== admin 管理端 (feat-admin-004) 与 C 端接口物理隔离 复用 content 域 repo =====
-
-// ReviewDecision 先审后发审核决策 (feat-admin-005)
-enum ReviewDecision {
-  REVIEW_DECISION_UNKNOWN = 0;
-  REVIEW_APPROVE = 10;  // 通过 转 PUBLISHED 并触发进 feed 副作用
-  REVIEW_REJECT = 20;   // 拒绝 转 REJECTED
-}
+// ===== admin 管理端 与 C 端接口物理隔离 复用 content 域 repo =====
 
 // AdminContentItem 管理端内容列表项 纯管理视角 不做展示富化 含非公开与各状态
 message AdminContentItem {
   int64 content_id = 1;
-  ContentType content_type = 2;
-  ContentStatus status = 3;
-  Visibility visibility = 4;
+  ranfeed.commonpb.EnumValue content_type = 2;  // 内容类型
+  ranfeed.commonpb.EnumValue status = 3;        // 内容状态
+  ranfeed.commonpb.EnumValue visibility = 4;    // 可见性
   int64 author_id = 5;
   string title = 6;
   int64 like_count = 7;
   int64 favorite_count = 8;
   int64 comment_count = 9;
-  int64 published_at = 10;  // 毫秒 0 表示未发布
-  int64 created_at = 11;    // 毫秒
+  google.protobuf.Timestamp published_at = 10;  // 发布时间 毫秒 0 表示未发布
+  google.protobuf.Timestamp created_at = 11;    // 创建时间 毫秒
 }
 
-// AdminListContentsReq 多条件筛选 + id keyset 游标分页 status/content_type/author 均可选
+// AdminListContentsReq 多条件筛选 + offset 分页 status/content_type/author 均可选
 message AdminListContentsReq {
   optional ContentStatus status = 1;
   optional ContentType content_type = 2;
@@ -354,13 +355,15 @@ message AdminListContentsReq {
   uint32 page_size = 5;
 }
 
+// AdminListContentsRes 管理端内容列表响应
 message AdminListContentsRes {
   repeated AdminContentItem items = 1;
-  uint32 total = 2;
+  int64 total = 2;
   uint32 page = 3;
   uint32 page_size = 4;
 }
 
+// AdminGetContentDetailReq 管理端内容详情请求
 message AdminGetContentDetailReq {
   int64 content_id = 1;
 }
@@ -368,9 +371,9 @@ message AdminGetContentDetailReq {
 // AdminContentDetail 管理端详情 含正文/非公开 无 viewer 相关互动字段
 message AdminContentDetail {
   int64 content_id = 1;
-  ContentType content_type = 2;
-  ContentStatus status = 3;
-  Visibility visibility = 4;
+  ranfeed.commonpb.EnumValue content_type = 2;  // 内容类型
+  ranfeed.commonpb.EnumValue status = 3;        // 内容状态
+  ranfeed.commonpb.EnumValue visibility = 4;    // 可见性
   int64 author_id = 5;
   string title = 6;
   string description = 7;
@@ -381,24 +384,26 @@ message AdminContentDetail {
   int64 like_count = 12;
   int64 favorite_count = 13;
   int64 comment_count = 14;
-  int64 published_at = 15;  // 毫秒 0 表示未发布
-  int64 created_at = 16;    // 毫秒
-  int64 updated_at = 17;    // 毫秒
+  google.protobuf.Timestamp published_at = 15;  // 发布时间 毫秒 0 表示未发布
+  google.protobuf.Timestamp created_at = 16;    // 创建时间 毫秒
+  google.protobuf.Timestamp updated_at = 17;    // 更新时间 毫秒
 }
 
+// AdminGetContentDetailRes 管理端内容详情响应
 message AdminGetContentDetailRes {
   AdminContentDetail detail = 1;
 }
 
-// AdminSetContentStatusReq 下架/恢复 本轮支持 TAKEN_DOWN(下架) 与 PUBLISHED(恢复)
+// AdminSetContentStatusReq 下架/恢复 支持 TAKEN_DOWN(下架) 与 PUBLISHED(恢复)
 message AdminSetContentStatusReq {
   int64 content_id = 1;
   ContentStatus status = 2;
   int64 operator_id = 3;  // 操作管理员 id 落 updated_by
 }
 
+// AdminSetContentStatusRes 状态变更响应
 message AdminSetContentStatusRes {
-  ContentStatus status = 1;  // 变更后状态
+  ranfeed.commonpb.EnumValue status = 1;  // 变更后状态
 }
 
 // AdminReviewContentReq 先审后发审核 仅对 PENDING_REVIEW 内容生效
@@ -409,11 +414,33 @@ message AdminReviewContentReq {
   string reject_reason = 4;   // 拒绝理由 通过时忽略
 }
 
+// AdminReviewContentRes 审核结果响应
 message AdminReviewContentRes {
-  ContentStatus status = 1;   // 变更后状态 PUBLISHED 或 REJECTED
+  ranfeed.commonpb.EnumValue status = 1;  // 变更后状态 PUBLISHED 或 REJECTED
 }
 
-service AdminContentService{
+service ContentService {
+  rpc Uploads(ContentUploadsCredentialsReq) returns (ContentUploadsCredentialsRes);
+  rpc PublishArticle(ArticlePublishReq) returns (ArticlePublishRes);
+  rpc PublishVideo(VideoPublishReq) returns (VideoPublishRes);
+  rpc GetUserContentCount(GetUserContentCountReq) returns (GetUserContentCountRes);
+  rpc DeleteContent(DeleteContentReq) returns (google.protobuf.Empty);
+  rpc GetContentDetail(GetContentDetailReq) returns (GetContentDetailRes);
+  rpc BackfillFollowInbox(BackfillFollowInboxReq) returns (BackfillFollowInboxRes);
+  rpc PurgeFolloweeFromInbox(PurgeFolloweeFromInboxReq) returns (PurgeFolloweeFromInboxRes);
+}
+
+service FeedService {
+  rpc RecommendFeed(RecommendFeedReq) returns (RecommendFeedRes);
+  rpc FollowFeed(FollowFeedReq) returns (FollowFeedRes);
+  rpc UserPublishFeed(UserPublishFeedReq) returns (UserPublishFeedRes);
+  rpc UserFavoriteFeed(UserFavoriteFeedReq) returns (UserFavoriteFeedRes);
+  rpc BatchGetContentItems(BatchGetContentItemsReq) returns (BatchGetContentItemsRes);
+  rpc BatchGetContentForIndex(BatchGetContentForIndexReq) returns (BatchGetContentForIndexRes);
+  rpc ListContentForIndex(ListContentForIndexReq) returns (ListContentForIndexRes);
+}
+
+service AdminContentService {
   rpc AdminListContents(AdminListContentsReq) returns (AdminListContentsRes);
   rpc AdminGetContentDetail(AdminGetContentDetailReq) returns (AdminGetContentDetailRes);
   rpc AdminSetContentStatus(AdminSetContentStatusReq) returns (AdminSetContentStatusRes);

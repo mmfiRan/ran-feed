@@ -514,6 +514,12 @@
             "name": "author_id",
             "in": "query",
             "allowEmptyValue": true
+          },
+          {
+            "type": "string",
+            "name": "username",
+            "in": "query",
+            "allowEmptyValue": true
           }
         ],
         "responses": {
@@ -532,6 +538,7 @@
                       "status",
                       "visibility",
                       "author_id",
+                      "username",
                       "title",
                       "like_count",
                       "favorite_count",
@@ -550,7 +557,23 @@
                         "type": "integer"
                       },
                       "content_type": {
-                        "type": "integer"
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
                       },
                       "created_at": {
                         "type": "integer"
@@ -565,13 +588,48 @@
                         "type": "integer"
                       },
                       "status": {
-                        "type": "integer"
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
                       },
                       "title": {
                         "type": "string"
                       },
+                      "username": {
+                        "type": "string"
+                      },
                       "visibility": {
-                        "type": "integer"
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
                       }
                     }
                   }
@@ -654,7 +712,23 @@
                       "type": "integer"
                     },
                     "content_type": {
-                      "type": "integer"
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "name",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
                     },
                     "cover_url": {
                       "type": "string"
@@ -675,7 +749,23 @@
                       "type": "integer"
                     },
                     "status": {
-                      "type": "integer"
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "name",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
                     },
                     "title": {
                       "type": "string"
@@ -690,7 +780,23 @@
                       "type": "string"
                     },
                     "visibility": {
-                      "type": "integer"
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "name",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
                     }
                   }
                 }
@@ -746,7 +852,23 @@
               "properties": {
                 "status": {
                   "description": "变更后状态 30已发布 70拒绝",
-                  "type": "integer"
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "name",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -797,7 +919,23 @@
               "properties": {
                 "status": {
                   "description": "变更后状态",
-                  "type": "integer"
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "name",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -1909,7 +2047,7 @@
       }
     }
   },
-  "x-date": "2026-09-10 16:45:05",
+  "x-date": "2026-09-10 17:15:30",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

@@ -4,23 +4,23 @@
 package types
 
 type AdminContentDetailData struct {
-	ContentId      int64  `json:"content_id"`
-	ContentType    int32  `json:"content_type"`
-	Status         int32  `json:"status"`
-	Visibility     int32  `json:"visibility"`
-	AuthorId       int64  `json:"author_id"`
-	Title          string `json:"title"`
-	Description    string `json:"description"`
-	CoverUrl       string `json:"cover_url"`
-	ArticleContent string `json:"article_content"`
-	VideoUrl       string `json:"video_url"`
-	VideoDuration  int32  `json:"video_duration"`
-	LikeCount      int64  `json:"like_count"`
-	FavoriteCount  int64  `json:"favorite_count"`
-	CommentCount   int64  `json:"comment_count"`
-	PublishedAt    int64  `json:"published_at"`
-	CreatedAt      int64  `json:"created_at"`
-	UpdatedAt      int64  `json:"updated_at"`
+	ContentId      int64     `json:"content_id"`
+	ContentType    EnumValue `json:"content_type"`
+	Status         EnumValue `json:"status"`
+	Visibility     EnumValue `json:"visibility"`
+	AuthorId       int64     `json:"author_id"`
+	Title          string    `json:"title"`
+	Description    string    `json:"description"`
+	CoverUrl       string    `json:"cover_url"`
+	ArticleContent string    `json:"article_content"`
+	VideoUrl       string    `json:"video_url"`
+	VideoDuration  int32     `json:"video_duration"`
+	LikeCount      int64     `json:"like_count"`
+	FavoriteCount  int64     `json:"favorite_count"`
+	CommentCount   int64     `json:"comment_count"`
+	PublishedAt    int64     `json:"published_at"`
+	CreatedAt      int64     `json:"created_at"`
+	UpdatedAt      int64     `json:"updated_at"`
 }
 
 type AdminContentDetailReq struct {
@@ -32,24 +32,26 @@ type AdminContentDetailRes struct {
 }
 
 type AdminContentListItem struct {
-	ContentId     int64  `json:"content_id"`
-	ContentType   int32  `json:"content_type"`
-	Status        int32  `json:"status"`
-	Visibility    int32  `json:"visibility"`
-	AuthorId      int64  `json:"author_id"`
-	Title         string `json:"title"`
-	LikeCount     int64  `json:"like_count"`
-	FavoriteCount int64  `json:"favorite_count"`
-	CommentCount  int64  `json:"comment_count"`
-	PublishedAt   int64  `json:"published_at"`
-	CreatedAt     int64  `json:"created_at"`
+	ContentId     int64     `json:"content_id"`
+	ContentType   EnumValue `json:"content_type"`
+	Status        EnumValue `json:"status"`
+	Visibility    EnumValue `json:"visibility"`
+	AuthorId      int64     `json:"author_id"`
+	Username      string    `json:"username"`
+	Title         string    `json:"title"`
+	LikeCount     int64     `json:"like_count"`
+	FavoriteCount int64     `json:"favorite_count"`
+	CommentCount  int64     `json:"comment_count"`
+	PublishedAt   int64     `json:"published_at"`
+	CreatedAt     int64     `json:"created_at"`
 }
 
 type AdminContentListReq struct {
 	PageQueryReq
-	Status      int32 `form:"status,optional"`       // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
-	ContentType int32 `form:"content_type,optional"` // 10文章 20视频
-	AuthorId    int64 `form:"author_id,optional"`
+	Status      int32  `form:"status,optional"`       // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
+	ContentType int32  `form:"content_type,optional"` // 10文章 20视频
+	AuthorId    int64  `form:"author_id,optional"`
+	Username    string `form:"username,optional"`
 }
 
 type AdminContentListRes struct {
@@ -64,7 +66,7 @@ type AdminContentReviewReq struct {
 }
 
 type AdminContentReviewRes struct {
-	Status int32 `json:"status"` // 变更后状态 30已发布 70拒绝
+	Status EnumValue `json:"status"` // 变更后状态 30已发布 70拒绝
 }
 
 type AdminContentStatusReq struct {
@@ -73,7 +75,7 @@ type AdminContentStatusReq struct {
 }
 
 type AdminContentStatusRes struct {
-	Status int32 `json:"status"` // 变更后状态
+	Status EnumValue `json:"status"` // 变更后状态
 }
 
 type AdminInfo struct {

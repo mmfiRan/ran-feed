@@ -2,6 +2,8 @@ package contentservicelogic
 
 import (
 	"context"
+	"time"
+
 	"ran-feed/app/rpc/content/internal/common/oss"
 	"ran-feed/pkg/errorx"
 
@@ -9,6 +11,7 @@ import (
 	"ran-feed/app/rpc/content/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type UploadsLogic struct {
@@ -49,6 +52,6 @@ func (l *UploadsLogic) Uploads(in *content.ContentUploadsCredentialsReq) (*conte
 			Date:             credential.FormData.Date,
 			Key:              credential.FormData.Key,
 		},
-		ExpiredAt: credential.ExpiredAt,
+		ExpiredAt: timestamppb.New(time.Unix(credential.ExpiredAt, 0)),
 	}, nil
 }

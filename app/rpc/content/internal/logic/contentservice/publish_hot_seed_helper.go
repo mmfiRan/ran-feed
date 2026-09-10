@@ -10,7 +10,7 @@ import (
 )
 
 func shouldSeedHotIncrement(visibility content.Visibility) bool {
-	return visibility == content.Visibility_PUBLIC
+	return visibility == content.Visibility_VISIBILITY_PUBLIC
 }
 
 // writePublishHotSeed 发布即登记脏 把新内容放进热榜脏集合 让下一轮快更算分

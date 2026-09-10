@@ -14,6 +14,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type DeleteContentLogic struct {
@@ -36,7 +37,7 @@ func NewDeleteContentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Del
 	}
 }
 
-func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*content.DeleteContentRes, error) {
+func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*emptypb.Empty, error) {
 
 	row, err := l.contentRepo.GetByIDBrief(in.ContentId)
 	if err != nil {
@@ -54,12 +55,12 @@ func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*conte
 		articleRepo := l.articleRepo.WithTx(tx)
 		videoRepo := l.videoRepo.WithTx(tx)
 
-		if row.ContentType == int32(content.ContentType_ARTICLE) {
+		if row.ContentType == int32(content.ContentType_CONTENT_TYPE_ARTICLE) {
 			if derr := articleRepo.DeleteByContentID(in.ContentId); derr != nil {
 				return derr
 			}
 		}
-		if row.ContentType == int32(content.ContentType_VIDEO) {
+		if row.ContentType == int32(content.ContentType_CONTENT_TYPE_VIDEO) {
 			if derr := videoRepo.DeleteByContentID(in.ContentId); derr != nil {
 				return derr
 			}
@@ -87,5 +88,5 @@ func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*conte
 		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
-	return &content.DeleteContentRes{}, nil
+	return &emptypb.Empty{}, nil
 }

@@ -57,8 +57,8 @@ func (j *HotFastUpdateJob) collectDirtyIDs(ctx context.Context, shards int) ([]i
 // 避免脏数据量大时主榜一次性膨胀成大 key 及末尾一刀删大量成员阻塞 Redis
 // 每条脏 ID 的新分都照写 含掉分内容 故无降分赖榜问题 裁剪只删分数最低的多余成员
 func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator hotrank.AdditiveTime, dirtyIDs []int64, mainN int) error {
-	statusPublished := int32(content.ContentStatus_PUBLISHED)
-	visibilityPublic := int32(content.Visibility_PUBLIC)
+	statusPublished := int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)
+	visibilityPublic := int32(content.Visibility_VISIBILITY_PUBLIC)
 
 	for start := 0; start < len(dirtyIDs); start += defaultBatchSize {
 		end := start + defaultBatchSize

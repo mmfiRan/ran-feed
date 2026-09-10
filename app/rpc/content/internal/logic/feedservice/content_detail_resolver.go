@@ -2,8 +2,10 @@ package feedservicelogic
 
 import (
 	"context"
+	"time"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/logichelper"
 	"ran-feed/app/rpc/content/internal/common/utils/contentcache"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -16,6 +18,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/mr"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // contentDetailResolver feed 读路径共享件 统一二级缓存内容详情读取与拼装
@@ -53,7 +56,7 @@ func (r *contentDetailResolver) resolveDetails(ids []int64, publicOnly bool) ([]
 		if !ok || d == nil {
 			continue
 		}
-		if publicOnly && d.Visibility != int32(content.Visibility_PUBLIC) {
+		if publicOnly && d.Visibility != int32(content.Visibility_VISIBILITY_PUBLIC) {
 			continue
 		}
 		details = append(details, d)
@@ -92,9 +95,9 @@ func (r *contentDetailResolver) loadDetails(missIDs []int64) (map[int64]*do.Cont
 	videoIDs := make([]int64, 0)
 	for _, row := range contentMap {
 		switch content.ContentType(row.ContentType) {
-		case content.ContentType_ARTICLE:
+		case content.ContentType_CONTENT_TYPE_ARTICLE:
 			articleIDs = append(articleIDs, row.ID)
-		case content.ContentType_VIDEO:
+		case content.ContentType_CONTENT_TYPE_VIDEO:
 			videoIDs = append(videoIDs, row.ID)
 		}
 	}
@@ -113,12 +116,12 @@ func (r *contentDetailResolver) loadDetails(missIDs []int64) (map[int64]*do.Cont
 		title := ""
 		coverURL := ""
 		switch content.ContentType(row.ContentType) {
-		case content.ContentType_ARTICLE:
+		case content.ContentType_CONTENT_TYPE_ARTICLE:
 			if a, ok := articleMap[row.ID]; ok && a != nil {
 				title = a.Title
 				coverURL = a.Cover
 			}
-		case content.ContentType_VIDEO:
+		case content.ContentType_CONTENT_TYPE_VIDEO:
 			if v, ok := videoMap[row.ID]; ok && v != nil {
 				title = v.Title
 				coverURL = v.CoverURL
@@ -153,9 +156,9 @@ func (r *contentDetailResolver) loadAuthorsAndLikes(details []*do.ContentDetailD
 			authorIDs = append(authorIDs, d.AuthorID)
 		}
 		switch content.ContentType(d.ContentType) {
-		case content.ContentType_ARTICLE:
+		case content.ContentType_CONTENT_TYPE_ARTICLE:
 			likeInfos = append(likeInfos, &likeservice.LikeInfo{ContentId: d.ContentID, Scene: interaction.Scene_ARTICLE})
-		case content.ContentType_VIDEO:
+		case content.ContentType_CONTENT_TYPE_VIDEO:
 			likeInfos = append(likeInfos, &likeservice.LikeInfo{ContentId: d.ContentID, Scene: interaction.Scene_VIDEO})
 		}
 	}
@@ -233,13 +236,13 @@ func buildContentItems(details []*do.ContentDetailDO, userMap map[int64]*user.Us
 		}
 		items = append(items, &content.ContentItem{
 			ContentId:    d.ContentID,
-			ContentType:  content.ContentType(d.ContentType),
+			ContentType:  logichelper.ContentTypeValue(d.ContentType),
 			AuthorId:     d.AuthorID,
 			AuthorName:   authorName,
 			AuthorAvatar: authorAvatar,
 			Title:        d.Title,
 			CoverUrl:     d.CoverURL,
-			PublishedAt:  d.PublishedAt,
+			PublishedAt:  timestamppb.New(time.Unix(d.PublishedAt, 0)),
 			IsLiked:      likedMap[d.ContentID],
 			LikeCount:    likeCountMap[d.ContentID],
 		})

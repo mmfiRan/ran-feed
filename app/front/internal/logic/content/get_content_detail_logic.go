@@ -6,6 +6,7 @@ package content
 import (
 	"context"
 
+	frontutils "ran-feed/app/front/internal/common/utils"
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
 	"ran-feed/app/rpc/content/content"
@@ -49,7 +50,7 @@ func (l *GetContentDetailLogic) GetContentDetail(req *types.GetContentDetailReq)
 
 	resp.Detail = types.ContentDetail{
 		ContentId:         rpcResp.Detail.ContentId,
-		ContentType:       int32(rpcResp.Detail.ContentType),
+		ContentType:       frontutils.ToEnumValue(rpcResp.Detail.ContentType),
 		AuthorId:          rpcResp.Detail.AuthorId,
 		AuthorName:        rpcResp.Detail.AuthorName,
 		AuthorAvatar:      rpcResp.Detail.AuthorAvatar,
@@ -59,7 +60,7 @@ func (l *GetContentDetailLogic) GetContentDetail(req *types.GetContentDetailReq)
 		ArticleContent:    rpcResp.Detail.ArticleContent,
 		VideoUrl:          rpcResp.Detail.VideoUrl,
 		VideoDuration:     rpcResp.Detail.VideoDuration,
-		PublishedAt:       rpcResp.Detail.PublishedAt,
+		PublishedAt:       rpcResp.Detail.PublishedAt.AsTime().Unix(),
 		LikeCount:         rpcResp.Detail.LikeCount,
 		FavoriteCount:     rpcResp.Detail.FavoriteCount,
 		CommentCount:      rpcResp.Detail.CommentCount,

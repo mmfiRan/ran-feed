@@ -53,7 +53,7 @@ func writeUserPublishZSet(ctx context.Context, svcCtx *svc.ServiceContext, feedK
 // 与 publish 主流程解耦，错误只记日志
 func fanOutToFollowersAsync(svcCtx *svc.ServiceContext, authorID, contentID, publishedAtMillis int64, visibility content.Visibility) {
 	// 仅 PUBLIC 内容才推（PRIVATE 不进 feed）
-	if visibility != content.Visibility_PUBLIC {
+	if visibility != content.Visibility_VISIBILITY_PUBLIC {
 		return
 	}
 	if authorID <= 0 || contentID <= 0 {

@@ -1,6 +1,7 @@
 package search
 
 import (
+	frontutils "ran-feed/app/front/internal/common/utils"
 	"ran-feed/app/front/internal/types"
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/search/search"
@@ -15,13 +16,13 @@ func assembleSearchContentItems(enriched []*content.ContentItem, highlights map[
 		}
 		item := types.SearchContentItem{
 			ContentId:    it.ContentId,
-			ContentType:  int32(it.ContentType),
+			ContentType:  frontutils.ToEnumValue(it.ContentType).Code,
 			AuthorId:     it.AuthorId,
 			AuthorName:   it.AuthorName,
 			AuthorAvatar: it.AuthorAvatar,
 			Title:        it.Title,
 			CoverUrl:     it.CoverUrl,
-			PublishedAt:  it.PublishedAt,
+			PublishedAt:  it.PublishedAt.AsTime().Unix(),
 			IsLiked:      it.IsLiked,
 			LikeCount:    it.LikeCount,
 		}

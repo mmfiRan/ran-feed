@@ -7,6 +7,7 @@ import (
 	"context"
 
 	"ran-feed/app/front/internal/common/consts"
+	frontutils "ran-feed/app/front/internal/common/utils"
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/pkg/utils"
 
@@ -52,13 +53,13 @@ func (l *FollowLogic) Follow(req *types.FollowFeedReq) (resp *types.FollowFeedRe
 		}
 		items = append(items, types.FollowFeedItem{
 			ContentId:    it.ContentId,
-			ContentType:  int32(it.ContentType),
+			ContentType:  frontutils.ToEnumValue(it.ContentType),
 			AuthorId:     it.AuthorId,
 			AuthorName:   it.AuthorName,
 			AuthorAvatar: it.AuthorAvatar,
 			Title:        it.Title,
 			CoverUrl:     it.CoverUrl,
-			PublishedAt:  it.PublishedAt,
+			PublishedAt:  it.PublishedAt.AsTime().Unix(),
 			IsLiked:      it.IsLiked,
 			LikeCount:    it.LikeCount,
 		})

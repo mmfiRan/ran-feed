@@ -254,7 +254,7 @@ func (r *ContentRepositoryImpl) ListPublishedByAuthor(authorID int64) ([]*model.
 	return q.RanFeedContent.WithContext(r.ctx).
 		Select(q.RanFeedContent.ID, q.RanFeedContent.ContentType, q.RanFeedContent.UserID, q.RanFeedContent.Visibility, q.RanFeedContent.PublishedAt).
 		Where(q.RanFeedContent.UserID.Eq(authorID)).
-		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PUBLISHED))).
+		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED))).
 		Where(q.RanFeedContent.IsDeleted.Eq(0)).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
 		Order(q.RanFeedContent.PublishedAt.Desc()).
@@ -272,8 +272,8 @@ func (r *ContentRepositoryImpl) ListPublishedByAuthorWithinWindow(authorID int64
 	doQuery := q.RanFeedContent.WithContext(r.ctx).
 		Select(q.RanFeedContent.ID, q.RanFeedContent.ContentType, q.RanFeedContent.UserID, q.RanFeedContent.PublishedAt).
 		Where(q.RanFeedContent.UserID.Eq(authorID)).
-		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PUBLISHED))).
-		Where(q.RanFeedContent.Visibility.Eq(int32(content.Visibility_PUBLIC))).
+		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED))).
+		Where(q.RanFeedContent.Visibility.Eq(int32(content.Visibility_VISIBILITY_PUBLIC))).
 		Where(q.RanFeedContent.IsDeleted.Eq(0)).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull())
 	if sinceMillis > 0 {
@@ -352,7 +352,7 @@ func (r *ContentRepositoryImpl) BatchGetPublishedByIDs(contentIDs []int64) (map[
 	rows, err := q.RanFeedContent.WithContext(r.ctx).
 		Select(q.RanFeedContent.ID, q.RanFeedContent.ContentType, q.RanFeedContent.UserID, q.RanFeedContent.Visibility, q.RanFeedContent.PublishedAt).
 		Where(q.RanFeedContent.ID.In(contentIDs...)).
-		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PUBLISHED))).
+		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED))).
 		Where(q.RanFeedContent.IsDeleted.Eq(0)).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
 		Find()
@@ -389,8 +389,8 @@ func (r *ContentRepositoryImpl) BatchGetIndexableByIDs(contentIDs []int64) (map[
 			q.RanFeedContent.UpdatedAt,
 		).
 		Where(q.RanFeedContent.ID.In(contentIDs...)).
-		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PUBLISHED))).
-		Where(q.RanFeedContent.Visibility.Eq(int32(content.Visibility_PUBLIC))).
+		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED))).
+		Where(q.RanFeedContent.Visibility.Eq(int32(content.Visibility_VISIBILITY_PUBLIC))).
 		Where(q.RanFeedContent.IsDeleted.Eq(0)).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
 		Find()
@@ -426,8 +426,8 @@ func (r *ContentRepositoryImpl) ScanIndexableByIDCursor(cursorID int64, limit in
 			q.RanFeedContent.PublishedAt,
 			q.RanFeedContent.UpdatedAt,
 		).
-		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PUBLISHED))).
-		Where(q.RanFeedContent.Visibility.Eq(int32(content.Visibility_PUBLIC))).
+		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED))).
+		Where(q.RanFeedContent.Visibility.Eq(int32(content.Visibility_VISIBILITY_PUBLIC))).
 		Where(q.RanFeedContent.IsDeleted.Eq(0)).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull())
 
@@ -558,9 +558,9 @@ func (r *ContentRepositoryImpl) AdminApproveContent(contentID, operatorID int64,
 	info, err := q.RanFeedContent.WithContext(r.ctx).
 		Where(q.RanFeedContent.ID.Eq(contentID)).
 		Where(q.RanFeedContent.IsDeleted.Eq(0)).
-		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_PENDING_REVIEW))).
+		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW))).
 		UpdateSimple(
-			q.RanFeedContent.Status.Value(int32(content.ContentStatus_PUBLISHED)),
+			q.RanFeedContent.Status.Value(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)),
 			q.RanFeedContent.PublishedAt.Value(publishedAt),
 			q.RanFeedContent.UpdatedBy.Value(operatorID),
 		)

@@ -6,6 +6,7 @@ package feed
 import (
 	"context"
 
+	frontutils "ran-feed/app/front/internal/common/utils"
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
 	"ran-feed/app/rpc/content/content"
@@ -51,13 +52,13 @@ func (l *UserPublishLogic) UserPublish(req *types.UserPublishFeedReq) (resp *typ
 		}
 		items = append(items, types.UserPublishFeedItem{
 			ContentId:    it.ContentId,
-			ContentType:  int32(it.ContentType),
+			ContentType:  frontutils.ToEnumValue(it.ContentType),
 			AuthorId:     it.AuthorId,
 			AuthorName:   it.AuthorName,
 			AuthorAvatar: it.AuthorAvatar,
 			Title:        it.Title,
 			CoverUrl:     it.CoverUrl,
-			PublishedAt:  it.PublishedAt,
+			PublishedAt:  it.PublishedAt.AsTime().Unix(),
 			IsLiked:      it.IsLiked,
 			LikeCount:    it.LikeCount,
 		})

@@ -8,6 +8,8 @@ import (
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // publishedMillis 空时间返回 0
@@ -61,12 +63,12 @@ func buildContentIndexItem(c *model.RanFeedContent, article *model.RanFeedArticl
 		Status:      content.ContentStatus(c.Status),
 		Visibility:  content.Visibility(c.Visibility),
 		AuthorId:    c.UserID,
-		PublishedAt: publishedMillis(c.PublishedAt),
+		PublishedAt: timestamppb.New(time.UnixMilli(publishedMillis(c.PublishedAt))),
 		HotScore:    c.HotScore,
 		Version:     c.UpdatedAt.UnixMilli(),
 	}
 	switch c.ContentType {
-	case int32(content.ContentType_ARTICLE):
+	case int32(content.ContentType_CONTENT_TYPE_ARTICLE):
 		if article != nil {
 			item.Title = article.Title
 			if article.Description != nil {
@@ -74,7 +76,7 @@ func buildContentIndexItem(c *model.RanFeedContent, article *model.RanFeedArticl
 			}
 			item.Body = article.Content
 		}
-	case int32(content.ContentType_VIDEO):
+	case int32(content.ContentType_CONTENT_TYPE_VIDEO):
 		if video != nil {
 			item.Title = video.Title
 		}

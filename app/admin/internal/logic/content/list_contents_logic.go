@@ -6,6 +6,7 @@ package content
 import (
 	"context"
 
+	"ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/content/content"
@@ -55,16 +56,16 @@ func (l *ListContentsLogic) ListContents(req *types.AdminContentListReq) (resp *
 	for _, it := range rpcRes.GetItems() {
 		items = append(items, types.AdminContentListItem{
 			ContentId:     it.GetContentId(),
-			ContentType:   int32(it.GetContentType()),
-			Status:        int32(it.GetStatus()),
-			Visibility:    int32(it.GetVisibility()),
+			ContentType:   utils.ToEnumValue(it.GetContentType()),
+			Status:        utils.ToEnumValue(it.GetStatus()),
+			Visibility:    utils.ToEnumValue(it.GetVisibility()),
 			AuthorId:      it.GetAuthorId(),
 			Title:         it.GetTitle(),
 			LikeCount:     it.GetLikeCount(),
 			FavoriteCount: it.GetFavoriteCount(),
 			CommentCount:  it.GetCommentCount(),
-			PublishedAt:   it.GetPublishedAt(),
-			CreatedAt:     it.GetCreatedAt(),
+			PublishedAt:   it.GetPublishedAt().AsTime().UnixMilli(),
+			CreatedAt:     it.GetCreatedAt().AsTime().UnixMilli(),
 		})
 	}
 
@@ -73,7 +74,7 @@ func (l *ListContentsLogic) ListContents(req *types.AdminContentListReq) (resp *
 		PageQueryResp: types.PageQueryResp{
 			Page:     rpcRes.GetPage(),
 			PageSize: rpcRes.GetPageSize(),
-			Total:    rpcRes.GetTotal(),
+			Total:    uint32(rpcRes.GetTotal()),
 		},
 	}, nil
 }

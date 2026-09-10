@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/logichelper"
 	"ran-feed/app/rpc/content/internal/common/utils/contentcache"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -38,7 +39,7 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 		return nil, errorx.NewMsg("参数错误")
 	}
 	target := in.GetStatus()
-	if target != content.ContentStatus_TAKEN_DOWN && target != content.ContentStatus_PUBLISHED {
+	if target != content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN && target != content.ContentStatus_CONTENT_STATUS_PUBLISHED {
 		return nil, errorx.NewMsg("不支持的目标状态")
 	}
 
@@ -56,7 +57,7 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 		return nil, err
 	}
 	if noop {
-		return &content.AdminSetContentStatusRes{Status: target}, nil
+		return &content.AdminSetContentStatusRes{Status: logichelper.ContentStatusValue(int32(target))}, nil
 	}
 
 	if _, err = l.contentRepo.AdminUpdateStatus(in.ContentId, int32(target), in.GetOperatorId()); err != nil {
@@ -68,7 +69,7 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
-	return &content.AdminSetContentStatusRes{Status: target}, nil
+	return &content.AdminSetContentStatusRes{Status: logichelper.ContentStatusValue(int32(target))}, nil
 }
 
 // validateStatusTransition 校验下架/恢复状态机 返回 noop 表示当前已是目标态无需落库
@@ -81,12 +82,12 @@ func validateStatusTransition(cur, target content.ContentStatus) (noop bool, err
 		return true, nil
 	}
 	switch target {
-	case content.ContentStatus_TAKEN_DOWN:
-		if cur != content.ContentStatus_PUBLISHED {
+	case content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN:
+		if cur != content.ContentStatus_CONTENT_STATUS_PUBLISHED {
 			return false, errorx.NewMsg("仅已发布内容可下架")
 		}
-	case content.ContentStatus_PUBLISHED:
-		if cur != content.ContentStatus_TAKEN_DOWN {
+	case content.ContentStatus_CONTENT_STATUS_PUBLISHED:
+		if cur != content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN {
 			return false, errorx.NewMsg("仅已下架内容可恢复")
 		}
 	default:

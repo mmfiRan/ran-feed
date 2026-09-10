@@ -53,24 +53,24 @@ type (
 		ContentId *int64 `json:"content_id,string,optional" validate:"required"`
 	}
 	ContentDetail {
-		ContentId         int64  `json:"content_id,string"`
-		ContentType       int32  `json:"content_type"`
-		AuthorId          int64  `json:"author_id,string"`
-		AuthorName        string `json:"author_name"`
-		AuthorAvatar      string `json:"author_avatar"`
-		Title             string `json:"title"`
-		Description       string `json:"description"`
-		CoverUrl          string `json:"cover_url"`
-		ArticleContent    string `json:"article_content"`
-		VideoUrl          string `json:"video_url"`
-		VideoDuration     int32  `json:"video_duration"`
-		PublishedAt       int64  `json:"published_at"`
-		LikeCount         int64  `json:"like_count"`
-		FavoriteCount     int64  `json:"favorite_count"`
-		CommentCount      int64  `json:"comment_count"`
-		IsLiked           bool   `json:"is_liked"`
-		IsFavorited       bool   `json:"is_favorited"`
-		IsFollowingAuthor bool   `json:"is_following_author"`
+		ContentId         int64     `json:"content_id,string"`
+		ContentType       EnumValue `json:"content_type"`
+		AuthorId          int64     `json:"author_id,string"`
+		AuthorName        string    `json:"author_name"`
+		AuthorAvatar      string    `json:"author_avatar"`
+		Title             string    `json:"title"`
+		Description       string    `json:"description"`
+		CoverUrl          string    `json:"cover_url"`
+		ArticleContent    string    `json:"article_content"`
+		VideoUrl          string    `json:"video_url"`
+		VideoDuration     int32     `json:"video_duration"`
+		PublishedAt       int64     `json:"published_at"`
+		LikeCount         int64     `json:"like_count"`
+		FavoriteCount     int64     `json:"favorite_count"`
+		CommentCount      int64     `json:"comment_count"`
+		IsLiked           bool      `json:"is_liked"`
+		IsFavorited       bool      `json:"is_favorited"`
+		IsFollowingAuthor bool      `json:"is_following_author"`
 	}
 	GetContentDetailRes {
 		Detail ContentDetail `json:"detail"`

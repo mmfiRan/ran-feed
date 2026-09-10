@@ -35,8 +35,8 @@ func (l *GetUserContentCountLogic) GetUserContentCount(in *content.GetUserConten
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	status := int32(content.ContentStatus_PUBLISHED)
-	visibility := int32(content.Visibility_PUBLIC)
+	status := int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)
+	visibility := int32(content.Visibility_VISIBILITY_PUBLIC)
 
 	cnt, err := l.contentRepo.CountByAuthor(status, visibility, in.UserId)
 	if err != nil {

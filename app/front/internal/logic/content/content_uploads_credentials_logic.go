@@ -36,12 +36,12 @@ func (l *ContentUploadsCredentialsLogic) ContentUploadsCredentials(req *types.Co
 		return nil, errorx.NewMsg("获取用户ID失败")
 	}
 
-	scene, err := transform.ParseEnum[content.ContentUploadsCredentialsReq_Scene](content.ContentUploadsCredentialsReq_Scene_value, *req.Scene)
+	scene, err := transform.ParseEnum[content.UploadScene](content.UploadScene_value, *req.Scene)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("上传场景参数错误"))
 	}
 
-	fileExt, err := transform.ParseEnum[content.ContentUploadsCredentialsReq_FileExt](content.ContentUploadsCredentialsReq_FileExt_value, *req.FileExt)
+	fileExt, err := transform.ParseEnum[content.FileExt](content.FileExt_value, *req.FileExt)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("文件扩展名参数错误"))
 	}
@@ -71,7 +71,7 @@ func (l *ContentUploadsCredentialsLogic) ContentUploadsCredentials(req *types.Co
 			Date:             rpcResp.FormData.Date,
 			Key:              rpcResp.FormData.Key,
 		},
-		ExpiredAt: rpcResp.ExpiredAt,
+		ExpiredAt: rpcResp.ExpiredAt.AsTime().Unix(),
 	}, nil
 
 }

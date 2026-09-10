@@ -72,7 +72,7 @@ func ContentIndexItemToItem(it *content.ContentIndexItem) es.IndexItem {
 		Title:       it.Title,
 		Description: it.Description,
 		Body:        it.Body,
-		PublishedAt: it.PublishedAt,
+		PublishedAt: it.PublishedAt.AsTime().UnixMilli(),
 		HotScore:    it.HotScore,
 		IsDeleted:   0,
 	}

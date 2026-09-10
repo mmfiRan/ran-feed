@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/logichelper"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -18,6 +19,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/mr"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type GetContentDetailLogic struct {
@@ -55,12 +57,12 @@ func (l *GetContentDetailLogic) GetContentDetail(in *content.GetContentDetailReq
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
 	}
-	if contentRow == nil || contentRow.Status != int32(content.ContentStatus_PUBLISHED) {
+	if contentRow == nil || contentRow.Status != int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED) {
 		return nil, errorx.NewMsg("内容不存在")
 	}
 
 	viewerID := in.GetViewerId()
-	if contentRow.Visibility == int32(content.Visibility_PRIVATE) && viewerID != contentRow.UserID {
+	if contentRow.Visibility == int32(content.Visibility_VISIBILITY_PRIVATE) && viewerID != contentRow.UserID {
 		return nil, errorx.NewMsg("内容不存在")
 	}
 
@@ -75,23 +77,24 @@ func (l *GetContentDetailLogic) GetContentDetail(in *content.GetContentDetailReq
 }
 
 func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, viewerID int64) (*content.ContentDetail, error) {
+	contentType := content.ContentType(contentRow.ContentType)
 	detail := &content.ContentDetail{
 		ContentId:   contentRow.ID,
-		ContentType: content.ContentType(contentRow.ContentType),
+		ContentType: logichelper.ContentTypeValue(contentRow.ContentType),
 		AuthorId:    contentRow.UserID,
 	}
 	if contentRow.PublishedAt != nil {
-		detail.PublishedAt = contentRow.PublishedAt.Unix()
+		detail.PublishedAt = timestamppb.New(*contentRow.PublishedAt)
 	}
 
 	var scene interaction.Scene
-	if err := l.fillContentFields(detail, contentRow.ID, content.ContentType(contentRow.ContentType)); err != nil {
+	if err := l.fillContentFields(detail, contentRow.ID, contentType); err != nil {
 		return nil, err
 	}
-	switch detail.ContentType {
-	case content.ContentType_ARTICLE:
+	switch contentType {
+	case content.ContentType_CONTENT_TYPE_ARTICLE:
 		scene = interaction.Scene_ARTICLE
-	case content.ContentType_VIDEO:
+	case content.ContentType_CONTENT_TYPE_VIDEO:
 		scene = interaction.Scene_VIDEO
 	default:
 		return nil, errorx.NewMsg("内容类型错误")
@@ -125,7 +128,7 @@ func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, vi
 
 func (l *GetContentDetailLogic) fillContentFields(detail *content.ContentDetail, contentID int64, contentType content.ContentType) error {
 	switch contentType {
-	case content.ContentType_ARTICLE:
+	case content.ContentType_CONTENT_TYPE_ARTICLE:
 		articleRow, err := l.articleRepo.GetByContentID(contentID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
@@ -141,7 +144,7 @@ func (l *GetContentDetailLogic) fillContentFields(detail *content.ContentDetail,
 		detail.CoverUrl = articleRow.Cover
 		detail.ArticleContent = articleRow.Content
 		return nil
-	case content.ContentType_VIDEO:
+	case content.ContentType_CONTENT_TYPE_VIDEO:
 		videoRow, err := l.videoRepo.GetByContentID(contentID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))

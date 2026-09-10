@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/logichelper"
 	"ran-feed/app/rpc/content/internal/common/utils/contentcache"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/query"
@@ -15,11 +16,6 @@ import (
 	"ran-feed/pkg/snowflake"
 
 	"github.com/zeromicro/go-zero/core/logx"
-)
-
-const (
-	reviewDecisionApprove int32 = 10
-	reviewDecisionReject  int32 = 20
 )
 
 type AdminReviewContentLogic struct {
@@ -47,7 +43,7 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 	if in == nil || in.ContentId <= 0 {
 		return nil, errorx.NewMsg("参数错误")
 	}
-	if in.Decision != content.ReviewDecision_REVIEW_APPROVE && in.Decision != content.ReviewDecision_REVIEW_REJECT {
+	if in.Decision != content.ReviewDecision_REVIEW_DECISION_APPROVE && in.Decision != content.ReviewDecision_REVIEW_DECISION_REJECT {
 		return nil, errorx.NewMsg("不支持的审核决策")
 	}
 
@@ -58,11 +54,11 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 	if row == nil {
 		return nil, errorx.NewMsg("内容不存在")
 	}
-	if content.ContentStatus(row.Status) != content.ContentStatus_PENDING_REVIEW {
+	if content.ContentStatus(row.Status) != content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW {
 		return nil, errorx.NewMsg("内容不在待审状态")
 	}
 
-	approve := in.Decision == content.ReviewDecision_REVIEW_APPROVE
+	approve := in.Decision == content.ReviewDecision_REVIEW_DECISION_APPROVE
 	now := time.Now()
 
 	// 事务内翻状态 + 落审核记录 副作用留到提交后
@@ -78,19 +74,19 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 			if affected == 0 {
 				return errorx.NewMsg("内容不在待审状态")
 			}
-			return reviewRepo.Create(buildReviewDO(in.ContentId, reviewDecisionApprove, "", in.OperatorId))
+			return reviewRepo.Create(buildReviewDO(in.ContentId, int32(content.ReviewDecision_REVIEW_DECISION_APPROVE), "", in.OperatorId))
 		}
 
-		if _, uErr := contentRepo.AdminUpdateStatus(in.ContentId, int32(content.ContentStatus_REJECTED), in.OperatorId); uErr != nil {
+		if _, uErr := contentRepo.AdminUpdateStatus(in.ContentId, int32(content.ContentStatus_CONTENT_STATUS_REJECTED), in.OperatorId); uErr != nil {
 			return uErr
 		}
-		return reviewRepo.Create(buildReviewDO(in.ContentId, reviewDecisionReject, in.RejectReason, in.OperatorId))
+		return reviewRepo.Create(buildReviewDO(in.ContentId, int32(content.ReviewDecision_REVIEW_DECISION_REJECT), in.RejectReason, in.OperatorId))
 	}); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("审核失败"))
 	}
 
 	if !approve {
-		return &content.AdminReviewContentRes{Status: content.ContentStatus_REJECTED}, nil
+		return &content.AdminReviewContentRes{Status: logichelper.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_REJECTED))}, nil
 	}
 
 	// 通过 内容此刻进 feed 触发发布副作用(publish zset + 热榜脏集合 + follower 扩散)
@@ -100,7 +96,7 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
-	return &content.AdminReviewContentRes{Status: content.ContentStatus_PUBLISHED}, nil
+	return &content.AdminReviewContentRes{Status: logichelper.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED))}, nil
 }
 
 func buildReviewDO(contentID int64, decision int32, reason string, operatorID int64) *do.ContentReviewDO {

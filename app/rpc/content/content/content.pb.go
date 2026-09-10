@@ -9,6 +9,9 @@ package content
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	commonpb "ran-feed/pkg/commonpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -25,22 +28,22 @@ const (
 type ContentType int32
 
 const (
-	ContentType_CONTENT_TYPE_UNKNOWN ContentType = 0
-	ContentType_ARTICLE              ContentType = 10
-	ContentType_VIDEO                ContentType = 20
+	ContentType_CONTENT_TYPE_UNSPECIFIED ContentType = 0  // 未指定
+	ContentType_CONTENT_TYPE_ARTICLE     ContentType = 10 // 文章
+	ContentType_CONTENT_TYPE_VIDEO       ContentType = 20 // 视频
 )
 
 // Enum value maps for ContentType.
 var (
 	ContentType_name = map[int32]string{
-		0:  "CONTENT_TYPE_UNKNOWN",
-		10: "ARTICLE",
-		20: "VIDEO",
+		0:  "CONTENT_TYPE_UNSPECIFIED",
+		10: "CONTENT_TYPE_ARTICLE",
+		20: "CONTENT_TYPE_VIDEO",
 	}
 	ContentType_value = map[string]int32{
-		"CONTENT_TYPE_UNKNOWN": 0,
-		"ARTICLE":              10,
-		"VIDEO":                20,
+		"CONTENT_TYPE_UNSPECIFIED": 0,
+		"CONTENT_TYPE_ARTICLE":     10,
+		"CONTENT_TYPE_VIDEO":       20,
 	}
 )
 
@@ -75,37 +78,37 @@ func (ContentType) EnumDescriptor() ([]byte, []int) {
 type ContentStatus int32
 
 const (
-	ContentStatus_STATUS_UNKNOWN ContentStatus = 0
-	ContentStatus_DRAFT          ContentStatus = 10
-	ContentStatus_PROCESSING     ContentStatus = 20
-	ContentStatus_PUBLISHED      ContentStatus = 30
-	ContentStatus_FAILED         ContentStatus = 40
-	ContentStatus_TAKEN_DOWN     ContentStatus = 50 // 管理员下架
-	ContentStatus_PENDING_REVIEW ContentStatus = 60 // 待审核 先审后发 Phase B feat-admin-005 起用
-	ContentStatus_REJECTED       ContentStatus = 70 // 审核拒绝 Phase B feat-admin-005 起用
+	ContentStatus_CONTENT_STATUS_UNSPECIFIED    ContentStatus = 0  // 未指定
+	ContentStatus_CONTENT_STATUS_DRAFT          ContentStatus = 10 // 草稿
+	ContentStatus_CONTENT_STATUS_PROCESSING     ContentStatus = 20 // 处理中
+	ContentStatus_CONTENT_STATUS_PUBLISHED      ContentStatus = 30 // 已发布
+	ContentStatus_CONTENT_STATUS_FAILED         ContentStatus = 40 // 失败
+	ContentStatus_CONTENT_STATUS_TAKEN_DOWN     ContentStatus = 50 // 管理员下架
+	ContentStatus_CONTENT_STATUS_PENDING_REVIEW ContentStatus = 60 // 待审核
+	ContentStatus_CONTENT_STATUS_REJECTED       ContentStatus = 70 // 审核拒绝
 )
 
 // Enum value maps for ContentStatus.
 var (
 	ContentStatus_name = map[int32]string{
-		0:  "STATUS_UNKNOWN",
-		10: "DRAFT",
-		20: "PROCESSING",
-		30: "PUBLISHED",
-		40: "FAILED",
-		50: "TAKEN_DOWN",
-		60: "PENDING_REVIEW",
-		70: "REJECTED",
+		0:  "CONTENT_STATUS_UNSPECIFIED",
+		10: "CONTENT_STATUS_DRAFT",
+		20: "CONTENT_STATUS_PROCESSING",
+		30: "CONTENT_STATUS_PUBLISHED",
+		40: "CONTENT_STATUS_FAILED",
+		50: "CONTENT_STATUS_TAKEN_DOWN",
+		60: "CONTENT_STATUS_PENDING_REVIEW",
+		70: "CONTENT_STATUS_REJECTED",
 	}
 	ContentStatus_value = map[string]int32{
-		"STATUS_UNKNOWN": 0,
-		"DRAFT":          10,
-		"PROCESSING":     20,
-		"PUBLISHED":      30,
-		"FAILED":         40,
-		"TAKEN_DOWN":     50,
-		"PENDING_REVIEW": 60,
-		"REJECTED":       70,
+		"CONTENT_STATUS_UNSPECIFIED":    0,
+		"CONTENT_STATUS_DRAFT":          10,
+		"CONTENT_STATUS_PROCESSING":     20,
+		"CONTENT_STATUS_PUBLISHED":      30,
+		"CONTENT_STATUS_FAILED":         40,
+		"CONTENT_STATUS_TAKEN_DOWN":     50,
+		"CONTENT_STATUS_PENDING_REVIEW": 60,
+		"CONTENT_STATUS_REJECTED":       70,
 	}
 )
 
@@ -140,22 +143,22 @@ func (ContentStatus) EnumDescriptor() ([]byte, []int) {
 type Visibility int32
 
 const (
-	Visibility_VISIBILITY_UNKNOWN Visibility = 0
-	Visibility_PUBLIC             Visibility = 10
-	Visibility_PRIVATE            Visibility = 20
+	Visibility_VISIBILITY_UNSPECIFIED Visibility = 0  // 未指定
+	Visibility_VISIBILITY_PUBLIC      Visibility = 10 // 公开
+	Visibility_VISIBILITY_PRIVATE     Visibility = 20 // 私密
 )
 
 // Enum value maps for Visibility.
 var (
 	Visibility_name = map[int32]string{
-		0:  "VISIBILITY_UNKNOWN",
-		10: "PUBLIC",
-		20: "PRIVATE",
+		0:  "VISIBILITY_UNSPECIFIED",
+		10: "VISIBILITY_PUBLIC",
+		20: "VISIBILITY_PRIVATE",
 	}
 	Visibility_value = map[string]int32{
-		"VISIBILITY_UNKNOWN": 0,
-		"PUBLIC":             10,
-		"PRIVATE":            20,
+		"VISIBILITY_UNSPECIFIED": 0,
+		"VISIBILITY_PUBLIC":      10,
+		"VISIBILITY_PRIVATE":     20,
 	}
 )
 
@@ -186,26 +189,26 @@ func (Visibility) EnumDescriptor() ([]byte, []int) {
 	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{2}
 }
 
-// ReviewDecision 先审后发审核决策 (feat-admin-005)
+// 审核决策枚举
 type ReviewDecision int32
 
 const (
-	ReviewDecision_REVIEW_DECISION_UNKNOWN ReviewDecision = 0
-	ReviewDecision_REVIEW_APPROVE          ReviewDecision = 10 // 通过 转 PUBLISHED 并触发进 feed 副作用
-	ReviewDecision_REVIEW_REJECT           ReviewDecision = 20 // 拒绝 转 REJECTED
+	ReviewDecision_REVIEW_DECISION_UNSPECIFIED ReviewDecision = 0  // 未指定
+	ReviewDecision_REVIEW_DECISION_APPROVE     ReviewDecision = 10 // 通过 转 PUBLISHED 并触发进 feed 副作用
+	ReviewDecision_REVIEW_DECISION_REJECT      ReviewDecision = 20 // 拒绝 转 REJECTED
 )
 
 // Enum value maps for ReviewDecision.
 var (
 	ReviewDecision_name = map[int32]string{
-		0:  "REVIEW_DECISION_UNKNOWN",
-		10: "REVIEW_APPROVE",
-		20: "REVIEW_REJECT",
+		0:  "REVIEW_DECISION_UNSPECIFIED",
+		10: "REVIEW_DECISION_APPROVE",
+		20: "REVIEW_DECISION_REJECT",
 	}
 	ReviewDecision_value = map[string]int32{
-		"REVIEW_DECISION_UNKNOWN": 0,
-		"REVIEW_APPROVE":          10,
-		"REVIEW_REJECT":           20,
+		"REVIEW_DECISION_UNSPECIFIED": 0,
+		"REVIEW_DECISION_APPROVE":     10,
+		"REVIEW_DECISION_REJECT":      20,
 	}
 )
 
@@ -236,254 +239,145 @@ func (ReviewDecision) EnumDescriptor() ([]byte, []int) {
 	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{3}
 }
 
-type ContentUploadsCredentialsReq_Scene int32
+// 上传场景枚举
+type UploadScene int32
 
 const (
-	ContentUploadsCredentialsReq_SCENE_UNKNOWN ContentUploadsCredentialsReq_Scene = 0
-	ContentUploadsCredentialsReq_ARTICLE_COVER ContentUploadsCredentialsReq_Scene = 1
-	ContentUploadsCredentialsReq_VIDEO         ContentUploadsCredentialsReq_Scene = 2
-	ContentUploadsCredentialsReq_AVATAR        ContentUploadsCredentialsReq_Scene = 3
+	UploadScene_UPLOAD_SCENE_UNSPECIFIED   UploadScene = 0 // 未指定
+	UploadScene_UPLOAD_SCENE_ARTICLE_COVER UploadScene = 1 // 文章封面
+	UploadScene_UPLOAD_SCENE_VIDEO         UploadScene = 2 // 视频
+	UploadScene_UPLOAD_SCENE_AVATAR        UploadScene = 3 // 头像
 )
 
-// Enum value maps for ContentUploadsCredentialsReq_Scene.
+// Enum value maps for UploadScene.
 var (
-	ContentUploadsCredentialsReq_Scene_name = map[int32]string{
-		0: "SCENE_UNKNOWN",
-		1: "ARTICLE_COVER",
-		2: "VIDEO",
-		3: "AVATAR",
+	UploadScene_name = map[int32]string{
+		0: "UPLOAD_SCENE_UNSPECIFIED",
+		1: "UPLOAD_SCENE_ARTICLE_COVER",
+		2: "UPLOAD_SCENE_VIDEO",
+		3: "UPLOAD_SCENE_AVATAR",
 	}
-	ContentUploadsCredentialsReq_Scene_value = map[string]int32{
-		"SCENE_UNKNOWN": 0,
-		"ARTICLE_COVER": 1,
-		"VIDEO":         2,
-		"AVATAR":        3,
+	UploadScene_value = map[string]int32{
+		"UPLOAD_SCENE_UNSPECIFIED":   0,
+		"UPLOAD_SCENE_ARTICLE_COVER": 1,
+		"UPLOAD_SCENE_VIDEO":         2,
+		"UPLOAD_SCENE_AVATAR":        3,
 	}
 )
 
-func (x ContentUploadsCredentialsReq_Scene) Enum() *ContentUploadsCredentialsReq_Scene {
-	p := new(ContentUploadsCredentialsReq_Scene)
+func (x UploadScene) Enum() *UploadScene {
+	p := new(UploadScene)
 	*p = x
 	return p
 }
 
-func (x ContentUploadsCredentialsReq_Scene) String() string {
+func (x UploadScene) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (ContentUploadsCredentialsReq_Scene) Descriptor() protoreflect.EnumDescriptor {
+func (UploadScene) Descriptor() protoreflect.EnumDescriptor {
 	return file_app_rpc_content_proto_content_proto_enumTypes[4].Descriptor()
 }
 
-func (ContentUploadsCredentialsReq_Scene) Type() protoreflect.EnumType {
+func (UploadScene) Type() protoreflect.EnumType {
 	return &file_app_rpc_content_proto_content_proto_enumTypes[4]
 }
 
-func (x ContentUploadsCredentialsReq_Scene) Number() protoreflect.EnumNumber {
+func (x UploadScene) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use ContentUploadsCredentialsReq_Scene.Descriptor instead.
-func (ContentUploadsCredentialsReq_Scene) EnumDescriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{2, 0}
+// Deprecated: Use UploadScene.Descriptor instead.
+func (UploadScene) EnumDescriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{4}
 }
 
-type ContentUploadsCredentialsReq_FileExt int32
+// 上传文件扩展名枚举
+type FileExt int32
 
 const (
-	ContentUploadsCredentialsReq_FILE_EXT_UNKNOWN ContentUploadsCredentialsReq_FileExt = 0
-	ContentUploadsCredentialsReq_JPG              ContentUploadsCredentialsReq_FileExt = 1
-	ContentUploadsCredentialsReq_PNG              ContentUploadsCredentialsReq_FileExt = 2
-	ContentUploadsCredentialsReq_GIF              ContentUploadsCredentialsReq_FileExt = 3
-	ContentUploadsCredentialsReq_MP4              ContentUploadsCredentialsReq_FileExt = 4
-	ContentUploadsCredentialsReq_MP3              ContentUploadsCredentialsReq_FileExt = 5
-	ContentUploadsCredentialsReq_DOC              ContentUploadsCredentialsReq_FileExt = 6
-	ContentUploadsCredentialsReq_DOCX             ContentUploadsCredentialsReq_FileExt = 7
-	ContentUploadsCredentialsReq_PDF              ContentUploadsCredentialsReq_FileExt = 8
-	ContentUploadsCredentialsReq_XLS              ContentUploadsCredentialsReq_FileExt = 9
+	FileExt_FILE_EXT_UNSPECIFIED FileExt = 0 // 未指定
+	FileExt_FILE_EXT_JPG         FileExt = 1 // jpg
+	FileExt_FILE_EXT_PNG         FileExt = 2 // png
+	FileExt_FILE_EXT_GIF         FileExt = 3 // gif
+	FileExt_FILE_EXT_MP4         FileExt = 4 // mp4
+	FileExt_FILE_EXT_MP3         FileExt = 5 // mp3
+	FileExt_FILE_EXT_DOC         FileExt = 6 // doc
+	FileExt_FILE_EXT_DOCX        FileExt = 7 // docx
+	FileExt_FILE_EXT_PDF         FileExt = 8 // pdf
+	FileExt_FILE_EXT_XLS         FileExt = 9 // xls
 )
 
-// Enum value maps for ContentUploadsCredentialsReq_FileExt.
+// Enum value maps for FileExt.
 var (
-	ContentUploadsCredentialsReq_FileExt_name = map[int32]string{
-		0: "FILE_EXT_UNKNOWN",
-		1: "JPG",
-		2: "PNG",
-		3: "GIF",
-		4: "MP4",
-		5: "MP3",
-		6: "DOC",
-		7: "DOCX",
-		8: "PDF",
-		9: "XLS",
+	FileExt_name = map[int32]string{
+		0: "FILE_EXT_UNSPECIFIED",
+		1: "FILE_EXT_JPG",
+		2: "FILE_EXT_PNG",
+		3: "FILE_EXT_GIF",
+		4: "FILE_EXT_MP4",
+		5: "FILE_EXT_MP3",
+		6: "FILE_EXT_DOC",
+		7: "FILE_EXT_DOCX",
+		8: "FILE_EXT_PDF",
+		9: "FILE_EXT_XLS",
 	}
-	ContentUploadsCredentialsReq_FileExt_value = map[string]int32{
-		"FILE_EXT_UNKNOWN": 0,
-		"JPG":              1,
-		"PNG":              2,
-		"GIF":              3,
-		"MP4":              4,
-		"MP3":              5,
-		"DOC":              6,
-		"DOCX":             7,
-		"PDF":              8,
-		"XLS":              9,
+	FileExt_value = map[string]int32{
+		"FILE_EXT_UNSPECIFIED": 0,
+		"FILE_EXT_JPG":         1,
+		"FILE_EXT_PNG":         2,
+		"FILE_EXT_GIF":         3,
+		"FILE_EXT_MP4":         4,
+		"FILE_EXT_MP3":         5,
+		"FILE_EXT_DOC":         6,
+		"FILE_EXT_DOCX":        7,
+		"FILE_EXT_PDF":         8,
+		"FILE_EXT_XLS":         9,
 	}
 )
 
-func (x ContentUploadsCredentialsReq_FileExt) Enum() *ContentUploadsCredentialsReq_FileExt {
-	p := new(ContentUploadsCredentialsReq_FileExt)
+func (x FileExt) Enum() *FileExt {
+	p := new(FileExt)
 	*p = x
 	return p
 }
 
-func (x ContentUploadsCredentialsReq_FileExt) String() string {
+func (x FileExt) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (ContentUploadsCredentialsReq_FileExt) Descriptor() protoreflect.EnumDescriptor {
+func (FileExt) Descriptor() protoreflect.EnumDescriptor {
 	return file_app_rpc_content_proto_content_proto_enumTypes[5].Descriptor()
 }
 
-func (ContentUploadsCredentialsReq_FileExt) Type() protoreflect.EnumType {
+func (FileExt) Type() protoreflect.EnumType {
 	return &file_app_rpc_content_proto_content_proto_enumTypes[5]
 }
 
-func (x ContentUploadsCredentialsReq_FileExt) Number() protoreflect.EnumNumber {
+func (x FileExt) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use ContentUploadsCredentialsReq_FileExt.Descriptor instead.
-func (ContentUploadsCredentialsReq_FileExt) EnumDescriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{2, 1}
+// Deprecated: Use FileExt.Descriptor instead.
+func (FileExt) EnumDescriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{5}
 }
 
-type PageReq struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          uint32                 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      uint32                 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PageReq) Reset() {
-	*x = PageReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PageReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PageReq) ProtoMessage() {}
-
-func (x *PageReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PageReq.ProtoReflect.Descriptor instead.
-func (*PageReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *PageReq) GetPage() uint32 {
-	if x != nil {
-		return x.Page
-	}
-	return 0
-}
-
-func (x *PageReq) GetPageSize() uint32 {
-	if x != nil {
-		return x.PageSize
-	}
-	return 0
-}
-
-type PageRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Page          uint32                 `protobuf:"varint,1,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      uint32                 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Total         uint32                 `protobuf:"varint,3,opt,name=total,proto3" json:"total,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PageRes) Reset() {
-	*x = PageRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PageRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PageRes) ProtoMessage() {}
-
-func (x *PageRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PageRes.ProtoReflect.Descriptor instead.
-func (*PageRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *PageRes) GetPage() uint32 {
-	if x != nil {
-		return x.Page
-	}
-	return 0
-}
-
-func (x *PageRes) GetPageSize() uint32 {
-	if x != nil {
-		return x.PageSize
-	}
-	return 0
-}
-
-func (x *PageRes) GetTotal() uint32 {
-	if x != nil {
-		return x.Total
-	}
-	return 0
-}
-
+// ContentUploadsCredentialsReq 获取 OSS 上传凭证
 type ContentUploadsCredentialsReq struct {
-	state         protoimpl.MessageState               `protogen:"open.v1"`
-	UserId        int64                                `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Scene         ContentUploadsCredentialsReq_Scene   `protobuf:"varint,2,opt,name=scene,proto3,enum=content.ContentUploadsCredentialsReq_Scene" json:"scene,omitempty"`
-	FileExt       ContentUploadsCredentialsReq_FileExt `protobuf:"varint,3,opt,name=file_ext,json=fileExt,proto3,enum=content.ContentUploadsCredentialsReq_FileExt" json:"file_ext,omitempty"`
-	FileSize      int64                                `protobuf:"varint,4,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`
-	FileName      string                               `protobuf:"bytes,5,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`                                 // 上传用户 id
+	Scene         UploadScene            `protobuf:"varint,2,opt,name=scene,proto3,enum=ranfeed.content.UploadScene" json:"scene,omitempty"`                // 上传场景
+	FileExt       FileExt                `protobuf:"varint,3,opt,name=file_ext,json=fileExt,proto3,enum=ranfeed.content.FileExt" json:"file_ext,omitempty"` // 文件扩展名
+	FileSize      int64                  `protobuf:"varint,4,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`                           // 文件大小 字节
+	FileName      string                 `protobuf:"bytes,5,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`                            // 文件名
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ContentUploadsCredentialsReq) Reset() {
 	*x = ContentUploadsCredentialsReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[2]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -495,7 +389,7 @@ func (x *ContentUploadsCredentialsReq) String() string {
 func (*ContentUploadsCredentialsReq) ProtoMessage() {}
 
 func (x *ContentUploadsCredentialsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[2]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -508,7 +402,7 @@ func (x *ContentUploadsCredentialsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContentUploadsCredentialsReq.ProtoReflect.Descriptor instead.
 func (*ContentUploadsCredentialsReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{2}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *ContentUploadsCredentialsReq) GetUserId() int64 {
@@ -518,18 +412,18 @@ func (x *ContentUploadsCredentialsReq) GetUserId() int64 {
 	return 0
 }
 
-func (x *ContentUploadsCredentialsReq) GetScene() ContentUploadsCredentialsReq_Scene {
+func (x *ContentUploadsCredentialsReq) GetScene() UploadScene {
 	if x != nil {
 		return x.Scene
 	}
-	return ContentUploadsCredentialsReq_SCENE_UNKNOWN
+	return UploadScene_UPLOAD_SCENE_UNSPECIFIED
 }
 
-func (x *ContentUploadsCredentialsReq) GetFileExt() ContentUploadsCredentialsReq_FileExt {
+func (x *ContentUploadsCredentialsReq) GetFileExt() FileExt {
 	if x != nil {
 		return x.FileExt
 	}
-	return ContentUploadsCredentialsReq_FILE_EXT_UNKNOWN
+	return FileExt_FILE_EXT_UNSPECIFIED
 }
 
 func (x *ContentUploadsCredentialsReq) GetFileSize() int64 {
@@ -546,18 +440,19 @@ func (x *ContentUploadsCredentialsReq) GetFileName() string {
 	return ""
 }
 
+// ContentUploadsCredentialsRes 上传凭证响应
 type ContentUploadsCredentialsRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ObjectKey     string                 `protobuf:"bytes,1,opt,name=object_key,json=objectKey,proto3" json:"object_key,omitempty"`
-	FormData      *OssFormData           `protobuf:"bytes,2,opt,name=form_data,json=formData,proto3" json:"form_data,omitempty"`
-	ExpiredAt     int64                  `protobuf:"varint,3,opt,name=expired_at,json=expiredAt,proto3" json:"expired_at,omitempty"`
+	ObjectKey     string                 `protobuf:"bytes,1,opt,name=object_key,json=objectKey,proto3" json:"object_key,omitempty"` // 对象键
+	FormData      *OssFormData           `protobuf:"bytes,2,opt,name=form_data,json=formData,proto3" json:"form_data,omitempty"`    // 表单数据
+	ExpiredAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=expired_at,json=expiredAt,proto3" json:"expired_at,omitempty"` // 凭证过期时间 秒
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ContentUploadsCredentialsRes) Reset() {
 	*x = ContentUploadsCredentialsRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[3]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -569,7 +464,7 @@ func (x *ContentUploadsCredentialsRes) String() string {
 func (*ContentUploadsCredentialsRes) ProtoMessage() {}
 
 func (x *ContentUploadsCredentialsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[3]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -582,7 +477,7 @@ func (x *ContentUploadsCredentialsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContentUploadsCredentialsRes.ProtoReflect.Descriptor instead.
 func (*ContentUploadsCredentialsRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{3}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ContentUploadsCredentialsRes) GetObjectKey() string {
@@ -599,30 +494,31 @@ func (x *ContentUploadsCredentialsRes) GetFormData() *OssFormData {
 	return nil
 }
 
-func (x *ContentUploadsCredentialsRes) GetExpiredAt() int64 {
+func (x *ContentUploadsCredentialsRes) GetExpiredAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.ExpiredAt
 	}
-	return 0
+	return nil
 }
 
+// OssFormData OSS 表单数据
 type OssFormData struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
-	Host             string                 `protobuf:"bytes,1,opt,name=host,proto3" json:"host,omitempty"`
-	Policy           string                 `protobuf:"bytes,2,opt,name=policy,proto3" json:"policy,omitempty"`
-	Signature        string                 `protobuf:"bytes,3,opt,name=signature,proto3" json:"signature,omitempty"`
-	SecurityToken    string                 `protobuf:"bytes,4,opt,name=security_token,json=securityToken,proto3" json:"security_token,omitempty"`
-	SignatureVersion string                 `protobuf:"bytes,5,opt,name=signature_version,json=signatureVersion,proto3" json:"signature_version,omitempty"`
-	Credential       string                 `protobuf:"bytes,6,opt,name=credential,proto3" json:"credential,omitempty"`
-	Date             string                 `protobuf:"bytes,7,opt,name=date,proto3" json:"date,omitempty"`
-	Key              string                 `protobuf:"bytes,8,opt,name=key,proto3" json:"key,omitempty"`
+	Host             string                 `protobuf:"bytes,1,opt,name=host,proto3" json:"host,omitempty"`                                                 // 上传地址
+	Policy           string                 `protobuf:"bytes,2,opt,name=policy,proto3" json:"policy,omitempty"`                                             // Base64 策略
+	Signature        string                 `protobuf:"bytes,3,opt,name=signature,proto3" json:"signature,omitempty"`                                       // 签名
+	SecurityToken    string                 `protobuf:"bytes,4,opt,name=security_token,json=securityToken,proto3" json:"security_token,omitempty"`          // STS 临时凭证
+	SignatureVersion string                 `protobuf:"bytes,5,opt,name=signature_version,json=signatureVersion,proto3" json:"signature_version,omitempty"` // 签名版本
+	Credential       string                 `protobuf:"bytes,6,opt,name=credential,proto3" json:"credential,omitempty"`                                     // 凭证字符串
+	Date             string                 `protobuf:"bytes,7,opt,name=date,proto3" json:"date,omitempty"`                                                 // UTC 时间
+	Key              string                 `protobuf:"bytes,8,opt,name=key,proto3" json:"key,omitempty"`                                                   // 对象键
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
 
 func (x *OssFormData) Reset() {
 	*x = OssFormData{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[4]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -634,7 +530,7 @@ func (x *OssFormData) String() string {
 func (*OssFormData) ProtoMessage() {}
 
 func (x *OssFormData) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[4]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -647,7 +543,7 @@ func (x *OssFormData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OssFormData.ProtoReflect.Descriptor instead.
 func (*OssFormData) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{4}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *OssFormData) GetHost() string {
@@ -706,6 +602,7 @@ func (x *OssFormData) GetKey() string {
 	return ""
 }
 
+// ArticlePublishReq 发布文章
 type ArticlePublishReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -713,14 +610,14 @@ type ArticlePublishReq struct {
 	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	Cover         string                 `protobuf:"bytes,4,opt,name=cover,proto3" json:"cover,omitempty"`
 	Content       string                 `protobuf:"bytes,5,opt,name=content,proto3" json:"content,omitempty"`
-	Visibility    Visibility             `protobuf:"varint,6,opt,name=visibility,proto3,enum=content.Visibility" json:"visibility,omitempty"`
+	Visibility    Visibility             `protobuf:"varint,6,opt,name=visibility,proto3,enum=ranfeed.content.Visibility" json:"visibility,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ArticlePublishReq) Reset() {
 	*x = ArticlePublishReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[5]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -732,7 +629,7 @@ func (x *ArticlePublishReq) String() string {
 func (*ArticlePublishReq) ProtoMessage() {}
 
 func (x *ArticlePublishReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[5]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -745,7 +642,7 @@ func (x *ArticlePublishReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArticlePublishReq.ProtoReflect.Descriptor instead.
 func (*ArticlePublishReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{5}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ArticlePublishReq) GetUserId() int64 {
@@ -787,19 +684,20 @@ func (x *ArticlePublishReq) GetVisibility() Visibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return Visibility_VISIBILITY_UNKNOWN
+	return Visibility_VISIBILITY_UNSPECIFIED
 }
 
+// ArticlePublishRes 发布文章响应
 type ArticlePublishRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
+	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"` // 新内容 id
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ArticlePublishRes) Reset() {
 	*x = ArticlePublishRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[6]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -811,7 +709,7 @@ func (x *ArticlePublishRes) String() string {
 func (*ArticlePublishRes) ProtoMessage() {}
 
 func (x *ArticlePublishRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[6]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -824,7 +722,7 @@ func (x *ArticlePublishRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArticlePublishRes.ProtoReflect.Descriptor instead.
 func (*ArticlePublishRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{6}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ArticlePublishRes) GetContentId() int64 {
@@ -834,6 +732,7 @@ func (x *ArticlePublishRes) GetContentId() int64 {
 	return 0
 }
 
+// VideoPublishReq 发布视频
 type VideoPublishReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -841,15 +740,15 @@ type VideoPublishReq struct {
 	Description   *string                `protobuf:"bytes,3,opt,name=description,proto3,oneof" json:"description,omitempty"`
 	VideoUrl      string                 `protobuf:"bytes,4,opt,name=video_url,json=videoUrl,proto3" json:"video_url,omitempty"`
 	CoverUrl      string                 `protobuf:"bytes,5,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
-	Duration      int32                  `protobuf:"varint,6,opt,name=duration,proto3" json:"duration,omitempty"`
-	Visibility    Visibility             `protobuf:"varint,7,opt,name=visibility,proto3,enum=content.Visibility" json:"visibility,omitempty"`
+	Duration      int32                  `protobuf:"varint,6,opt,name=duration,proto3" json:"duration,omitempty"` // 视频时长 秒
+	Visibility    Visibility             `protobuf:"varint,7,opt,name=visibility,proto3,enum=ranfeed.content.Visibility" json:"visibility,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *VideoPublishReq) Reset() {
 	*x = VideoPublishReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[7]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -861,7 +760,7 @@ func (x *VideoPublishReq) String() string {
 func (*VideoPublishReq) ProtoMessage() {}
 
 func (x *VideoPublishReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[7]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -874,7 +773,7 @@ func (x *VideoPublishReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VideoPublishReq.ProtoReflect.Descriptor instead.
 func (*VideoPublishReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{7}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *VideoPublishReq) GetUserId() int64 {
@@ -923,19 +822,20 @@ func (x *VideoPublishReq) GetVisibility() Visibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return Visibility_VISIBILITY_UNKNOWN
+	return Visibility_VISIBILITY_UNSPECIFIED
 }
 
+// VideoPublishRes 发布视频响应
 type VideoPublishRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
+	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"` // 新内容 id
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *VideoPublishRes) Reset() {
 	*x = VideoPublishRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[8]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -947,7 +847,7 @@ func (x *VideoPublishRes) String() string {
 func (*VideoPublishRes) ProtoMessage() {}
 
 func (x *VideoPublishRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[8]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -960,7 +860,7 @@ func (x *VideoPublishRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VideoPublishRes.ProtoReflect.Descriptor instead.
 func (*VideoPublishRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{8}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *VideoPublishRes) GetContentId() int64 {
@@ -970,6 +870,7 @@ func (x *VideoPublishRes) GetContentId() int64 {
 	return 0
 }
 
+// GetUserContentCountReq 查用户内容数
 type GetUserContentCountReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -979,7 +880,7 @@ type GetUserContentCountReq struct {
 
 func (x *GetUserContentCountReq) Reset() {
 	*x = GetUserContentCountReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[9]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -991,7 +892,7 @@ func (x *GetUserContentCountReq) String() string {
 func (*GetUserContentCountReq) ProtoMessage() {}
 
 func (x *GetUserContentCountReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[9]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1004,7 +905,7 @@ func (x *GetUserContentCountReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserContentCountReq.ProtoReflect.Descriptor instead.
 func (*GetUserContentCountReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{9}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetUserContentCountReq) GetUserId() int64 {
@@ -1014,6 +915,7 @@ func (x *GetUserContentCountReq) GetUserId() int64 {
 	return 0
 }
 
+// GetUserContentCountRes 用户内容数
 type GetUserContentCountRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentCount  int64                  `protobuf:"varint,1,opt,name=content_count,json=contentCount,proto3" json:"content_count,omitempty"`
@@ -1023,7 +925,7 @@ type GetUserContentCountRes struct {
 
 func (x *GetUserContentCountRes) Reset() {
 	*x = GetUserContentCountRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[10]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1035,7 +937,7 @@ func (x *GetUserContentCountRes) String() string {
 func (*GetUserContentCountRes) ProtoMessage() {}
 
 func (x *GetUserContentCountRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[10]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1048,7 +950,7 @@ func (x *GetUserContentCountRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserContentCountRes.ProtoReflect.Descriptor instead.
 func (*GetUserContentCountRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{10}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetUserContentCountRes) GetContentCount() int64 {
@@ -1058,6 +960,7 @@ func (x *GetUserContentCountRes) GetContentCount() int64 {
 	return 0
 }
 
+// DeleteContentReq 删除内容
 type DeleteContentReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -1068,7 +971,7 @@ type DeleteContentReq struct {
 
 func (x *DeleteContentReq) Reset() {
 	*x = DeleteContentReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[11]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1080,7 +983,7 @@ func (x *DeleteContentReq) String() string {
 func (*DeleteContentReq) ProtoMessage() {}
 
 func (x *DeleteContentReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[11]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1093,7 +996,7 @@ func (x *DeleteContentReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteContentReq.ProtoReflect.Descriptor instead.
 func (*DeleteContentReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{11}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DeleteContentReq) GetUserId() int64 {
@@ -1110,42 +1013,7 @@ func (x *DeleteContentReq) GetContentId() int64 {
 	return 0
 }
 
-type DeleteContentRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteContentRes) Reset() {
-	*x = DeleteContentRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[12]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteContentRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteContentRes) ProtoMessage() {}
-
-func (x *DeleteContentRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[12]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteContentRes.ProtoReflect.Descriptor instead.
-func (*DeleteContentRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{12}
-}
-
+// GetContentDetailReq 内容详情请求 viewer_id 为 0 表示匿名
 type GetContentDetailReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
@@ -1156,7 +1024,7 @@ type GetContentDetailReq struct {
 
 func (x *GetContentDetailReq) Reset() {
 	*x = GetContentDetailReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[13]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1168,7 +1036,7 @@ func (x *GetContentDetailReq) String() string {
 func (*GetContentDetailReq) ProtoMessage() {}
 
 func (x *GetContentDetailReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[13]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1181,7 +1049,7 @@ func (x *GetContentDetailReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetContentDetailReq.ProtoReflect.Descriptor instead.
 func (*GetContentDetailReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{13}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetContentDetailReq) GetContentId() int64 {
@@ -1198,10 +1066,11 @@ func (x *GetContentDetailReq) GetViewerId() int64 {
 	return 0
 }
 
+// ContentDetail 内容详情 含 viewer 相关互动字段
 type ContentDetail struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	ContentId         int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
-	ContentType       ContentType            `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=content.ContentType" json:"content_type,omitempty"`
+	ContentType       *commonpb.EnumValue    `protobuf:"bytes,2,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"` // 内容类型
 	AuthorId          int64                  `protobuf:"varint,3,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`
 	AuthorName        string                 `protobuf:"bytes,4,opt,name=author_name,json=authorName,proto3" json:"author_name,omitempty"`
 	AuthorAvatar      string                 `protobuf:"bytes,5,opt,name=author_avatar,json=authorAvatar,proto3" json:"author_avatar,omitempty"`
@@ -1211,7 +1080,7 @@ type ContentDetail struct {
 	ArticleContent    string                 `protobuf:"bytes,9,opt,name=article_content,json=articleContent,proto3" json:"article_content,omitempty"`
 	VideoUrl          string                 `protobuf:"bytes,10,opt,name=video_url,json=videoUrl,proto3" json:"video_url,omitempty"`
 	VideoDuration     int32                  `protobuf:"varint,11,opt,name=video_duration,json=videoDuration,proto3" json:"video_duration,omitempty"`
-	PublishedAt       int64                  `protobuf:"varint,12,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"`
+	PublishedAt       *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 发布时间 秒
 	LikeCount         int64                  `protobuf:"varint,13,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
 	FavoriteCount     int64                  `protobuf:"varint,14,opt,name=favorite_count,json=favoriteCount,proto3" json:"favorite_count,omitempty"`
 	CommentCount      int64                  `protobuf:"varint,15,opt,name=comment_count,json=commentCount,proto3" json:"comment_count,omitempty"`
@@ -1224,7 +1093,7 @@ type ContentDetail struct {
 
 func (x *ContentDetail) Reset() {
 	*x = ContentDetail{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[14]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1236,7 +1105,7 @@ func (x *ContentDetail) String() string {
 func (*ContentDetail) ProtoMessage() {}
 
 func (x *ContentDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[14]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1249,7 +1118,7 @@ func (x *ContentDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContentDetail.ProtoReflect.Descriptor instead.
 func (*ContentDetail) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{14}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ContentDetail) GetContentId() int64 {
@@ -1259,11 +1128,11 @@ func (x *ContentDetail) GetContentId() int64 {
 	return 0
 }
 
-func (x *ContentDetail) GetContentType() ContentType {
+func (x *ContentDetail) GetContentType() *commonpb.EnumValue {
 	if x != nil {
 		return x.ContentType
 	}
-	return ContentType_CONTENT_TYPE_UNKNOWN
+	return nil
 }
 
 func (x *ContentDetail) GetAuthorId() int64 {
@@ -1329,11 +1198,11 @@ func (x *ContentDetail) GetVideoDuration() int32 {
 	return 0
 }
 
-func (x *ContentDetail) GetPublishedAt() int64 {
+func (x *ContentDetail) GetPublishedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.PublishedAt
 	}
-	return 0
+	return nil
 }
 
 func (x *ContentDetail) GetLikeCount() int64 {
@@ -1378,6 +1247,7 @@ func (x *ContentDetail) GetIsFollowingAuthor() bool {
 	return false
 }
 
+// GetContentDetailRes 内容详情响应
 type GetContentDetailRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Detail        *ContentDetail         `protobuf:"bytes,1,opt,name=detail,proto3" json:"detail,omitempty"`
@@ -1387,7 +1257,7 @@ type GetContentDetailRes struct {
 
 func (x *GetContentDetailRes) Reset() {
 	*x = GetContentDetailRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[15]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1399,7 +1269,7 @@ func (x *GetContentDetailRes) String() string {
 func (*GetContentDetailRes) ProtoMessage() {}
 
 func (x *GetContentDetailRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[15]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1412,7 +1282,7 @@ func (x *GetContentDetailRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetContentDetailRes.ProtoReflect.Descriptor instead.
 func (*GetContentDetailRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{15}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetContentDetailRes) GetDetail() *ContentDetail {
@@ -1422,6 +1292,7 @@ func (x *GetContentDetailRes) GetDetail() *ContentDetail {
 	return nil
 }
 
+// RecommendFeedReq 推荐流请求
 type RecommendFeedReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        *int64                 `protobuf:"varint,1,opt,name=user_id,json=userId,proto3,oneof" json:"user_id,omitempty"`
@@ -1434,7 +1305,7 @@ type RecommendFeedReq struct {
 
 func (x *RecommendFeedReq) Reset() {
 	*x = RecommendFeedReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[16]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1446,7 +1317,7 @@ func (x *RecommendFeedReq) String() string {
 func (*RecommendFeedReq) ProtoMessage() {}
 
 func (x *RecommendFeedReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[16]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1459,7 +1330,7 @@ func (x *RecommendFeedReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecommendFeedReq.ProtoReflect.Descriptor instead.
 func (*RecommendFeedReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{16}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *RecommendFeedReq) GetUserId() int64 {
@@ -1490,6 +1361,7 @@ func (x *RecommendFeedReq) GetSnapshotId() string {
 	return ""
 }
 
+// RecommendFeedRes 推荐流响应
 type RecommendFeedRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*ContentItem         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -1502,7 +1374,7 @@ type RecommendFeedRes struct {
 
 func (x *RecommendFeedRes) Reset() {
 	*x = RecommendFeedRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[17]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1514,7 +1386,7 @@ func (x *RecommendFeedRes) String() string {
 func (*RecommendFeedRes) ProtoMessage() {}
 
 func (x *RecommendFeedRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[17]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1527,7 +1399,7 @@ func (x *RecommendFeedRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecommendFeedRes.ProtoReflect.Descriptor instead.
 func (*RecommendFeedRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{17}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *RecommendFeedRes) GetItems() []*ContentItem {
@@ -1558,6 +1430,7 @@ func (x *RecommendFeedRes) GetSnapshotId() string {
 	return ""
 }
 
+// FollowFeedReq 关注流请求
 type FollowFeedReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -1569,7 +1442,7 @@ type FollowFeedReq struct {
 
 func (x *FollowFeedReq) Reset() {
 	*x = FollowFeedReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[18]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1581,7 +1454,7 @@ func (x *FollowFeedReq) String() string {
 func (*FollowFeedReq) ProtoMessage() {}
 
 func (x *FollowFeedReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[18]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1594,7 +1467,7 @@ func (x *FollowFeedReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FollowFeedReq.ProtoReflect.Descriptor instead.
 func (*FollowFeedReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{18}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *FollowFeedReq) GetUserId() int64 {
@@ -1618,6 +1491,7 @@ func (x *FollowFeedReq) GetPageSize() uint32 {
 	return 0
 }
 
+// FollowFeedRes 关注流响应
 type FollowFeedRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*FollowFeedItem      `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -1629,7 +1503,7 @@ type FollowFeedRes struct {
 
 func (x *FollowFeedRes) Reset() {
 	*x = FollowFeedRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[19]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1641,7 +1515,7 @@ func (x *FollowFeedRes) String() string {
 func (*FollowFeedRes) ProtoMessage() {}
 
 func (x *FollowFeedRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[19]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1654,7 +1528,7 @@ func (x *FollowFeedRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FollowFeedRes.ProtoReflect.Descriptor instead.
 func (*FollowFeedRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{19}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *FollowFeedRes) GetItems() []*FollowFeedItem {
@@ -1678,206 +1552,7 @@ func (x *FollowFeedRes) GetHasMore() bool {
 	return false
 }
 
-type BackfillFollowInboxReq struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	FollowerId    int64                  `protobuf:"varint,1,opt,name=follower_id,json=followerId,proto3" json:"follower_id,omitempty"`
-	FolloweeId    int64                  `protobuf:"varint,2,opt,name=followee_id,json=followeeId,proto3" json:"followee_id,omitempty"`
-	Limit         uint32                 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *BackfillFollowInboxReq) Reset() {
-	*x = BackfillFollowInboxReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[20]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *BackfillFollowInboxReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BackfillFollowInboxReq) ProtoMessage() {}
-
-func (x *BackfillFollowInboxReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[20]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BackfillFollowInboxReq.ProtoReflect.Descriptor instead.
-func (*BackfillFollowInboxReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *BackfillFollowInboxReq) GetFollowerId() int64 {
-	if x != nil {
-		return x.FollowerId
-	}
-	return 0
-}
-
-func (x *BackfillFollowInboxReq) GetFolloweeId() int64 {
-	if x != nil {
-		return x.FolloweeId
-	}
-	return 0
-}
-
-func (x *BackfillFollowInboxReq) GetLimit() uint32 {
-	if x != nil {
-		return x.Limit
-	}
-	return 0
-}
-
-type BackfillFollowInboxRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AddedCount    int32                  `protobuf:"varint,1,opt,name=added_count,json=addedCount,proto3" json:"added_count,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *BackfillFollowInboxRes) Reset() {
-	*x = BackfillFollowInboxRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[21]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *BackfillFollowInboxRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BackfillFollowInboxRes) ProtoMessage() {}
-
-func (x *BackfillFollowInboxRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[21]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BackfillFollowInboxRes.ProtoReflect.Descriptor instead.
-func (*BackfillFollowInboxRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{21}
-}
-
-func (x *BackfillFollowInboxRes) GetAddedCount() int32 {
-	if x != nil {
-		return x.AddedCount
-	}
-	return 0
-}
-
-type PurgeFolloweeFromInboxReq struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	FollowerId    int64                  `protobuf:"varint,1,opt,name=follower_id,json=followerId,proto3" json:"follower_id,omitempty"`
-	FolloweeId    int64                  `protobuf:"varint,2,opt,name=followee_id,json=followeeId,proto3" json:"followee_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PurgeFolloweeFromInboxReq) Reset() {
-	*x = PurgeFolloweeFromInboxReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[22]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PurgeFolloweeFromInboxReq) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PurgeFolloweeFromInboxReq) ProtoMessage() {}
-
-func (x *PurgeFolloweeFromInboxReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[22]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PurgeFolloweeFromInboxReq.ProtoReflect.Descriptor instead.
-func (*PurgeFolloweeFromInboxReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{22}
-}
-
-func (x *PurgeFolloweeFromInboxReq) GetFollowerId() int64 {
-	if x != nil {
-		return x.FollowerId
-	}
-	return 0
-}
-
-func (x *PurgeFolloweeFromInboxReq) GetFolloweeId() int64 {
-	if x != nil {
-		return x.FolloweeId
-	}
-	return 0
-}
-
-type PurgeFolloweeFromInboxRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RemovedCount  int32                  `protobuf:"varint,1,opt,name=removed_count,json=removedCount,proto3" json:"removed_count,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PurgeFolloweeFromInboxRes) Reset() {
-	*x = PurgeFolloweeFromInboxRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[23]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PurgeFolloweeFromInboxRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PurgeFolloweeFromInboxRes) ProtoMessage() {}
-
-func (x *PurgeFolloweeFromInboxRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[23]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PurgeFolloweeFromInboxRes.ProtoReflect.Descriptor instead.
-func (*PurgeFolloweeFromInboxRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{23}
-}
-
-func (x *PurgeFolloweeFromInboxRes) GetRemovedCount() int32 {
-	if x != nil {
-		return x.RemovedCount
-	}
-	return 0
-}
-
+// UserPublishFeedReq 用户发布列表请求
 type UserPublishFeedReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AuthorId      int64                  `protobuf:"varint,1,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`
@@ -1890,7 +1565,7 @@ type UserPublishFeedReq struct {
 
 func (x *UserPublishFeedReq) Reset() {
 	*x = UserPublishFeedReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[24]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1902,7 +1577,7 @@ func (x *UserPublishFeedReq) String() string {
 func (*UserPublishFeedReq) ProtoMessage() {}
 
 func (x *UserPublishFeedReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[24]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1915,7 +1590,7 @@ func (x *UserPublishFeedReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserPublishFeedReq.ProtoReflect.Descriptor instead.
 func (*UserPublishFeedReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{24}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UserPublishFeedReq) GetAuthorId() int64 {
@@ -1946,6 +1621,7 @@ func (x *UserPublishFeedReq) GetPageSize() uint32 {
 	return 0
 }
 
+// UserPublishFeedRes 用户发布列表响应
 type UserPublishFeedRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*ContentItem         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -1957,7 +1633,7 @@ type UserPublishFeedRes struct {
 
 func (x *UserPublishFeedRes) Reset() {
 	*x = UserPublishFeedRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[25]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1969,7 +1645,7 @@ func (x *UserPublishFeedRes) String() string {
 func (*UserPublishFeedRes) ProtoMessage() {}
 
 func (x *UserPublishFeedRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[25]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1982,7 +1658,7 @@ func (x *UserPublishFeedRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserPublishFeedRes.ProtoReflect.Descriptor instead.
 func (*UserPublishFeedRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{25}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *UserPublishFeedRes) GetItems() []*ContentItem {
@@ -2006,6 +1682,7 @@ func (x *UserPublishFeedRes) GetHasMore() bool {
 	return false
 }
 
+// UserFavoriteFeedReq 用户收藏列表请求
 type UserFavoriteFeedReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ViewerId      *int64                 `protobuf:"varint,1,opt,name=viewer_id,json=viewerId,proto3,oneof" json:"viewer_id,omitempty"`
@@ -2018,7 +1695,7 @@ type UserFavoriteFeedReq struct {
 
 func (x *UserFavoriteFeedReq) Reset() {
 	*x = UserFavoriteFeedReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[26]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2030,7 +1707,7 @@ func (x *UserFavoriteFeedReq) String() string {
 func (*UserFavoriteFeedReq) ProtoMessage() {}
 
 func (x *UserFavoriteFeedReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[26]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2043,7 +1720,7 @@ func (x *UserFavoriteFeedReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserFavoriteFeedReq.ProtoReflect.Descriptor instead.
 func (*UserFavoriteFeedReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{26}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *UserFavoriteFeedReq) GetViewerId() int64 {
@@ -2074,6 +1751,7 @@ func (x *UserFavoriteFeedReq) GetPageSize() uint32 {
 	return 0
 }
 
+// UserFavoriteFeedRes 用户收藏列表响应
 type UserFavoriteFeedRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*ContentItem         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -2085,7 +1763,7 @@ type UserFavoriteFeedRes struct {
 
 func (x *UserFavoriteFeedRes) Reset() {
 	*x = UserFavoriteFeedRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[27]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2097,7 +1775,7 @@ func (x *UserFavoriteFeedRes) String() string {
 func (*UserFavoriteFeedRes) ProtoMessage() {}
 
 func (x *UserFavoriteFeedRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[27]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2110,7 +1788,7 @@ func (x *UserFavoriteFeedRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserFavoriteFeedRes.ProtoReflect.Descriptor instead.
 func (*UserFavoriteFeedRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{27}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *UserFavoriteFeedRes) GetItems() []*ContentItem {
@@ -2134,16 +1812,221 @@ func (x *UserFavoriteFeedRes) GetHasMore() bool {
 	return false
 }
 
+// BackfillFollowInboxReq 关注时回填收件箱
+type BackfillFollowInboxReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FollowerId    int64                  `protobuf:"varint,1,opt,name=follower_id,json=followerId,proto3" json:"follower_id,omitempty"`
+	FolloweeId    int64                  `protobuf:"varint,2,opt,name=followee_id,json=followeeId,proto3" json:"followee_id,omitempty"`
+	Limit         uint32                 `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BackfillFollowInboxReq) Reset() {
+	*x = BackfillFollowInboxReq{}
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BackfillFollowInboxReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BackfillFollowInboxReq) ProtoMessage() {}
+
+func (x *BackfillFollowInboxReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BackfillFollowInboxReq.ProtoReflect.Descriptor instead.
+func (*BackfillFollowInboxReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *BackfillFollowInboxReq) GetFollowerId() int64 {
+	if x != nil {
+		return x.FollowerId
+	}
+	return 0
+}
+
+func (x *BackfillFollowInboxReq) GetFolloweeId() int64 {
+	if x != nil {
+		return x.FolloweeId
+	}
+	return 0
+}
+
+func (x *BackfillFollowInboxReq) GetLimit() uint32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+// BackfillFollowInboxRes 回填结果
+type BackfillFollowInboxRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AddedCount    int32                  `protobuf:"varint,1,opt,name=added_count,json=addedCount,proto3" json:"added_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BackfillFollowInboxRes) Reset() {
+	*x = BackfillFollowInboxRes{}
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BackfillFollowInboxRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BackfillFollowInboxRes) ProtoMessage() {}
+
+func (x *BackfillFollowInboxRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BackfillFollowInboxRes.ProtoReflect.Descriptor instead.
+func (*BackfillFollowInboxRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *BackfillFollowInboxRes) GetAddedCount() int32 {
+	if x != nil {
+		return x.AddedCount
+	}
+	return 0
+}
+
+// PurgeFolloweeFromInboxReq 取关后清除收件箱
+type PurgeFolloweeFromInboxReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FollowerId    int64                  `protobuf:"varint,1,opt,name=follower_id,json=followerId,proto3" json:"follower_id,omitempty"`
+	FolloweeId    int64                  `protobuf:"varint,2,opt,name=followee_id,json=followeeId,proto3" json:"followee_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PurgeFolloweeFromInboxReq) Reset() {
+	*x = PurgeFolloweeFromInboxReq{}
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PurgeFolloweeFromInboxReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PurgeFolloweeFromInboxReq) ProtoMessage() {}
+
+func (x *PurgeFolloweeFromInboxReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PurgeFolloweeFromInboxReq.ProtoReflect.Descriptor instead.
+func (*PurgeFolloweeFromInboxReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *PurgeFolloweeFromInboxReq) GetFollowerId() int64 {
+	if x != nil {
+		return x.FollowerId
+	}
+	return 0
+}
+
+func (x *PurgeFolloweeFromInboxReq) GetFolloweeId() int64 {
+	if x != nil {
+		return x.FolloweeId
+	}
+	return 0
+}
+
+// PurgeFolloweeFromInboxRes 清除结果
+type PurgeFolloweeFromInboxRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RemovedCount  int32                  `protobuf:"varint,1,opt,name=removed_count,json=removedCount,proto3" json:"removed_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PurgeFolloweeFromInboxRes) Reset() {
+	*x = PurgeFolloweeFromInboxRes{}
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PurgeFolloweeFromInboxRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PurgeFolloweeFromInboxRes) ProtoMessage() {}
+
+func (x *PurgeFolloweeFromInboxRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PurgeFolloweeFromInboxRes.ProtoReflect.Descriptor instead.
+func (*PurgeFolloweeFromInboxRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *PurgeFolloweeFromInboxRes) GetRemovedCount() int32 {
+	if x != nil {
+		return x.RemovedCount
+	}
+	return 0
+}
+
+// ContentItem 内容列表项
 type ContentItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
-	ContentType   ContentType            `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=content.ContentType" json:"content_type,omitempty"`
+	ContentType   *commonpb.EnumValue    `protobuf:"bytes,2,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"` // 内容类型
 	AuthorId      int64                  `protobuf:"varint,3,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`
 	AuthorName    string                 `protobuf:"bytes,4,opt,name=author_name,json=authorName,proto3" json:"author_name,omitempty"`
 	AuthorAvatar  string                 `protobuf:"bytes,5,opt,name=author_avatar,json=authorAvatar,proto3" json:"author_avatar,omitempty"`
 	Title         string                 `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
 	CoverUrl      string                 `protobuf:"bytes,7,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
-	PublishedAt   int64                  `protobuf:"varint,8,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"`
+	PublishedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 发布时间 秒
 	IsLiked       bool                   `protobuf:"varint,9,opt,name=is_liked,json=isLiked,proto3" json:"is_liked,omitempty"`
 	LikeCount     int64                  `protobuf:"varint,10,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -2152,7 +2035,7 @@ type ContentItem struct {
 
 func (x *ContentItem) Reset() {
 	*x = ContentItem{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[28]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2164,7 +2047,7 @@ func (x *ContentItem) String() string {
 func (*ContentItem) ProtoMessage() {}
 
 func (x *ContentItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[28]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2177,7 +2060,7 @@ func (x *ContentItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContentItem.ProtoReflect.Descriptor instead.
 func (*ContentItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{28}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ContentItem) GetContentId() int64 {
@@ -2187,11 +2070,11 @@ func (x *ContentItem) GetContentId() int64 {
 	return 0
 }
 
-func (x *ContentItem) GetContentType() ContentType {
+func (x *ContentItem) GetContentType() *commonpb.EnumValue {
 	if x != nil {
 		return x.ContentType
 	}
-	return ContentType_CONTENT_TYPE_UNKNOWN
+	return nil
 }
 
 func (x *ContentItem) GetAuthorId() int64 {
@@ -2229,11 +2112,11 @@ func (x *ContentItem) GetCoverUrl() string {
 	return ""
 }
 
-func (x *ContentItem) GetPublishedAt() int64 {
+func (x *ContentItem) GetPublishedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.PublishedAt
 	}
-	return 0
+	return nil
 }
 
 func (x *ContentItem) GetIsLiked() bool {
@@ -2250,16 +2133,17 @@ func (x *ContentItem) GetLikeCount() int64 {
 	return 0
 }
 
+// FollowFeedItem 关注流列表项
 type FollowFeedItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
-	ContentType   ContentType            `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=content.ContentType" json:"content_type,omitempty"`
+	ContentType   *commonpb.EnumValue    `protobuf:"bytes,2,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"` // 内容类型
 	AuthorId      int64                  `protobuf:"varint,3,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`
 	AuthorName    string                 `protobuf:"bytes,4,opt,name=author_name,json=authorName,proto3" json:"author_name,omitempty"`
 	AuthorAvatar  string                 `protobuf:"bytes,5,opt,name=author_avatar,json=authorAvatar,proto3" json:"author_avatar,omitempty"`
 	Title         string                 `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
 	CoverUrl      string                 `protobuf:"bytes,7,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
-	PublishedAt   int64                  `protobuf:"varint,8,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"`
+	PublishedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 发布时间 秒
 	IsLiked       bool                   `protobuf:"varint,9,opt,name=is_liked,json=isLiked,proto3" json:"is_liked,omitempty"`
 	LikeCount     int64                  `protobuf:"varint,10,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -2268,7 +2152,7 @@ type FollowFeedItem struct {
 
 func (x *FollowFeedItem) Reset() {
 	*x = FollowFeedItem{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[29]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2280,7 +2164,7 @@ func (x *FollowFeedItem) String() string {
 func (*FollowFeedItem) ProtoMessage() {}
 
 func (x *FollowFeedItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[29]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2293,7 +2177,7 @@ func (x *FollowFeedItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FollowFeedItem.ProtoReflect.Descriptor instead.
 func (*FollowFeedItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{29}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *FollowFeedItem) GetContentId() int64 {
@@ -2303,11 +2187,11 @@ func (x *FollowFeedItem) GetContentId() int64 {
 	return 0
 }
 
-func (x *FollowFeedItem) GetContentType() ContentType {
+func (x *FollowFeedItem) GetContentType() *commonpb.EnumValue {
 	if x != nil {
 		return x.ContentType
 	}
-	return ContentType_CONTENT_TYPE_UNKNOWN
+	return nil
 }
 
 func (x *FollowFeedItem) GetAuthorId() int64 {
@@ -2345,11 +2229,11 @@ func (x *FollowFeedItem) GetCoverUrl() string {
 	return ""
 }
 
-func (x *FollowFeedItem) GetPublishedAt() int64 {
+func (x *FollowFeedItem) GetPublishedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.PublishedAt
 	}
-	return 0
+	return nil
 }
 
 func (x *FollowFeedItem) GetIsLiked() bool {
@@ -2377,7 +2261,7 @@ type BatchGetContentItemsReq struct {
 
 func (x *BatchGetContentItemsReq) Reset() {
 	*x = BatchGetContentItemsReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[30]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2389,7 +2273,7 @@ func (x *BatchGetContentItemsReq) String() string {
 func (*BatchGetContentItemsReq) ProtoMessage() {}
 
 func (x *BatchGetContentItemsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[30]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2402,7 +2286,7 @@ func (x *BatchGetContentItemsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetContentItemsReq.ProtoReflect.Descriptor instead.
 func (*BatchGetContentItemsReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{30}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *BatchGetContentItemsReq) GetContentIds() []int64 {
@@ -2429,7 +2313,7 @@ type BatchGetContentItemsRes struct {
 
 func (x *BatchGetContentItemsRes) Reset() {
 	*x = BatchGetContentItemsRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[31]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2441,7 +2325,7 @@ func (x *BatchGetContentItemsRes) String() string {
 func (*BatchGetContentItemsRes) ProtoMessage() {}
 
 func (x *BatchGetContentItemsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[31]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2454,7 +2338,7 @@ func (x *BatchGetContentItemsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetContentItemsRes.ProtoReflect.Descriptor instead.
 func (*BatchGetContentItemsRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{31}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *BatchGetContentItemsRes) GetItems() []*ContentItem {
@@ -2468,14 +2352,14 @@ func (x *BatchGetContentItemsRes) GetItems() []*ContentItem {
 type ContentIndexItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
-	ContentType   ContentType            `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=content.ContentType" json:"content_type,omitempty"`
-	Status        ContentStatus          `protobuf:"varint,3,opt,name=status,proto3,enum=content.ContentStatus" json:"status,omitempty"`      // 恒为 PUBLISHED 带上供 search 纯拷贝写入 不再硬编码
-	Visibility    Visibility             `protobuf:"varint,4,opt,name=visibility,proto3,enum=content.Visibility" json:"visibility,omitempty"` // 恒为 PUBLIC
-	AuthorId      int64                  `protobuf:"varint,5,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`             // content.user_id
+	ContentType   ContentType            `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=ranfeed.content.ContentType" json:"content_type,omitempty"`
+	Status        ContentStatus          `protobuf:"varint,3,opt,name=status,proto3,enum=ranfeed.content.ContentStatus" json:"status,omitempty"`      // 恒为 PUBLISHED 带上供 search 纯拷贝写入 不再硬编码
+	Visibility    Visibility             `protobuf:"varint,4,opt,name=visibility,proto3,enum=ranfeed.content.Visibility" json:"visibility,omitempty"` // 恒为 PUBLIC
+	AuthorId      int64                  `protobuf:"varint,5,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`                     // content.user_id
 	Title         string                 `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
-	Description   string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`                     // article.description 视频为空
-	Body          string                 `protobuf:"bytes,8,opt,name=body,proto3" json:"body,omitempty"`                                   // article.content 正文 视频为空
-	PublishedAt   int64                  `protobuf:"varint,9,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 毫秒
+	Description   string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`                    // article.description 视频为空
+	Body          string                 `protobuf:"bytes,8,opt,name=body,proto3" json:"body,omitempty"`                                  // article.content 正文 视频为空
+	PublishedAt   *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 发布时间 毫秒
 	HotScore      float64                `protobuf:"fixed64,10,opt,name=hot_score,json=hotScore,proto3" json:"hot_score,omitempty"`
 	Version       int64                  `protobuf:"varint,11,opt,name=version,proto3" json:"version,omitempty"` // content.updated_at 毫秒 供全量重建 ES external version
 	unknownFields protoimpl.UnknownFields
@@ -2484,7 +2368,7 @@ type ContentIndexItem struct {
 
 func (x *ContentIndexItem) Reset() {
 	*x = ContentIndexItem{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[32]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2496,7 +2380,7 @@ func (x *ContentIndexItem) String() string {
 func (*ContentIndexItem) ProtoMessage() {}
 
 func (x *ContentIndexItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[32]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2509,7 +2393,7 @@ func (x *ContentIndexItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ContentIndexItem.ProtoReflect.Descriptor instead.
 func (*ContentIndexItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{32}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ContentIndexItem) GetContentId() int64 {
@@ -2523,21 +2407,21 @@ func (x *ContentIndexItem) GetContentType() ContentType {
 	if x != nil {
 		return x.ContentType
 	}
-	return ContentType_CONTENT_TYPE_UNKNOWN
+	return ContentType_CONTENT_TYPE_UNSPECIFIED
 }
 
 func (x *ContentIndexItem) GetStatus() ContentStatus {
 	if x != nil {
 		return x.Status
 	}
-	return ContentStatus_STATUS_UNKNOWN
+	return ContentStatus_CONTENT_STATUS_UNSPECIFIED
 }
 
 func (x *ContentIndexItem) GetVisibility() Visibility {
 	if x != nil {
 		return x.Visibility
 	}
-	return Visibility_VISIBILITY_UNKNOWN
+	return Visibility_VISIBILITY_UNSPECIFIED
 }
 
 func (x *ContentIndexItem) GetAuthorId() int64 {
@@ -2568,11 +2452,11 @@ func (x *ContentIndexItem) GetBody() string {
 	return ""
 }
 
-func (x *ContentIndexItem) GetPublishedAt() int64 {
+func (x *ContentIndexItem) GetPublishedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.PublishedAt
 	}
-	return 0
+	return nil
 }
 
 func (x *ContentIndexItem) GetHotScore() float64 {
@@ -2599,7 +2483,7 @@ type BatchGetContentForIndexReq struct {
 
 func (x *BatchGetContentForIndexReq) Reset() {
 	*x = BatchGetContentForIndexReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[33]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2611,7 +2495,7 @@ func (x *BatchGetContentForIndexReq) String() string {
 func (*BatchGetContentForIndexReq) ProtoMessage() {}
 
 func (x *BatchGetContentForIndexReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[33]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2624,7 +2508,7 @@ func (x *BatchGetContentForIndexReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetContentForIndexReq.ProtoReflect.Descriptor instead.
 func (*BatchGetContentForIndexReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{33}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *BatchGetContentForIndexReq) GetContentIds() []int64 {
@@ -2634,6 +2518,7 @@ func (x *BatchGetContentForIndexReq) GetContentIds() []int64 {
 	return nil
 }
 
+// BatchGetContentForIndexRes 批量索引投影响应
 type BatchGetContentForIndexRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*ContentIndexItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -2643,7 +2528,7 @@ type BatchGetContentForIndexRes struct {
 
 func (x *BatchGetContentForIndexRes) Reset() {
 	*x = BatchGetContentForIndexRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[34]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2655,7 +2540,7 @@ func (x *BatchGetContentForIndexRes) String() string {
 func (*BatchGetContentForIndexRes) ProtoMessage() {}
 
 func (x *BatchGetContentForIndexRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[34]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2668,7 +2553,7 @@ func (x *BatchGetContentForIndexRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetContentForIndexRes.ProtoReflect.Descriptor instead.
 func (*BatchGetContentForIndexRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{34}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *BatchGetContentForIndexRes) GetItems() []*ContentIndexItem {
@@ -2689,7 +2574,7 @@ type ListContentForIndexReq struct {
 
 func (x *ListContentForIndexReq) Reset() {
 	*x = ListContentForIndexReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[35]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2701,7 +2586,7 @@ func (x *ListContentForIndexReq) String() string {
 func (*ListContentForIndexReq) ProtoMessage() {}
 
 func (x *ListContentForIndexReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[35]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2714,7 +2599,7 @@ func (x *ListContentForIndexReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListContentForIndexReq.ProtoReflect.Descriptor instead.
 func (*ListContentForIndexReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{35}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *ListContentForIndexReq) GetCursor() int64 {
@@ -2731,6 +2616,7 @@ func (x *ListContentForIndexReq) GetLimit() int32 {
 	return 0
 }
 
+// ListContentForIndexRes 全量索引投影响应
 type ListContentForIndexRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*ContentIndexItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -2740,7 +2626,7 @@ type ListContentForIndexRes struct {
 
 func (x *ListContentForIndexRes) Reset() {
 	*x = ListContentForIndexRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[36]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2752,7 +2638,7 @@ func (x *ListContentForIndexRes) String() string {
 func (*ListContentForIndexRes) ProtoMessage() {}
 
 func (x *ListContentForIndexRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[36]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2765,7 +2651,7 @@ func (x *ListContentForIndexRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListContentForIndexRes.ProtoReflect.Descriptor instead.
 func (*ListContentForIndexRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{36}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *ListContentForIndexRes) GetItems() []*ContentIndexItem {
@@ -2779,23 +2665,23 @@ func (x *ListContentForIndexRes) GetItems() []*ContentIndexItem {
 type AdminContentItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
-	ContentType   ContentType            `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=content.ContentType" json:"content_type,omitempty"`
-	Status        ContentStatus          `protobuf:"varint,3,opt,name=status,proto3,enum=content.ContentStatus" json:"status,omitempty"`
-	Visibility    Visibility             `protobuf:"varint,4,opt,name=visibility,proto3,enum=content.Visibility" json:"visibility,omitempty"`
+	ContentType   *commonpb.EnumValue    `protobuf:"bytes,2,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"` // 内容类型
+	Status        *commonpb.EnumValue    `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`                              // 内容状态
+	Visibility    *commonpb.EnumValue    `protobuf:"bytes,4,opt,name=visibility,proto3" json:"visibility,omitempty"`                      // 可见性
 	AuthorId      int64                  `protobuf:"varint,5,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`
 	Title         string                 `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
 	LikeCount     int64                  `protobuf:"varint,7,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
 	FavoriteCount int64                  `protobuf:"varint,8,opt,name=favorite_count,json=favoriteCount,proto3" json:"favorite_count,omitempty"`
 	CommentCount  int64                  `protobuf:"varint,9,opt,name=comment_count,json=commentCount,proto3" json:"comment_count,omitempty"`
-	PublishedAt   int64                  `protobuf:"varint,10,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 毫秒 0 表示未发布
-	CreatedAt     int64                  `protobuf:"varint,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`       // 毫秒
+	PublishedAt   *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 发布时间 毫秒 0 表示未发布
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`       // 创建时间 毫秒
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AdminContentItem) Reset() {
 	*x = AdminContentItem{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[37]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2807,7 +2693,7 @@ func (x *AdminContentItem) String() string {
 func (*AdminContentItem) ProtoMessage() {}
 
 func (x *AdminContentItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[37]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2820,7 +2706,7 @@ func (x *AdminContentItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminContentItem.ProtoReflect.Descriptor instead.
 func (*AdminContentItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{37}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *AdminContentItem) GetContentId() int64 {
@@ -2830,25 +2716,25 @@ func (x *AdminContentItem) GetContentId() int64 {
 	return 0
 }
 
-func (x *AdminContentItem) GetContentType() ContentType {
+func (x *AdminContentItem) GetContentType() *commonpb.EnumValue {
 	if x != nil {
 		return x.ContentType
 	}
-	return ContentType_CONTENT_TYPE_UNKNOWN
+	return nil
 }
 
-func (x *AdminContentItem) GetStatus() ContentStatus {
+func (x *AdminContentItem) GetStatus() *commonpb.EnumValue {
 	if x != nil {
 		return x.Status
 	}
-	return ContentStatus_STATUS_UNKNOWN
+	return nil
 }
 
-func (x *AdminContentItem) GetVisibility() Visibility {
+func (x *AdminContentItem) GetVisibility() *commonpb.EnumValue {
 	if x != nil {
 		return x.Visibility
 	}
-	return Visibility_VISIBILITY_UNKNOWN
+	return nil
 }
 
 func (x *AdminContentItem) GetAuthorId() int64 {
@@ -2886,25 +2772,25 @@ func (x *AdminContentItem) GetCommentCount() int64 {
 	return 0
 }
 
-func (x *AdminContentItem) GetPublishedAt() int64 {
+func (x *AdminContentItem) GetPublishedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.PublishedAt
 	}
-	return 0
+	return nil
 }
 
-func (x *AdminContentItem) GetCreatedAt() int64 {
+func (x *AdminContentItem) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
-	return 0
+	return nil
 }
 
-// AdminListContentsReq 多条件筛选 + id keyset 游标分页 status/content_type/author 均可选
+// AdminListContentsReq 多条件筛选 + offset 分页 status/content_type/author 均可选
 type AdminListContentsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        *ContentStatus         `protobuf:"varint,1,opt,name=status,proto3,enum=content.ContentStatus,oneof" json:"status,omitempty"`
-	ContentType   *ContentType           `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=content.ContentType,oneof" json:"content_type,omitempty"`
+	Status        *ContentStatus         `protobuf:"varint,1,opt,name=status,proto3,enum=ranfeed.content.ContentStatus,oneof" json:"status,omitempty"`
+	ContentType   *ContentType           `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=ranfeed.content.ContentType,oneof" json:"content_type,omitempty"`
 	AuthorId      *int64                 `protobuf:"varint,3,opt,name=author_id,json=authorId,proto3,oneof" json:"author_id,omitempty"`
 	Page          uint32                 `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"` // 页从1
 	PageSize      uint32                 `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
@@ -2914,7 +2800,7 @@ type AdminListContentsReq struct {
 
 func (x *AdminListContentsReq) Reset() {
 	*x = AdminListContentsReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[38]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2926,7 +2812,7 @@ func (x *AdminListContentsReq) String() string {
 func (*AdminListContentsReq) ProtoMessage() {}
 
 func (x *AdminListContentsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[38]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2939,21 +2825,21 @@ func (x *AdminListContentsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListContentsReq.ProtoReflect.Descriptor instead.
 func (*AdminListContentsReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{38}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *AdminListContentsReq) GetStatus() ContentStatus {
 	if x != nil && x.Status != nil {
 		return *x.Status
 	}
-	return ContentStatus_STATUS_UNKNOWN
+	return ContentStatus_CONTENT_STATUS_UNSPECIFIED
 }
 
 func (x *AdminListContentsReq) GetContentType() ContentType {
 	if x != nil && x.ContentType != nil {
 		return *x.ContentType
 	}
-	return ContentType_CONTENT_TYPE_UNKNOWN
+	return ContentType_CONTENT_TYPE_UNSPECIFIED
 }
 
 func (x *AdminListContentsReq) GetAuthorId() int64 {
@@ -2977,10 +2863,11 @@ func (x *AdminListContentsReq) GetPageSize() uint32 {
 	return 0
 }
 
+// AdminListContentsRes 管理端内容列表响应
 type AdminListContentsRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*AdminContentItem    `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         uint32                 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	Page          uint32                 `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      uint32                 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -2989,7 +2876,7 @@ type AdminListContentsRes struct {
 
 func (x *AdminListContentsRes) Reset() {
 	*x = AdminListContentsRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[39]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3001,7 +2888,7 @@ func (x *AdminListContentsRes) String() string {
 func (*AdminListContentsRes) ProtoMessage() {}
 
 func (x *AdminListContentsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[39]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3014,7 +2901,7 @@ func (x *AdminListContentsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListContentsRes.ProtoReflect.Descriptor instead.
 func (*AdminListContentsRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{39}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *AdminListContentsRes) GetItems() []*AdminContentItem {
@@ -3024,7 +2911,7 @@ func (x *AdminListContentsRes) GetItems() []*AdminContentItem {
 	return nil
 }
 
-func (x *AdminListContentsRes) GetTotal() uint32 {
+func (x *AdminListContentsRes) GetTotal() int64 {
 	if x != nil {
 		return x.Total
 	}
@@ -3045,6 +2932,7 @@ func (x *AdminListContentsRes) GetPageSize() uint32 {
 	return 0
 }
 
+// AdminGetContentDetailReq 管理端内容详情请求
 type AdminGetContentDetailReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
@@ -3054,7 +2942,7 @@ type AdminGetContentDetailReq struct {
 
 func (x *AdminGetContentDetailReq) Reset() {
 	*x = AdminGetContentDetailReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[40]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3066,7 +2954,7 @@ func (x *AdminGetContentDetailReq) String() string {
 func (*AdminGetContentDetailReq) ProtoMessage() {}
 
 func (x *AdminGetContentDetailReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[40]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3079,7 +2967,7 @@ func (x *AdminGetContentDetailReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetContentDetailReq.ProtoReflect.Descriptor instead.
 func (*AdminGetContentDetailReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{40}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *AdminGetContentDetailReq) GetContentId() int64 {
@@ -3093,9 +2981,9 @@ func (x *AdminGetContentDetailReq) GetContentId() int64 {
 type AdminContentDetail struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	ContentId      int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
-	ContentType    ContentType            `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=content.ContentType" json:"content_type,omitempty"`
-	Status         ContentStatus          `protobuf:"varint,3,opt,name=status,proto3,enum=content.ContentStatus" json:"status,omitempty"`
-	Visibility     Visibility             `protobuf:"varint,4,opt,name=visibility,proto3,enum=content.Visibility" json:"visibility,omitempty"`
+	ContentType    *commonpb.EnumValue    `protobuf:"bytes,2,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"` // 内容类型
+	Status         *commonpb.EnumValue    `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`                              // 内容状态
+	Visibility     *commonpb.EnumValue    `protobuf:"bytes,4,opt,name=visibility,proto3" json:"visibility,omitempty"`                      // 可见性
 	AuthorId       int64                  `protobuf:"varint,5,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`
 	Title          string                 `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
 	Description    string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
@@ -3106,16 +2994,16 @@ type AdminContentDetail struct {
 	LikeCount      int64                  `protobuf:"varint,12,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
 	FavoriteCount  int64                  `protobuf:"varint,13,opt,name=favorite_count,json=favoriteCount,proto3" json:"favorite_count,omitempty"`
 	CommentCount   int64                  `protobuf:"varint,14,opt,name=comment_count,json=commentCount,proto3" json:"comment_count,omitempty"`
-	PublishedAt    int64                  `protobuf:"varint,15,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 毫秒 0 表示未发布
-	CreatedAt      int64                  `protobuf:"varint,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`       // 毫秒
-	UpdatedAt      int64                  `protobuf:"varint,17,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`       // 毫秒
+	PublishedAt    *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 发布时间 毫秒 0 表示未发布
+	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`       // 创建时间 毫秒
+	UpdatedAt      *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`       // 更新时间 毫秒
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
 
 func (x *AdminContentDetail) Reset() {
 	*x = AdminContentDetail{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[41]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3127,7 +3015,7 @@ func (x *AdminContentDetail) String() string {
 func (*AdminContentDetail) ProtoMessage() {}
 
 func (x *AdminContentDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[41]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3140,7 +3028,7 @@ func (x *AdminContentDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminContentDetail.ProtoReflect.Descriptor instead.
 func (*AdminContentDetail) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{41}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *AdminContentDetail) GetContentId() int64 {
@@ -3150,25 +3038,25 @@ func (x *AdminContentDetail) GetContentId() int64 {
 	return 0
 }
 
-func (x *AdminContentDetail) GetContentType() ContentType {
+func (x *AdminContentDetail) GetContentType() *commonpb.EnumValue {
 	if x != nil {
 		return x.ContentType
 	}
-	return ContentType_CONTENT_TYPE_UNKNOWN
+	return nil
 }
 
-func (x *AdminContentDetail) GetStatus() ContentStatus {
+func (x *AdminContentDetail) GetStatus() *commonpb.EnumValue {
 	if x != nil {
 		return x.Status
 	}
-	return ContentStatus_STATUS_UNKNOWN
+	return nil
 }
 
-func (x *AdminContentDetail) GetVisibility() Visibility {
+func (x *AdminContentDetail) GetVisibility() *commonpb.EnumValue {
 	if x != nil {
 		return x.Visibility
 	}
-	return Visibility_VISIBILITY_UNKNOWN
+	return nil
 }
 
 func (x *AdminContentDetail) GetAuthorId() int64 {
@@ -3241,27 +3129,28 @@ func (x *AdminContentDetail) GetCommentCount() int64 {
 	return 0
 }
 
-func (x *AdminContentDetail) GetPublishedAt() int64 {
+func (x *AdminContentDetail) GetPublishedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.PublishedAt
 	}
-	return 0
+	return nil
 }
 
-func (x *AdminContentDetail) GetCreatedAt() int64 {
+func (x *AdminContentDetail) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
-	return 0
+	return nil
 }
 
-func (x *AdminContentDetail) GetUpdatedAt() int64 {
+func (x *AdminContentDetail) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
 	}
-	return 0
+	return nil
 }
 
+// AdminGetContentDetailRes 管理端内容详情响应
 type AdminGetContentDetailRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Detail        *AdminContentDetail    `protobuf:"bytes,1,opt,name=detail,proto3" json:"detail,omitempty"`
@@ -3271,7 +3160,7 @@ type AdminGetContentDetailRes struct {
 
 func (x *AdminGetContentDetailRes) Reset() {
 	*x = AdminGetContentDetailRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[42]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3283,7 +3172,7 @@ func (x *AdminGetContentDetailRes) String() string {
 func (*AdminGetContentDetailRes) ProtoMessage() {}
 
 func (x *AdminGetContentDetailRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[42]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3296,7 +3185,7 @@ func (x *AdminGetContentDetailRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetContentDetailRes.ProtoReflect.Descriptor instead.
 func (*AdminGetContentDetailRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{42}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *AdminGetContentDetailRes) GetDetail() *AdminContentDetail {
@@ -3306,11 +3195,11 @@ func (x *AdminGetContentDetailRes) GetDetail() *AdminContentDetail {
 	return nil
 }
 
-// AdminSetContentStatusReq 下架/恢复 本轮支持 TAKEN_DOWN(下架) 与 PUBLISHED(恢复)
+// AdminSetContentStatusReq 下架/恢复 支持 TAKEN_DOWN(下架) 与 PUBLISHED(恢复)
 type AdminSetContentStatusReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
-	Status        ContentStatus          `protobuf:"varint,2,opt,name=status,proto3,enum=content.ContentStatus" json:"status,omitempty"`
+	Status        ContentStatus          `protobuf:"varint,2,opt,name=status,proto3,enum=ranfeed.content.ContentStatus" json:"status,omitempty"`
 	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"` // 操作管理员 id 落 updated_by
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -3318,7 +3207,7 @@ type AdminSetContentStatusReq struct {
 
 func (x *AdminSetContentStatusReq) Reset() {
 	*x = AdminSetContentStatusReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[43]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3330,7 +3219,7 @@ func (x *AdminSetContentStatusReq) String() string {
 func (*AdminSetContentStatusReq) ProtoMessage() {}
 
 func (x *AdminSetContentStatusReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[43]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3343,7 +3232,7 @@ func (x *AdminSetContentStatusReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminSetContentStatusReq.ProtoReflect.Descriptor instead.
 func (*AdminSetContentStatusReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{43}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *AdminSetContentStatusReq) GetContentId() int64 {
@@ -3357,7 +3246,7 @@ func (x *AdminSetContentStatusReq) GetStatus() ContentStatus {
 	if x != nil {
 		return x.Status
 	}
-	return ContentStatus_STATUS_UNKNOWN
+	return ContentStatus_CONTENT_STATUS_UNSPECIFIED
 }
 
 func (x *AdminSetContentStatusReq) GetOperatorId() int64 {
@@ -3367,16 +3256,17 @@ func (x *AdminSetContentStatusReq) GetOperatorId() int64 {
 	return 0
 }
 
+// AdminSetContentStatusRes 状态变更响应
 type AdminSetContentStatusRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        ContentStatus          `protobuf:"varint,1,opt,name=status,proto3,enum=content.ContentStatus" json:"status,omitempty"` // 变更后状态
+	Status        *commonpb.EnumValue    `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"` // 变更后状态
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AdminSetContentStatusRes) Reset() {
 	*x = AdminSetContentStatusRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[44]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3388,7 +3278,7 @@ func (x *AdminSetContentStatusRes) String() string {
 func (*AdminSetContentStatusRes) ProtoMessage() {}
 
 func (x *AdminSetContentStatusRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[44]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3401,21 +3291,21 @@ func (x *AdminSetContentStatusRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminSetContentStatusRes.ProtoReflect.Descriptor instead.
 func (*AdminSetContentStatusRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{44}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{41}
 }
 
-func (x *AdminSetContentStatusRes) GetStatus() ContentStatus {
+func (x *AdminSetContentStatusRes) GetStatus() *commonpb.EnumValue {
 	if x != nil {
 		return x.Status
 	}
-	return ContentStatus_STATUS_UNKNOWN
+	return nil
 }
 
 // AdminReviewContentReq 先审后发审核 仅对 PENDING_REVIEW 内容生效
 type AdminReviewContentReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
-	Decision      ReviewDecision         `protobuf:"varint,2,opt,name=decision,proto3,enum=content.ReviewDecision" json:"decision,omitempty"`
+	Decision      ReviewDecision         `protobuf:"varint,2,opt,name=decision,proto3,enum=ranfeed.content.ReviewDecision" json:"decision,omitempty"`
 	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`      // 审核管理员 id 落 created_by 与 updated_by
 	RejectReason  string                 `protobuf:"bytes,4,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"` // 拒绝理由 通过时忽略
 	unknownFields protoimpl.UnknownFields
@@ -3424,7 +3314,7 @@ type AdminReviewContentReq struct {
 
 func (x *AdminReviewContentReq) Reset() {
 	*x = AdminReviewContentReq{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[45]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3436,7 +3326,7 @@ func (x *AdminReviewContentReq) String() string {
 func (*AdminReviewContentReq) ProtoMessage() {}
 
 func (x *AdminReviewContentReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[45]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3449,7 +3339,7 @@ func (x *AdminReviewContentReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminReviewContentReq.ProtoReflect.Descriptor instead.
 func (*AdminReviewContentReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{45}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *AdminReviewContentReq) GetContentId() int64 {
@@ -3463,7 +3353,7 @@ func (x *AdminReviewContentReq) GetDecision() ReviewDecision {
 	if x != nil {
 		return x.Decision
 	}
-	return ReviewDecision_REVIEW_DECISION_UNKNOWN
+	return ReviewDecision_REVIEW_DECISION_UNSPECIFIED
 }
 
 func (x *AdminReviewContentReq) GetOperatorId() int64 {
@@ -3480,16 +3370,17 @@ func (x *AdminReviewContentReq) GetRejectReason() string {
 	return ""
 }
 
+// AdminReviewContentRes 审核结果响应
 type AdminReviewContentRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        ContentStatus          `protobuf:"varint,1,opt,name=status,proto3,enum=content.ContentStatus" json:"status,omitempty"` // 变更后状态 PUBLISHED 或 REJECTED
+	Status        *commonpb.EnumValue    `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"` // 变更后状态 PUBLISHED 或 REJECTED
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AdminReviewContentRes) Reset() {
 	*x = AdminReviewContentRes{}
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[46]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3501,7 +3392,7 @@ func (x *AdminReviewContentRes) String() string {
 func (*AdminReviewContentRes) ProtoMessage() {}
 
 func (x *AdminReviewContentRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_content_proto_content_proto_msgTypes[46]
+	mi := &file_app_rpc_content_proto_content_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3514,57 +3405,33 @@ func (x *AdminReviewContentRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminReviewContentRes.ProtoReflect.Descriptor instead.
 func (*AdminReviewContentRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{46}
+	return file_app_rpc_content_proto_content_proto_rawDescGZIP(), []int{43}
 }
 
-func (x *AdminReviewContentRes) GetStatus() ContentStatus {
+func (x *AdminReviewContentRes) GetStatus() *commonpb.EnumValue {
 	if x != nil {
 		return x.Status
 	}
-	return ContentStatus_STATUS_UNKNOWN
+	return nil
 }
 
 var File_app_rpc_content_proto_content_proto protoreflect.FileDescriptor
 
 const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\n" +
-	"#app/rpc/content/proto/content.proto\x12\acontent\":\n" +
-	"\aPageReq\x12\x12\n" +
-	"\x04page\x18\x01 \x01(\rR\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\rR\bpageSize\"P\n" +
-	"\aPageRes\x12\x12\n" +
-	"\x04page\x18\x01 \x01(\rR\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x02 \x01(\rR\bpageSize\x12\x14\n" +
-	"\x05total\x18\x03 \x01(\rR\x05total\"\xb7\x03\n" +
+	"#app/rpc/content/proto/content.proto\x12\x0franfeed.content\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19pkg/commonpb/common.proto\"\xda\x01\n" +
 	"\x1cContentUploadsCredentialsReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12A\n" +
-	"\x05scene\x18\x02 \x01(\x0e2+.content.ContentUploadsCredentialsReq.SceneR\x05scene\x12H\n" +
-	"\bfile_ext\x18\x03 \x01(\x0e2-.content.ContentUploadsCredentialsReq.FileExtR\afileExt\x12\x1b\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x122\n" +
+	"\x05scene\x18\x02 \x01(\x0e2\x1c.ranfeed.content.UploadSceneR\x05scene\x123\n" +
+	"\bfile_ext\x18\x03 \x01(\x0e2\x18.ranfeed.content.FileExtR\afileExt\x12\x1b\n" +
 	"\tfile_size\x18\x04 \x01(\x03R\bfileSize\x12\x1b\n" +
-	"\tfile_name\x18\x05 \x01(\tR\bfileName\"D\n" +
-	"\x05Scene\x12\x11\n" +
-	"\rSCENE_UNKNOWN\x10\x00\x12\x11\n" +
-	"\rARTICLE_COVER\x10\x01\x12\t\n" +
-	"\x05VIDEO\x10\x02\x12\n" +
-	"\n" +
-	"\x06AVATAR\x10\x03\"q\n" +
-	"\aFileExt\x12\x14\n" +
-	"\x10FILE_EXT_UNKNOWN\x10\x00\x12\a\n" +
-	"\x03JPG\x10\x01\x12\a\n" +
-	"\x03PNG\x10\x02\x12\a\n" +
-	"\x03GIF\x10\x03\x12\a\n" +
-	"\x03MP4\x10\x04\x12\a\n" +
-	"\x03MP3\x10\x05\x12\a\n" +
-	"\x03DOC\x10\x06\x12\b\n" +
-	"\x04DOCX\x10\a\x12\a\n" +
-	"\x03PDF\x10\b\x12\a\n" +
-	"\x03XLS\x10\t\"\x8f\x01\n" +
+	"\tfile_name\x18\x05 \x01(\tR\bfileName\"\xb3\x01\n" +
 	"\x1cContentUploadsCredentialsRes\x12\x1d\n" +
 	"\n" +
-	"object_key\x18\x01 \x01(\tR\tobjectKey\x121\n" +
-	"\tform_data\x18\x02 \x01(\v2\x14.content.OssFormDataR\bformData\x12\x1d\n" +
+	"object_key\x18\x01 \x01(\tR\tobjectKey\x129\n" +
+	"\tform_data\x18\x02 \x01(\v2\x1c.ranfeed.content.OssFormDataR\bformData\x129\n" +
 	"\n" +
-	"expired_at\x18\x03 \x01(\x03R\texpiredAt\"\xf1\x01\n" +
+	"expired_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiredAt\"\xf1\x01\n" +
 	"\vOssFormData\x12\x12\n" +
 	"\x04host\x18\x01 \x01(\tR\x04host\x12\x16\n" +
 	"\x06policy\x18\x02 \x01(\tR\x06policy\x12\x1c\n" +
@@ -3575,29 +3442,29 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"credential\x18\x06 \x01(\tR\n" +
 	"credential\x12\x12\n" +
 	"\x04date\x18\a \x01(\tR\x04date\x12\x10\n" +
-	"\x03key\x18\b \x01(\tR\x03key\"\xde\x01\n" +
+	"\x03key\x18\b \x01(\tR\x03key\"\xe6\x01\n" +
 	"\x11ArticlePublishReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x14\n" +
 	"\x05cover\x18\x04 \x01(\tR\x05cover\x12\x18\n" +
-	"\acontent\x18\x05 \x01(\tR\acontent\x123\n" +
+	"\acontent\x18\x05 \x01(\tR\acontent\x12;\n" +
 	"\n" +
-	"visibility\x18\x06 \x01(\x0e2\x13.content.VisibilityR\n" +
+	"visibility\x18\x06 \x01(\x0e2\x1b.ranfeed.content.VisibilityR\n" +
 	"visibilityB\x0e\n" +
 	"\f_description\"2\n" +
 	"\x11ArticlePublishRes\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\"\x82\x02\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\"\x8a\x02\n" +
 	"\x0fVideoPublishReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12%\n" +
 	"\vdescription\x18\x03 \x01(\tH\x00R\vdescription\x88\x01\x01\x12\x1b\n" +
 	"\tvideo_url\x18\x04 \x01(\tR\bvideoUrl\x12\x1b\n" +
 	"\tcover_url\x18\x05 \x01(\tR\bcoverUrl\x12\x1a\n" +
-	"\bduration\x18\x06 \x01(\x05R\bduration\x123\n" +
+	"\bduration\x18\x06 \x01(\x05R\bduration\x12;\n" +
 	"\n" +
-	"visibility\x18\a \x01(\x0e2\x13.content.VisibilityR\n" +
+	"visibility\x18\a \x01(\x0e2\x1b.ranfeed.content.VisibilityR\n" +
 	"visibilityB\x0e\n" +
 	"\f_description\"0\n" +
 	"\x0fVideoPublishRes\x12\x1d\n" +
@@ -3610,18 +3477,17 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\x10DeleteContentReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x02 \x01(\x03R\tcontentId\"\x12\n" +
-	"\x10DeleteContentRes\"d\n" +
+	"content_id\x18\x02 \x01(\x03R\tcontentId\"d\n" +
 	"\x13GetContentDetailReq\x12\x1d\n" +
 	"\n" +
 	"content_id\x18\x01 \x01(\x03R\tcontentId\x12 \n" +
 	"\tviewer_id\x18\x02 \x01(\x03H\x00R\bviewerId\x88\x01\x01B\f\n" +
 	"\n" +
-	"_viewer_id\"\x88\x05\n" +
+	"_viewer_id\"\xab\x05\n" +
 	"\rContentDetail\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\x127\n" +
-	"\fcontent_type\x18\x02 \x01(\x0e2\x14.content.ContentTypeR\vcontentType\x12\x1b\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\x12>\n" +
+	"\fcontent_type\x18\x02 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\vcontentType\x12\x1b\n" +
 	"\tauthor_id\x18\x03 \x01(\x03R\bauthorId\x12\x1f\n" +
 	"\vauthor_name\x18\x04 \x01(\tR\n" +
 	"authorName\x12#\n" +
@@ -3632,17 +3498,17 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\x0farticle_content\x18\t \x01(\tR\x0earticleContent\x12\x1b\n" +
 	"\tvideo_url\x18\n" +
 	" \x01(\tR\bvideoUrl\x12%\n" +
-	"\x0evideo_duration\x18\v \x01(\x05R\rvideoDuration\x12!\n" +
-	"\fpublished_at\x18\f \x01(\x03R\vpublishedAt\x12\x1d\n" +
+	"\x0evideo_duration\x18\v \x01(\x05R\rvideoDuration\x12=\n" +
+	"\fpublished_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x12\x1d\n" +
 	"\n" +
 	"like_count\x18\r \x01(\x03R\tlikeCount\x12%\n" +
 	"\x0efavorite_count\x18\x0e \x01(\x03R\rfavoriteCount\x12#\n" +
 	"\rcomment_count\x18\x0f \x01(\x03R\fcommentCount\x12\x19\n" +
 	"\bis_liked\x18\x10 \x01(\bR\aisLiked\x12!\n" +
 	"\fis_favorited\x18\x11 \x01(\bR\visFavorited\x12.\n" +
-	"\x13is_following_author\x18\x12 \x01(\bR\x11isFollowingAuthor\"E\n" +
-	"\x13GetContentDetailRes\x12.\n" +
-	"\x06detail\x18\x01 \x01(\v2\x16.content.ContentDetailR\x06detail\"\xa7\x01\n" +
+	"\x13is_following_author\x18\x12 \x01(\bR\x11isFollowingAuthor\"M\n" +
+	"\x13GetContentDetailRes\x126\n" +
+	"\x06detail\x18\x01 \x01(\v2\x1e.ranfeed.content.ContentDetailR\x06detail\"\xa7\x01\n" +
 	"\x10RecommendFeedReq\x12\x1c\n" +
 	"\auser_id\x18\x01 \x01(\x03H\x00R\x06userId\x88\x01\x01\x12\x16\n" +
 	"\x06cursor\x18\x02 \x01(\tR\x06cursor\x12\x1b\n" +
@@ -3651,9 +3517,9 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"snapshotId\x88\x01\x01B\n" +
 	"\n" +
 	"\b_user_idB\x0e\n" +
-	"\f_snapshot_id\"\x9b\x01\n" +
-	"\x10RecommendFeedRes\x12*\n" +
-	"\x05items\x18\x01 \x03(\v2\x14.content.ContentItemR\x05items\x12\x1f\n" +
+	"\f_snapshot_id\"\xa3\x01\n" +
+	"\x10RecommendFeedRes\x122\n" +
+	"\x05items\x18\x01 \x03(\v2\x1c.ranfeed.content.ContentItemR\x05items\x12\x1f\n" +
 	"\vnext_cursor\x18\x02 \x01(\x03R\n" +
 	"nextCursor\x12\x19\n" +
 	"\bhas_more\x18\x03 \x01(\bR\ahasMore\x12\x1f\n" +
@@ -3662,9 +3528,33 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\rFollowFeedReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x16\n" +
 	"\x06cursor\x18\x02 \x01(\tR\x06cursor\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\rR\bpageSize\"z\n" +
-	"\rFollowFeedRes\x12-\n" +
-	"\x05items\x18\x01 \x03(\v2\x17.content.FollowFeedItemR\x05items\x12\x1f\n" +
+	"\tpage_size\x18\x03 \x01(\rR\bpageSize\"\x82\x01\n" +
+	"\rFollowFeedRes\x125\n" +
+	"\x05items\x18\x01 \x03(\v2\x1f.ranfeed.content.FollowFeedItemR\x05items\x12\x1f\n" +
+	"\vnext_cursor\x18\x02 \x01(\tR\n" +
+	"nextCursor\x12\x19\n" +
+	"\bhas_more\x18\x03 \x01(\bR\ahasMore\"\x96\x01\n" +
+	"\x12UserPublishFeedReq\x12\x1b\n" +
+	"\tauthor_id\x18\x01 \x01(\x03R\bauthorId\x12 \n" +
+	"\tviewer_id\x18\x02 \x01(\x03H\x00R\bviewerId\x88\x01\x01\x12\x16\n" +
+	"\x06cursor\x18\x03 \x01(\tR\x06cursor\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\rR\bpageSizeB\f\n" +
+	"\n" +
+	"_viewer_id\"\x84\x01\n" +
+	"\x12UserPublishFeedRes\x122\n" +
+	"\x05items\x18\x01 \x03(\v2\x1c.ranfeed.content.ContentItemR\x05items\x12\x1f\n" +
+	"\vnext_cursor\x18\x02 \x01(\tR\n" +
+	"nextCursor\x12\x19\n" +
+	"\bhas_more\x18\x03 \x01(\bR\ahasMore\"\x93\x01\n" +
+	"\x13UserFavoriteFeedReq\x12 \n" +
+	"\tviewer_id\x18\x01 \x01(\x03H\x00R\bviewerId\x88\x01\x01\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x16\n" +
+	"\x06cursor\x18\x03 \x01(\tR\x06cursor\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\rR\bpageSizeB\f\n" +
+	"\n" +
+	"_viewer_id\"\x85\x01\n" +
+	"\x13UserFavoriteFeedRes\x122\n" +
+	"\x05items\x18\x01 \x03(\v2\x1c.ranfeed.content.ContentItemR\x05items\x12\x1f\n" +
 	"\vnext_cursor\x18\x02 \x01(\tR\n" +
 	"nextCursor\x12\x19\n" +
 	"\bhas_more\x18\x03 \x01(\bR\ahasMore\"p\n" +
@@ -3683,57 +3573,33 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\vfollowee_id\x18\x02 \x01(\x03R\n" +
 	"followeeId\"@\n" +
 	"\x19PurgeFolloweeFromInboxRes\x12#\n" +
-	"\rremoved_count\x18\x01 \x01(\x05R\fremovedCount\"\x96\x01\n" +
-	"\x12UserPublishFeedReq\x12\x1b\n" +
-	"\tauthor_id\x18\x01 \x01(\x03R\bauthorId\x12 \n" +
-	"\tviewer_id\x18\x02 \x01(\x03H\x00R\bviewerId\x88\x01\x01\x12\x16\n" +
-	"\x06cursor\x18\x03 \x01(\tR\x06cursor\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\rR\bpageSizeB\f\n" +
-	"\n" +
-	"_viewer_id\"|\n" +
-	"\x12UserPublishFeedRes\x12*\n" +
-	"\x05items\x18\x01 \x03(\v2\x14.content.ContentItemR\x05items\x12\x1f\n" +
-	"\vnext_cursor\x18\x02 \x01(\tR\n" +
-	"nextCursor\x12\x19\n" +
-	"\bhas_more\x18\x03 \x01(\bR\ahasMore\"\x93\x01\n" +
-	"\x13UserFavoriteFeedReq\x12 \n" +
-	"\tviewer_id\x18\x01 \x01(\x03H\x00R\bviewerId\x88\x01\x01\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x16\n" +
-	"\x06cursor\x18\x03 \x01(\tR\x06cursor\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\rR\bpageSizeB\f\n" +
-	"\n" +
-	"_viewer_id\"}\n" +
-	"\x13UserFavoriteFeedRes\x12*\n" +
-	"\x05items\x18\x01 \x03(\v2\x14.content.ContentItemR\x05items\x12\x1f\n" +
-	"\vnext_cursor\x18\x02 \x01(\tR\n" +
-	"nextCursor\x12\x19\n" +
-	"\bhas_more\x18\x03 \x01(\bR\ahasMore\"\xd8\x02\n" +
+	"\rremoved_count\x18\x01 \x01(\x05R\fremovedCount\"\xfb\x02\n" +
 	"\vContentItem\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\x127\n" +
-	"\fcontent_type\x18\x02 \x01(\x0e2\x14.content.ContentTypeR\vcontentType\x12\x1b\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\x12>\n" +
+	"\fcontent_type\x18\x02 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\vcontentType\x12\x1b\n" +
 	"\tauthor_id\x18\x03 \x01(\x03R\bauthorId\x12\x1f\n" +
 	"\vauthor_name\x18\x04 \x01(\tR\n" +
 	"authorName\x12#\n" +
 	"\rauthor_avatar\x18\x05 \x01(\tR\fauthorAvatar\x12\x14\n" +
 	"\x05title\x18\x06 \x01(\tR\x05title\x12\x1b\n" +
-	"\tcover_url\x18\a \x01(\tR\bcoverUrl\x12!\n" +
-	"\fpublished_at\x18\b \x01(\x03R\vpublishedAt\x12\x19\n" +
+	"\tcover_url\x18\a \x01(\tR\bcoverUrl\x12=\n" +
+	"\fpublished_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x12\x19\n" +
 	"\bis_liked\x18\t \x01(\bR\aisLiked\x12\x1d\n" +
 	"\n" +
 	"like_count\x18\n" +
-	" \x01(\x03R\tlikeCount\"\xdb\x02\n" +
+	" \x01(\x03R\tlikeCount\"\xfe\x02\n" +
 	"\x0eFollowFeedItem\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\x127\n" +
-	"\fcontent_type\x18\x02 \x01(\x0e2\x14.content.ContentTypeR\vcontentType\x12\x1b\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\x12>\n" +
+	"\fcontent_type\x18\x02 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\vcontentType\x12\x1b\n" +
 	"\tauthor_id\x18\x03 \x01(\x03R\bauthorId\x12\x1f\n" +
 	"\vauthor_name\x18\x04 \x01(\tR\n" +
 	"authorName\x12#\n" +
 	"\rauthor_avatar\x18\x05 \x01(\tR\fauthorAvatar\x12\x14\n" +
 	"\x05title\x18\x06 \x01(\tR\x05title\x12\x1b\n" +
-	"\tcover_url\x18\a \x01(\tR\bcoverUrl\x12!\n" +
-	"\fpublished_at\x18\b \x01(\x03R\vpublishedAt\x12\x19\n" +
+	"\tcover_url\x18\a \x01(\tR\bcoverUrl\x12=\n" +
+	"\fpublished_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x12\x19\n" +
 	"\bis_liked\x18\t \x01(\bR\aisLiked\x12\x1d\n" +
 	"\n" +
 	"like_count\x18\n" +
@@ -3741,78 +3607,78 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\x17BatchGetContentItemsReq\x12\x1f\n" +
 	"\vcontent_ids\x18\x01 \x03(\x03R\n" +
 	"contentIds\x12\x1b\n" +
-	"\tviewer_id\x18\x02 \x01(\x03R\bviewerId\"E\n" +
-	"\x17BatchGetContentItemsRes\x12*\n" +
-	"\x05items\x18\x01 \x03(\v2\x14.content.ContentItemR\x05items\"\x92\x03\n" +
+	"\tviewer_id\x18\x02 \x01(\x03R\bviewerId\"M\n" +
+	"\x17BatchGetContentItemsRes\x122\n" +
+	"\x05items\x18\x01 \x03(\v2\x1c.ranfeed.content.ContentItemR\x05items\"\xc6\x03\n" +
 	"\x10ContentIndexItem\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\x127\n" +
-	"\fcontent_type\x18\x02 \x01(\x0e2\x14.content.ContentTypeR\vcontentType\x12.\n" +
-	"\x06status\x18\x03 \x01(\x0e2\x16.content.ContentStatusR\x06status\x123\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\x12?\n" +
+	"\fcontent_type\x18\x02 \x01(\x0e2\x1c.ranfeed.content.ContentTypeR\vcontentType\x126\n" +
+	"\x06status\x18\x03 \x01(\x0e2\x1e.ranfeed.content.ContentStatusR\x06status\x12;\n" +
 	"\n" +
-	"visibility\x18\x04 \x01(\x0e2\x13.content.VisibilityR\n" +
+	"visibility\x18\x04 \x01(\x0e2\x1b.ranfeed.content.VisibilityR\n" +
 	"visibility\x12\x1b\n" +
 	"\tauthor_id\x18\x05 \x01(\x03R\bauthorId\x12\x14\n" +
 	"\x05title\x18\x06 \x01(\tR\x05title\x12 \n" +
 	"\vdescription\x18\a \x01(\tR\vdescription\x12\x12\n" +
-	"\x04body\x18\b \x01(\tR\x04body\x12!\n" +
-	"\fpublished_at\x18\t \x01(\x03R\vpublishedAt\x12\x1b\n" +
+	"\x04body\x18\b \x01(\tR\x04body\x12=\n" +
+	"\fpublished_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x12\x1b\n" +
 	"\thot_score\x18\n" +
 	" \x01(\x01R\bhotScore\x12\x18\n" +
 	"\aversion\x18\v \x01(\x03R\aversion\"=\n" +
 	"\x1aBatchGetContentForIndexReq\x12\x1f\n" +
 	"\vcontent_ids\x18\x01 \x03(\x03R\n" +
-	"contentIds\"M\n" +
-	"\x1aBatchGetContentForIndexRes\x12/\n" +
-	"\x05items\x18\x01 \x03(\v2\x19.content.ContentIndexItemR\x05items\"F\n" +
+	"contentIds\"U\n" +
+	"\x1aBatchGetContentForIndexRes\x127\n" +
+	"\x05items\x18\x01 \x03(\v2!.ranfeed.content.ContentIndexItemR\x05items\"F\n" +
 	"\x16ListContentForIndexReq\x12\x16\n" +
 	"\x06cursor\x18\x01 \x01(\x03R\x06cursor\x12\x14\n" +
-	"\x05limit\x18\x02 \x01(\x05R\x05limit\"I\n" +
-	"\x16ListContentForIndexRes\x12/\n" +
-	"\x05items\x18\x01 \x03(\v2\x19.content.ContentIndexItemR\x05items\"\xaf\x03\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"Q\n" +
+	"\x16ListContentForIndexRes\x127\n" +
+	"\x05items\x18\x01 \x03(\v2!.ranfeed.content.ContentIndexItemR\x05items\"\xfb\x03\n" +
 	"\x10AdminContentItem\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\x127\n" +
-	"\fcontent_type\x18\x02 \x01(\x0e2\x14.content.ContentTypeR\vcontentType\x12.\n" +
-	"\x06status\x18\x03 \x01(\x0e2\x16.content.ContentStatusR\x06status\x123\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\x12>\n" +
+	"\fcontent_type\x18\x02 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\vcontentType\x123\n" +
+	"\x06status\x18\x03 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status\x12;\n" +
 	"\n" +
-	"visibility\x18\x04 \x01(\x0e2\x13.content.VisibilityR\n" +
+	"visibility\x18\x04 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\n" +
 	"visibility\x12\x1b\n" +
 	"\tauthor_id\x18\x05 \x01(\x03R\bauthorId\x12\x14\n" +
 	"\x05title\x18\x06 \x01(\tR\x05title\x12\x1d\n" +
 	"\n" +
 	"like_count\x18\a \x01(\x03R\tlikeCount\x12%\n" +
 	"\x0efavorite_count\x18\b \x01(\x03R\rfavoriteCount\x12#\n" +
-	"\rcomment_count\x18\t \x01(\x03R\fcommentCount\x12!\n" +
+	"\rcomment_count\x18\t \x01(\x03R\fcommentCount\x12=\n" +
 	"\fpublished_at\x18\n" +
-	" \x01(\x03R\vpublishedAt\x12\x1d\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x129\n" +
 	"\n" +
-	"created_at\x18\v \x01(\x03R\tcreatedAt\"\x86\x02\n" +
-	"\x14AdminListContentsReq\x123\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x16.content.ContentStatusH\x00R\x06status\x88\x01\x01\x12<\n" +
-	"\fcontent_type\x18\x02 \x01(\x0e2\x14.content.ContentTypeH\x01R\vcontentType\x88\x01\x01\x12 \n" +
+	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x96\x02\n" +
+	"\x14AdminListContentsReq\x12;\n" +
+	"\x06status\x18\x01 \x01(\x0e2\x1e.ranfeed.content.ContentStatusH\x00R\x06status\x88\x01\x01\x12D\n" +
+	"\fcontent_type\x18\x02 \x01(\x0e2\x1c.ranfeed.content.ContentTypeH\x01R\vcontentType\x88\x01\x01\x12 \n" +
 	"\tauthor_id\x18\x03 \x01(\x03H\x02R\bauthorId\x88\x01\x01\x12\x12\n" +
 	"\x04page\x18\x04 \x01(\rR\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x05 \x01(\rR\bpageSizeB\t\n" +
 	"\a_statusB\x0f\n" +
 	"\r_content_typeB\f\n" +
 	"\n" +
-	"_author_id\"\x8e\x01\n" +
-	"\x14AdminListContentsRes\x12/\n" +
-	"\x05items\x18\x01 \x03(\v2\x19.content.AdminContentItemR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\rR\x05total\x12\x12\n" +
+	"_author_id\"\x96\x01\n" +
+	"\x14AdminListContentsRes\x127\n" +
+	"\x05items\x18\x01 \x03(\v2!.ranfeed.content.AdminContentItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\rR\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\rR\bpageSize\"9\n" +
 	"\x18AdminGetContentDetailReq\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\"\xfc\x04\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\"\xe4\x05\n" +
 	"\x12AdminContentDetail\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\x127\n" +
-	"\fcontent_type\x18\x02 \x01(\x0e2\x14.content.ContentTypeR\vcontentType\x12.\n" +
-	"\x06status\x18\x03 \x01(\x0e2\x16.content.ContentStatusR\x06status\x123\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\x12>\n" +
+	"\fcontent_type\x18\x02 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\vcontentType\x123\n" +
+	"\x06status\x18\x03 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status\x12;\n" +
 	"\n" +
-	"visibility\x18\x04 \x01(\x0e2\x13.content.VisibilityR\n" +
+	"visibility\x18\x04 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\n" +
 	"visibility\x12\x1b\n" +
 	"\tauthor_id\x18\x05 \x01(\x03R\bauthorId\x12\x14\n" +
 	"\x05title\x18\x06 \x01(\tR\x05title\x12 \n" +
@@ -3825,84 +3691,96 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\n" +
 	"like_count\x18\f \x01(\x03R\tlikeCount\x12%\n" +
 	"\x0efavorite_count\x18\r \x01(\x03R\rfavoriteCount\x12#\n" +
-	"\rcomment_count\x18\x0e \x01(\x03R\fcommentCount\x12!\n" +
-	"\fpublished_at\x18\x0f \x01(\x03R\vpublishedAt\x12\x1d\n" +
+	"\rcomment_count\x18\x0e \x01(\x03R\fcommentCount\x12=\n" +
+	"\fpublished_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x129\n" +
 	"\n" +
-	"created_at\x18\x10 \x01(\x03R\tcreatedAt\x12\x1d\n" +
+	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x11 \x01(\x03R\tupdatedAt\"O\n" +
-	"\x18AdminGetContentDetailRes\x123\n" +
-	"\x06detail\x18\x01 \x01(\v2\x1b.content.AdminContentDetailR\x06detail\"\x8a\x01\n" +
+	"updated_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"W\n" +
+	"\x18AdminGetContentDetailRes\x12;\n" +
+	"\x06detail\x18\x01 \x01(\v2#.ranfeed.content.AdminContentDetailR\x06detail\"\x92\x01\n" +
 	"\x18AdminSetContentStatusReq\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\x12.\n" +
-	"\x06status\x18\x02 \x01(\x0e2\x16.content.ContentStatusR\x06status\x12\x1f\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\x126\n" +
+	"\x06status\x18\x02 \x01(\x0e2\x1e.ranfeed.content.ContentStatusR\x06status\x12\x1f\n" +
 	"\voperator_id\x18\x03 \x01(\x03R\n" +
-	"operatorId\"J\n" +
-	"\x18AdminSetContentStatusRes\x12.\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x16.content.ContentStatusR\x06status\"\xb1\x01\n" +
+	"operatorId\"O\n" +
+	"\x18AdminSetContentStatusRes\x123\n" +
+	"\x06status\x18\x01 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status\"\xb9\x01\n" +
 	"\x15AdminReviewContentReq\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\x123\n" +
-	"\bdecision\x18\x02 \x01(\x0e2\x17.content.ReviewDecisionR\bdecision\x12\x1f\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\x12;\n" +
+	"\bdecision\x18\x02 \x01(\x0e2\x1f.ranfeed.content.ReviewDecisionR\bdecision\x12\x1f\n" +
 	"\voperator_id\x18\x03 \x01(\x03R\n" +
 	"operatorId\x12#\n" +
-	"\rreject_reason\x18\x04 \x01(\tR\frejectReason\"G\n" +
-	"\x15AdminReviewContentRes\x12.\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x16.content.ContentStatusR\x06status*?\n" +
-	"\vContentType\x12\x18\n" +
-	"\x14CONTENT_TYPE_UNKNOWN\x10\x00\x12\v\n" +
-	"\aARTICLE\x10\n" +
-	"\x12\t\n" +
-	"\x05VIDEO\x10\x14*\x8b\x01\n" +
-	"\rContentStatus\x12\x12\n" +
-	"\x0eSTATUS_UNKNOWN\x10\x00\x12\t\n" +
-	"\x05DRAFT\x10\n" +
-	"\x12\x0e\n" +
+	"\rreject_reason\x18\x04 \x01(\tR\frejectReason\"L\n" +
+	"\x15AdminReviewContentRes\x123\n" +
+	"\x06status\x18\x01 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status*]\n" +
+	"\vContentType\x12\x1c\n" +
+	"\x18CONTENT_TYPE_UNSPECIFIED\x10\x00\x12\x18\n" +
+	"\x14CONTENT_TYPE_ARTICLE\x10\n" +
+	"\x12\x16\n" +
+	"\x12CONTENT_TYPE_VIDEO\x10\x14*\x80\x02\n" +
+	"\rContentStatus\x12\x1e\n" +
+	"\x1aCONTENT_STATUS_UNSPECIFIED\x10\x00\x12\x18\n" +
+	"\x14CONTENT_STATUS_DRAFT\x10\n" +
+	"\x12\x1d\n" +
+	"\x19CONTENT_STATUS_PROCESSING\x10\x14\x12\x1c\n" +
+	"\x18CONTENT_STATUS_PUBLISHED\x10\x1e\x12\x19\n" +
+	"\x15CONTENT_STATUS_FAILED\x10(\x12\x1d\n" +
+	"\x19CONTENT_STATUS_TAKEN_DOWN\x102\x12!\n" +
+	"\x1dCONTENT_STATUS_PENDING_REVIEW\x10<\x12\x1b\n" +
+	"\x17CONTENT_STATUS_REJECTED\x10F*W\n" +
 	"\n" +
-	"PROCESSING\x10\x14\x12\r\n" +
-	"\tPUBLISHED\x10\x1e\x12\n" +
+	"Visibility\x12\x1a\n" +
+	"\x16VISIBILITY_UNSPECIFIED\x10\x00\x12\x15\n" +
+	"\x11VISIBILITY_PUBLIC\x10\n" +
+	"\x12\x16\n" +
+	"\x12VISIBILITY_PRIVATE\x10\x14*j\n" +
+	"\x0eReviewDecision\x12\x1f\n" +
+	"\x1bREVIEW_DECISION_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17REVIEW_DECISION_APPROVE\x10\n" +
+	"\x12\x1a\n" +
+	"\x16REVIEW_DECISION_REJECT\x10\x14*|\n" +
+	"\vUploadScene\x12\x1c\n" +
+	"\x18UPLOAD_SCENE_UNSPECIFIED\x10\x00\x12\x1e\n" +
+	"\x1aUPLOAD_SCENE_ARTICLE_COVER\x10\x01\x12\x16\n" +
+	"\x12UPLOAD_SCENE_VIDEO\x10\x02\x12\x17\n" +
+	"\x13UPLOAD_SCENE_AVATAR\x10\x03*\xc6\x01\n" +
+	"\aFileExt\x12\x18\n" +
+	"\x14FILE_EXT_UNSPECIFIED\x10\x00\x12\x10\n" +
+	"\fFILE_EXT_JPG\x10\x01\x12\x10\n" +
+	"\fFILE_EXT_PNG\x10\x02\x12\x10\n" +
+	"\fFILE_EXT_GIF\x10\x03\x12\x10\n" +
+	"\fFILE_EXT_MP4\x10\x04\x12\x10\n" +
+	"\fFILE_EXT_MP3\x10\x05\x12\x10\n" +
+	"\fFILE_EXT_DOC\x10\x06\x12\x11\n" +
+	"\rFILE_EXT_DOCX\x10\a\x12\x10\n" +
+	"\fFILE_EXT_PDF\x10\b\x12\x10\n" +
+	"\fFILE_EXT_XLS\x10\t2\x97\x06\n" +
+	"\x0eContentService\x12g\n" +
+	"\aUploads\x12-.ranfeed.content.ContentUploadsCredentialsReq\x1a-.ranfeed.content.ContentUploadsCredentialsRes\x12X\n" +
+	"\x0ePublishArticle\x12\".ranfeed.content.ArticlePublishReq\x1a\".ranfeed.content.ArticlePublishRes\x12R\n" +
+	"\fPublishVideo\x12 .ranfeed.content.VideoPublishReq\x1a .ranfeed.content.VideoPublishRes\x12g\n" +
+	"\x13GetUserContentCount\x12'.ranfeed.content.GetUserContentCountReq\x1a'.ranfeed.content.GetUserContentCountRes\x12J\n" +
+	"\rDeleteContent\x12!.ranfeed.content.DeleteContentReq\x1a\x16.google.protobuf.Empty\x12^\n" +
+	"\x10GetContentDetail\x12$.ranfeed.content.GetContentDetailReq\x1a$.ranfeed.content.GetContentDetailRes\x12g\n" +
+	"\x13BackfillFollowInbox\x12'.ranfeed.content.BackfillFollowInboxReq\x1a'.ranfeed.content.BackfillFollowInboxRes\x12p\n" +
+	"\x16PurgeFolloweeFromInbox\x12*.ranfeed.content.PurgeFolloweeFromInboxReq\x1a*.ranfeed.content.PurgeFolloweeFromInboxRes2\xb9\x05\n" +
+	"\vFeedService\x12U\n" +
+	"\rRecommendFeed\x12!.ranfeed.content.RecommendFeedReq\x1a!.ranfeed.content.RecommendFeedRes\x12L\n" +
 	"\n" +
-	"\x06FAILED\x10(\x12\x0e\n" +
-	"\n" +
-	"TAKEN_DOWN\x102\x12\x12\n" +
-	"\x0ePENDING_REVIEW\x10<\x12\f\n" +
-	"\bREJECTED\x10F*=\n" +
-	"\n" +
-	"Visibility\x12\x16\n" +
-	"\x12VISIBILITY_UNKNOWN\x10\x00\x12\n" +
-	"\n" +
-	"\x06PUBLIC\x10\n" +
-	"\x12\v\n" +
-	"\aPRIVATE\x10\x14*T\n" +
-	"\x0eReviewDecision\x12\x1b\n" +
-	"\x17REVIEW_DECISION_UNKNOWN\x10\x00\x12\x12\n" +
-	"\x0eREVIEW_APPROVE\x10\n" +
-	"\x12\x11\n" +
-	"\rREVIEW_REJECT\x10\x142\xa2\x05\n" +
-	"\x0eContentService\x12W\n" +
-	"\aUploads\x12%.content.ContentUploadsCredentialsReq\x1a%.content.ContentUploadsCredentialsRes\x12H\n" +
-	"\x0ePublishArticle\x12\x1a.content.ArticlePublishReq\x1a\x1a.content.ArticlePublishRes\x12B\n" +
-	"\fPublishVideo\x12\x18.content.VideoPublishReq\x1a\x18.content.VideoPublishRes\x12W\n" +
-	"\x13GetUserContentCount\x12\x1f.content.GetUserContentCountReq\x1a\x1f.content.GetUserContentCountRes\x12E\n" +
-	"\rDeleteContent\x12\x19.content.DeleteContentReq\x1a\x19.content.DeleteContentRes\x12N\n" +
-	"\x10GetContentDetail\x12\x1c.content.GetContentDetailReq\x1a\x1c.content.GetContentDetailRes\x12W\n" +
-	"\x13BackfillFollowInbox\x12\x1f.content.BackfillFollowInboxReq\x1a\x1f.content.BackfillFollowInboxRes\x12`\n" +
-	"\x16PurgeFolloweeFromInbox\x12\".content.PurgeFolloweeFromInboxReq\x1a\".content.PurgeFolloweeFromInboxRes2\xc9\x04\n" +
-	"\vFeedService\x12E\n" +
-	"\rRecommendFeed\x12\x19.content.RecommendFeedReq\x1a\x19.content.RecommendFeedRes\x12<\n" +
-	"\n" +
-	"FollowFeed\x12\x16.content.FollowFeedReq\x1a\x16.content.FollowFeedRes\x12K\n" +
-	"\x0fUserPublishFeed\x12\x1b.content.UserPublishFeedReq\x1a\x1b.content.UserPublishFeedRes\x12N\n" +
-	"\x10UserFavoriteFeed\x12\x1c.content.UserFavoriteFeedReq\x1a\x1c.content.UserFavoriteFeedRes\x12Z\n" +
-	"\x14BatchGetContentItems\x12 .content.BatchGetContentItemsReq\x1a .content.BatchGetContentItemsRes\x12c\n" +
-	"\x17BatchGetContentForIndex\x12#.content.BatchGetContentForIndexReq\x1a#.content.BatchGetContentForIndexRes\x12W\n" +
-	"\x13ListContentForIndex\x12\x1f.content.ListContentForIndexReq\x1a\x1f.content.ListContentForIndexRes2\xfc\x02\n" +
-	"\x13AdminContentService\x12Q\n" +
-	"\x11AdminListContents\x12\x1d.content.AdminListContentsReq\x1a\x1d.content.AdminListContentsRes\x12]\n" +
-	"\x15AdminGetContentDetail\x12!.content.AdminGetContentDetailReq\x1a!.content.AdminGetContentDetailRes\x12]\n" +
-	"\x15AdminSetContentStatus\x12!.content.AdminSetContentStatusReq\x1a!.content.AdminSetContentStatusRes\x12T\n" +
-	"\x12AdminReviewContent\x12\x1e.content.AdminReviewContentReq\x1a\x1e.content.AdminReviewContentResB\vZ\t./contentb\x06proto3"
+	"FollowFeed\x12\x1e.ranfeed.content.FollowFeedReq\x1a\x1e.ranfeed.content.FollowFeedRes\x12[\n" +
+	"\x0fUserPublishFeed\x12#.ranfeed.content.UserPublishFeedReq\x1a#.ranfeed.content.UserPublishFeedRes\x12^\n" +
+	"\x10UserFavoriteFeed\x12$.ranfeed.content.UserFavoriteFeedReq\x1a$.ranfeed.content.UserFavoriteFeedRes\x12j\n" +
+	"\x14BatchGetContentItems\x12(.ranfeed.content.BatchGetContentItemsReq\x1a(.ranfeed.content.BatchGetContentItemsRes\x12s\n" +
+	"\x17BatchGetContentForIndex\x12+.ranfeed.content.BatchGetContentForIndexReq\x1a+.ranfeed.content.BatchGetContentForIndexRes\x12g\n" +
+	"\x13ListContentForIndex\x12'.ranfeed.content.ListContentForIndexReq\x1a'.ranfeed.content.ListContentForIndexRes2\xbc\x03\n" +
+	"\x13AdminContentService\x12a\n" +
+	"\x11AdminListContents\x12%.ranfeed.content.AdminListContentsReq\x1a%.ranfeed.content.AdminListContentsRes\x12m\n" +
+	"\x15AdminGetContentDetail\x12).ranfeed.content.AdminGetContentDetailReq\x1a).ranfeed.content.AdminGetContentDetailRes\x12m\n" +
+	"\x15AdminSetContentStatus\x12).ranfeed.content.AdminSetContentStatusReq\x1a).ranfeed.content.AdminSetContentStatusRes\x12d\n" +
+	"\x12AdminReviewContent\x12&.ranfeed.content.AdminReviewContentReq\x1a&.ranfeed.content.AdminReviewContentResB\"Z ran-feed/app/rpc/content/contentb\x06proto3"
 
 var (
 	file_app_rpc_content_proto_content_proto_rawDescOnce sync.Once
@@ -3917,139 +3795,149 @@ func file_app_rpc_content_proto_content_proto_rawDescGZIP() []byte {
 }
 
 var file_app_rpc_content_proto_content_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_app_rpc_content_proto_content_proto_msgTypes = make([]protoimpl.MessageInfo, 47)
+var file_app_rpc_content_proto_content_proto_msgTypes = make([]protoimpl.MessageInfo, 44)
 var file_app_rpc_content_proto_content_proto_goTypes = []any{
-	(ContentType)(0),                          // 0: content.ContentType
-	(ContentStatus)(0),                        // 1: content.ContentStatus
-	(Visibility)(0),                           // 2: content.Visibility
-	(ReviewDecision)(0),                       // 3: content.ReviewDecision
-	(ContentUploadsCredentialsReq_Scene)(0),   // 4: content.ContentUploadsCredentialsReq.Scene
-	(ContentUploadsCredentialsReq_FileExt)(0), // 5: content.ContentUploadsCredentialsReq.FileExt
-	(*PageReq)(nil),                           // 6: content.PageReq
-	(*PageRes)(nil),                           // 7: content.PageRes
-	(*ContentUploadsCredentialsReq)(nil),      // 8: content.ContentUploadsCredentialsReq
-	(*ContentUploadsCredentialsRes)(nil),      // 9: content.ContentUploadsCredentialsRes
-	(*OssFormData)(nil),                       // 10: content.OssFormData
-	(*ArticlePublishReq)(nil),                 // 11: content.ArticlePublishReq
-	(*ArticlePublishRes)(nil),                 // 12: content.ArticlePublishRes
-	(*VideoPublishReq)(nil),                   // 13: content.VideoPublishReq
-	(*VideoPublishRes)(nil),                   // 14: content.VideoPublishRes
-	(*GetUserContentCountReq)(nil),            // 15: content.GetUserContentCountReq
-	(*GetUserContentCountRes)(nil),            // 16: content.GetUserContentCountRes
-	(*DeleteContentReq)(nil),                  // 17: content.DeleteContentReq
-	(*DeleteContentRes)(nil),                  // 18: content.DeleteContentRes
-	(*GetContentDetailReq)(nil),               // 19: content.GetContentDetailReq
-	(*ContentDetail)(nil),                     // 20: content.ContentDetail
-	(*GetContentDetailRes)(nil),               // 21: content.GetContentDetailRes
-	(*RecommendFeedReq)(nil),                  // 22: content.RecommendFeedReq
-	(*RecommendFeedRes)(nil),                  // 23: content.RecommendFeedRes
-	(*FollowFeedReq)(nil),                     // 24: content.FollowFeedReq
-	(*FollowFeedRes)(nil),                     // 25: content.FollowFeedRes
-	(*BackfillFollowInboxReq)(nil),            // 26: content.BackfillFollowInboxReq
-	(*BackfillFollowInboxRes)(nil),            // 27: content.BackfillFollowInboxRes
-	(*PurgeFolloweeFromInboxReq)(nil),         // 28: content.PurgeFolloweeFromInboxReq
-	(*PurgeFolloweeFromInboxRes)(nil),         // 29: content.PurgeFolloweeFromInboxRes
-	(*UserPublishFeedReq)(nil),                // 30: content.UserPublishFeedReq
-	(*UserPublishFeedRes)(nil),                // 31: content.UserPublishFeedRes
-	(*UserFavoriteFeedReq)(nil),               // 32: content.UserFavoriteFeedReq
-	(*UserFavoriteFeedRes)(nil),               // 33: content.UserFavoriteFeedRes
-	(*ContentItem)(nil),                       // 34: content.ContentItem
-	(*FollowFeedItem)(nil),                    // 35: content.FollowFeedItem
-	(*BatchGetContentItemsReq)(nil),           // 36: content.BatchGetContentItemsReq
-	(*BatchGetContentItemsRes)(nil),           // 37: content.BatchGetContentItemsRes
-	(*ContentIndexItem)(nil),                  // 38: content.ContentIndexItem
-	(*BatchGetContentForIndexReq)(nil),        // 39: content.BatchGetContentForIndexReq
-	(*BatchGetContentForIndexRes)(nil),        // 40: content.BatchGetContentForIndexRes
-	(*ListContentForIndexReq)(nil),            // 41: content.ListContentForIndexReq
-	(*ListContentForIndexRes)(nil),            // 42: content.ListContentForIndexRes
-	(*AdminContentItem)(nil),                  // 43: content.AdminContentItem
-	(*AdminListContentsReq)(nil),              // 44: content.AdminListContentsReq
-	(*AdminListContentsRes)(nil),              // 45: content.AdminListContentsRes
-	(*AdminGetContentDetailReq)(nil),          // 46: content.AdminGetContentDetailReq
-	(*AdminContentDetail)(nil),                // 47: content.AdminContentDetail
-	(*AdminGetContentDetailRes)(nil),          // 48: content.AdminGetContentDetailRes
-	(*AdminSetContentStatusReq)(nil),          // 49: content.AdminSetContentStatusReq
-	(*AdminSetContentStatusRes)(nil),          // 50: content.AdminSetContentStatusRes
-	(*AdminReviewContentReq)(nil),             // 51: content.AdminReviewContentReq
-	(*AdminReviewContentRes)(nil),             // 52: content.AdminReviewContentRes
+	(ContentType)(0),                     // 0: ranfeed.content.ContentType
+	(ContentStatus)(0),                   // 1: ranfeed.content.ContentStatus
+	(Visibility)(0),                      // 2: ranfeed.content.Visibility
+	(ReviewDecision)(0),                  // 3: ranfeed.content.ReviewDecision
+	(UploadScene)(0),                     // 4: ranfeed.content.UploadScene
+	(FileExt)(0),                         // 5: ranfeed.content.FileExt
+	(*ContentUploadsCredentialsReq)(nil), // 6: ranfeed.content.ContentUploadsCredentialsReq
+	(*ContentUploadsCredentialsRes)(nil), // 7: ranfeed.content.ContentUploadsCredentialsRes
+	(*OssFormData)(nil),                  // 8: ranfeed.content.OssFormData
+	(*ArticlePublishReq)(nil),            // 9: ranfeed.content.ArticlePublishReq
+	(*ArticlePublishRes)(nil),            // 10: ranfeed.content.ArticlePublishRes
+	(*VideoPublishReq)(nil),              // 11: ranfeed.content.VideoPublishReq
+	(*VideoPublishRes)(nil),              // 12: ranfeed.content.VideoPublishRes
+	(*GetUserContentCountReq)(nil),       // 13: ranfeed.content.GetUserContentCountReq
+	(*GetUserContentCountRes)(nil),       // 14: ranfeed.content.GetUserContentCountRes
+	(*DeleteContentReq)(nil),             // 15: ranfeed.content.DeleteContentReq
+	(*GetContentDetailReq)(nil),          // 16: ranfeed.content.GetContentDetailReq
+	(*ContentDetail)(nil),                // 17: ranfeed.content.ContentDetail
+	(*GetContentDetailRes)(nil),          // 18: ranfeed.content.GetContentDetailRes
+	(*RecommendFeedReq)(nil),             // 19: ranfeed.content.RecommendFeedReq
+	(*RecommendFeedRes)(nil),             // 20: ranfeed.content.RecommendFeedRes
+	(*FollowFeedReq)(nil),                // 21: ranfeed.content.FollowFeedReq
+	(*FollowFeedRes)(nil),                // 22: ranfeed.content.FollowFeedRes
+	(*UserPublishFeedReq)(nil),           // 23: ranfeed.content.UserPublishFeedReq
+	(*UserPublishFeedRes)(nil),           // 24: ranfeed.content.UserPublishFeedRes
+	(*UserFavoriteFeedReq)(nil),          // 25: ranfeed.content.UserFavoriteFeedReq
+	(*UserFavoriteFeedRes)(nil),          // 26: ranfeed.content.UserFavoriteFeedRes
+	(*BackfillFollowInboxReq)(nil),       // 27: ranfeed.content.BackfillFollowInboxReq
+	(*BackfillFollowInboxRes)(nil),       // 28: ranfeed.content.BackfillFollowInboxRes
+	(*PurgeFolloweeFromInboxReq)(nil),    // 29: ranfeed.content.PurgeFolloweeFromInboxReq
+	(*PurgeFolloweeFromInboxRes)(nil),    // 30: ranfeed.content.PurgeFolloweeFromInboxRes
+	(*ContentItem)(nil),                  // 31: ranfeed.content.ContentItem
+	(*FollowFeedItem)(nil),               // 32: ranfeed.content.FollowFeedItem
+	(*BatchGetContentItemsReq)(nil),      // 33: ranfeed.content.BatchGetContentItemsReq
+	(*BatchGetContentItemsRes)(nil),      // 34: ranfeed.content.BatchGetContentItemsRes
+	(*ContentIndexItem)(nil),             // 35: ranfeed.content.ContentIndexItem
+	(*BatchGetContentForIndexReq)(nil),   // 36: ranfeed.content.BatchGetContentForIndexReq
+	(*BatchGetContentForIndexRes)(nil),   // 37: ranfeed.content.BatchGetContentForIndexRes
+	(*ListContentForIndexReq)(nil),       // 38: ranfeed.content.ListContentForIndexReq
+	(*ListContentForIndexRes)(nil),       // 39: ranfeed.content.ListContentForIndexRes
+	(*AdminContentItem)(nil),             // 40: ranfeed.content.AdminContentItem
+	(*AdminListContentsReq)(nil),         // 41: ranfeed.content.AdminListContentsReq
+	(*AdminListContentsRes)(nil),         // 42: ranfeed.content.AdminListContentsRes
+	(*AdminGetContentDetailReq)(nil),     // 43: ranfeed.content.AdminGetContentDetailReq
+	(*AdminContentDetail)(nil),           // 44: ranfeed.content.AdminContentDetail
+	(*AdminGetContentDetailRes)(nil),     // 45: ranfeed.content.AdminGetContentDetailRes
+	(*AdminSetContentStatusReq)(nil),     // 46: ranfeed.content.AdminSetContentStatusReq
+	(*AdminSetContentStatusRes)(nil),     // 47: ranfeed.content.AdminSetContentStatusRes
+	(*AdminReviewContentReq)(nil),        // 48: ranfeed.content.AdminReviewContentReq
+	(*AdminReviewContentRes)(nil),        // 49: ranfeed.content.AdminReviewContentRes
+	(*timestamppb.Timestamp)(nil),        // 50: google.protobuf.Timestamp
+	(*commonpb.EnumValue)(nil),           // 51: ranfeed.commonpb.EnumValue
+	(*emptypb.Empty)(nil),                // 52: google.protobuf.Empty
 }
 var file_app_rpc_content_proto_content_proto_depIdxs = []int32{
-	4,  // 0: content.ContentUploadsCredentialsReq.scene:type_name -> content.ContentUploadsCredentialsReq.Scene
-	5,  // 1: content.ContentUploadsCredentialsReq.file_ext:type_name -> content.ContentUploadsCredentialsReq.FileExt
-	10, // 2: content.ContentUploadsCredentialsRes.form_data:type_name -> content.OssFormData
-	2,  // 3: content.ArticlePublishReq.visibility:type_name -> content.Visibility
-	2,  // 4: content.VideoPublishReq.visibility:type_name -> content.Visibility
-	0,  // 5: content.ContentDetail.content_type:type_name -> content.ContentType
-	20, // 6: content.GetContentDetailRes.detail:type_name -> content.ContentDetail
-	34, // 7: content.RecommendFeedRes.items:type_name -> content.ContentItem
-	35, // 8: content.FollowFeedRes.items:type_name -> content.FollowFeedItem
-	34, // 9: content.UserPublishFeedRes.items:type_name -> content.ContentItem
-	34, // 10: content.UserFavoriteFeedRes.items:type_name -> content.ContentItem
-	0,  // 11: content.ContentItem.content_type:type_name -> content.ContentType
-	0,  // 12: content.FollowFeedItem.content_type:type_name -> content.ContentType
-	34, // 13: content.BatchGetContentItemsRes.items:type_name -> content.ContentItem
-	0,  // 14: content.ContentIndexItem.content_type:type_name -> content.ContentType
-	1,  // 15: content.ContentIndexItem.status:type_name -> content.ContentStatus
-	2,  // 16: content.ContentIndexItem.visibility:type_name -> content.Visibility
-	38, // 17: content.BatchGetContentForIndexRes.items:type_name -> content.ContentIndexItem
-	38, // 18: content.ListContentForIndexRes.items:type_name -> content.ContentIndexItem
-	0,  // 19: content.AdminContentItem.content_type:type_name -> content.ContentType
-	1,  // 20: content.AdminContentItem.status:type_name -> content.ContentStatus
-	2,  // 21: content.AdminContentItem.visibility:type_name -> content.Visibility
-	1,  // 22: content.AdminListContentsReq.status:type_name -> content.ContentStatus
-	0,  // 23: content.AdminListContentsReq.content_type:type_name -> content.ContentType
-	43, // 24: content.AdminListContentsRes.items:type_name -> content.AdminContentItem
-	0,  // 25: content.AdminContentDetail.content_type:type_name -> content.ContentType
-	1,  // 26: content.AdminContentDetail.status:type_name -> content.ContentStatus
-	2,  // 27: content.AdminContentDetail.visibility:type_name -> content.Visibility
-	47, // 28: content.AdminGetContentDetailRes.detail:type_name -> content.AdminContentDetail
-	1,  // 29: content.AdminSetContentStatusReq.status:type_name -> content.ContentStatus
-	1,  // 30: content.AdminSetContentStatusRes.status:type_name -> content.ContentStatus
-	3,  // 31: content.AdminReviewContentReq.decision:type_name -> content.ReviewDecision
-	1,  // 32: content.AdminReviewContentRes.status:type_name -> content.ContentStatus
-	8,  // 33: content.ContentService.Uploads:input_type -> content.ContentUploadsCredentialsReq
-	11, // 34: content.ContentService.PublishArticle:input_type -> content.ArticlePublishReq
-	13, // 35: content.ContentService.PublishVideo:input_type -> content.VideoPublishReq
-	15, // 36: content.ContentService.GetUserContentCount:input_type -> content.GetUserContentCountReq
-	17, // 37: content.ContentService.DeleteContent:input_type -> content.DeleteContentReq
-	19, // 38: content.ContentService.GetContentDetail:input_type -> content.GetContentDetailReq
-	26, // 39: content.ContentService.BackfillFollowInbox:input_type -> content.BackfillFollowInboxReq
-	28, // 40: content.ContentService.PurgeFolloweeFromInbox:input_type -> content.PurgeFolloweeFromInboxReq
-	22, // 41: content.FeedService.RecommendFeed:input_type -> content.RecommendFeedReq
-	24, // 42: content.FeedService.FollowFeed:input_type -> content.FollowFeedReq
-	30, // 43: content.FeedService.UserPublishFeed:input_type -> content.UserPublishFeedReq
-	32, // 44: content.FeedService.UserFavoriteFeed:input_type -> content.UserFavoriteFeedReq
-	36, // 45: content.FeedService.BatchGetContentItems:input_type -> content.BatchGetContentItemsReq
-	39, // 46: content.FeedService.BatchGetContentForIndex:input_type -> content.BatchGetContentForIndexReq
-	41, // 47: content.FeedService.ListContentForIndex:input_type -> content.ListContentForIndexReq
-	44, // 48: content.AdminContentService.AdminListContents:input_type -> content.AdminListContentsReq
-	46, // 49: content.AdminContentService.AdminGetContentDetail:input_type -> content.AdminGetContentDetailReq
-	49, // 50: content.AdminContentService.AdminSetContentStatus:input_type -> content.AdminSetContentStatusReq
-	51, // 51: content.AdminContentService.AdminReviewContent:input_type -> content.AdminReviewContentReq
-	9,  // 52: content.ContentService.Uploads:output_type -> content.ContentUploadsCredentialsRes
-	12, // 53: content.ContentService.PublishArticle:output_type -> content.ArticlePublishRes
-	14, // 54: content.ContentService.PublishVideo:output_type -> content.VideoPublishRes
-	16, // 55: content.ContentService.GetUserContentCount:output_type -> content.GetUserContentCountRes
-	18, // 56: content.ContentService.DeleteContent:output_type -> content.DeleteContentRes
-	21, // 57: content.ContentService.GetContentDetail:output_type -> content.GetContentDetailRes
-	27, // 58: content.ContentService.BackfillFollowInbox:output_type -> content.BackfillFollowInboxRes
-	29, // 59: content.ContentService.PurgeFolloweeFromInbox:output_type -> content.PurgeFolloweeFromInboxRes
-	23, // 60: content.FeedService.RecommendFeed:output_type -> content.RecommendFeedRes
-	25, // 61: content.FeedService.FollowFeed:output_type -> content.FollowFeedRes
-	31, // 62: content.FeedService.UserPublishFeed:output_type -> content.UserPublishFeedRes
-	33, // 63: content.FeedService.UserFavoriteFeed:output_type -> content.UserFavoriteFeedRes
-	37, // 64: content.FeedService.BatchGetContentItems:output_type -> content.BatchGetContentItemsRes
-	40, // 65: content.FeedService.BatchGetContentForIndex:output_type -> content.BatchGetContentForIndexRes
-	42, // 66: content.FeedService.ListContentForIndex:output_type -> content.ListContentForIndexRes
-	45, // 67: content.AdminContentService.AdminListContents:output_type -> content.AdminListContentsRes
-	48, // 68: content.AdminContentService.AdminGetContentDetail:output_type -> content.AdminGetContentDetailRes
-	50, // 69: content.AdminContentService.AdminSetContentStatus:output_type -> content.AdminSetContentStatusRes
-	52, // 70: content.AdminContentService.AdminReviewContent:output_type -> content.AdminReviewContentRes
-	52, // [52:71] is the sub-list for method output_type
-	33, // [33:52] is the sub-list for method input_type
-	33, // [33:33] is the sub-list for extension type_name
-	33, // [33:33] is the sub-list for extension extendee
-	0,  // [0:33] is the sub-list for field type_name
+	4,  // 0: ranfeed.content.ContentUploadsCredentialsReq.scene:type_name -> ranfeed.content.UploadScene
+	5,  // 1: ranfeed.content.ContentUploadsCredentialsReq.file_ext:type_name -> ranfeed.content.FileExt
+	8,  // 2: ranfeed.content.ContentUploadsCredentialsRes.form_data:type_name -> ranfeed.content.OssFormData
+	50, // 3: ranfeed.content.ContentUploadsCredentialsRes.expired_at:type_name -> google.protobuf.Timestamp
+	2,  // 4: ranfeed.content.ArticlePublishReq.visibility:type_name -> ranfeed.content.Visibility
+	2,  // 5: ranfeed.content.VideoPublishReq.visibility:type_name -> ranfeed.content.Visibility
+	51, // 6: ranfeed.content.ContentDetail.content_type:type_name -> ranfeed.commonpb.EnumValue
+	50, // 7: ranfeed.content.ContentDetail.published_at:type_name -> google.protobuf.Timestamp
+	17, // 8: ranfeed.content.GetContentDetailRes.detail:type_name -> ranfeed.content.ContentDetail
+	31, // 9: ranfeed.content.RecommendFeedRes.items:type_name -> ranfeed.content.ContentItem
+	32, // 10: ranfeed.content.FollowFeedRes.items:type_name -> ranfeed.content.FollowFeedItem
+	31, // 11: ranfeed.content.UserPublishFeedRes.items:type_name -> ranfeed.content.ContentItem
+	31, // 12: ranfeed.content.UserFavoriteFeedRes.items:type_name -> ranfeed.content.ContentItem
+	51, // 13: ranfeed.content.ContentItem.content_type:type_name -> ranfeed.commonpb.EnumValue
+	50, // 14: ranfeed.content.ContentItem.published_at:type_name -> google.protobuf.Timestamp
+	51, // 15: ranfeed.content.FollowFeedItem.content_type:type_name -> ranfeed.commonpb.EnumValue
+	50, // 16: ranfeed.content.FollowFeedItem.published_at:type_name -> google.protobuf.Timestamp
+	31, // 17: ranfeed.content.BatchGetContentItemsRes.items:type_name -> ranfeed.content.ContentItem
+	0,  // 18: ranfeed.content.ContentIndexItem.content_type:type_name -> ranfeed.content.ContentType
+	1,  // 19: ranfeed.content.ContentIndexItem.status:type_name -> ranfeed.content.ContentStatus
+	2,  // 20: ranfeed.content.ContentIndexItem.visibility:type_name -> ranfeed.content.Visibility
+	50, // 21: ranfeed.content.ContentIndexItem.published_at:type_name -> google.protobuf.Timestamp
+	35, // 22: ranfeed.content.BatchGetContentForIndexRes.items:type_name -> ranfeed.content.ContentIndexItem
+	35, // 23: ranfeed.content.ListContentForIndexRes.items:type_name -> ranfeed.content.ContentIndexItem
+	51, // 24: ranfeed.content.AdminContentItem.content_type:type_name -> ranfeed.commonpb.EnumValue
+	51, // 25: ranfeed.content.AdminContentItem.status:type_name -> ranfeed.commonpb.EnumValue
+	51, // 26: ranfeed.content.AdminContentItem.visibility:type_name -> ranfeed.commonpb.EnumValue
+	50, // 27: ranfeed.content.AdminContentItem.published_at:type_name -> google.protobuf.Timestamp
+	50, // 28: ranfeed.content.AdminContentItem.created_at:type_name -> google.protobuf.Timestamp
+	1,  // 29: ranfeed.content.AdminListContentsReq.status:type_name -> ranfeed.content.ContentStatus
+	0,  // 30: ranfeed.content.AdminListContentsReq.content_type:type_name -> ranfeed.content.ContentType
+	40, // 31: ranfeed.content.AdminListContentsRes.items:type_name -> ranfeed.content.AdminContentItem
+	51, // 32: ranfeed.content.AdminContentDetail.content_type:type_name -> ranfeed.commonpb.EnumValue
+	51, // 33: ranfeed.content.AdminContentDetail.status:type_name -> ranfeed.commonpb.EnumValue
+	51, // 34: ranfeed.content.AdminContentDetail.visibility:type_name -> ranfeed.commonpb.EnumValue
+	50, // 35: ranfeed.content.AdminContentDetail.published_at:type_name -> google.protobuf.Timestamp
+	50, // 36: ranfeed.content.AdminContentDetail.created_at:type_name -> google.protobuf.Timestamp
+	50, // 37: ranfeed.content.AdminContentDetail.updated_at:type_name -> google.protobuf.Timestamp
+	44, // 38: ranfeed.content.AdminGetContentDetailRes.detail:type_name -> ranfeed.content.AdminContentDetail
+	1,  // 39: ranfeed.content.AdminSetContentStatusReq.status:type_name -> ranfeed.content.ContentStatus
+	51, // 40: ranfeed.content.AdminSetContentStatusRes.status:type_name -> ranfeed.commonpb.EnumValue
+	3,  // 41: ranfeed.content.AdminReviewContentReq.decision:type_name -> ranfeed.content.ReviewDecision
+	51, // 42: ranfeed.content.AdminReviewContentRes.status:type_name -> ranfeed.commonpb.EnumValue
+	6,  // 43: ranfeed.content.ContentService.Uploads:input_type -> ranfeed.content.ContentUploadsCredentialsReq
+	9,  // 44: ranfeed.content.ContentService.PublishArticle:input_type -> ranfeed.content.ArticlePublishReq
+	11, // 45: ranfeed.content.ContentService.PublishVideo:input_type -> ranfeed.content.VideoPublishReq
+	13, // 46: ranfeed.content.ContentService.GetUserContentCount:input_type -> ranfeed.content.GetUserContentCountReq
+	15, // 47: ranfeed.content.ContentService.DeleteContent:input_type -> ranfeed.content.DeleteContentReq
+	16, // 48: ranfeed.content.ContentService.GetContentDetail:input_type -> ranfeed.content.GetContentDetailReq
+	27, // 49: ranfeed.content.ContentService.BackfillFollowInbox:input_type -> ranfeed.content.BackfillFollowInboxReq
+	29, // 50: ranfeed.content.ContentService.PurgeFolloweeFromInbox:input_type -> ranfeed.content.PurgeFolloweeFromInboxReq
+	19, // 51: ranfeed.content.FeedService.RecommendFeed:input_type -> ranfeed.content.RecommendFeedReq
+	21, // 52: ranfeed.content.FeedService.FollowFeed:input_type -> ranfeed.content.FollowFeedReq
+	23, // 53: ranfeed.content.FeedService.UserPublishFeed:input_type -> ranfeed.content.UserPublishFeedReq
+	25, // 54: ranfeed.content.FeedService.UserFavoriteFeed:input_type -> ranfeed.content.UserFavoriteFeedReq
+	33, // 55: ranfeed.content.FeedService.BatchGetContentItems:input_type -> ranfeed.content.BatchGetContentItemsReq
+	36, // 56: ranfeed.content.FeedService.BatchGetContentForIndex:input_type -> ranfeed.content.BatchGetContentForIndexReq
+	38, // 57: ranfeed.content.FeedService.ListContentForIndex:input_type -> ranfeed.content.ListContentForIndexReq
+	41, // 58: ranfeed.content.AdminContentService.AdminListContents:input_type -> ranfeed.content.AdminListContentsReq
+	43, // 59: ranfeed.content.AdminContentService.AdminGetContentDetail:input_type -> ranfeed.content.AdminGetContentDetailReq
+	46, // 60: ranfeed.content.AdminContentService.AdminSetContentStatus:input_type -> ranfeed.content.AdminSetContentStatusReq
+	48, // 61: ranfeed.content.AdminContentService.AdminReviewContent:input_type -> ranfeed.content.AdminReviewContentReq
+	7,  // 62: ranfeed.content.ContentService.Uploads:output_type -> ranfeed.content.ContentUploadsCredentialsRes
+	10, // 63: ranfeed.content.ContentService.PublishArticle:output_type -> ranfeed.content.ArticlePublishRes
+	12, // 64: ranfeed.content.ContentService.PublishVideo:output_type -> ranfeed.content.VideoPublishRes
+	14, // 65: ranfeed.content.ContentService.GetUserContentCount:output_type -> ranfeed.content.GetUserContentCountRes
+	52, // 66: ranfeed.content.ContentService.DeleteContent:output_type -> google.protobuf.Empty
+	18, // 67: ranfeed.content.ContentService.GetContentDetail:output_type -> ranfeed.content.GetContentDetailRes
+	28, // 68: ranfeed.content.ContentService.BackfillFollowInbox:output_type -> ranfeed.content.BackfillFollowInboxRes
+	30, // 69: ranfeed.content.ContentService.PurgeFolloweeFromInbox:output_type -> ranfeed.content.PurgeFolloweeFromInboxRes
+	20, // 70: ranfeed.content.FeedService.RecommendFeed:output_type -> ranfeed.content.RecommendFeedRes
+	22, // 71: ranfeed.content.FeedService.FollowFeed:output_type -> ranfeed.content.FollowFeedRes
+	24, // 72: ranfeed.content.FeedService.UserPublishFeed:output_type -> ranfeed.content.UserPublishFeedRes
+	26, // 73: ranfeed.content.FeedService.UserFavoriteFeed:output_type -> ranfeed.content.UserFavoriteFeedRes
+	34, // 74: ranfeed.content.FeedService.BatchGetContentItems:output_type -> ranfeed.content.BatchGetContentItemsRes
+	37, // 75: ranfeed.content.FeedService.BatchGetContentForIndex:output_type -> ranfeed.content.BatchGetContentForIndexRes
+	39, // 76: ranfeed.content.FeedService.ListContentForIndex:output_type -> ranfeed.content.ListContentForIndexRes
+	42, // 77: ranfeed.content.AdminContentService.AdminListContents:output_type -> ranfeed.content.AdminListContentsRes
+	45, // 78: ranfeed.content.AdminContentService.AdminGetContentDetail:output_type -> ranfeed.content.AdminGetContentDetailRes
+	47, // 79: ranfeed.content.AdminContentService.AdminSetContentStatus:output_type -> ranfeed.content.AdminSetContentStatusRes
+	49, // 80: ranfeed.content.AdminContentService.AdminReviewContent:output_type -> ranfeed.content.AdminReviewContentRes
+	62, // [62:81] is the sub-list for method output_type
+	43, // [43:62] is the sub-list for method input_type
+	43, // [43:43] is the sub-list for extension type_name
+	43, // [43:43] is the sub-list for extension extendee
+	0,  // [0:43] is the sub-list for field type_name
 }
 
 func init() { file_app_rpc_content_proto_content_proto_init() }
@@ -4057,20 +3945,20 @@ func file_app_rpc_content_proto_content_proto_init() {
 	if File_app_rpc_content_proto_content_proto != nil {
 		return
 	}
+	file_app_rpc_content_proto_content_proto_msgTypes[3].OneofWrappers = []any{}
 	file_app_rpc_content_proto_content_proto_msgTypes[5].OneofWrappers = []any{}
-	file_app_rpc_content_proto_content_proto_msgTypes[7].OneofWrappers = []any{}
+	file_app_rpc_content_proto_content_proto_msgTypes[10].OneofWrappers = []any{}
 	file_app_rpc_content_proto_content_proto_msgTypes[13].OneofWrappers = []any{}
-	file_app_rpc_content_proto_content_proto_msgTypes[16].OneofWrappers = []any{}
-	file_app_rpc_content_proto_content_proto_msgTypes[24].OneofWrappers = []any{}
-	file_app_rpc_content_proto_content_proto_msgTypes[26].OneofWrappers = []any{}
-	file_app_rpc_content_proto_content_proto_msgTypes[38].OneofWrappers = []any{}
+	file_app_rpc_content_proto_content_proto_msgTypes[17].OneofWrappers = []any{}
+	file_app_rpc_content_proto_content_proto_msgTypes[19].OneofWrappers = []any{}
+	file_app_rpc_content_proto_content_proto_msgTypes[35].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_app_rpc_content_proto_content_proto_rawDesc), len(file_app_rpc_content_proto_content_proto_rawDesc)),
 			NumEnums:      6,
-			NumMessages:   47,
+			NumMessages:   44,
 			NumExtensions: 0,
 			NumServices:   3,
 		},

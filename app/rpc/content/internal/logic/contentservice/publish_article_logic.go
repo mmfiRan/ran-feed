@@ -45,8 +45,8 @@ func (l *PublishArticleLogic) PublishArticle(in *content.ArticlePublishReq) (*co
 		contentDO := &do.ContentDO{
 			ID:          contentId,
 			UserID:      in.UserId,
-			ContentType: int32(content.ContentType_ARTICLE),
-			Status:      int32(content.ContentStatus_PENDING_REVIEW),
+			ContentType: int32(content.ContentType_CONTENT_TYPE_ARTICLE),
+			Status:      int32(content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW),
 			Visibility:  int32(in.Visibility),
 			CreatedBy:   in.UserId,
 			UpdatedBy:   in.UserId,

@@ -6,6 +6,7 @@ package content
 import (
 	"context"
 
+	"ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/content/content"
@@ -44,9 +45,9 @@ func (l *GetContentDetailLogic) GetContentDetail(req *types.AdminContentDetailRe
 	return &types.AdminContentDetailRes{
 		Detail: types.AdminContentDetailData{
 			ContentId:      d.GetContentId(),
-			ContentType:    int32(d.GetContentType()),
-			Status:         int32(d.GetStatus()),
-			Visibility:     int32(d.GetVisibility()),
+			ContentType:    utils.ToEnumValue(d.GetContentType()),
+			Status:         utils.ToEnumValue(d.GetStatus()),
+			Visibility:     utils.ToEnumValue(d.GetVisibility()),
 			AuthorId:       d.GetAuthorId(),
 			Title:          d.GetTitle(),
 			Description:    d.GetDescription(),
@@ -57,9 +58,9 @@ func (l *GetContentDetailLogic) GetContentDetail(req *types.AdminContentDetailRe
 			LikeCount:      d.GetLikeCount(),
 			FavoriteCount:  d.GetFavoriteCount(),
 			CommentCount:   d.GetCommentCount(),
-			PublishedAt:    d.GetPublishedAt(),
-			CreatedAt:      d.GetCreatedAt(),
-			UpdatedAt:      d.GetUpdatedAt(),
+			PublishedAt:    d.GetPublishedAt().AsTime().UnixMilli(),
+			CreatedAt:      d.GetCreatedAt().AsTime().UnixMilli(),
+			UpdatedAt:      d.GetUpdatedAt().AsTime().UnixMilli(),
 		},
 	}, nil
 }

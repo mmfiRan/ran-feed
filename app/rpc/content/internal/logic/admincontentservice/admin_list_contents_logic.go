@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/logichelper"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -11,6 +12,7 @@ import (
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type AdminListContentsLogic struct {
@@ -48,7 +50,7 @@ func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContents
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
 	}
 	res := &content.AdminListContentsRes{
-		Total:    uint32(total),
+		Total:    total,
 		Page:     in.GetPage(),
 		PageSize: in.GetPageSize(),
 	}
@@ -74,9 +76,9 @@ func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[i
 	videoIDs := make([]int64, 0, len(rows))
 	for _, row := range rows {
 		switch content.ContentType(row.ContentType) {
-		case content.ContentType_ARTICLE:
+		case content.ContentType_CONTENT_TYPE_ARTICLE:
 			articleIDs = append(articleIDs, row.ID)
-		case content.ContentType_VIDEO:
+		case content.ContentType_CONTENT_TYPE_VIDEO:
 			videoIDs = append(videoIDs, row.ID)
 		}
 	}
@@ -106,18 +108,18 @@ func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[i
 func buildAdminContentItem(row *model.RanFeedContent, title string) *content.AdminContentItem {
 	item := &content.AdminContentItem{
 		ContentId:     row.ID,
-		ContentType:   content.ContentType(row.ContentType),
-		Status:        content.ContentStatus(row.Status),
-		Visibility:    content.Visibility(row.Visibility),
+		ContentType:   logichelper.ContentTypeValue(row.ContentType),
+		Status:        logichelper.ContentStatusValue(row.Status),
+		Visibility:    logichelper.VisibilityValue(row.Visibility),
 		AuthorId:      row.UserID,
 		Title:         title,
 		LikeCount:     row.LikeCount,
 		FavoriteCount: row.FavoriteCount,
 		CommentCount:  row.CommentCount,
-		CreatedAt:     row.CreatedAt.UnixMilli(),
+		CreatedAt:     timestamppb.New(row.CreatedAt),
 	}
 	if row.PublishedAt != nil {
-		item.PublishedAt = row.PublishedAt.UnixMilli()
+		item.PublishedAt = timestamppb.New(*row.PublishedAt)
 	}
 	return item
 }
