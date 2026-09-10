@@ -553,7 +553,6 @@
                         "type": "integer"
                       },
                       "created_at": {
-                        "description": "毫秒",
                         "type": "integer"
                       },
                       "favorite_count": {
@@ -563,7 +562,6 @@
                         "type": "integer"
                       },
                       "published_at": {
-                        "description": "毫秒 0 未发布",
                         "type": "integer"
                       },
                       "status": {
@@ -1911,7 +1909,7 @@
       }
     }
   },
-  "x-date": "2026-09-10 15:15:53",
+  "x-date": "2026-09-10 16:45:05",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

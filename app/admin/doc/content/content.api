@@ -3,7 +3,7 @@ syntax = "v1"
 import "../base/base.api"
 
 type (
-	// AdminContentListReq 内容列表筛选 各筛选项 0 表示不限 page 从1
+	// AdminContentListReq
 	AdminContentListReq {
 		PageQueryReq
 		Status      int32 `form:"status,optional"` // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
@@ -20,8 +20,8 @@ type (
 		LikeCount     int64  `json:"like_count"`
 		FavoriteCount int64  `json:"favorite_count"`
 		CommentCount  int64  `json:"comment_count"`
-		PublishedAt   int64  `json:"published_at"` // 毫秒 0 未发布
-		CreatedAt     int64  `json:"created_at"` // 毫秒
+		PublishedAt   int64  `json:"published_at"`
+		CreatedAt     int64  `json:"created_at"`
 	}
 	AdminContentListRes {
 		PageQueryResp
@@ -80,28 +80,28 @@ type (
 service admin-api {
 	@doc (
 		description: "内容列表"
-		permission:  "content:list"
+		permission:  "admin:content:list"
 	)
 	@handler ListContents
 	get /contents (AdminContentListReq) returns (AdminContentListRes)
 
 	@doc (
 		description: "内容详情 含非公开与正文"
-		permission:  "content:detail"
+		permission:  "admin:content:detail"
 	)
 	@handler GetContentDetail
 	get /contents/detail (AdminContentDetailReq) returns (AdminContentDetailRes)
 
 	@doc (
 		description: "内容下架/恢复"
-		permission:  "content:takedown"
+		permission:  "admin:content:takedown"
 	)
 	@handler SetContentStatus
 	post /contents/status (AdminContentStatusReq) returns (AdminContentStatusRes)
 
 	@doc (
 		description: "先审后发审核"
-		permission:  "content:review"
+		permission:  "admin:content:review"
 	)
 	@handler ReviewContent
 	post /contents/review (AdminContentReviewReq) returns (AdminContentReviewRes)

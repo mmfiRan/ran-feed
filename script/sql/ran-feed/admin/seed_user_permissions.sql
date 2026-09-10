@@ -1,8 +1,8 @@
 -- 用户管理权限点
 INSERT INTO ran_feed_admin_permission (code, name, module)
-VALUES ('user:list', '用户列表', 'user'),
-       ('user:detail', '用户详情', 'user'),
-       ('user:ban', '用户封禁/恢复', 'user')
+VALUES ('admin:cuser:list', '用户列表', 'user'),
+       ('admin:cuser:detail', '用户详情', 'user'),
+       ('admin:cuser:ban', '用户封禁/恢复', 'user')
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
 -- super 补绑 user 模块全部权限点

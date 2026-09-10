@@ -41,8 +41,8 @@ type AdminContentListItem struct {
 	LikeCount     int64  `json:"like_count"`
 	FavoriteCount int64  `json:"favorite_count"`
 	CommentCount  int64  `json:"comment_count"`
-	PublishedAt   int64  `json:"published_at"` // 毫秒 0 未发布
-	CreatedAt     int64  `json:"created_at"`   // 毫秒
+	PublishedAt   int64  `json:"published_at"`
+	CreatedAt     int64  `json:"created_at"`
 }
 
 type AdminContentListReq struct {

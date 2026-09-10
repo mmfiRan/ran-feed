@@ -22,14 +22,14 @@ func newTestRedis(t *testing.T) (*redis.Redis, *miniredis.Miniredis) {
 }
 
 func TestHasPermission(t *testing.T) {
-	perms := map[string]struct{}{"content:list": {}, "user:ban": {}}
+	perms := map[string]struct{}{"admin:content:list": {}, "admin:cuser:ban": {}}
 	tests := []struct {
 		name     string
 		required string
 		want     bool
 	}{
-		{name: "命中", required: "content:list", want: true},
-		{name: "未命中", required: "content:takedown", want: false},
+		{name: "命中", required: "admin:content:list", want: true},
+		{name: "未命中", required: "admin:content:takedown", want: false},
 		{name: "空 required 不放行", required: "", want: false},
 	}
 	for _, tt := range tests {
@@ -40,11 +40,11 @@ func TestHasPermission(t *testing.T) {
 }
 
 func TestToSetExcludesSentinel(t *testing.T) {
-	set := toSet([]string{consts.RedisAdminPermLoadedSentinel, "content:list", "user:ban"})
+	set := toSet([]string{consts.RedisAdminPermLoadedSentinel, "admin:content:list", "admin:cuser:ban"})
 	_, hasSentinel := set[consts.RedisAdminPermLoadedSentinel]
 	assert.False(t, hasSentinel)
 	assert.Len(t, set, 2)
-	assert.Contains(t, set, "content:list")
+	assert.Contains(t, set, "admin:content:list")
 }
 
 func TestLoadPermissions_MissThenHit(t *testing.T) {
@@ -52,7 +52,7 @@ func TestLoadPermissions_MissThenHit(t *testing.T) {
 	calls := 0
 	loader := func(_ context.Context, _ int64) ([]string, error) {
 		calls++
-		return []string{"content:list", "user:ban"}, nil
+		return []string{"admin:content:list", "admin:cuser:ban"}, nil
 	}
 
 	// 首次未命中回源并缓存
@@ -92,7 +92,7 @@ func TestLoadPermissions_InvalidateReloads(t *testing.T) {
 	calls := 0
 	loader := func(_ context.Context, _ int64) ([]string, error) {
 		calls++
-		return []string{"content:list"}, nil
+		return []string{"admin:content:list"}, nil
 	}
 
 	_, err := LoadPermissions(context.Background(), r, 3, 600, loader)

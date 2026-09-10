@@ -60,21 +60,21 @@ type (
 service admin-api {
 	@doc (
 		description: "C端用户列表 多条件筛选 + 分页"
-		permission:  "user:list"
+		permission:  "admin:cuser:list"
 	)
 	@handler ListUsers
 	get /users (CUserListReq) returns (CUserListRes)
 
 	@doc (
 		description: "C端用户详情"
-		permission:  "user:detail"
+		permission:  "admin:cuser:detail"
 	)
 	@handler GetUserDetail
 	get /users/detail (CUserDetailReq) returns (CUserDetailRes)
 
 	@doc (
 		description: "C端用户封禁/恢复"
-		permission:  "user:ban"
+		permission:  "admin:cuser:ban"
 	)
 	@handler SetUserStatus
 	post /users/status (CUserStatusReq) returns (CUserStatusRes)
