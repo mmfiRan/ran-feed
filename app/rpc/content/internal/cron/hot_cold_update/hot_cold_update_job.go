@@ -134,7 +134,11 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 		logger.Info("热榜冷更放弃 当日已执行")
 		return "duplicate", nil
 	}
-	defer redisLock.Release()
+	defer func() {
+		if ok, releaseErr := redisLock.ReleaseCtx(context.Background()); !ok || releaseErr != nil {
+			logger.Errorf("释放当日冷更锁失败 held=%v err=%v", ok, releaseErr)
+		}
+	}()
 
 	// 置冷更预约标志 带 TTL 快更见到即主动让路不抢写锁 保证冷更每日必跑不被饿死
 	// 异常未清标志时 TTL 到期自动失效 快更最多让路到此为止 不会被永久挡住
@@ -160,7 +164,11 @@ func (j *HotColdUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 		logger.Info("热榜冷更放弃 等主榜写锁超时")
 		return "busy", nil
 	}
-	defer writeLock.ReleaseCtx(context.Background())
+	defer func() {
+		if ok, releaseErr := writeLock.ReleaseCtx(context.Background()); !ok || releaseErr != nil {
+			logger.Errorf("释放热榜主榜写锁失败 held=%v err=%v", ok, releaseErr)
+		}
+	}()
 
 	// 冷更新用持久信源对账快更 补丢事件丢种脏 纠 count-rpc 与 DB 冗余计数漂移
 	// 回收被裁内容 兜底 Redis 整体丢失

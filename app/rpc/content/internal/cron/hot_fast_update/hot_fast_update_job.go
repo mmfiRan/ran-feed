@@ -97,7 +97,11 @@ func (j *HotFastUpdateJob) Run(ctx context.Context, param xxljob.TriggerParam) (
 		logger.Info("热榜快更放弃 写锁被占")
 		return "duplicate", nil
 	}
-	defer redisLock.Release()
+	defer func() {
+		if ok, releaseErr := redisLock.ReleaseCtx(context.Background()); !ok || releaseErr != nil {
+			logger.Errorf("释放热榜主榜写锁失败 held=%v err=%v", ok, releaseErr)
+		}
+	}()
 
 	// 逐分片冻结脏集合并收集脏 ID 双缓冲 处理期间新互动堆进活跃桶
 	dirtyIDs, err := j.collectDirtyIDs(ctx, p.Shards)

@@ -13,10 +13,7 @@ linters:
   settings:
     errcheck:
       exclude-functions:
-        - "(net/http.ResponseWriter).Write"
         - "(io.Closer).Close"
-        - "(*github.com/zeromicro/go-zero/core/stores/redis.RedisLock).Release"
-        - "(*github.com/zeromicro/go-zero/core/stores/redis.RedisLock).ReleaseCtx"
   exclusions:
     rules:
       - linters: [staticcheck]
