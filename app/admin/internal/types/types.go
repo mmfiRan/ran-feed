@@ -204,7 +204,7 @@ type AdminRoleItem struct {
 	Code      string `json:"code"`
 	Name      string `json:"name"`
 	Remark    string `json:"remark"`
-	CreatedAt int64  `json:"created_at"` // 毫秒
+	CreatedAt int64  `json:"created_at"`
 }
 
 type AdminRoleListReq struct {

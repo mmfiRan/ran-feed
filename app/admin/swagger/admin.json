@@ -1269,7 +1269,7 @@
     },
     "/v1/admin/permissions": {
       "get": {
-        "description": "权限点目录 供角色分权选择",
+        "description": "权限点目录",
         "produces": [
           "application/json"
         ],
@@ -1329,7 +1329,7 @@
     },
     "/v1/admin/roles": {
       "get": {
-        "description": "角色列表 分页 ",
+        "description": "角色列表",
         "produces": [
           "application/json"
         ],
@@ -1381,7 +1381,6 @@
                         "type": "string"
                       },
                       "created_at": {
-                        "description": "毫秒",
                         "type": "integer"
                       },
                       "id": {
@@ -1413,7 +1412,7 @@
     },
     "/v1/admin/roles/create": {
       "post": {
-        "description": "建角色",
+        "description": "创建角色",
         "consumes": [
           "application/json"
         ],
@@ -1466,7 +1465,7 @@
     },
     "/v1/admin/roles/delete": {
       "post": {
-        "description": "删角色 禁删 super",
+        "description": "删除角色 禁止删除 super",
         "consumes": [
           "application/json"
         ],
@@ -1554,7 +1553,6 @@
                       "type": "string"
                     },
                     "created_at": {
-                      "description": "毫秒",
                       "type": "integer"
                     },
                     "id": {
@@ -1624,7 +1622,7 @@
     },
     "/v1/admin/roles/update": {
       "post": {
-        "description": "改角色名与备注 不可改 code",
+        "description": "修改角色名与备注",
         "consumes": [
           "application/json"
         ],
@@ -1913,7 +1911,7 @@
       }
     }
   },
-  "x-date": "2026-09-09 19:59:34",
+  "x-date": "2026-09-10 15:15:53",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

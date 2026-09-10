@@ -34,10 +34,10 @@ func NewDeleteRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 	}
 }
 
-// DeleteRole 软删角色 护栏禁删 super 事务内连带物理删权限点与管理员绑定 返回受影响管理员ID
+// DeleteRole 删角色 禁删 super 角色
 func (l *DeleteRoleLogic) DeleteRole(in *admin.DeleteRoleReq) (*admin.DeleteRoleRes, error) {
 	if in.GetId() <= 0 {
-		return nil, errorx.NewMsg("参数错误")
+		return nil, errorx.NewMsg("角色ID参数错误")
 	}
 
 	role, err := l.roleRepo.GetByID(in.GetId())
@@ -51,7 +51,7 @@ func (l *DeleteRoleLogic) DeleteRole(in *admin.DeleteRoleReq) (*admin.DeleteRole
 		return nil, errorx.NewMsg("超级管理员角色不可删除")
 	}
 
-	// 删前取受影响管理员 事务提交后随删而不可查
+	// 删前取受影响管理员
 	adminIDs, err := l.userRoleRepo.ListAdminIDsByRoleID(in.GetId())
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询受影响管理员失败"))

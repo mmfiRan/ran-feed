@@ -39,5 +39,7 @@ func (l *CreateRoleLogic) CreateRole(req *types.AdminRoleCreateReq) (resp *types
 	if err != nil {
 		return nil, err
 	}
-	return &types.AdminRoleCreateRes{Id: rpcRes.GetId()}, nil
+	return &types.AdminRoleCreateRes{
+		Id: rpcRes.GetId(),
+	}, nil
 }

@@ -15,7 +15,7 @@ type AdminPermissionRepository interface {
 	ListCodesByIDs(ids []int64) ([]string, error)
 	// ListCodesByAdminID 查询权限集合
 	ListCodesByAdminID(adminID int64) ([]string, error)
-	// ListAll 取权限点目录 module 空则全量 module.Desc 后 id 升序
+	// ListAll 取权限点目录
 	ListAll(module string) ([]*model.RanFeedAdminPermission, error)
 }
 
@@ -42,7 +42,7 @@ func (r *adminPermissionRepositoryImpl) ListCodesByIDs(ids []int64) ([]string, e
 	rows, err := q.RanFeedAdminPermission.WithContext(r.ctx).
 		Select(q.RanFeedAdminPermission.Code).
 		Where(q.RanFeedAdminPermission.ID.In(ids...)).
-		Where(q.RanFeedAdminPermission.IsDeleted.Eq(0)).
+		Where(q.RanFeedAdminPermission.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Find()
 	if err != nil {
 		return nil, err
@@ -76,10 +76,10 @@ func (r *adminPermissionRepositoryImpl) ListCodesByAdminID(adminID int64) ([]str
 	return codes, nil
 }
 
-// ListAll 取权限点目录 module 空则全量 按 module 加 id 排序供前端分组
+// ListAll 取权限点目录
 func (r *adminPermissionRepositoryImpl) ListAll(module string) ([]*model.RanFeedAdminPermission, error) {
 	q := query.Q.RanFeedAdminPermission
-	do := q.WithContext(r.ctx).Where(q.IsDeleted.Eq(0))
+	do := q.WithContext(r.ctx).Where(q.IsDeleted.Eq(enums.NotDeleted.Int32()))
 	if module != "" {
 		do = do.Where(q.Module.Eq(module))
 	}

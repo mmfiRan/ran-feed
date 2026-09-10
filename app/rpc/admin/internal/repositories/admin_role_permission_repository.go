@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"ran-feed/pkg/enums"
 
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/entity/query"
@@ -14,7 +15,7 @@ type AdminRolePermissionRepository interface {
 	WithTx(tx *query.Query) AdminRolePermissionRepository
 	// ListPermissionIDsByRoleIDs 取角色集合绑定的权限点ID集合
 	ListPermissionIDsByRoleIDs(roleIDs []int64) ([]int64, error)
-	// DeleteByRoleID 物理删角色的全部权限点绑定 返回影响行数
+	// DeleteByRoleID 删角色的全部权限点绑定
 	DeleteByRoleID(roleID int64) (int64, error)
 	// BatchCreate 批量建绑定
 	BatchCreate(rows []*model.RanFeedAdminRolePermission) error
@@ -60,7 +61,7 @@ func (r *adminRolePermissionRepositoryImpl) ListPermissionIDsByRoleIDs(roleIDs [
 	rows, err := q.WithContext(r.ctx).
 		Select(q.PermissionID).
 		Where(q.RoleID.In(roleIDs...)).
-		Where(q.IsDeleted.Eq(0)).
+		Where(q.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Find()
 	if err != nil {
 		return nil, err
@@ -74,7 +75,7 @@ func (r *adminRolePermissionRepositoryImpl) ListPermissionIDsByRoleIDs(roleIDs [
 	return ids, nil
 }
 
-// DeleteByRoleID 物理删角色的全部权限点绑定 返回影响行数
+// DeleteByRoleID 删角色的全部权限点绑定
 func (r *adminRolePermissionRepositoryImpl) DeleteByRoleID(roleID int64) (int64, error) {
 	q := r.getQuery().RanFeedAdminRolePermission
 	res, err := q.WithContext(r.ctx).Where(q.RoleID.Eq(roleID)).Delete()

@@ -9,7 +9,7 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
-// InvalidateAdminPerms 失效受影响管理员的权限点缓存 角色/权限变更后调用 批量删一次 RTT 失败只 log 不阻断
+// InvalidateAdminPerms 失效受影响管理员的权限点缓存
 func InvalidateAdminPerms(ctx context.Context, r *redis.Redis, adminIDs []int64) {
 	keys := make([]string, 0, len(adminIDs))
 	for _, id := range adminIDs {

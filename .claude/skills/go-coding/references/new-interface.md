@@ -41,7 +41,14 @@ get /roles (AdminRoleListReq) returns (AdminRoleListRes)
 
 `pkg/rbacgen`(独立 module)解析 `.api` 把每条路由 `@doc` 的 key-value 生成到 `app/admin/internal/docmeta`;
 `main.go` 全局 `server.Use(docmeta.Inject)` 把当前路由 `@doc` 注入 ctx;`AdminRbacMiddleware` 从 ctx 读
-`permission` 校验(未声明则只验登录)。
+`permission` 校验。**取不到 permission 直接 403(fail-closed),不是降级为只验登录**:漏声明只会让接口
+谁都进不去,需在 `.api` 补 `@doc` 后重跑 rbacgen。登录/登出/me 不带 permission 是因为它们没挂
+`AdminRbacMiddleware`(见 auth.api 的 middleware 列表),不是因为"未声明"。
+
+> **注意:`.api` 路由不要用路径参数(`/roles/:id`)。** docmeta 的 key 是 `"METHOD /path"` 字面量,
+> 而 `docmeta.Inject` 用 `r.URL.Path` 精确匹配,runtime 的 `/roles/123` 匹配不上
+> `"DELETE /v1/admin/roles/:id"`,该路由会因取不到 permission 而整体 403。rbacgen 会对此打警告。
+> 需要 REST 风格路径时,得先把 `Inject` 改成按 `/` 分段通配匹配。
 
 **强制:凡改动 `app/admin` 下任意 `.api`(增删路由或改 permission),在上面 goctl 两步之外,必须再跑一次
 rbacgen 重生成 docmeta**,否则权限映射与路由脱节(改了权限不生效 / 新路由漏鉴权):

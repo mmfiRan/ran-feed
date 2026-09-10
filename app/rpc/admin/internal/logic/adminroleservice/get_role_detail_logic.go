@@ -32,10 +32,6 @@ func NewGetRoleDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 
 // GetRoleDetail 角色详情含所绑权限点ID集合
 func (l *GetRoleDetailLogic) GetRoleDetail(in *admin.GetRoleDetailReq) (*admin.GetRoleDetailRes, error) {
-	if in.GetId() <= 0 {
-		return nil, errorx.NewMsg("参数错误")
-	}
-
 	role, err := l.roleRepo.GetByID(in.GetId())
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询角色失败"))
@@ -44,7 +40,9 @@ func (l *GetRoleDetailLogic) GetRoleDetail(in *admin.GetRoleDetailReq) (*admin.G
 		return nil, errorx.NewMsg("角色不存在")
 	}
 
-	permIDs, err := l.rolePermissionRepo.ListPermissionIDsByRoleIDs([]int64{in.GetId()})
+	permIDs, err := l.rolePermissionRepo.ListPermissionIDsByRoleIDs([]int64{
+		in.GetId(),
+	})
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询角色权限失败"))
 	}

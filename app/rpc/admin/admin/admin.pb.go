@@ -593,7 +593,7 @@ func (x *PermissionItem) GetModule() string {
 	return ""
 }
 
-// ListPermissionsReq 查询权限点目录 module 空则全量
+// ListPermissionsReq 查询权限点目录
 type ListPermissionsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Module        string                 `protobuf:"bytes,1,opt,name=module,proto3" json:"module,omitempty"`
@@ -1668,7 +1668,7 @@ func (x *GetRoleDetailRes) GetPermissionIds() []int64 {
 	return nil
 }
 
-// CreateRoleReq 建角色 code 唯一
+// CreateRoleReq 创建角色
 type CreateRoleReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
@@ -1737,7 +1737,7 @@ func (x *CreateRoleReq) GetOperatorId() int64 {
 	return 0
 }
 
-// CreateRoleRes 建角色结果
+// CreateRoleRes 创建角色响应
 type CreateRoleRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1782,7 +1782,7 @@ func (x *CreateRoleRes) GetId() int64 {
 	return 0
 }
 
-// UpdateRoleReq 改角色 不可改 code
+// UpdateRoleReq 修改角色信息
 type UpdateRoleReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1912,7 +1912,7 @@ func (x *SetRolePermissionsReq) GetOperatorId() int64 {
 	return 0
 }
 
-// SetRolePermissionsRes 返回受影响管理员ID供上层失效权限缓存
+// SetRolePermissionsRes 响应
 type SetRolePermissionsRes struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	AffectedAdminIds []int64                `protobuf:"varint,1,rep,packed,name=affected_admin_ids,json=affectedAdminIds,proto3" json:"affected_admin_ids,omitempty"`
@@ -1957,7 +1957,7 @@ func (x *SetRolePermissionsRes) GetAffectedAdminIds() []int64 {
 	return nil
 }
 
-// DeleteRoleReq 删角色
+// DeleteRoleReq 删除角色
 type DeleteRoleReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`

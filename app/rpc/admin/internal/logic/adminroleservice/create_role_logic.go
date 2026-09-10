@@ -35,7 +35,7 @@ func (l *CreateRoleLogic) CreateRole(in *admin.CreateRoleReq) (*admin.CreateRole
 	code := strings.TrimSpace(in.GetCode())
 	name := strings.TrimSpace(in.GetName())
 	if code == "" || name == "" {
-		return nil, errorx.NewMsg("参数错误")
+		return nil, errorx.NewMsg("角色信息不能为空")
 	}
 
 	existing, err := l.roleRepo.GetByCode(code)
@@ -58,5 +58,7 @@ func (l *CreateRoleLogic) CreateRole(in *admin.CreateRoleReq) (*admin.CreateRole
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("创建角色失败"))
 	}
-	return &admin.CreateRoleRes{Id: id}, nil
+	return &admin.CreateRoleRes{
+		Id: id,
+	}, nil
 }

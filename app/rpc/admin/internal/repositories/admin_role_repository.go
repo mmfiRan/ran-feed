@@ -15,21 +15,21 @@ import (
 
 type AdminRoleRepository interface {
 	WithTx(tx *query.Query) AdminRoleRepository
-	// Page 角色分页 id 倒序 返回列表与总数
+	// Page 角色分页
 	Page(offset, limit int) ([]*model.RanFeedAdminRole, int64, error)
 	// ListByAdminID 取管理员绑定的角色
 	ListByAdminID(adminID int64) ([]*model.RanFeedAdminRole, error)
-	// GetByID 按ID取角色 未命中返 nil
+	// GetByID 获取管理员绑定角色
 	GetByID(id int64) (*model.RanFeedAdminRole, error)
-	// GetByCode 按 code 取角色 未命中返 nil
+	// GetByCode 按 code 获取角色
 	GetByCode(code string) (*model.RanFeedAdminRole, error)
 	// ListByIDs 按ID集合取角色
 	ListByIDs(ids []int64) ([]*model.RanFeedAdminRole, error)
-	// Create 建角色
+	// Create 创建角色
 	Create(row *model.RanFeedAdminRole) error
-	// UpdateProfile 改角色名与备注 返回影响行数
+	// UpdateProfile 修改角色名与备注
 	UpdateProfile(id int64, name, remark string, operatorID int64) (int64, error)
-	// SoftDelete 软删角色 返回影响行数
+	// SoftDelete 软删角色
 	SoftDelete(id, operatorID int64) (int64, error)
 }
 
@@ -64,7 +64,7 @@ func (r *adminRoleRepositoryImpl) WithTx(tx *query.Query) AdminRoleRepository {
 	}
 }
 
-// Page 角色分页 id 倒序 复用 gen FindByPage 末页不满免 COUNT
+// Page 角色分页
 func (r *adminRoleRepositoryImpl) Page(offset, limit int) ([]*model.RanFeedAdminRole, int64, error) {
 	q := r.getQuery().RanFeedAdminRole
 	return q.WithContext(r.ctx).
@@ -97,7 +97,7 @@ func (r *adminRoleRepositoryImpl) ListByAdminID(adminID int64) ([]*model.RanFeed
 	return out, nil
 }
 
-// GetByID 按ID取角色 未命中返 nil
+// GetByID 获取管理员绑定角色
 func (r *adminRoleRepositoryImpl) GetByID(id int64) (*model.RanFeedAdminRole, error) {
 	q := r.getQuery().RanFeedAdminRole
 	row, err := q.WithContext(r.ctx).
@@ -113,7 +113,7 @@ func (r *adminRoleRepositoryImpl) GetByID(id int64) (*model.RanFeedAdminRole, er
 	return row, nil
 }
 
-// GetByCode 按 code 取角色 未命中返 nil
+// GetByCode 按 code 获取角色
 func (r *adminRoleRepositoryImpl) GetByCode(code string) (*model.RanFeedAdminRole, error) {
 	q := r.getQuery().RanFeedAdminRole
 	row, err := q.WithContext(r.ctx).
@@ -141,7 +141,7 @@ func (r *adminRoleRepositoryImpl) ListByIDs(ids []int64) ([]*model.RanFeedAdminR
 		Find()
 }
 
-// Create 建角色
+// Create 创建角色
 func (r *adminRoleRepositoryImpl) Create(row *model.RanFeedAdminRole) error {
 	if row == nil {
 		return nil
@@ -152,7 +152,7 @@ func (r *adminRoleRepositoryImpl) Create(row *model.RanFeedAdminRole) error {
 	return nil
 }
 
-// UpdateProfile 改角色名与备注 返回影响行数
+// UpdateProfile 修改角色名与备注
 func (r *adminRoleRepositoryImpl) UpdateProfile(id int64, name, remark string, operatorID int64) (int64, error) {
 	q := r.getQuery().RanFeedAdminRole
 	res, err := q.WithContext(r.ctx).
@@ -169,7 +169,7 @@ func (r *adminRoleRepositoryImpl) UpdateProfile(id int64, name, remark string, o
 	return res.RowsAffected, nil
 }
 
-// SoftDelete 软删角色 返回影响行数
+// SoftDelete 软删角色
 func (r *adminRoleRepositoryImpl) SoftDelete(id, operatorID int64) (int64, error) {
 	q := r.getQuery().RanFeedAdminRole
 	res, err := q.WithContext(r.ctx).

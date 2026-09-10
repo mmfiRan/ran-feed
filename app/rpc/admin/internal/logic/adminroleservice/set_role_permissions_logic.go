@@ -35,10 +35,10 @@ func NewSetRolePermissionsLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	}
 }
 
-// SetRolePermissions 覆盖式设角色权限点 事务内先删旧再插新 返回受影响管理员ID供上层失效缓存
+// SetRolePermissions 覆盖式设角色权限点
 func (l *SetRolePermissionsLogic) SetRolePermissions(in *admin.SetRolePermissionsReq) (*admin.SetRolePermissionsRes, error) {
 	if in.GetRoleId() <= 0 {
-		return nil, errorx.NewMsg("参数错误")
+		return nil, errorx.NewMsg("角色ID不能为空")
 	}
 
 	role, err := l.roleRepo.GetByID(in.GetRoleId())

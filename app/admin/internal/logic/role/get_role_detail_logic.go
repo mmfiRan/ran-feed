@@ -28,7 +28,9 @@ func NewGetRoleDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 }
 
 func (l *GetRoleDetailLogic) GetRoleDetail(req *types.AdminRoleDetailReq) (resp *types.AdminRoleDetailRes, err error) {
-	rpcRes, err := l.svcCtx.AdminRoleRpc.GetRoleDetail(l.ctx, &admin.GetRoleDetailReq{Id: req.Id})
+	rpcRes, err := l.svcCtx.AdminRoleRpc.GetRoleDetail(l.ctx, &admin.GetRoleDetailReq{
+		Id: req.Id,
+	})
 	if err != nil {
 		return nil, err
 	}

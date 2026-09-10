@@ -46,5 +46,7 @@ func (l *ListPermissionsLogic) ListPermissions(in *admin.ListPermissionsReq) (*a
 			Module: row.Module,
 		})
 	}
-	return &admin.ListPermissionsRes{Items: items}, nil
+	return &admin.ListPermissionsRes{
+		Items: items,
+	}, nil
 }

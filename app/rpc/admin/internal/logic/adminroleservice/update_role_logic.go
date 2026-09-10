@@ -29,11 +29,11 @@ func NewUpdateRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Update
 	}
 }
 
-// UpdateRole 改角色名与备注 不可改 code
+// UpdateRole 修改角色名与备注
 func (l *UpdateRoleLogic) UpdateRole(in *admin.UpdateRoleReq) (*emptypb.Empty, error) {
 	name := strings.TrimSpace(in.GetName())
 	if in.GetId() <= 0 || name == "" {
-		return nil, errorx.NewMsg("参数错误")
+		return nil, errorx.NewMsg("角色信息不能为空")
 	}
 
 	affected, err := l.roleRepo.UpdateProfile(in.GetId(), name, in.GetRemark(), in.GetOperatorId())

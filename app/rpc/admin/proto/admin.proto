@@ -77,7 +77,7 @@ message PermissionItem {
   string module = 4;
 }
 
-// ListPermissionsReq 查询权限点目录 module 空则全量
+// ListPermissionsReq 查询权限点目录
 message ListPermissionsReq {
   string module = 1;
 }
@@ -202,7 +202,7 @@ message GetRoleDetailRes {
   repeated int64 permission_ids = 2;
 }
 
-// CreateRoleReq 建角色 code 唯一
+// CreateRoleReq 创建角色
 message CreateRoleReq {
   string code = 1;
   string name = 2;
@@ -210,12 +210,12 @@ message CreateRoleReq {
   int64 operator_id = 4;
 }
 
-// CreateRoleRes 建角色结果
+// CreateRoleRes 创建角色响应
 message CreateRoleRes {
   int64 id = 1;
 }
 
-// UpdateRoleReq 改角色 不可改 code
+// UpdateRoleReq 修改角色信息
 message UpdateRoleReq {
   int64 id = 1;
   string name = 2;
@@ -230,12 +230,12 @@ message SetRolePermissionsReq {
   int64 operator_id = 3;
 }
 
-// SetRolePermissionsRes 返回受影响管理员ID供上层失效权限缓存
+// SetRolePermissionsRes 响应
 message SetRolePermissionsRes {
   repeated int64 affected_admin_ids = 1;
 }
 
-// DeleteRoleReq 删角色
+// DeleteRoleReq 删除角色
 message DeleteRoleReq {
   int64 id = 1;
   int64 operator_id = 2;

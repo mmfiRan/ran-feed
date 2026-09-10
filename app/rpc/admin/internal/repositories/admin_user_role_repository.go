@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"ran-feed/pkg/enums"
 
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/entity/query"
@@ -16,9 +17,9 @@ type AdminUserRoleRepository interface {
 	ListRoleIDsByAdminID(adminID int64) ([]int64, error)
 	// ListRoleIDsByAdminIDs 取管理员集合各自绑定的角色ID
 	ListRoleIDsByAdminIDs(adminIDs []int64) (map[int64][]int64, error)
-	// ListAdminIDsByRoleID 取绑定该角色的管理员ID集合 供失效权限缓存
+	// ListAdminIDsByRoleID 取绑定该角色的管理员ID集合
 	ListAdminIDsByRoleID(roleID int64) ([]int64, error)
-	// DeleteByRoleID 物理删该角色的全部管理员绑定 返回影响行数
+	// DeleteByRoleID 物理删该角色的全部管理员绑定
 	DeleteByRoleID(roleID int64) (int64, error)
 	// DeleteByAdminID 物理删该管理员的全部角色绑定 返回影响行数
 	DeleteByAdminID(adminID int64) (int64, error)
@@ -111,13 +112,13 @@ func (r *adminUserRoleRepositoryImpl) DeleteByAdminID(adminID int64) (int64, err
 	return res.RowsAffected, nil
 }
 
-// ListAdminIDsByRoleID 取绑定该角色的管理员ID集合 供失效权限缓存
+// ListAdminIDsByRoleID 取绑定该角色的管理员ID集合
 func (r *adminUserRoleRepositoryImpl) ListAdminIDsByRoleID(roleID int64) ([]int64, error) {
 	q := r.getQuery().RanFeedAdminUserRole
 	rows, err := q.WithContext(r.ctx).
 		Select(q.AdminUserID).
 		Where(q.RoleID.Eq(roleID)).
-		Where(q.IsDeleted.Eq(0)).
+		Where(q.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Find()
 	if err != nil {
 		return nil, err

@@ -11,7 +11,7 @@ type (
 		Code      string `json:"code"`
 		Name      string `json:"name"`
 		Remark    string `json:"remark"`
-		CreatedAt int64  `json:"created_at"` // 毫秒
+		CreatedAt int64  `json:"created_at"`
 	}
 	AdminRoleListRes {
 		PageQueryResp
@@ -58,7 +58,7 @@ type (
 )
 service admin-api {
 	@doc (
-		description: "角色列表 分页 "
+		description: "角色列表"
 		permission:  "admin:role:list"
 	)
 	@handler ListRoles
@@ -72,14 +72,14 @@ service admin-api {
 	get /roles/detail (AdminRoleDetailReq) returns (AdminRoleDetailRes)
 
 	@doc (
-		description: "建角色"
+		description: "创建角色"
 		permission:  "admin:role:create"
 	)
 	@handler CreateRole
 	post /roles/create (AdminRoleCreateReq) returns (AdminRoleCreateRes)
 
 	@doc (
-		description: "改角色名与备注 不可改 code"
+		description: "修改角色名与备注"
 		permission:  "admin:role:update"
 	)
 	@handler UpdateRole
@@ -93,7 +93,7 @@ service admin-api {
 	post /roles/permissions (AdminRoleSetPermissionsReq) returns (AdminRoleSetPermissionsRes)
 
 	@doc (
-		description: "删角色 禁删 super"
+		description: "删除角色 禁止删除 super"
 		permission:  "admin:role:delete"
 	)
 	@handler DeleteRole

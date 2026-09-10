@@ -1,7 +1,6 @@
 syntax = "v1"
 
 type (
-	// AdminPermissionListReq module 空表示全量
 	AdminPermissionListReq {
 		Module string `form:"module,optional"`
 	}
@@ -24,7 +23,7 @@ type (
 )
 service admin-api {
 	@doc (
-		description: "权限点目录 供角色分权选择"
+		description: "权限点目录"
 		permission:  "admin:permission:list"
 	)
 	@handler ListPermissions
