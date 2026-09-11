@@ -145,23 +145,23 @@ func (l *GetUserProfileCountsLogic) rebuildCacheWithLock(userID int64, cacheKey 
 }
 
 func (l *GetUserProfileCountsLogic) queryFromDB(userID int64) (*count.GetUserProfileCountsRes, error) {
-	likeCount, err := l.countRepo.SumByOwner(int32(count.BizType_LIKE), int32(count.TargetType_CONTENT), userID)
+	likeCount, err := l.countRepo.SumByOwner(int32(count.BizType_BIZ_TYPE_LIKE), int32(count.TargetType_TARGET_TYPE_CONTENT), userID)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询用户点赞数失败"))
 	}
-	favoriteCount, err := l.countRepo.SumByOwner(int32(count.BizType_FAVORITE), int32(count.TargetType_CONTENT), userID)
+	favoriteCount, err := l.countRepo.SumByOwner(int32(count.BizType_BIZ_TYPE_FAVORITE), int32(count.TargetType_TARGET_TYPE_CONTENT), userID)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询用户收藏数失败"))
 	}
 
 	followingCount := int64(0)
 	followedCount := int64(0)
-	if row, err := l.countRepo.Get(int32(count.BizType_FOLLOWING), int32(count.TargetType_USER), userID); err != nil {
+	if row, err := l.countRepo.Get(int32(count.BizType_BIZ_TYPE_FOLLOWING), int32(count.TargetType_TARGET_TYPE_USER), userID); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注数失败"))
 	} else if row != nil {
 		followingCount = row.Value
 	}
-	if row, err := l.countRepo.Get(int32(count.BizType_FOLLOWED), int32(count.TargetType_USER), userID); err != nil {
+	if row, err := l.countRepo.Get(int32(count.BizType_BIZ_TYPE_FOLLOWED), int32(count.TargetType_TARGET_TYPE_USER), userID); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询被关注数失败"))
 	} else if row != nil {
 		followedCount = row.Value

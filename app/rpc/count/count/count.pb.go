@@ -2,13 +2,14 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v3.19.4
-// source: proto/count.proto
+// source: app/rpc/count/proto/count.proto
 
 package count
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -25,31 +26,31 @@ const (
 type BizType int32
 
 const (
-	BizType_BIZ_TYPE_UNKNOWN BizType = 0
-	BizType_LIKE             BizType = 10
-	BizType_FAVORITE         BizType = 20
-	BizType_COMMENT          BizType = 30
-	BizType_FOLLOWED         BizType = 40
-	BizType_FOLLOWING        BizType = 41
+	BizType_BIZ_TYPE_UNSPECIFIED BizType = 0  // 未指定
+	BizType_BIZ_TYPE_LIKE        BizType = 10 // 点赞
+	BizType_BIZ_TYPE_FAVORITE    BizType = 20 // 收藏
+	BizType_BIZ_TYPE_COMMENT     BizType = 30 // 评论
+	BizType_BIZ_TYPE_FOLLOWED    BizType = 40 // 被关注
+	BizType_BIZ_TYPE_FOLLOWING   BizType = 41 // 关注
 )
 
 // Enum value maps for BizType.
 var (
 	BizType_name = map[int32]string{
-		0:  "BIZ_TYPE_UNKNOWN",
-		10: "LIKE",
-		20: "FAVORITE",
-		30: "COMMENT",
-		40: "FOLLOWED",
-		41: "FOLLOWING",
+		0:  "BIZ_TYPE_UNSPECIFIED",
+		10: "BIZ_TYPE_LIKE",
+		20: "BIZ_TYPE_FAVORITE",
+		30: "BIZ_TYPE_COMMENT",
+		40: "BIZ_TYPE_FOLLOWED",
+		41: "BIZ_TYPE_FOLLOWING",
 	}
 	BizType_value = map[string]int32{
-		"BIZ_TYPE_UNKNOWN": 0,
-		"LIKE":             10,
-		"FAVORITE":         20,
-		"COMMENT":          30,
-		"FOLLOWED":         40,
-		"FOLLOWING":        41,
+		"BIZ_TYPE_UNSPECIFIED": 0,
+		"BIZ_TYPE_LIKE":        10,
+		"BIZ_TYPE_FAVORITE":    20,
+		"BIZ_TYPE_COMMENT":     30,
+		"BIZ_TYPE_FOLLOWED":    40,
+		"BIZ_TYPE_FOLLOWING":   41,
 	}
 )
 
@@ -64,11 +65,11 @@ func (x BizType) String() string {
 }
 
 func (BizType) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_count_proto_enumTypes[0].Descriptor()
+	return file_app_rpc_count_proto_count_proto_enumTypes[0].Descriptor()
 }
 
 func (BizType) Type() protoreflect.EnumType {
-	return &file_proto_count_proto_enumTypes[0]
+	return &file_app_rpc_count_proto_count_proto_enumTypes[0]
 }
 
 func (x BizType) Number() protoreflect.EnumNumber {
@@ -77,29 +78,29 @@ func (x BizType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use BizType.Descriptor instead.
 func (BizType) EnumDescriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{0}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{0}
 }
 
 // TargetType 计数对象类型
 type TargetType int32
 
 const (
-	TargetType_TARGET_TYPE_UNKNOWN TargetType = 0
-	TargetType_CONTENT             TargetType = 10
-	TargetType_USER                TargetType = 20
+	TargetType_TARGET_TYPE_UNSPECIFIED TargetType = 0  // 未指定
+	TargetType_TARGET_TYPE_CONTENT     TargetType = 10 // 内容
+	TargetType_TARGET_TYPE_USER        TargetType = 20 // 用户
 )
 
 // Enum value maps for TargetType.
 var (
 	TargetType_name = map[int32]string{
-		0:  "TARGET_TYPE_UNKNOWN",
-		10: "CONTENT",
-		20: "USER",
+		0:  "TARGET_TYPE_UNSPECIFIED",
+		10: "TARGET_TYPE_CONTENT",
+		20: "TARGET_TYPE_USER",
 	}
 	TargetType_value = map[string]int32{
-		"TARGET_TYPE_UNKNOWN": 0,
-		"CONTENT":             10,
-		"USER":                20,
+		"TARGET_TYPE_UNSPECIFIED": 0,
+		"TARGET_TYPE_CONTENT":     10,
+		"TARGET_TYPE_USER":        20,
 	}
 )
 
@@ -114,11 +115,11 @@ func (x TargetType) String() string {
 }
 
 func (TargetType) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_count_proto_enumTypes[1].Descriptor()
+	return file_app_rpc_count_proto_count_proto_enumTypes[1].Descriptor()
 }
 
 func (TargetType) Type() protoreflect.EnumType {
-	return &file_proto_count_proto_enumTypes[1]
+	return &file_app_rpc_count_proto_count_proto_enumTypes[1]
 }
 
 func (x TargetType) Number() protoreflect.EnumNumber {
@@ -127,14 +128,14 @@ func (x TargetType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use TargetType.Descriptor instead.
 func (TargetType) EnumDescriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{1}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{1}
 }
 
 // GetCountReq 查询单个计数
 type GetCountReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	BizType       BizType                `protobuf:"varint,1,opt,name=biz_type,json=bizType,proto3,enum=count.BizType" json:"biz_type,omitempty"`
-	TargetType    TargetType             `protobuf:"varint,2,opt,name=target_type,json=targetType,proto3,enum=count.TargetType" json:"target_type,omitempty"`
+	BizType       BizType                `protobuf:"varint,1,opt,name=biz_type,json=bizType,proto3,enum=ranfeed.count.BizType" json:"biz_type,omitempty"`
+	TargetType    TargetType             `protobuf:"varint,2,opt,name=target_type,json=targetType,proto3,enum=ranfeed.count.TargetType" json:"target_type,omitempty"`
 	TargetId      int64                  `protobuf:"varint,3,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -142,7 +143,7 @@ type GetCountReq struct {
 
 func (x *GetCountReq) Reset() {
 	*x = GetCountReq{}
-	mi := &file_proto_count_proto_msgTypes[0]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -154,7 +155,7 @@ func (x *GetCountReq) String() string {
 func (*GetCountReq) ProtoMessage() {}
 
 func (x *GetCountReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[0]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -167,21 +168,21 @@ func (x *GetCountReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCountReq.ProtoReflect.Descriptor instead.
 func (*GetCountReq) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{0}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *GetCountReq) GetBizType() BizType {
 	if x != nil {
 		return x.BizType
 	}
-	return BizType_BIZ_TYPE_UNKNOWN
+	return BizType_BIZ_TYPE_UNSPECIFIED
 }
 
 func (x *GetCountReq) GetTargetType() TargetType {
 	if x != nil {
 		return x.TargetType
 	}
-	return TargetType_TARGET_TYPE_UNKNOWN
+	return TargetType_TARGET_TYPE_UNSPECIFIED
 }
 
 func (x *GetCountReq) GetTargetId() int64 {
@@ -201,7 +202,7 @@ type GetCountRes struct {
 
 func (x *GetCountRes) Reset() {
 	*x = GetCountRes{}
-	mi := &file_proto_count_proto_msgTypes[1]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -213,7 +214,7 @@ func (x *GetCountRes) String() string {
 func (*GetCountRes) ProtoMessage() {}
 
 func (x *GetCountRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[1]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -226,7 +227,7 @@ func (x *GetCountRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCountRes.ProtoReflect.Descriptor instead.
 func (*GetCountRes) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{1}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetCountRes) GetValue() int64 {
@@ -239,8 +240,8 @@ func (x *GetCountRes) GetValue() int64 {
 // CountKey 计数唯一键
 type CountKey struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	BizType       BizType                `protobuf:"varint,1,opt,name=biz_type,json=bizType,proto3,enum=count.BizType" json:"biz_type,omitempty"`
-	TargetType    TargetType             `protobuf:"varint,2,opt,name=target_type,json=targetType,proto3,enum=count.TargetType" json:"target_type,omitempty"`
+	BizType       BizType                `protobuf:"varint,1,opt,name=biz_type,json=bizType,proto3,enum=ranfeed.count.BizType" json:"biz_type,omitempty"`
+	TargetType    TargetType             `protobuf:"varint,2,opt,name=target_type,json=targetType,proto3,enum=ranfeed.count.TargetType" json:"target_type,omitempty"`
 	TargetId      int64                  `protobuf:"varint,3,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -248,7 +249,7 @@ type CountKey struct {
 
 func (x *CountKey) Reset() {
 	*x = CountKey{}
-	mi := &file_proto_count_proto_msgTypes[2]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -260,7 +261,7 @@ func (x *CountKey) String() string {
 func (*CountKey) ProtoMessage() {}
 
 func (x *CountKey) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[2]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -273,21 +274,21 @@ func (x *CountKey) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CountKey.ProtoReflect.Descriptor instead.
 func (*CountKey) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{2}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CountKey) GetBizType() BizType {
 	if x != nil {
 		return x.BizType
 	}
-	return BizType_BIZ_TYPE_UNKNOWN
+	return BizType_BIZ_TYPE_UNSPECIFIED
 }
 
 func (x *CountKey) GetTargetType() TargetType {
 	if x != nil {
 		return x.TargetType
 	}
-	return TargetType_TARGET_TYPE_UNKNOWN
+	return TargetType_TARGET_TYPE_UNSPECIFIED
 }
 
 func (x *CountKey) GetTargetId() int64 {
@@ -307,7 +308,7 @@ type BatchGetCountReq struct {
 
 func (x *BatchGetCountReq) Reset() {
 	*x = BatchGetCountReq{}
-	mi := &file_proto_count_proto_msgTypes[3]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -319,7 +320,7 @@ func (x *BatchGetCountReq) String() string {
 func (*BatchGetCountReq) ProtoMessage() {}
 
 func (x *BatchGetCountReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[3]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -332,7 +333,7 @@ func (x *BatchGetCountReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetCountReq.ProtoReflect.Descriptor instead.
 func (*BatchGetCountReq) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{3}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *BatchGetCountReq) GetKeys() []*CountKey {
@@ -353,7 +354,7 @@ type CountValueItem struct {
 
 func (x *CountValueItem) Reset() {
 	*x = CountValueItem{}
-	mi := &file_proto_count_proto_msgTypes[4]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -365,7 +366,7 @@ func (x *CountValueItem) String() string {
 func (*CountValueItem) ProtoMessage() {}
 
 func (x *CountValueItem) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[4]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -378,7 +379,7 @@ func (x *CountValueItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CountValueItem.ProtoReflect.Descriptor instead.
 func (*CountValueItem) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{4}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CountValueItem) GetKey() *CountKey {
@@ -405,7 +406,7 @@ type BatchGetCountRes struct {
 
 func (x *BatchGetCountRes) Reset() {
 	*x = BatchGetCountRes{}
-	mi := &file_proto_count_proto_msgTypes[5]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -417,7 +418,7 @@ func (x *BatchGetCountRes) String() string {
 func (*BatchGetCountRes) ProtoMessage() {}
 
 func (x *BatchGetCountRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[5]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -430,7 +431,7 @@ func (x *BatchGetCountRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetCountRes.ProtoReflect.Descriptor instead.
 func (*BatchGetCountRes) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{5}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *BatchGetCountRes) GetItems() []*CountValueItem {
@@ -443,8 +444,8 @@ func (x *BatchGetCountRes) GetItems() []*CountValueItem {
 // IncReq 对计数 +1
 type IncReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	BizType       BizType                `protobuf:"varint,1,opt,name=biz_type,json=bizType,proto3,enum=count.BizType" json:"biz_type,omitempty"`
-	TargetType    TargetType             `protobuf:"varint,2,opt,name=target_type,json=targetType,proto3,enum=count.TargetType" json:"target_type,omitempty"`
+	BizType       BizType                `protobuf:"varint,1,opt,name=biz_type,json=bizType,proto3,enum=ranfeed.count.BizType" json:"biz_type,omitempty"`
+	TargetType    TargetType             `protobuf:"varint,2,opt,name=target_type,json=targetType,proto3,enum=ranfeed.count.TargetType" json:"target_type,omitempty"`
 	TargetId      int64                  `protobuf:"varint,3,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -452,7 +453,7 @@ type IncReq struct {
 
 func (x *IncReq) Reset() {
 	*x = IncReq{}
-	mi := &file_proto_count_proto_msgTypes[6]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -464,7 +465,7 @@ func (x *IncReq) String() string {
 func (*IncReq) ProtoMessage() {}
 
 func (x *IncReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[6]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -477,21 +478,21 @@ func (x *IncReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IncReq.ProtoReflect.Descriptor instead.
 func (*IncReq) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{6}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *IncReq) GetBizType() BizType {
 	if x != nil {
 		return x.BizType
 	}
-	return BizType_BIZ_TYPE_UNKNOWN
+	return BizType_BIZ_TYPE_UNSPECIFIED
 }
 
 func (x *IncReq) GetTargetType() TargetType {
 	if x != nil {
 		return x.TargetType
 	}
-	return TargetType_TARGET_TYPE_UNKNOWN
+	return TargetType_TARGET_TYPE_UNSPECIFIED
 }
 
 func (x *IncReq) GetTargetId() int64 {
@@ -501,48 +502,11 @@ func (x *IncReq) GetTargetId() int64 {
 	return 0
 }
 
-// IncRes +1 后的计数值
-type IncRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *IncRes) Reset() {
-	*x = IncRes{}
-	mi := &file_proto_count_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *IncRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IncRes) ProtoMessage() {}
-
-func (x *IncRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use IncRes.ProtoReflect.Descriptor instead.
-func (*IncRes) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{7}
-}
-
 // DecReq 对计数 -1
 type DecReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	BizType       BizType                `protobuf:"varint,1,opt,name=biz_type,json=bizType,proto3,enum=count.BizType" json:"biz_type,omitempty"`
-	TargetType    TargetType             `protobuf:"varint,2,opt,name=target_type,json=targetType,proto3,enum=count.TargetType" json:"target_type,omitempty"`
+	BizType       BizType                `protobuf:"varint,1,opt,name=biz_type,json=bizType,proto3,enum=ranfeed.count.BizType" json:"biz_type,omitempty"`
+	TargetType    TargetType             `protobuf:"varint,2,opt,name=target_type,json=targetType,proto3,enum=ranfeed.count.TargetType" json:"target_type,omitempty"`
 	TargetId      int64                  `protobuf:"varint,3,opt,name=target_id,json=targetId,proto3" json:"target_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -550,7 +514,7 @@ type DecReq struct {
 
 func (x *DecReq) Reset() {
 	*x = DecReq{}
-	mi := &file_proto_count_proto_msgTypes[8]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -562,7 +526,7 @@ func (x *DecReq) String() string {
 func (*DecReq) ProtoMessage() {}
 
 func (x *DecReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[8]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -575,21 +539,21 @@ func (x *DecReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DecReq.ProtoReflect.Descriptor instead.
 func (*DecReq) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{8}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *DecReq) GetBizType() BizType {
 	if x != nil {
 		return x.BizType
 	}
-	return BizType_BIZ_TYPE_UNKNOWN
+	return BizType_BIZ_TYPE_UNSPECIFIED
 }
 
 func (x *DecReq) GetTargetType() TargetType {
 	if x != nil {
 		return x.TargetType
 	}
-	return TargetType_TARGET_TYPE_UNKNOWN
+	return TargetType_TARGET_TYPE_UNSPECIFIED
 }
 
 func (x *DecReq) GetTargetId() int64 {
@@ -597,43 +561,6 @@ func (x *DecReq) GetTargetId() int64 {
 		return x.TargetId
 	}
 	return 0
-}
-
-// DecRes -1 后的计数值
-type DecRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DecRes) Reset() {
-	*x = DecRes{}
-	mi := &file_proto_count_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DecRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DecRes) ProtoMessage() {}
-
-func (x *DecRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DecRes.ProtoReflect.Descriptor instead.
-func (*DecRes) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{9}
 }
 
 // GetUserProfileCountsReq 查询用户主页计数
@@ -646,7 +573,7 @@ type GetUserProfileCountsReq struct {
 
 func (x *GetUserProfileCountsReq) Reset() {
 	*x = GetUserProfileCountsReq{}
-	mi := &file_proto_count_proto_msgTypes[10]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -658,7 +585,7 @@ func (x *GetUserProfileCountsReq) String() string {
 func (*GetUserProfileCountsReq) ProtoMessage() {}
 
 func (x *GetUserProfileCountsReq) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[10]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -671,7 +598,7 @@ func (x *GetUserProfileCountsReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserProfileCountsReq.ProtoReflect.Descriptor instead.
 func (*GetUserProfileCountsReq) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{10}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetUserProfileCountsReq) GetUserId() int64 {
@@ -694,7 +621,7 @@ type GetUserProfileCountsRes struct {
 
 func (x *GetUserProfileCountsRes) Reset() {
 	*x = GetUserProfileCountsRes{}
-	mi := &file_proto_count_proto_msgTypes[11]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -706,7 +633,7 @@ func (x *GetUserProfileCountsRes) String() string {
 func (*GetUserProfileCountsRes) ProtoMessage() {}
 
 func (x *GetUserProfileCountsRes) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_count_proto_msgTypes[11]
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -719,7 +646,7 @@ func (x *GetUserProfileCountsRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserProfileCountsRes.ProtoReflect.Descriptor instead.
 func (*GetUserProfileCountsRes) Descriptor() ([]byte, []int) {
-	return file_proto_count_proto_rawDescGZIP(), []int{11}
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetUserProfileCountsRes) GetFollowingCount() int64 {
@@ -750,42 +677,199 @@ func (x *GetUserProfileCountsRes) GetFavoriteCount() int64 {
 	return 0
 }
 
-var File_proto_count_proto protoreflect.FileDescriptor
+// BatchGetContentCountsReq 按内容ID批量查询互动计数
+type BatchGetContentCountsReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ContentIds    []int64                `protobuf:"varint,1,rep,packed,name=content_ids,json=contentIds,proto3" json:"content_ids,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
 
-const file_proto_count_proto_rawDesc = "" +
+func (x *BatchGetContentCountsReq) Reset() {
+	*x = BatchGetContentCountsReq{}
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BatchGetContentCountsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BatchGetContentCountsReq) ProtoMessage() {}
+
+func (x *BatchGetContentCountsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BatchGetContentCountsReq.ProtoReflect.Descriptor instead.
+func (*BatchGetContentCountsReq) Descriptor() ([]byte, []int) {
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *BatchGetContentCountsReq) GetContentIds() []int64 {
+	if x != nil {
+		return x.ContentIds
+	}
+	return nil
+}
+
+// ContentCountsItem 单个内容的互动计数
+type ContentCountsItem struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`             // 内容ID
+	LikeCount     int64                  `protobuf:"varint,2,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`             // 点赞数
+	FavoriteCount int64                  `protobuf:"varint,3,opt,name=favorite_count,json=favoriteCount,proto3" json:"favorite_count,omitempty"` // 收藏数
+	CommentCount  int64                  `protobuf:"varint,4,opt,name=comment_count,json=commentCount,proto3" json:"comment_count,omitempty"`    // 评论数
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ContentCountsItem) Reset() {
+	*x = ContentCountsItem{}
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ContentCountsItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContentCountsItem) ProtoMessage() {}
+
+func (x *ContentCountsItem) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContentCountsItem.ProtoReflect.Descriptor instead.
+func (*ContentCountsItem) Descriptor() ([]byte, []int) {
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ContentCountsItem) GetContentId() int64 {
+	if x != nil {
+		return x.ContentId
+	}
+	return 0
+}
+
+func (x *ContentCountsItem) GetLikeCount() int64 {
+	if x != nil {
+		return x.LikeCount
+	}
+	return 0
+}
+
+func (x *ContentCountsItem) GetFavoriteCount() int64 {
+	if x != nil {
+		return x.FavoriteCount
+	}
+	return 0
+}
+
+func (x *ContentCountsItem) GetCommentCount() int64 {
+	if x != nil {
+		return x.CommentCount
+	}
+	return 0
+}
+
+// BatchGetContentCountsRes 批量查询结果 按入参 content_ids 去重后顺序返回
+type BatchGetContentCountsRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*ContentCountsItem   `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BatchGetContentCountsRes) Reset() {
+	*x = BatchGetContentCountsRes{}
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BatchGetContentCountsRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BatchGetContentCountsRes) ProtoMessage() {}
+
+func (x *BatchGetContentCountsRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_count_proto_count_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BatchGetContentCountsRes.ProtoReflect.Descriptor instead.
+func (*BatchGetContentCountsRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_count_proto_count_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *BatchGetContentCountsRes) GetItems() []*ContentCountsItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+var File_app_rpc_count_proto_count_proto protoreflect.FileDescriptor
+
+const file_app_rpc_count_proto_count_proto_rawDesc = "" +
 	"\n" +
-	"\x11proto/count.proto\x12\x05count\"\x89\x01\n" +
-	"\vGetCountReq\x12)\n" +
-	"\bbiz_type\x18\x01 \x01(\x0e2\x0e.count.BizTypeR\abizType\x122\n" +
-	"\vtarget_type\x18\x02 \x01(\x0e2\x11.count.TargetTypeR\n" +
+	"\x1fapp/rpc/count/proto/count.proto\x12\rranfeed.count\x1a\x1bgoogle/protobuf/empty.proto\"\x99\x01\n" +
+	"\vGetCountReq\x121\n" +
+	"\bbiz_type\x18\x01 \x01(\x0e2\x16.ranfeed.count.BizTypeR\abizType\x12:\n" +
+	"\vtarget_type\x18\x02 \x01(\x0e2\x19.ranfeed.count.TargetTypeR\n" +
 	"targetType\x12\x1b\n" +
 	"\ttarget_id\x18\x03 \x01(\x03R\btargetId\"#\n" +
 	"\vGetCountRes\x12\x14\n" +
-	"\x05value\x18\x01 \x01(\x03R\x05value\"\x86\x01\n" +
-	"\bCountKey\x12)\n" +
-	"\bbiz_type\x18\x01 \x01(\x0e2\x0e.count.BizTypeR\abizType\x122\n" +
-	"\vtarget_type\x18\x02 \x01(\x0e2\x11.count.TargetTypeR\n" +
+	"\x05value\x18\x01 \x01(\x03R\x05value\"\x96\x01\n" +
+	"\bCountKey\x121\n" +
+	"\bbiz_type\x18\x01 \x01(\x0e2\x16.ranfeed.count.BizTypeR\abizType\x12:\n" +
+	"\vtarget_type\x18\x02 \x01(\x0e2\x19.ranfeed.count.TargetTypeR\n" +
 	"targetType\x12\x1b\n" +
-	"\ttarget_id\x18\x03 \x01(\x03R\btargetId\"7\n" +
-	"\x10BatchGetCountReq\x12#\n" +
-	"\x04keys\x18\x01 \x03(\v2\x0f.count.CountKeyR\x04keys\"I\n" +
-	"\x0eCountValueItem\x12!\n" +
-	"\x03key\x18\x01 \x01(\v2\x0f.count.CountKeyR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x03R\x05value\"?\n" +
-	"\x10BatchGetCountRes\x12+\n" +
-	"\x05items\x18\x01 \x03(\v2\x15.count.CountValueItemR\x05items\"\x84\x01\n" +
-	"\x06IncReq\x12)\n" +
-	"\bbiz_type\x18\x01 \x01(\x0e2\x0e.count.BizTypeR\abizType\x122\n" +
-	"\vtarget_type\x18\x02 \x01(\x0e2\x11.count.TargetTypeR\n" +
+	"\ttarget_id\x18\x03 \x01(\x03R\btargetId\"?\n" +
+	"\x10BatchGetCountReq\x12+\n" +
+	"\x04keys\x18\x01 \x03(\v2\x17.ranfeed.count.CountKeyR\x04keys\"Q\n" +
+	"\x0eCountValueItem\x12)\n" +
+	"\x03key\x18\x01 \x01(\v2\x17.ranfeed.count.CountKeyR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x03R\x05value\"G\n" +
+	"\x10BatchGetCountRes\x123\n" +
+	"\x05items\x18\x01 \x03(\v2\x1d.ranfeed.count.CountValueItemR\x05items\"\x94\x01\n" +
+	"\x06IncReq\x121\n" +
+	"\bbiz_type\x18\x01 \x01(\x0e2\x16.ranfeed.count.BizTypeR\abizType\x12:\n" +
+	"\vtarget_type\x18\x02 \x01(\x0e2\x19.ranfeed.count.TargetTypeR\n" +
 	"targetType\x12\x1b\n" +
-	"\ttarget_id\x18\x03 \x01(\x03R\btargetId\"\b\n" +
-	"\x06IncRes\"\x84\x01\n" +
-	"\x06DecReq\x12)\n" +
-	"\bbiz_type\x18\x01 \x01(\x0e2\x0e.count.BizTypeR\abizType\x122\n" +
-	"\vtarget_type\x18\x02 \x01(\x0e2\x11.count.TargetTypeR\n" +
+	"\ttarget_id\x18\x03 \x01(\x03R\btargetId\"\x94\x01\n" +
+	"\x06DecReq\x121\n" +
+	"\bbiz_type\x18\x01 \x01(\x0e2\x16.ranfeed.count.BizTypeR\abizType\x12:\n" +
+	"\vtarget_type\x18\x02 \x01(\x0e2\x19.ranfeed.count.TargetTypeR\n" +
 	"targetType\x12\x1b\n" +
-	"\ttarget_id\x18\x03 \x01(\x03R\btargetId\"\b\n" +
-	"\x06DecRes\"2\n" +
+	"\ttarget_id\x18\x03 \x01(\x03R\btargetId\"2\n" +
 	"\x17GetUserProfileCountsReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\"\xaf\x01\n" +
 	"\x17GetUserProfileCountsRes\x12'\n" +
@@ -793,108 +877,126 @@ const file_proto_count_proto_rawDesc = "" +
 	"\x0efollowed_count\x18\x02 \x01(\x03R\rfollowedCount\x12\x1d\n" +
 	"\n" +
 	"like_count\x18\x03 \x01(\x03R\tlikeCount\x12%\n" +
-	"\x0efavorite_count\x18\x04 \x01(\x03R\rfavoriteCount*a\n" +
-	"\aBizType\x12\x14\n" +
-	"\x10BIZ_TYPE_UNKNOWN\x10\x00\x12\b\n" +
-	"\x04LIKE\x10\n" +
-	"\x12\f\n" +
-	"\bFAVORITE\x10\x14\x12\v\n" +
-	"\aCOMMENT\x10\x1e\x12\f\n" +
-	"\bFOLLOWED\x10(\x12\r\n" +
-	"\tFOLLOWING\x10)*<\n" +
+	"\x0efavorite_count\x18\x04 \x01(\x03R\rfavoriteCount\";\n" +
+	"\x18BatchGetContentCountsReq\x12\x1f\n" +
+	"\vcontent_ids\x18\x01 \x03(\x03R\n" +
+	"contentIds\"\x9d\x01\n" +
+	"\x11ContentCountsItem\x12\x1d\n" +
 	"\n" +
-	"TargetType\x12\x17\n" +
-	"\x13TARGET_TYPE_UNKNOWN\x10\x00\x12\v\n" +
-	"\aCONTENT\x10\n" +
-	"\x12\b\n" +
-	"\x04USER\x10\x142\xa9\x02\n" +
-	"\x0eCounterService\x122\n" +
-	"\bGetCount\x12\x12.count.GetCountReq\x1a\x12.count.GetCountRes\x12A\n" +
-	"\rBatchGetCount\x12\x17.count.BatchGetCountReq\x1a\x17.count.BatchGetCountRes\x12#\n" +
-	"\x03Inc\x12\r.count.IncReq\x1a\r.count.IncRes\x12#\n" +
-	"\x03Dec\x12\r.count.DecReq\x1a\r.count.DecRes\x12V\n" +
-	"\x14GetUserProfileCounts\x12\x1e.count.GetUserProfileCountsReq\x1a\x1e.count.GetUserProfileCountsResB\tZ\a./countb\x06proto3"
+	"content_id\x18\x01 \x01(\x03R\tcontentId\x12\x1d\n" +
+	"\n" +
+	"like_count\x18\x02 \x01(\x03R\tlikeCount\x12%\n" +
+	"\x0efavorite_count\x18\x03 \x01(\x03R\rfavoriteCount\x12#\n" +
+	"\rcomment_count\x18\x04 \x01(\x03R\fcommentCount\"R\n" +
+	"\x18BatchGetContentCountsRes\x126\n" +
+	"\x05items\x18\x01 \x03(\v2 .ranfeed.count.ContentCountsItemR\x05items*\x92\x01\n" +
+	"\aBizType\x12\x18\n" +
+	"\x14BIZ_TYPE_UNSPECIFIED\x10\x00\x12\x11\n" +
+	"\rBIZ_TYPE_LIKE\x10\n" +
+	"\x12\x15\n" +
+	"\x11BIZ_TYPE_FAVORITE\x10\x14\x12\x14\n" +
+	"\x10BIZ_TYPE_COMMENT\x10\x1e\x12\x15\n" +
+	"\x11BIZ_TYPE_FOLLOWED\x10(\x12\x16\n" +
+	"\x12BIZ_TYPE_FOLLOWING\x10)*X\n" +
+	"\n" +
+	"TargetType\x12\x1b\n" +
+	"\x17TARGET_TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13TARGET_TYPE_CONTENT\x10\n" +
+	"\x12\x14\n" +
+	"\x10TARGET_TYPE_USER\x10\x142\xe6\x03\n" +
+	"\x0eCounterService\x12B\n" +
+	"\bGetCount\x12\x1a.ranfeed.count.GetCountReq\x1a\x1a.ranfeed.count.GetCountRes\x12Q\n" +
+	"\rBatchGetCount\x12\x1f.ranfeed.count.BatchGetCountReq\x1a\x1f.ranfeed.count.BatchGetCountRes\x124\n" +
+	"\x03Inc\x12\x15.ranfeed.count.IncReq\x1a\x16.google.protobuf.Empty\x124\n" +
+	"\x03Dec\x12\x15.ranfeed.count.DecReq\x1a\x16.google.protobuf.Empty\x12f\n" +
+	"\x14GetUserProfileCounts\x12&.ranfeed.count.GetUserProfileCountsReq\x1a&.ranfeed.count.GetUserProfileCountsRes\x12i\n" +
+	"\x15BatchGetContentCounts\x12'.ranfeed.count.BatchGetContentCountsReq\x1a'.ranfeed.count.BatchGetContentCountsResB\x1eZ\x1cran-feed/app/rpc/count/countb\x06proto3"
 
 var (
-	file_proto_count_proto_rawDescOnce sync.Once
-	file_proto_count_proto_rawDescData []byte
+	file_app_rpc_count_proto_count_proto_rawDescOnce sync.Once
+	file_app_rpc_count_proto_count_proto_rawDescData []byte
 )
 
-func file_proto_count_proto_rawDescGZIP() []byte {
-	file_proto_count_proto_rawDescOnce.Do(func() {
-		file_proto_count_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_count_proto_rawDesc), len(file_proto_count_proto_rawDesc)))
+func file_app_rpc_count_proto_count_proto_rawDescGZIP() []byte {
+	file_app_rpc_count_proto_count_proto_rawDescOnce.Do(func() {
+		file_app_rpc_count_proto_count_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_app_rpc_count_proto_count_proto_rawDesc), len(file_app_rpc_count_proto_count_proto_rawDesc)))
 	})
-	return file_proto_count_proto_rawDescData
+	return file_app_rpc_count_proto_count_proto_rawDescData
 }
 
-var file_proto_count_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_proto_count_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
-var file_proto_count_proto_goTypes = []any{
-	(BizType)(0),                    // 0: count.BizType
-	(TargetType)(0),                 // 1: count.TargetType
-	(*GetCountReq)(nil),             // 2: count.GetCountReq
-	(*GetCountRes)(nil),             // 3: count.GetCountRes
-	(*CountKey)(nil),                // 4: count.CountKey
-	(*BatchGetCountReq)(nil),        // 5: count.BatchGetCountReq
-	(*CountValueItem)(nil),          // 6: count.CountValueItem
-	(*BatchGetCountRes)(nil),        // 7: count.BatchGetCountRes
-	(*IncReq)(nil),                  // 8: count.IncReq
-	(*IncRes)(nil),                  // 9: count.IncRes
-	(*DecReq)(nil),                  // 10: count.DecReq
-	(*DecRes)(nil),                  // 11: count.DecRes
-	(*GetUserProfileCountsReq)(nil), // 12: count.GetUserProfileCountsReq
-	(*GetUserProfileCountsRes)(nil), // 13: count.GetUserProfileCountsRes
+var file_app_rpc_count_proto_count_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_app_rpc_count_proto_count_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_app_rpc_count_proto_count_proto_goTypes = []any{
+	(BizType)(0),                     // 0: ranfeed.count.BizType
+	(TargetType)(0),                  // 1: ranfeed.count.TargetType
+	(*GetCountReq)(nil),              // 2: ranfeed.count.GetCountReq
+	(*GetCountRes)(nil),              // 3: ranfeed.count.GetCountRes
+	(*CountKey)(nil),                 // 4: ranfeed.count.CountKey
+	(*BatchGetCountReq)(nil),         // 5: ranfeed.count.BatchGetCountReq
+	(*CountValueItem)(nil),           // 6: ranfeed.count.CountValueItem
+	(*BatchGetCountRes)(nil),         // 7: ranfeed.count.BatchGetCountRes
+	(*IncReq)(nil),                   // 8: ranfeed.count.IncReq
+	(*DecReq)(nil),                   // 9: ranfeed.count.DecReq
+	(*GetUserProfileCountsReq)(nil),  // 10: ranfeed.count.GetUserProfileCountsReq
+	(*GetUserProfileCountsRes)(nil),  // 11: ranfeed.count.GetUserProfileCountsRes
+	(*BatchGetContentCountsReq)(nil), // 12: ranfeed.count.BatchGetContentCountsReq
+	(*ContentCountsItem)(nil),        // 13: ranfeed.count.ContentCountsItem
+	(*BatchGetContentCountsRes)(nil), // 14: ranfeed.count.BatchGetContentCountsRes
+	(*emptypb.Empty)(nil),            // 15: google.protobuf.Empty
 }
-var file_proto_count_proto_depIdxs = []int32{
-	0,  // 0: count.GetCountReq.biz_type:type_name -> count.BizType
-	1,  // 1: count.GetCountReq.target_type:type_name -> count.TargetType
-	0,  // 2: count.CountKey.biz_type:type_name -> count.BizType
-	1,  // 3: count.CountKey.target_type:type_name -> count.TargetType
-	4,  // 4: count.BatchGetCountReq.keys:type_name -> count.CountKey
-	4,  // 5: count.CountValueItem.key:type_name -> count.CountKey
-	6,  // 6: count.BatchGetCountRes.items:type_name -> count.CountValueItem
-	0,  // 7: count.IncReq.biz_type:type_name -> count.BizType
-	1,  // 8: count.IncReq.target_type:type_name -> count.TargetType
-	0,  // 9: count.DecReq.biz_type:type_name -> count.BizType
-	1,  // 10: count.DecReq.target_type:type_name -> count.TargetType
-	2,  // 11: count.CounterService.GetCount:input_type -> count.GetCountReq
-	5,  // 12: count.CounterService.BatchGetCount:input_type -> count.BatchGetCountReq
-	8,  // 13: count.CounterService.Inc:input_type -> count.IncReq
-	10, // 14: count.CounterService.Dec:input_type -> count.DecReq
-	12, // 15: count.CounterService.GetUserProfileCounts:input_type -> count.GetUserProfileCountsReq
-	3,  // 16: count.CounterService.GetCount:output_type -> count.GetCountRes
-	7,  // 17: count.CounterService.BatchGetCount:output_type -> count.BatchGetCountRes
-	9,  // 18: count.CounterService.Inc:output_type -> count.IncRes
-	11, // 19: count.CounterService.Dec:output_type -> count.DecRes
-	13, // 20: count.CounterService.GetUserProfileCounts:output_type -> count.GetUserProfileCountsRes
-	16, // [16:21] is the sub-list for method output_type
-	11, // [11:16] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+var file_app_rpc_count_proto_count_proto_depIdxs = []int32{
+	0,  // 0: ranfeed.count.GetCountReq.biz_type:type_name -> ranfeed.count.BizType
+	1,  // 1: ranfeed.count.GetCountReq.target_type:type_name -> ranfeed.count.TargetType
+	0,  // 2: ranfeed.count.CountKey.biz_type:type_name -> ranfeed.count.BizType
+	1,  // 3: ranfeed.count.CountKey.target_type:type_name -> ranfeed.count.TargetType
+	4,  // 4: ranfeed.count.BatchGetCountReq.keys:type_name -> ranfeed.count.CountKey
+	4,  // 5: ranfeed.count.CountValueItem.key:type_name -> ranfeed.count.CountKey
+	6,  // 6: ranfeed.count.BatchGetCountRes.items:type_name -> ranfeed.count.CountValueItem
+	0,  // 7: ranfeed.count.IncReq.biz_type:type_name -> ranfeed.count.BizType
+	1,  // 8: ranfeed.count.IncReq.target_type:type_name -> ranfeed.count.TargetType
+	0,  // 9: ranfeed.count.DecReq.biz_type:type_name -> ranfeed.count.BizType
+	1,  // 10: ranfeed.count.DecReq.target_type:type_name -> ranfeed.count.TargetType
+	13, // 11: ranfeed.count.BatchGetContentCountsRes.items:type_name -> ranfeed.count.ContentCountsItem
+	2,  // 12: ranfeed.count.CounterService.GetCount:input_type -> ranfeed.count.GetCountReq
+	5,  // 13: ranfeed.count.CounterService.BatchGetCount:input_type -> ranfeed.count.BatchGetCountReq
+	8,  // 14: ranfeed.count.CounterService.Inc:input_type -> ranfeed.count.IncReq
+	9,  // 15: ranfeed.count.CounterService.Dec:input_type -> ranfeed.count.DecReq
+	10, // 16: ranfeed.count.CounterService.GetUserProfileCounts:input_type -> ranfeed.count.GetUserProfileCountsReq
+	12, // 17: ranfeed.count.CounterService.BatchGetContentCounts:input_type -> ranfeed.count.BatchGetContentCountsReq
+	3,  // 18: ranfeed.count.CounterService.GetCount:output_type -> ranfeed.count.GetCountRes
+	7,  // 19: ranfeed.count.CounterService.BatchGetCount:output_type -> ranfeed.count.BatchGetCountRes
+	15, // 20: ranfeed.count.CounterService.Inc:output_type -> google.protobuf.Empty
+	15, // 21: ranfeed.count.CounterService.Dec:output_type -> google.protobuf.Empty
+	11, // 22: ranfeed.count.CounterService.GetUserProfileCounts:output_type -> ranfeed.count.GetUserProfileCountsRes
+	14, // 23: ranfeed.count.CounterService.BatchGetContentCounts:output_type -> ranfeed.count.BatchGetContentCountsRes
+	18, // [18:24] is the sub-list for method output_type
+	12, // [12:18] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
-func init() { file_proto_count_proto_init() }
-func file_proto_count_proto_init() {
-	if File_proto_count_proto != nil {
+func init() { file_app_rpc_count_proto_count_proto_init() }
+func file_app_rpc_count_proto_count_proto_init() {
+	if File_app_rpc_count_proto_count_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_count_proto_rawDesc), len(file_proto_count_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_app_rpc_count_proto_count_proto_rawDesc), len(file_app_rpc_count_proto_count_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   12,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_proto_count_proto_goTypes,
-		DependencyIndexes: file_proto_count_proto_depIdxs,
-		EnumInfos:         file_proto_count_proto_enumTypes,
-		MessageInfos:      file_proto_count_proto_msgTypes,
+		GoTypes:           file_app_rpc_count_proto_count_proto_goTypes,
+		DependencyIndexes: file_app_rpc_count_proto_count_proto_depIdxs,
+		EnumInfos:         file_app_rpc_count_proto_count_proto_enumTypes,
+		MessageInfos:      file_app_rpc_count_proto_count_proto_msgTypes,
 	}.Build()
-	File_proto_count_proto = out.File
-	file_proto_count_proto_goTypes = nil
-	file_proto_count_proto_depIdxs = nil
+	File_app_rpc_count_proto_count_proto = out.File
+	file_app_rpc_count_proto_count_proto_goTypes = nil
+	file_app_rpc_count_proto_count_proto_depIdxs = nil
 }

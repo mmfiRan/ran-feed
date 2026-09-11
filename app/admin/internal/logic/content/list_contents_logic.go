@@ -29,22 +29,14 @@ func NewListContentsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *List
 }
 
 func (l *ListContentsLogic) ListContents(req *types.AdminContentListReq) (resp *types.AdminContentListRes, err error) {
+
 	in := &content.AdminListContentsReq{
-		Page:     req.Page,
-		PageSize: req.PageSize,
-	}
-	// 各筛选项 0 表示不限 转成可选指针
-	if req.Status > 0 {
-		s := content.ContentStatus(req.Status)
-		in.Status = &s
-	}
-	if req.ContentType > 0 {
-		t := content.ContentType(req.ContentType)
-		in.ContentType = &t
-	}
-	if req.AuthorId > 0 {
-		a := req.AuthorId
-		in.AuthorId = &a
+		Page:        req.Page,
+		PageSize:    req.PageSize,
+		AuthorId:    req.AuthorId,
+		Username:    req.Username,
+		Status:      utils.CastPtr[content.ContentStatus](req.Status),
+		ContentType: utils.CastPtr[content.ContentType](req.ContentType),
 	}
 
 	rpcRes, err := l.svcCtx.ContentAdminRpc.AdminListContents(l.ctx, in)

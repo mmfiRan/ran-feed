@@ -85,8 +85,8 @@ func (l *BatchQueryLikeInfoLogic) queryLikeCountMap(contentIDs []int64) (map[int
 	keys := make([]*count.CountKey, 0, len(contentIDs))
 	for _, contentID := range contentIDs {
 		keys = append(keys, &count.CountKey{
-			BizType:    count.BizType_LIKE,
-			TargetType: count.TargetType_CONTENT,
+			BizType:    count.BizType_BIZ_TYPE_LIKE,
+			TargetType: count.TargetType_TARGET_TYPE_CONTENT,
 			TargetId:   contentID,
 		})
 	}

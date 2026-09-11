@@ -48,10 +48,10 @@ type AdminContentListItem struct {
 
 type AdminContentListReq struct {
 	PageQueryReq
-	Status      int32  `form:"status,optional"`       // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
-	ContentType int32  `form:"content_type,optional"` // 10文章 20视频
-	AuthorId    int64  `form:"author_id,optional"`
-	Username    string `form:"username,optional"`
+	Status      *int32  `form:"status,optional" validate:"omitempty,oneof=10 20 30 40 50 60 70"` // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
+	ContentType *int32  `form:"content_type,optional" validate:"omitempty,oneof=10 20"`          // 10文章 20视频
+	AuthorId    *int64  `form:"author_id,optional" validate:"omitempty,gt=0"`
+	Username    *string `form:"username,optional" validate:"omitempty,max=64"`
 }
 
 type AdminContentListRes struct {

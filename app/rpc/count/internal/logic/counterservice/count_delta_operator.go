@@ -38,7 +38,7 @@ func (o *CountDeltaOperator) UpdateDeltaOnly(bizType count.BizType, targetType c
 
 // UpdateDeltaOnlyWithRepo 允许调用方传入带事务的repo
 func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepo(repo repositories.CountValueRepository, bizType count.BizType, targetType count.TargetType, targetID int64, delta int64, updatedAt time.Time) error {
-	if bizType == count.BizType_BIZ_TYPE_UNKNOWN || targetType == count.TargetType_TARGET_TYPE_UNKNOWN || targetID <= 0 || delta == 0 {
+	if bizType == count.BizType_BIZ_TYPE_UNSPECIFIED || targetType == count.TargetType_TARGET_TYPE_UNSPECIFIED || targetID <= 0 || delta == 0 {
 		return nil
 	}
 	_, err := repo.UpdateDelta(int32(bizType), int32(targetType), targetID, delta, updatedAt)
@@ -67,7 +67,7 @@ func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepoAndOwner(
 	delta int64,
 	updatedAt time.Time,
 ) error {
-	if bizType == count.BizType_BIZ_TYPE_UNKNOWN || targetType == count.TargetType_TARGET_TYPE_UNKNOWN || targetID <= 0 || delta == 0 {
+	if bizType == count.BizType_BIZ_TYPE_UNSPECIFIED || targetType == count.TargetType_TARGET_TYPE_UNSPECIFIED || targetID <= 0 || delta == 0 {
 		return nil
 	}
 	if ownerID <= 0 {
@@ -80,7 +80,7 @@ func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepoAndOwner(
 
 // InvalidateCountCache 旁路缓存策略：写成功后删除缓存
 func (o *CountDeltaOperator) InvalidateCountCache(bizType count.BizType, targetType count.TargetType, targetID int64) {
-	if bizType == count.BizType_BIZ_TYPE_UNKNOWN || targetType == count.TargetType_TARGET_TYPE_UNKNOWN || targetID <= 0 {
+	if bizType == count.BizType_BIZ_TYPE_UNSPECIFIED || targetType == count.TargetType_TARGET_TYPE_UNSPECIFIED || targetID <= 0 {
 		return
 	}
 	cacheKey := buildCountValueCacheKey(bizType, targetType, targetID)

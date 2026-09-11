@@ -37,8 +37,8 @@ enum Visibility {
 // 审核决策枚举
 enum ReviewDecision {
   REVIEW_DECISION_UNSPECIFIED = 0;  // 未指定
-  REVIEW_DECISION_APPROVE = 10;     // 通过 转 PUBLISHED 并触发进 feed 副作用
-  REVIEW_DECISION_REJECT = 20;      // 拒绝 转 REJECTED
+  REVIEW_DECISION_APPROVE = 10;     // 通过
+  REVIEW_DECISION_REJECT = 20;      // 拒绝
 }
 
 // 上传场景枚举
@@ -329,30 +329,30 @@ message ListContentForIndexRes {
   repeated ContentIndexItem items = 1;
 }
 
-// ===== admin 管理端 与 C 端接口物理隔离 复用 content 域 repo =====
-
-// AdminContentItem 管理端内容列表项 纯管理视角 不做展示富化 含非公开与各状态
+// AdminContentItem 管理端内容列表项
 message AdminContentItem {
   int64 content_id = 1;
   ranfeed.commonpb.EnumValue content_type = 2;  // 内容类型
   ranfeed.commonpb.EnumValue status = 3;        // 内容状态
   ranfeed.commonpb.EnumValue visibility = 4;    // 可见性
   int64 author_id = 5;
-  string title = 6;
-  int64 like_count = 7;
-  int64 favorite_count = 8;
-  int64 comment_count = 9;
-  google.protobuf.Timestamp published_at = 10;  // 发布时间 毫秒 0 表示未发布
-  google.protobuf.Timestamp created_at = 11;    // 创建时间 毫秒
+  string username = 6;
+  string title = 7;
+  int64 like_count = 8;
+  int64 favorite_count = 9;
+  int64 comment_count = 10;
+  google.protobuf.Timestamp published_at = 11;
+  google.protobuf.Timestamp created_at = 12;
 }
 
-// AdminListContentsReq 多条件筛选 + offset 分页 status/content_type/author 均可选
+// AdminListContentsReq 管理端内容列表请求
 message AdminListContentsReq {
   optional ContentStatus status = 1;
   optional ContentType content_type = 2;
   optional int64 author_id = 3;
-  uint32 page = 4;  // 页从1
-  uint32 page_size = 5;
+  optional string username = 4;
+  uint32 page = 5;
+  uint32 page_size = 6;
 }
 
 // AdminListContentsRes 管理端内容列表响应

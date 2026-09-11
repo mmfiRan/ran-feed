@@ -23,7 +23,16 @@ goctl api swagger --api app/front/doc/front.api --dir app/front/swagger --filena
 - **改了 `.api` 必须同步重生成 swagger**（`app/front/swagger/front.json`），不可只生成代码漏掉文档
 - 类型名 PascalCase，请求/响应固定 `XxxReq` / `XxxRes` 后缀
 - 字段 Go 侧 PascalCase，JSON tag snake_case（`json:"user_id"`）
-- 请求字段用指针 加 `,optional`，并带 `validate:"..."` 标签做参数校验
+- **请求字段按是否必传选类型**：
+  - 必传参数直接用基本数据类型，配 `validate:"required,..."` 做必填校验
+  - 可选参数一律用指针（`*int32` / `*int64` / `*string`），tag 加 `,optional`，配 `validate:"omitempty,..."`
+- **可选参数不要用 0 空串当"未传"的哨兵值**：go-zero 的 form 解析对指针字段未传即保持 nil，
+  指针能区分"未传"（nil）与"传了 0"，也正好直接映射到下游 RPC 的 optional 字段
+- **可选字段的 `validate` 必须带 `omitempty` 前缀**（如 `validate:"omitempty,gt=0"`、`validate:"omitempty,oneof=10 20"`）：
+  go-playground/validator 对 nil 指针不会自动跳过校验，漏写 `omitempty` 会导致不传即 400；
+  写了才是"未传跳过 传了才校验"，能挡住非法值
+- **要留意零值与"未传"业务含义不同的字段 这类字段必须用指针**：例如"没有库存记录"和"库存为 0"
+  是两种截然不同的业务处理，用哨兵值会把两者抹平，只有指针能把 nil 传进 logic 分支判断
 - 路由按服务分组，handler 名与 logic 一一对应
 
 ## 后台 admin-api RBAC 元数据（改 admin 的 .api 必跑）

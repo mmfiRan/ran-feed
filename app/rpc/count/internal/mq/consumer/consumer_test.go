@@ -104,7 +104,7 @@ func TestProcessRow_DedupSkipsSecondTime(t *testing.T) {
 
 	assert.Equal(t, 2, dedup.calls)
 	assert.Equal(t, 1, countRepo.updateDeltaWithOwnerCalls)
-	assert.Contains(t, cs.counts, countKey{count.BizType_LIKE, count.TargetType_CONTENT, 100})
+	assert.Contains(t, cs.counts, countKey{count.BizType_BIZ_TYPE_LIKE, count.TargetType_TARGET_TYPE_CONTENT, 100})
 }
 
 func TestProcessRow_ResetToZeroCascades(t *testing.T) {

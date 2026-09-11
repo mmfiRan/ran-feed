@@ -36,8 +36,8 @@ func (l *GetCountLogic) GetCount(in *count.GetCountReq) (*count.GetCountRes, err
 	if in == nil {
 		return nil, errorx.NewMsg("查询计数请求无效")
 	}
-	if in.BizType == count.BizType_BIZ_TYPE_UNKNOWN ||
-		in.TargetType == count.TargetType_TARGET_TYPE_UNKNOWN {
+	if in.BizType == count.BizType_BIZ_TYPE_UNSPECIFIED ||
+		in.TargetType == count.TargetType_TARGET_TYPE_UNSPECIFIED {
 		return nil, errorx.NewMsg("查询计数请求无效")
 	}
 

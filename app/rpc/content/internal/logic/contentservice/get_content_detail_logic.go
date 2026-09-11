@@ -31,12 +31,6 @@ type GetContentDetailLogic struct {
 	videoRepo   repositories.VideoRepository
 }
 
-type contentCounts struct {
-	LikeCount     int64
-	FavoriteCount int64
-	CommentCount  int64
-}
-
 func NewGetContentDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetContentDetailLogic {
 	return &GetContentDetailLogic{
 		ctx:         ctx,
@@ -118,9 +112,9 @@ func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, vi
 		detail.IsFollowingAuthor = followInfo.IsFollowing
 	}
 	if counts != nil {
-		detail.LikeCount = counts.LikeCount
-		detail.FavoriteCount = counts.FavoriteCount
-		detail.CommentCount = counts.CommentCount
+		detail.LikeCount = counts.GetLikeCount()
+		detail.FavoriteCount = counts.GetFavoriteCount()
+		detail.CommentCount = counts.GetCommentCount()
 	}
 
 	return detail, nil
@@ -163,13 +157,13 @@ func (l *GetContentDetailLogic) fillContentFields(detail *content.ContentDetail,
 	}
 }
 
-func (l *GetContentDetailLogic) loadExtraInfo(authorID, contentID, viewerID int64, scene interaction.Scene) (*user.UserInfo, *likeservice.QueryLikeInfoRes, *favoriteservice.QueryFavoriteInfoRes, *followservice.GetFollowSummaryRes, *contentCounts, error) {
+func (l *GetContentDetailLogic) loadExtraInfo(authorID, contentID, viewerID int64, scene interaction.Scene) (*user.UserInfo, *likeservice.QueryLikeInfoRes, *favoriteservice.QueryFavoriteInfoRes, *followservice.GetFollowSummaryRes, *count.ContentCountsItem, error) {
 	var (
 		author       *user.UserInfo
 		likeInfo     *likeservice.QueryLikeInfoRes
 		favoriteInfo *favoriteservice.QueryFavoriteInfoRes
 		followInfo   *followservice.GetFollowSummaryRes
-		counts       = &contentCounts{}
+		counts       *count.ContentCountsItem
 	)
 
 	err := mr.Finish(
@@ -228,28 +222,14 @@ func (l *GetContentDetailLogic) loadExtraInfo(authorID, contentID, viewerID int6
 			return nil
 		},
 		func() error {
-			resp, err := l.svcCtx.CountRpc.BatchGetCount(l.ctx, &count.BatchGetCountReq{
-				Keys: []*count.CountKey{
-					{BizType: count.BizType_LIKE, TargetType: count.TargetType_CONTENT, TargetId: contentID},
-					{BizType: count.BizType_FAVORITE, TargetType: count.TargetType_CONTENT, TargetId: contentID},
-					{BizType: count.BizType_COMMENT, TargetType: count.TargetType_CONTENT, TargetId: contentID},
-				},
+			resp, err := l.svcCtx.CountRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
+				ContentIds: []int64{contentID},
 			})
 			if err != nil {
 				return err
 			}
-			for _, item := range resp.Items {
-				if item == nil || item.Key == nil {
-					continue
-				}
-				switch item.Key.BizType {
-				case count.BizType_LIKE:
-					counts.LikeCount = item.Value
-				case count.BizType_FAVORITE:
-					counts.FavoriteCount = item.Value
-				case count.BizType_COMMENT:
-					counts.CommentCount = item.Value
-				}
+			if items := resp.GetItems(); len(items) > 0 {
+				counts = items[0]
 			}
 			return nil
 		},

@@ -58,8 +58,8 @@ func (l *QueryFavoriteInfoLogic) buildResp(in *interaction.QueryFavoriteInfoReq,
 
 func (l *QueryFavoriteInfoLogic) queryFavoriteCountFromCountRPC(contentID int64) (int64, error) {
 	resp, err := l.svcCtx.CountRpc.GetCount(l.ctx, &count.GetCountReq{
-		BizType:    count.BizType_FAVORITE,
-		TargetType: count.TargetType_CONTENT,
+		BizType:    count.BizType_BIZ_TYPE_FAVORITE,
+		TargetType: count.TargetType_TARGET_TYPE_CONTENT,
 		TargetId:   contentID,
 	})
 	if err != nil {

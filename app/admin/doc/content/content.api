@@ -3,13 +3,13 @@ syntax = "v1"
 import "../base/base.api"
 
 type (
-	// AdminContentListReq
+	// AdminContentListReq 筛选项不传即不限 故用指针区分未传
 	AdminContentListReq {
 		PageQueryReq
-		Status      int32 `form:"status,optional"` // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
-		ContentType int32 `form:"content_type,optional"` // 10文章 20视频
-		AuthorId    int64 `form:"author_id,optional"`
-		Username    string `form:"username,optional"`
+		Status      *int32  `form:"status,optional" validate:"omitempty,oneof=10 20 30 40 50 60 70"` // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
+		ContentType *int32  `form:"content_type,optional" validate:"omitempty,oneof=10 20"`           // 10文章 20视频
+		AuthorId    *int64  `form:"author_id,optional" validate:"omitempty,gt=0"`
+		Username    *string `form:"username,optional" validate:"omitempty,max=64"`
 	}
 	AdminContentListItem {
 		ContentId     int64     `json:"content_id"`
@@ -38,18 +38,18 @@ type (
 		Status         EnumValue `json:"status"`
 		Visibility     EnumValue `json:"visibility"`
 		AuthorId       int64     `json:"author_id"`
-		Title          string `json:"title"`
-		Description    string `json:"description"`
-		CoverUrl       string `json:"cover_url"`
-		ArticleContent string `json:"article_content"`
-		VideoUrl       string `json:"video_url"`
-		VideoDuration  int32  `json:"video_duration"`
-		LikeCount      int64  `json:"like_count"`
-		FavoriteCount  int64  `json:"favorite_count"`
-		CommentCount   int64  `json:"comment_count"`
-		PublishedAt    int64  `json:"published_at"`
-		CreatedAt      int64  `json:"created_at"`
-		UpdatedAt      int64  `json:"updated_at"`
+		Title          string    `json:"title"`
+		Description    string    `json:"description"`
+		CoverUrl       string    `json:"cover_url"`
+		ArticleContent string    `json:"article_content"`
+		VideoUrl       string    `json:"video_url"`
+		VideoDuration  int32     `json:"video_duration"`
+		LikeCount      int64     `json:"like_count"`
+		FavoriteCount  int64     `json:"favorite_count"`
+		CommentCount   int64     `json:"comment_count"`
+		PublishedAt    int64     `json:"published_at"`
+		CreatedAt      int64     `json:"created_at"`
+		UpdatedAt      int64     `json:"updated_at"`
 	}
 	AdminContentDetailRes {
 		Detail AdminContentDetailData `json:"detail"`

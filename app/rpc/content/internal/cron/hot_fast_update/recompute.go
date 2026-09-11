@@ -92,7 +92,7 @@ func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator
 		}
 
 		// 回查计数总量 点赞 评论 收藏 算全分
-		counts, err := j.batchGetCounts(ctx, validIDs)
+		countsByID, err := j.batchGetCounts(ctx, validIDs)
 		if err != nil {
 			return fmt.Errorf("回查互动计数失败 %w", err)
 		}
@@ -106,8 +106,8 @@ func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator
 			if row.PublishedAt != nil {
 				publishedAt = row.PublishedAt.UTC()
 			}
-			c := counts[id]
-			weighted := calculator.Weighted(c.like, c.comment, c.favorite)
+			counts := countsByID[id]
+			weighted := calculator.Weighted(counts.GetLikeCount(), counts.GetCommentCount(), counts.GetFavoriteCount())
 			score := calculator.Score(weighted, publishedAt)
 			// ZADD 覆盖非 ZINCRBY 分值是按总量重算的时点值 自愈漂移和丢事件
 			redisArgs = append(redisArgs, score, strconv.FormatInt(id, 10))
@@ -139,44 +139,24 @@ func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator
 	return nil
 }
 
-type contentCounts struct {
-	like     int64
-	comment  int64
-	favorite int64
-}
-
-// batchGetCounts 批量回查内容的点赞 评论 收藏总量
-func (j *HotFastUpdateJob) batchGetCounts(ctx context.Context, contentIDs []int64) (map[int64]contentCounts, error) {
-	keys := make([]*count.CountKey, 0, len(contentIDs)*3)
-	for _, id := range contentIDs {
-		keys = append(keys,
-			&count.CountKey{BizType: count.BizType_LIKE, TargetType: count.TargetType_CONTENT, TargetId: id},
-			&count.CountKey{BizType: count.BizType_COMMENT, TargetType: count.TargetType_CONTENT, TargetId: id},
-			&count.CountKey{BizType: count.BizType_FAVORITE, TargetType: count.TargetType_CONTENT, TargetId: id},
-		)
+// batchGetCounts 批量回查内容的点赞 评论 收藏总量 由 count 服务提供
+func (j *HotFastUpdateJob) batchGetCounts(ctx context.Context, contentIDs []int64) (map[int64]*count.ContentCountsItem, error) {
+	countsByID := make(map[int64]*count.ContentCountsItem, len(contentIDs))
+	if len(contentIDs) == 0 {
+		return countsByID, nil
 	}
-	resp, err := j.svc.CountRpc.BatchGetCount(ctx, &count.BatchGetCountReq{Keys: keys})
+
+	resp, err := j.svc.CountRpc.BatchGetContentCounts(ctx, &count.BatchGetContentCountsReq{
+		ContentIds: contentIDs,
+	})
 	if err != nil {
 		return nil, err
 	}
-	res := make(map[int64]contentCounts, len(contentIDs))
-	if resp == nil {
-		return res, nil
-	}
-	for _, item := range resp.Items {
-		if item == nil || item.Key == nil {
+	for _, item := range resp.GetItems() {
+		if item == nil || item.GetContentId() <= 0 {
 			continue
 		}
-		c := res[item.Key.TargetId]
-		switch item.Key.BizType {
-		case count.BizType_LIKE:
-			c.like = item.Value
-		case count.BizType_COMMENT:
-			c.comment = item.Value
-		case count.BizType_FAVORITE:
-			c.favorite = item.Value
-		}
-		res[item.Key.TargetId] = c
+		countsByID[item.GetContentId()] = item
 	}
-	return res, nil
+	return countsByID, nil
 }

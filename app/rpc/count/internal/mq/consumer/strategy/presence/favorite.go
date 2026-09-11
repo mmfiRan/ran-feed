@@ -12,7 +12,7 @@ func init() {
 		return &presenceCounterStrategy{
 			tableName: favoriteTableName,
 			isActive:  alwaysActive,
-			targetsOf: contentTargets(count.BizType_FAVORITE),
+			targetsOf: contentTargets(count.BizType_BIZ_TYPE_FAVORITE),
 		}
 	})
 }

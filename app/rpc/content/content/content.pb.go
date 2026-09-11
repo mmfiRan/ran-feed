@@ -194,8 +194,8 @@ type ReviewDecision int32
 
 const (
 	ReviewDecision_REVIEW_DECISION_UNSPECIFIED ReviewDecision = 0  // 未指定
-	ReviewDecision_REVIEW_DECISION_APPROVE     ReviewDecision = 10 // 通过 转 PUBLISHED 并触发进 feed 副作用
-	ReviewDecision_REVIEW_DECISION_REJECT      ReviewDecision = 20 // 拒绝 转 REJECTED
+	ReviewDecision_REVIEW_DECISION_APPROVE     ReviewDecision = 10 // 通过
+	ReviewDecision_REVIEW_DECISION_REJECT      ReviewDecision = 20 // 拒绝
 )
 
 // Enum value maps for ReviewDecision.
@@ -2661,7 +2661,7 @@ func (x *ListContentForIndexRes) GetItems() []*ContentIndexItem {
 	return nil
 }
 
-// AdminContentItem 管理端内容列表项 纯管理视角 不做展示富化 含非公开与各状态
+// AdminContentItem 管理端内容列表项
 type AdminContentItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
@@ -2669,12 +2669,13 @@ type AdminContentItem struct {
 	Status        *commonpb.EnumValue    `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`                              // 内容状态
 	Visibility    *commonpb.EnumValue    `protobuf:"bytes,4,opt,name=visibility,proto3" json:"visibility,omitempty"`                      // 可见性
 	AuthorId      int64                  `protobuf:"varint,5,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`
-	Title         string                 `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
-	LikeCount     int64                  `protobuf:"varint,7,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
-	FavoriteCount int64                  `protobuf:"varint,8,opt,name=favorite_count,json=favoriteCount,proto3" json:"favorite_count,omitempty"`
-	CommentCount  int64                  `protobuf:"varint,9,opt,name=comment_count,json=commentCount,proto3" json:"comment_count,omitempty"`
-	PublishedAt   *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 发布时间 毫秒 0 表示未发布
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`       // 创建时间 毫秒
+	Username      string                 `protobuf:"bytes,6,opt,name=username,proto3" json:"username,omitempty"`
+	Title         string                 `protobuf:"bytes,7,opt,name=title,proto3" json:"title,omitempty"`
+	LikeCount     int64                  `protobuf:"varint,8,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
+	FavoriteCount int64                  `protobuf:"varint,9,opt,name=favorite_count,json=favoriteCount,proto3" json:"favorite_count,omitempty"`
+	CommentCount  int64                  `protobuf:"varint,10,opt,name=comment_count,json=commentCount,proto3" json:"comment_count,omitempty"`
+	PublishedAt   *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2744,6 +2745,13 @@ func (x *AdminContentItem) GetAuthorId() int64 {
 	return 0
 }
 
+func (x *AdminContentItem) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
 func (x *AdminContentItem) GetTitle() string {
 	if x != nil {
 		return x.Title
@@ -2786,14 +2794,15 @@ func (x *AdminContentItem) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-// AdminListContentsReq 多条件筛选 + offset 分页 status/content_type/author 均可选
+// AdminListContentsReq 管理端内容列表请求
 type AdminListContentsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Status        *ContentStatus         `protobuf:"varint,1,opt,name=status,proto3,enum=ranfeed.content.ContentStatus,oneof" json:"status,omitempty"`
 	ContentType   *ContentType           `protobuf:"varint,2,opt,name=content_type,json=contentType,proto3,enum=ranfeed.content.ContentType,oneof" json:"content_type,omitempty"`
 	AuthorId      *int64                 `protobuf:"varint,3,opt,name=author_id,json=authorId,proto3,oneof" json:"author_id,omitempty"`
-	Page          uint32                 `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"` // 页从1
-	PageSize      uint32                 `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Username      *string                `protobuf:"bytes,4,opt,name=username,proto3,oneof" json:"username,omitempty"`
+	Page          uint32                 `protobuf:"varint,5,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      uint32                 `protobuf:"varint,6,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2847,6 +2856,13 @@ func (x *AdminListContentsReq) GetAuthorId() int64 {
 		return *x.AuthorId
 	}
 	return 0
+}
+
+func (x *AdminListContentsReq) GetUsername() string {
+	if x != nil && x.Username != nil {
+		return *x.Username
+	}
+	return ""
 }
 
 func (x *AdminListContentsReq) GetPage() uint32 {
@@ -3635,7 +3651,7 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\x06cursor\x18\x01 \x01(\x03R\x06cursor\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\"Q\n" +
 	"\x16ListContentForIndexRes\x127\n" +
-	"\x05items\x18\x01 \x03(\v2!.ranfeed.content.ContentIndexItemR\x05items\"\xfb\x03\n" +
+	"\x05items\x18\x01 \x03(\v2!.ranfeed.content.ContentIndexItemR\x05items\"\x97\x04\n" +
 	"\x10AdminContentItem\x12\x1d\n" +
 	"\n" +
 	"content_id\x18\x01 \x01(\x03R\tcontentId\x12>\n" +
@@ -3644,26 +3660,29 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\n" +
 	"visibility\x18\x04 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\n" +
 	"visibility\x12\x1b\n" +
-	"\tauthor_id\x18\x05 \x01(\x03R\bauthorId\x12\x14\n" +
-	"\x05title\x18\x06 \x01(\tR\x05title\x12\x1d\n" +
+	"\tauthor_id\x18\x05 \x01(\x03R\bauthorId\x12\x1a\n" +
+	"\busername\x18\x06 \x01(\tR\busername\x12\x14\n" +
+	"\x05title\x18\a \x01(\tR\x05title\x12\x1d\n" +
 	"\n" +
-	"like_count\x18\a \x01(\x03R\tlikeCount\x12%\n" +
-	"\x0efavorite_count\x18\b \x01(\x03R\rfavoriteCount\x12#\n" +
-	"\rcomment_count\x18\t \x01(\x03R\fcommentCount\x12=\n" +
-	"\fpublished_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x129\n" +
+	"like_count\x18\b \x01(\x03R\tlikeCount\x12%\n" +
+	"\x0efavorite_count\x18\t \x01(\x03R\rfavoriteCount\x12#\n" +
+	"\rcomment_count\x18\n" +
+	" \x01(\x03R\fcommentCount\x12=\n" +
+	"\fpublished_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x129\n" +
 	"\n" +
-	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x96\x02\n" +
+	"created_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xc4\x02\n" +
 	"\x14AdminListContentsReq\x12;\n" +
 	"\x06status\x18\x01 \x01(\x0e2\x1e.ranfeed.content.ContentStatusH\x00R\x06status\x88\x01\x01\x12D\n" +
 	"\fcontent_type\x18\x02 \x01(\x0e2\x1c.ranfeed.content.ContentTypeH\x01R\vcontentType\x88\x01\x01\x12 \n" +
-	"\tauthor_id\x18\x03 \x01(\x03H\x02R\bauthorId\x88\x01\x01\x12\x12\n" +
-	"\x04page\x18\x04 \x01(\rR\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x05 \x01(\rR\bpageSizeB\t\n" +
+	"\tauthor_id\x18\x03 \x01(\x03H\x02R\bauthorId\x88\x01\x01\x12\x1f\n" +
+	"\busername\x18\x04 \x01(\tH\x03R\busername\x88\x01\x01\x12\x12\n" +
+	"\x04page\x18\x05 \x01(\rR\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x06 \x01(\rR\bpageSizeB\t\n" +
 	"\a_statusB\x0f\n" +
 	"\r_content_typeB\f\n" +
 	"\n" +
-	"_author_id\"\x96\x01\n" +
+	"_author_idB\v\n" +
+	"\t_username\"\x96\x01\n" +
 	"\x14AdminListContentsRes\x127\n" +
 	"\x05items\x18\x01 \x03(\v2!.ranfeed.content.AdminContentItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +

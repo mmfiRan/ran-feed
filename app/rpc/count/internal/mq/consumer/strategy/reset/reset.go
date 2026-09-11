@@ -43,12 +43,12 @@ func (s *contentResetStrategy) ExtractUpdates(ctx context.Context, op string, ro
 	}
 	ownerID, _ := strategy.ParseInt64(row["user_id"])
 
-	bizTypes := []count.BizType{count.BizType_LIKE, count.BizType_FAVORITE, count.BizType_COMMENT}
+	bizTypes := []count.BizType{count.BizType_BIZ_TYPE_LIKE, count.BizType_BIZ_TYPE_FAVORITE, count.BizType_BIZ_TYPE_COMMENT}
 	updates := make([]strategy.Update, 0, len(bizTypes))
 	for _, biz := range bizTypes {
 		updates = append(updates, strategy.Update{
 			BizType:    biz,
-			TargetType: count.TargetType_CONTENT,
+			TargetType: count.TargetType_TARGET_TYPE_CONTENT,
 			TargetID:   contentID,
 			OwnerID:    ownerID,
 			Action:     strategy.UpdateActionResetToZero,

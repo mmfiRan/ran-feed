@@ -51,21 +51,21 @@ func TestPresenceDelta_ContentTables(t *testing.T) {
 		oldRow    map[string]interface{}
 		wantDelta int64 // 0 表示无更新
 	}{
-		{name: "点赞新增有效", table: likeTableName, biz: count.BizType_LIKE, op: "INSERT", row: base(map[string]interface{}{"status": 10}), wantDelta: 1},
-		{name: "点赞新增即取消不计", table: likeTableName, biz: count.BizType_LIKE, op: "INSERT", row: base(map[string]interface{}{"status": 20}), wantDelta: 0},
-		{name: "点赞删除有效减一", table: likeTableName, biz: count.BizType_LIKE, op: "DELETE", row: base(map[string]interface{}{"status": 10}), wantDelta: -1},
-		{name: "点赞更新取消减一", table: likeTableName, biz: count.BizType_LIKE, op: "UPDATE", row: base(map[string]interface{}{"status": 20}), oldRow: map[string]interface{}{"status": 10}, wantDelta: -1},
-		{name: "点赞更新复活加一", table: likeTableName, biz: count.BizType_LIKE, op: "UPDATE", row: base(map[string]interface{}{"status": 10}), oldRow: map[string]interface{}{"status": 20}, wantDelta: 1},
-		{name: "点赞更新无翻转不计", table: likeTableName, biz: count.BizType_LIKE, op: "UPDATE", row: base(map[string]interface{}{"status": 10}), oldRow: map[string]interface{}{"content_user_id": ownerID}, wantDelta: 0},
+		{name: "点赞新增有效", table: likeTableName, biz: count.BizType_BIZ_TYPE_LIKE, op: "INSERT", row: base(map[string]interface{}{"status": 10}), wantDelta: 1},
+		{name: "点赞新增即取消不计", table: likeTableName, biz: count.BizType_BIZ_TYPE_LIKE, op: "INSERT", row: base(map[string]interface{}{"status": 20}), wantDelta: 0},
+		{name: "点赞删除有效减一", table: likeTableName, biz: count.BizType_BIZ_TYPE_LIKE, op: "DELETE", row: base(map[string]interface{}{"status": 10}), wantDelta: -1},
+		{name: "点赞更新取消减一", table: likeTableName, biz: count.BizType_BIZ_TYPE_LIKE, op: "UPDATE", row: base(map[string]interface{}{"status": 20}), oldRow: map[string]interface{}{"status": 10}, wantDelta: -1},
+		{name: "点赞更新复活加一", table: likeTableName, biz: count.BizType_BIZ_TYPE_LIKE, op: "UPDATE", row: base(map[string]interface{}{"status": 10}), oldRow: map[string]interface{}{"status": 20}, wantDelta: 1},
+		{name: "点赞更新无翻转不计", table: likeTableName, biz: count.BizType_BIZ_TYPE_LIKE, op: "UPDATE", row: base(map[string]interface{}{"status": 10}), oldRow: map[string]interface{}{"content_user_id": ownerID}, wantDelta: 0},
 
-		{name: "收藏新增加一", table: favoriteTableName, biz: count.BizType_FAVORITE, op: "INSERT", row: base(nil), wantDelta: 1},
-		{name: "收藏删除减一", table: favoriteTableName, biz: count.BizType_FAVORITE, op: "DELETE", row: base(nil), wantDelta: -1},
-		{name: "收藏更新不计", table: favoriteTableName, biz: count.BizType_FAVORITE, op: "UPDATE", row: base(nil), oldRow: map[string]interface{}{}, wantDelta: 0},
+		{name: "收藏新增加一", table: favoriteTableName, biz: count.BizType_BIZ_TYPE_FAVORITE, op: "INSERT", row: base(nil), wantDelta: 1},
+		{name: "收藏删除减一", table: favoriteTableName, biz: count.BizType_BIZ_TYPE_FAVORITE, op: "DELETE", row: base(nil), wantDelta: -1},
+		{name: "收藏更新不计", table: favoriteTableName, biz: count.BizType_BIZ_TYPE_FAVORITE, op: "UPDATE", row: base(nil), oldRow: map[string]interface{}{}, wantDelta: 0},
 
-		{name: "评论新增有效加一", table: commentTableName, biz: count.BizType_COMMENT, op: "INSERT", row: base(map[string]interface{}{"status": 10, "is_deleted": 0}), wantDelta: 1},
-		{name: "评论删除有效减一", table: commentTableName, biz: count.BizType_COMMENT, op: "DELETE", row: base(map[string]interface{}{"status": 10, "is_deleted": 0}), wantDelta: -1},
-		{name: "评论删除已逻辑删不重复减", table: commentTableName, biz: count.BizType_COMMENT, op: "DELETE", row: base(map[string]interface{}{"status": 10, "is_deleted": 1}), wantDelta: 0},
-		{name: "评论更新逻辑删减一", table: commentTableName, biz: count.BizType_COMMENT, op: "UPDATE", row: base(map[string]interface{}{"status": 10, "is_deleted": 1}), oldRow: map[string]interface{}{"is_deleted": 0}, wantDelta: -1},
+		{name: "评论新增有效加一", table: commentTableName, biz: count.BizType_BIZ_TYPE_COMMENT, op: "INSERT", row: base(map[string]interface{}{"status": 10, "is_deleted": 0}), wantDelta: 1},
+		{name: "评论删除有效减一", table: commentTableName, biz: count.BizType_BIZ_TYPE_COMMENT, op: "DELETE", row: base(map[string]interface{}{"status": 10, "is_deleted": 0}), wantDelta: -1},
+		{name: "评论删除已逻辑删不重复减", table: commentTableName, biz: count.BizType_BIZ_TYPE_COMMENT, op: "DELETE", row: base(map[string]interface{}{"status": 10, "is_deleted": 1}), wantDelta: 0},
+		{name: "评论更新逻辑删减一", table: commentTableName, biz: count.BizType_BIZ_TYPE_COMMENT, op: "UPDATE", row: base(map[string]interface{}{"status": 10, "is_deleted": 1}), oldRow: map[string]interface{}{"is_deleted": 0}, wantDelta: -1},
 	}
 
 	for _, tt := range tests {
@@ -79,7 +79,7 @@ func TestPresenceDelta_ContentTables(t *testing.T) {
 			require.Len(t, updates, 1)
 			u := updates[0]
 			assert.Equal(t, tt.biz, u.BizType)
-			assert.Equal(t, count.TargetType_CONTENT, u.TargetType)
+			assert.Equal(t, count.TargetType_TARGET_TYPE_CONTENT, u.TargetType)
 			assert.Equal(t, contentID, u.TargetID)
 			assert.Equal(t, ownerID, u.OwnerID)
 			assert.Equal(t, tt.wantDelta, u.Delta)
@@ -103,13 +103,13 @@ func TestPresence_FollowProducesTwoTargets(t *testing.T) {
 	updates := s.ExtractUpdates(ctx, "INSERT", row, nil)
 	require.Len(t, updates, 2)
 
-	following := findUpdate(t, updates, count.BizType_FOLLOWING)
-	assert.Equal(t, count.TargetType_USER, following.TargetType)
+	following := findUpdate(t, updates, count.BizType_BIZ_TYPE_FOLLOWING)
+	assert.Equal(t, count.TargetType_TARGET_TYPE_USER, following.TargetType)
 	assert.Equal(t, userID, following.TargetID)
 	assert.Equal(t, int64(1), following.Delta)
 
-	followed := findUpdate(t, updates, count.BizType_FOLLOWED)
-	assert.Equal(t, count.TargetType_USER, followed.TargetType)
+	followed := findUpdate(t, updates, count.BizType_BIZ_TYPE_FOLLOWED)
+	assert.Equal(t, count.TargetType_TARGET_TYPE_USER, followed.TargetType)
 	assert.Equal(t, followUserID, followed.TargetID)
 	assert.Equal(t, int64(1), followed.Delta)
 }

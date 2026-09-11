@@ -51,8 +51,8 @@ func (j *BigVReconcileJob) Run(ctx context.Context, _ xxljob.TriggerParam) (stri
 // promoteMissed 复查当前粉丝数 把 ≥阈值却漏晋升的补进大 V 表 单个失败只记日志不阻断
 func (j *BigVReconcileJob) promoteMissed(ctx context.Context) error {
 	candidates, err := j.countRepo.ListTargetValuesByValueGte(
-		int32(count.BizType_FOLLOWED),
-		int32(count.TargetType_USER),
+		int32(count.BizType_BIZ_TYPE_FOLLOWED),
+		int32(count.TargetType_TARGET_TYPE_USER),
 		rediskey.BigVFollowerThreshold,
 	)
 	if err != nil {

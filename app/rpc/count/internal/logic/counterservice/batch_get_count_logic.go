@@ -41,8 +41,8 @@ func (l *BatchGetCountLogic) BatchGetCount(in *count.BatchGetCountReq) (*count.B
 	uniqueKeys := make([]string, 0, len(in.Keys))
 	for _, key := range in.Keys {
 		if key == nil ||
-			key.BizType == count.BizType_BIZ_TYPE_UNKNOWN ||
-			key.TargetType == count.TargetType_TARGET_TYPE_UNKNOWN ||
+			key.BizType == count.BizType_BIZ_TYPE_UNSPECIFIED ||
+			key.TargetType == count.TargetType_TARGET_TYPE_UNSPECIFIED ||
 			key.TargetId <= 0 {
 			return nil, errorx.NewMsg("批量查询计数请求无效")
 		}

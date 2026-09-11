@@ -70,52 +70,52 @@ type ranFeedVideo struct {
 	fieldMap map[string]field.Expr
 }
 
-func (z ranFeedVideo) Table(newTableName string) *ranFeedVideo {
-	z.ranFeedVideoDo.UseTable(newTableName)
-	return z.updateTableName(newTableName)
+func (r ranFeedVideo) Table(newTableName string) *ranFeedVideo {
+	r.ranFeedVideoDo.UseTable(newTableName)
+	return r.updateTableName(newTableName)
 }
 
-func (z ranFeedVideo) As(alias string) *ranFeedVideo {
-	z.ranFeedVideoDo.DO = *(z.ranFeedVideoDo.As(alias).(*gen.DO))
-	return z.updateTableName(alias)
+func (r ranFeedVideo) As(alias string) *ranFeedVideo {
+	r.ranFeedVideoDo.DO = *(r.ranFeedVideoDo.As(alias).(*gen.DO))
+	return r.updateTableName(alias)
 }
 
-func (z *ranFeedVideo) updateTableName(table string) *ranFeedVideo {
-	z.ALL = field.NewAsterisk(table)
-	z.ID = field.NewInt64(table, "id")
-	z.ContentID = field.NewInt64(table, "content_id")
-	z.Title = field.NewString(table, "title")
-	z.MediaID = field.NewInt64(table, "media_id")
-	z.OriginURL = field.NewString(table, "origin_url")
-	z.HlsURL = field.NewString(table, "hls_url")
-	z.CoverURL = field.NewString(table, "cover_url")
-	z.Duration = field.NewInt32(table, "duration")
-	z.TranscodeStatus = field.NewInt32(table, "transcode_status")
-	z.FailReason = field.NewString(table, "fail_reason")
-	z.Version = field.NewInt32(table, "version")
-	z.IsDeleted = field.NewInt32(table, "is_deleted")
-	z.CreatedAt = field.NewTime(table, "created_at")
-	z.UpdatedAt = field.NewTime(table, "updated_at")
+func (r *ranFeedVideo) updateTableName(table string) *ranFeedVideo {
+	r.ALL = field.NewAsterisk(table)
+	r.ID = field.NewInt64(table, "id")
+	r.ContentID = field.NewInt64(table, "content_id")
+	r.Title = field.NewString(table, "title")
+	r.MediaID = field.NewInt64(table, "media_id")
+	r.OriginURL = field.NewString(table, "origin_url")
+	r.HlsURL = field.NewString(table, "hls_url")
+	r.CoverURL = field.NewString(table, "cover_url")
+	r.Duration = field.NewInt32(table, "duration")
+	r.TranscodeStatus = field.NewInt32(table, "transcode_status")
+	r.FailReason = field.NewString(table, "fail_reason")
+	r.Version = field.NewInt32(table, "version")
+	r.IsDeleted = field.NewInt32(table, "is_deleted")
+	r.CreatedAt = field.NewTime(table, "created_at")
+	r.UpdatedAt = field.NewTime(table, "updated_at")
 
-	z.fillFieldMap()
+	r.fillFieldMap()
 
-	return z
+	return r
 }
 
-func (z *ranFeedVideo) WithContext(ctx context.Context) IRanFeedVideoDo {
-	return z.ranFeedVideoDo.WithContext(ctx)
+func (r *ranFeedVideo) WithContext(ctx context.Context) IRanFeedVideoDo {
+	return r.ranFeedVideoDo.WithContext(ctx)
 }
 
-func (z ranFeedVideo) TableName() string { return z.ranFeedVideoDo.TableName() }
+func (r ranFeedVideo) TableName() string { return r.ranFeedVideoDo.TableName() }
 
-func (z ranFeedVideo) Alias() string { return z.ranFeedVideoDo.Alias() }
+func (r ranFeedVideo) Alias() string { return r.ranFeedVideoDo.Alias() }
 
-func (z ranFeedVideo) Columns(cols ...field.Expr) gen.Columns {
-	return z.ranFeedVideoDo.Columns(cols...)
+func (r ranFeedVideo) Columns(cols ...field.Expr) gen.Columns {
+	return r.ranFeedVideoDo.Columns(cols...)
 }
 
-func (z *ranFeedVideo) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
-	_f, ok := z.fieldMap[fieldName]
+func (r *ranFeedVideo) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
+	_f, ok := r.fieldMap[fieldName]
 	if !ok || _f == nil {
 		return nil, false
 	}
@@ -123,32 +123,32 @@ func (z *ranFeedVideo) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 	return _oe, ok
 }
 
-func (z *ranFeedVideo) fillFieldMap() {
-	z.fieldMap = make(map[string]field.Expr, 14)
-	z.fieldMap["id"] = z.ID
-	z.fieldMap["content_id"] = z.ContentID
-	z.fieldMap["title"] = z.Title
-	z.fieldMap["media_id"] = z.MediaID
-	z.fieldMap["origin_url"] = z.OriginURL
-	z.fieldMap["hls_url"] = z.HlsURL
-	z.fieldMap["cover_url"] = z.CoverURL
-	z.fieldMap["duration"] = z.Duration
-	z.fieldMap["transcode_status"] = z.TranscodeStatus
-	z.fieldMap["fail_reason"] = z.FailReason
-	z.fieldMap["version"] = z.Version
-	z.fieldMap["is_deleted"] = z.IsDeleted
-	z.fieldMap["created_at"] = z.CreatedAt
-	z.fieldMap["updated_at"] = z.UpdatedAt
+func (r *ranFeedVideo) fillFieldMap() {
+	r.fieldMap = make(map[string]field.Expr, 14)
+	r.fieldMap["id"] = r.ID
+	r.fieldMap["content_id"] = r.ContentID
+	r.fieldMap["title"] = r.Title
+	r.fieldMap["media_id"] = r.MediaID
+	r.fieldMap["origin_url"] = r.OriginURL
+	r.fieldMap["hls_url"] = r.HlsURL
+	r.fieldMap["cover_url"] = r.CoverURL
+	r.fieldMap["duration"] = r.Duration
+	r.fieldMap["transcode_status"] = r.TranscodeStatus
+	r.fieldMap["fail_reason"] = r.FailReason
+	r.fieldMap["version"] = r.Version
+	r.fieldMap["is_deleted"] = r.IsDeleted
+	r.fieldMap["created_at"] = r.CreatedAt
+	r.fieldMap["updated_at"] = r.UpdatedAt
 }
 
-func (z ranFeedVideo) clone(db *gorm.DB) ranFeedVideo {
-	z.ranFeedVideoDo.ReplaceConnPool(db.Statement.ConnPool)
-	return z
+func (r ranFeedVideo) clone(db *gorm.DB) ranFeedVideo {
+	r.ranFeedVideoDo.ReplaceConnPool(db.Statement.ConnPool)
+	return r
 }
 
-func (z ranFeedVideo) replaceDB(db *gorm.DB) ranFeedVideo {
-	z.ranFeedVideoDo.ReplaceDB(db)
-	return z
+func (r ranFeedVideo) replaceDB(db *gorm.DB) ranFeedVideo {
+	r.ranFeedVideoDo.ReplaceDB(db)
+	return r
 }
 
 type ranFeedVideoDo struct{ gen.DO }
@@ -214,200 +214,200 @@ type IRanFeedVideoDo interface {
 	schema.Tabler
 }
 
-func (z ranFeedVideoDo) Debug() IRanFeedVideoDo {
-	return z.withDO(z.DO.Debug())
+func (r ranFeedVideoDo) Debug() IRanFeedVideoDo {
+	return r.withDO(r.DO.Debug())
 }
 
-func (z ranFeedVideoDo) WithContext(ctx context.Context) IRanFeedVideoDo {
-	return z.withDO(z.DO.WithContext(ctx))
+func (r ranFeedVideoDo) WithContext(ctx context.Context) IRanFeedVideoDo {
+	return r.withDO(r.DO.WithContext(ctx))
 }
 
-func (z ranFeedVideoDo) ReadDB() IRanFeedVideoDo {
-	return z.Clauses(dbresolver.Read)
+func (r ranFeedVideoDo) ReadDB() IRanFeedVideoDo {
+	return r.Clauses(dbresolver.Read)
 }
 
-func (z ranFeedVideoDo) WriteDB() IRanFeedVideoDo {
-	return z.Clauses(dbresolver.Write)
+func (r ranFeedVideoDo) WriteDB() IRanFeedVideoDo {
+	return r.Clauses(dbresolver.Write)
 }
 
-func (z ranFeedVideoDo) Session(config *gorm.Session) IRanFeedVideoDo {
-	return z.withDO(z.DO.Session(config))
+func (r ranFeedVideoDo) Session(config *gorm.Session) IRanFeedVideoDo {
+	return r.withDO(r.DO.Session(config))
 }
 
-func (z ranFeedVideoDo) Clauses(conds ...clause.Expression) IRanFeedVideoDo {
-	return z.withDO(z.DO.Clauses(conds...))
+func (r ranFeedVideoDo) Clauses(conds ...clause.Expression) IRanFeedVideoDo {
+	return r.withDO(r.DO.Clauses(conds...))
 }
 
-func (z ranFeedVideoDo) Returning(value interface{}, columns ...string) IRanFeedVideoDo {
-	return z.withDO(z.DO.Returning(value, columns...))
+func (r ranFeedVideoDo) Returning(value interface{}, columns ...string) IRanFeedVideoDo {
+	return r.withDO(r.DO.Returning(value, columns...))
 }
 
-func (z ranFeedVideoDo) Not(conds ...gen.Condition) IRanFeedVideoDo {
-	return z.withDO(z.DO.Not(conds...))
+func (r ranFeedVideoDo) Not(conds ...gen.Condition) IRanFeedVideoDo {
+	return r.withDO(r.DO.Not(conds...))
 }
 
-func (z ranFeedVideoDo) Or(conds ...gen.Condition) IRanFeedVideoDo {
-	return z.withDO(z.DO.Or(conds...))
+func (r ranFeedVideoDo) Or(conds ...gen.Condition) IRanFeedVideoDo {
+	return r.withDO(r.DO.Or(conds...))
 }
 
-func (z ranFeedVideoDo) Select(conds ...field.Expr) IRanFeedVideoDo {
-	return z.withDO(z.DO.Select(conds...))
+func (r ranFeedVideoDo) Select(conds ...field.Expr) IRanFeedVideoDo {
+	return r.withDO(r.DO.Select(conds...))
 }
 
-func (z ranFeedVideoDo) Where(conds ...gen.Condition) IRanFeedVideoDo {
-	return z.withDO(z.DO.Where(conds...))
+func (r ranFeedVideoDo) Where(conds ...gen.Condition) IRanFeedVideoDo {
+	return r.withDO(r.DO.Where(conds...))
 }
 
-func (z ranFeedVideoDo) Order(conds ...field.Expr) IRanFeedVideoDo {
-	return z.withDO(z.DO.Order(conds...))
+func (r ranFeedVideoDo) Order(conds ...field.Expr) IRanFeedVideoDo {
+	return r.withDO(r.DO.Order(conds...))
 }
 
-func (z ranFeedVideoDo) Distinct(cols ...field.Expr) IRanFeedVideoDo {
-	return z.withDO(z.DO.Distinct(cols...))
+func (r ranFeedVideoDo) Distinct(cols ...field.Expr) IRanFeedVideoDo {
+	return r.withDO(r.DO.Distinct(cols...))
 }
 
-func (z ranFeedVideoDo) Omit(cols ...field.Expr) IRanFeedVideoDo {
-	return z.withDO(z.DO.Omit(cols...))
+func (r ranFeedVideoDo) Omit(cols ...field.Expr) IRanFeedVideoDo {
+	return r.withDO(r.DO.Omit(cols...))
 }
 
-func (z ranFeedVideoDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedVideoDo {
-	return z.withDO(z.DO.Join(table, on...))
+func (r ranFeedVideoDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedVideoDo {
+	return r.withDO(r.DO.Join(table, on...))
 }
 
-func (z ranFeedVideoDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedVideoDo {
-	return z.withDO(z.DO.LeftJoin(table, on...))
+func (r ranFeedVideoDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedVideoDo {
+	return r.withDO(r.DO.LeftJoin(table, on...))
 }
 
-func (z ranFeedVideoDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedVideoDo {
-	return z.withDO(z.DO.RightJoin(table, on...))
+func (r ranFeedVideoDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedVideoDo {
+	return r.withDO(r.DO.RightJoin(table, on...))
 }
 
-func (z ranFeedVideoDo) Group(cols ...field.Expr) IRanFeedVideoDo {
-	return z.withDO(z.DO.Group(cols...))
+func (r ranFeedVideoDo) Group(cols ...field.Expr) IRanFeedVideoDo {
+	return r.withDO(r.DO.Group(cols...))
 }
 
-func (z ranFeedVideoDo) Having(conds ...gen.Condition) IRanFeedVideoDo {
-	return z.withDO(z.DO.Having(conds...))
+func (r ranFeedVideoDo) Having(conds ...gen.Condition) IRanFeedVideoDo {
+	return r.withDO(r.DO.Having(conds...))
 }
 
-func (z ranFeedVideoDo) Limit(limit int) IRanFeedVideoDo {
-	return z.withDO(z.DO.Limit(limit))
+func (r ranFeedVideoDo) Limit(limit int) IRanFeedVideoDo {
+	return r.withDO(r.DO.Limit(limit))
 }
 
-func (z ranFeedVideoDo) Offset(offset int) IRanFeedVideoDo {
-	return z.withDO(z.DO.Offset(offset))
+func (r ranFeedVideoDo) Offset(offset int) IRanFeedVideoDo {
+	return r.withDO(r.DO.Offset(offset))
 }
 
-func (z ranFeedVideoDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedVideoDo {
-	return z.withDO(z.DO.Scopes(funcs...))
+func (r ranFeedVideoDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedVideoDo {
+	return r.withDO(r.DO.Scopes(funcs...))
 }
 
-func (z ranFeedVideoDo) Unscoped() IRanFeedVideoDo {
-	return z.withDO(z.DO.Unscoped())
+func (r ranFeedVideoDo) Unscoped() IRanFeedVideoDo {
+	return r.withDO(r.DO.Unscoped())
 }
 
-func (z ranFeedVideoDo) Create(values ...*model.RanFeedVideo) error {
+func (r ranFeedVideoDo) Create(values ...*model.RanFeedVideo) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Create(values)
+	return r.DO.Create(values)
 }
 
-func (z ranFeedVideoDo) CreateInBatches(values []*model.RanFeedVideo, batchSize int) error {
-	return z.DO.CreateInBatches(values, batchSize)
+func (r ranFeedVideoDo) CreateInBatches(values []*model.RanFeedVideo, batchSize int) error {
+	return r.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (z ranFeedVideoDo) Save(values ...*model.RanFeedVideo) error {
+func (r ranFeedVideoDo) Save(values ...*model.RanFeedVideo) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Save(values)
+	return r.DO.Save(values)
 }
 
-func (z ranFeedVideoDo) First() (*model.RanFeedVideo, error) {
-	if result, err := z.DO.First(); err != nil {
+func (r ranFeedVideoDo) First() (*model.RanFeedVideo, error) {
+	if result, err := r.DO.First(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedVideo), nil
 	}
 }
 
-func (z ranFeedVideoDo) Take() (*model.RanFeedVideo, error) {
-	if result, err := z.DO.Take(); err != nil {
+func (r ranFeedVideoDo) Take() (*model.RanFeedVideo, error) {
+	if result, err := r.DO.Take(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedVideo), nil
 	}
 }
 
-func (z ranFeedVideoDo) Last() (*model.RanFeedVideo, error) {
-	if result, err := z.DO.Last(); err != nil {
+func (r ranFeedVideoDo) Last() (*model.RanFeedVideo, error) {
+	if result, err := r.DO.Last(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedVideo), nil
 	}
 }
 
-func (z ranFeedVideoDo) Find() ([]*model.RanFeedVideo, error) {
-	result, err := z.DO.Find()
+func (r ranFeedVideoDo) Find() ([]*model.RanFeedVideo, error) {
+	result, err := r.DO.Find()
 	return result.([]*model.RanFeedVideo), err
 }
 
-func (z ranFeedVideoDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedVideo, err error) {
+func (r ranFeedVideoDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedVideo, err error) {
 	buf := make([]*model.RanFeedVideo, 0, batchSize)
-	err = z.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
+	err = r.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
 	})
 	return results, err
 }
 
-func (z ranFeedVideoDo) FindInBatches(result *[]*model.RanFeedVideo, batchSize int, fc func(tx gen.Dao, batch int) error) error {
-	return z.DO.FindInBatches(result, batchSize, fc)
+func (r ranFeedVideoDo) FindInBatches(result *[]*model.RanFeedVideo, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+	return r.DO.FindInBatches(result, batchSize, fc)
 }
 
-func (z ranFeedVideoDo) Attrs(attrs ...field.AssignExpr) IRanFeedVideoDo {
-	return z.withDO(z.DO.Attrs(attrs...))
+func (r ranFeedVideoDo) Attrs(attrs ...field.AssignExpr) IRanFeedVideoDo {
+	return r.withDO(r.DO.Attrs(attrs...))
 }
 
-func (z ranFeedVideoDo) Assign(attrs ...field.AssignExpr) IRanFeedVideoDo {
-	return z.withDO(z.DO.Assign(attrs...))
+func (r ranFeedVideoDo) Assign(attrs ...field.AssignExpr) IRanFeedVideoDo {
+	return r.withDO(r.DO.Assign(attrs...))
 }
 
-func (z ranFeedVideoDo) Joins(fields ...field.RelationField) IRanFeedVideoDo {
+func (r ranFeedVideoDo) Joins(fields ...field.RelationField) IRanFeedVideoDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Joins(_f))
+		r = *r.withDO(r.DO.Joins(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedVideoDo) Preload(fields ...field.RelationField) IRanFeedVideoDo {
+func (r ranFeedVideoDo) Preload(fields ...field.RelationField) IRanFeedVideoDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Preload(_f))
+		r = *r.withDO(r.DO.Preload(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedVideoDo) FirstOrInit() (*model.RanFeedVideo, error) {
-	if result, err := z.DO.FirstOrInit(); err != nil {
+func (r ranFeedVideoDo) FirstOrInit() (*model.RanFeedVideo, error) {
+	if result, err := r.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedVideo), nil
 	}
 }
 
-func (z ranFeedVideoDo) FirstOrCreate() (*model.RanFeedVideo, error) {
-	if result, err := z.DO.FirstOrCreate(); err != nil {
+func (r ranFeedVideoDo) FirstOrCreate() (*model.RanFeedVideo, error) {
+	if result, err := r.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedVideo), nil
 	}
 }
 
-func (z ranFeedVideoDo) FindByPage(offset int, limit int) (result []*model.RanFeedVideo, count int64, err error) {
-	result, err = z.Offset(offset).Limit(limit).Find()
+func (r ranFeedVideoDo) FindByPage(offset int, limit int) (result []*model.RanFeedVideo, count int64, err error) {
+	result, err = r.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
 	}
@@ -417,29 +417,29 @@ func (z ranFeedVideoDo) FindByPage(offset int, limit int) (result []*model.RanFe
 		return
 	}
 
-	count, err = z.Offset(-1).Limit(-1).Count()
+	count, err = r.Offset(-1).Limit(-1).Count()
 	return
 }
 
-func (z ranFeedVideoDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
-	count, err = z.Count()
+func (r ranFeedVideoDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
+	count, err = r.Count()
 	if err != nil {
 		return
 	}
 
-	err = z.Offset(offset).Limit(limit).Scan(result)
+	err = r.Offset(offset).Limit(limit).Scan(result)
 	return
 }
 
-func (z ranFeedVideoDo) Scan(result interface{}) (err error) {
-	return z.DO.Scan(result)
+func (r ranFeedVideoDo) Scan(result interface{}) (err error) {
+	return r.DO.Scan(result)
 }
 
-func (z ranFeedVideoDo) Delete(models ...*model.RanFeedVideo) (result gen.ResultInfo, err error) {
-	return z.DO.Delete(models)
+func (r ranFeedVideoDo) Delete(models ...*model.RanFeedVideo) (result gen.ResultInfo, err error) {
+	return r.DO.Delete(models)
 }
 
-func (z *ranFeedVideoDo) withDO(do gen.Dao) *ranFeedVideoDo {
-	z.DO = *do.(*gen.DO)
-	return z
+func (r *ranFeedVideoDo) withDO(do gen.Dao) *ranFeedVideoDo {
+	r.DO = *do.(*gen.DO)
+	return r
 }

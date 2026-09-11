@@ -141,7 +141,7 @@ func contentTargets(bizType count.BizType) func(ctx context.Context, row map[str
 		}
 		return []countTarget{{
 			bizType:    bizType,
-			targetType: count.TargetType_CONTENT,
+			targetType: count.TargetType_TARGET_TYPE_CONTENT,
 			targetID:   contentID,
 			ownerID:    ownerID,
 		}}
@@ -161,7 +161,7 @@ func followTargets(ctx context.Context, row map[string]interface{}) []countTarge
 		return nil
 	}
 	return []countTarget{
-		{bizType: count.BizType_FOLLOWING, targetType: count.TargetType_USER, targetID: userID},
-		{bizType: count.BizType_FOLLOWED, targetType: count.TargetType_USER, targetID: followUserID},
+		{bizType: count.BizType_BIZ_TYPE_FOLLOWING, targetType: count.TargetType_TARGET_TYPE_USER, targetID: userID},
+		{bizType: count.BizType_BIZ_TYPE_FOLLOWED, targetType: count.TargetType_TARGET_TYPE_USER, targetID: followUserID},
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
+	"ran-feed/app/rpc/count/count"
 	"ran-feed/pkg/errorx"
 	"ran-feed/pkg/utils"
 
@@ -36,9 +37,6 @@ func NewAdminListContentsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContentsReq) (*content.AdminListContentsRes, error) {
-	if in == nil {
-		return nil, errorx.NewMsg("参数错误")
-	}
 
 	statusFilter := optionalStatus(in)
 	typeFilter := optionalContentType(in)
@@ -62,12 +60,42 @@ func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContents
 	if err != nil {
 		return nil, err
 	}
+
+	countsByID, err := l.loadCounts(rows)
+	if err != nil {
+		return nil, err
+	}
+
 	items := make([]*content.AdminContentItem, 0, len(rows))
 	for _, row := range rows {
-		items = append(items, buildAdminContentItem(row, titles[row.ID]))
+		items = append(items, buildAdminContentItem(row, titles[row.ID], countsByID[row.ID]))
 	}
 	res.Items = items
 	return res, nil
+}
+
+// loadCounts 一次批量取本页内容的互动计数 由 count 服务提供
+func (l *AdminListContentsLogic) loadCounts(rows []*model.RanFeedContent) (map[int64]*count.ContentCountsItem, error) {
+	contentIDs := make([]int64, 0, len(rows))
+	for _, row := range rows {
+		contentIDs = append(contentIDs, row.ID)
+	}
+
+	resp, err := l.svcCtx.CountRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
+		ContentIds: contentIDs,
+	})
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
+	}
+
+	countsByID := make(map[int64]*count.ContentCountsItem, len(contentIDs))
+	for _, item := range resp.GetItems() {
+		if item == nil || item.GetContentId() <= 0 {
+			continue
+		}
+		countsByID[item.GetContentId()] = item
+	}
+	return countsByID, nil
 }
 
 // loadTitles 按类型分组批量取文章/视频标题
@@ -105,7 +133,7 @@ func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[i
 	return titles, nil
 }
 
-func buildAdminContentItem(row *model.RanFeedContent, title string) *content.AdminContentItem {
+func buildAdminContentItem(row *model.RanFeedContent, title string, counts *count.ContentCountsItem) *content.AdminContentItem {
 	item := &content.AdminContentItem{
 		ContentId:     row.ID,
 		ContentType:   logichelper.ContentTypeValue(row.ContentType),
@@ -113,9 +141,9 @@ func buildAdminContentItem(row *model.RanFeedContent, title string) *content.Adm
 		Visibility:    logichelper.VisibilityValue(row.Visibility),
 		AuthorId:      row.UserID,
 		Title:         title,
-		LikeCount:     row.LikeCount,
-		FavoriteCount: row.FavoriteCount,
-		CommentCount:  row.CommentCount,
+		LikeCount:     counts.GetLikeCount(),
+		FavoriteCount: counts.GetFavoriteCount(),
+		CommentCount:  counts.GetCommentCount(),
 		CreatedAt:     timestamppb.New(row.CreatedAt),
 	}
 	if row.PublishedAt != nil {

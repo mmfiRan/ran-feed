@@ -1,24 +1,26 @@
 syntax = "proto3";
 
-package count;
+package ranfeed.count;
 
-option go_package = "./count";
+import "google/protobuf/empty.proto";
+
+option go_package = "ran-feed/app/rpc/count/count";
 
 // BizType 计数业务类型
 enum BizType {
-  BIZ_TYPE_UNKNOWN = 0;
-  LIKE = 10;
-  FAVORITE = 20;
-  COMMENT = 30;
-  FOLLOWED = 40;
-  FOLLOWING = 41;
+  BIZ_TYPE_UNSPECIFIED = 0;  // 未指定
+  BIZ_TYPE_LIKE = 10;        // 点赞
+  BIZ_TYPE_FAVORITE = 20;    // 收藏
+  BIZ_TYPE_COMMENT = 30;     // 评论
+  BIZ_TYPE_FOLLOWED = 40;    // 被关注
+  BIZ_TYPE_FOLLOWING = 41;   // 关注
 }
 
 // TargetType 计数对象类型
 enum TargetType {
-  TARGET_TYPE_UNKNOWN = 0;
-  CONTENT = 10;
-  USER = 20;
+  TARGET_TYPE_UNSPECIFIED = 0;  // 未指定
+  TARGET_TYPE_CONTENT = 10;     // 内容
+  TARGET_TYPE_USER = 20;        // 用户
 }
 
 // GetCountReq 查询单个计数
@@ -63,19 +65,11 @@ message IncReq {
   int64 target_id = 3;
 }
 
-// IncRes +1 后的计数值
-message IncRes {
-}
-
 // DecReq 对计数 -1
 message DecReq {
   BizType biz_type = 1;
   TargetType target_type = 2;
   int64 target_id = 3;
-}
-
-// DecRes -1 后的计数值
-message DecRes {
 }
 
 // GetUserProfileCountsReq 查询用户主页计数
@@ -91,11 +85,30 @@ message GetUserProfileCountsRes {
   int64 favorite_count = 4;
 }
 
+// BatchGetContentCountsReq 按内容ID批量查询互动计数
+message BatchGetContentCountsReq {
+  repeated int64 content_ids = 1;
+}
+
+// ContentCountsItem 单个内容的互动计数
+message ContentCountsItem {
+  int64 content_id = 1;      // 内容ID
+  int64 like_count = 2;      // 点赞数
+  int64 favorite_count = 3;  // 收藏数
+  int64 comment_count = 4;   // 评论数
+}
+
+// BatchGetContentCountsRes 批量查询结果 按入参 content_ids 去重后顺序返回
+message BatchGetContentCountsRes {
+  repeated ContentCountsItem items = 1;
+}
+
 service CounterService {
   rpc GetCount(GetCountReq) returns (GetCountRes);
   rpc BatchGetCount(BatchGetCountReq) returns (BatchGetCountRes);
-  rpc Inc(IncReq) returns (IncRes);
-  rpc Dec(DecReq) returns (DecRes);
+  rpc Inc(IncReq) returns (google.protobuf.Empty);
+  rpc Dec(DecReq) returns (google.protobuf.Empty);
   rpc GetUserProfileCounts(GetUserProfileCountsReq) returns (GetUserProfileCountsRes);
+  rpc BatchGetContentCounts(BatchGetContentCountsReq) returns (BatchGetContentCountsRes);
 }
 

@@ -12,7 +12,7 @@ func init() {
 		return &presenceCounterStrategy{
 			tableName: likeTableName,
 			isActive:  statusActive,
-			targetsOf: contentTargets(count.BizType_LIKE),
+			targetsOf: contentTargets(count.BizType_BIZ_TYPE_LIKE),
 		}
 	})
 }

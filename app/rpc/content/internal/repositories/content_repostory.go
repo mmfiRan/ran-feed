@@ -34,7 +34,7 @@ type ContentRepository interface {
 	BatchGetIndexableByIDs(contentIDs []int64) (map[int64]*model.RanFeedContent, error)
 	ScanIndexableByIDCursor(cursorID int64, limit int) ([]*model.RanFeedContent, error)
 	BatchUpdateHotScores(ids []int64, scores []float64, updatedAt time.Time) error
-	// AdminPageContents 管理端多条件筛选 + id 倒序 offset 分页 返回列表与总数
+	// AdminPageContents 管理端多条件筛选
 	AdminPageContents(status *int32, contentType *int32, authorID *int64, offset, limit int) ([]*model.RanFeedContent, int64, error)
 	// AdminGetByID 管理端取任意状态内容(含非公开) 仅软删过滤
 	AdminGetByID(contentID int64) (*model.RanFeedContent, error)
@@ -105,9 +105,6 @@ func (r *ContentRepositoryImpl) GetDetailByID(contentID int64) (*model.RanFeedCo
 			q.RanFeedContent.ContentType,
 			q.RanFeedContent.Status,
 			q.RanFeedContent.Visibility,
-			q.RanFeedContent.LikeCount,
-			q.RanFeedContent.FavoriteCount,
-			q.RanFeedContent.CommentCount,
 			q.RanFeedContent.PublishedAt,
 		).
 		Where(q.RanFeedContent.ID.Eq(contentID)).
@@ -297,9 +294,6 @@ func (r *ContentRepositoryImpl) ListColdUpdateContents(status int32, visibility 
 	doQuery := q.RanFeedContent.WithContext(r.ctx).
 		Select(
 			q.RanFeedContent.ID,
-			q.RanFeedContent.LikeCount,
-			q.RanFeedContent.CommentCount,
-			q.RanFeedContent.FavoriteCount,
 			q.RanFeedContent.PublishedAt,
 		).
 		Where(q.RanFeedContent.Status.Eq(status)).
@@ -498,9 +492,6 @@ func (r *ContentRepositoryImpl) AdminPageContents(status *int32, contentType *in
 			q.RanFeedContent.ContentType,
 			q.RanFeedContent.Status,
 			q.RanFeedContent.Visibility,
-			q.RanFeedContent.LikeCount,
-			q.RanFeedContent.FavoriteCount,
-			q.RanFeedContent.CommentCount,
 			q.RanFeedContent.PublishedAt,
 			q.RanFeedContent.CreatedAt,
 		).

@@ -30,7 +30,7 @@ func (c *CanalCountConsumer) dispatch(ctx context.Context, cs *changeSet) error 
 // reconcileBigVSet 粉丝数变更后按阈值晋升大 V best-effort 失败只记日志不阻断管线
 func (c *CanalCountConsumer) reconcileBigVSet(ctx context.Context, cs *changeSet) {
 	for key := range cs.counts {
-		if key.bizType != count.BizType_FOLLOWED || key.targetType != count.TargetType_USER {
+		if key.bizType != count.BizType_BIZ_TYPE_FOLLOWED || key.targetType != count.TargetType_TARGET_TYPE_USER {
 			continue
 		}
 		c.syncBigVMember(ctx, key.targetID)
@@ -43,7 +43,7 @@ func (c *CanalCountConsumer) syncBigVMember(ctx context.Context, userID int64) {
 	if userID <= 0 {
 		return
 	}
-	row, err := c.countRepo.Get(int32(count.BizType_FOLLOWED), int32(count.TargetType_USER), userID)
+	row, err := c.countRepo.Get(int32(count.BizType_BIZ_TYPE_FOLLOWED), int32(count.TargetType_TARGET_TYPE_USER), userID)
 	if err != nil {
 		c.Errorf("大 V 晋升读粉丝数失败 userID=%d err=%v", userID, err)
 		return

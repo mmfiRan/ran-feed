@@ -14,6 +14,7 @@ import (
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
+	"ran-feed/app/rpc/count/count"
 	"ran-feed/pkg/hotrank"
 	"ran-feed/pkg/xxljob"
 
@@ -327,16 +328,29 @@ func (j *HotColdUpdateJob) rebuildFromDB(ctx context.Context, calculator hotrank
 			return nil
 		}
 
-		ids := make([]int64, 0, len(rows))               // DB 批量更新 hot_score
-		scores := make([]float64, 0, len(rows))          // 对应分值
-		redisArgs := make([]interface{}, 0, len(rows)*2) // zadd 参数：score, member...
-
+		// 先筛出可算分的行 再批量回查互动计数 与快更同口径
+		validRows := make([]*model.RanFeedContent, 0, len(rows))
+		contentIDs := make([]int64, 0, len(rows))
 		for _, row := range rows {
 			if row == nil || row.PublishedAt == nil {
 				continue
 			}
+			validRows = append(validRows, row)
+			contentIDs = append(contentIDs, row.ID)
+		}
+
+		countsByID, err := j.batchGetCounts(ctx, contentIDs)
+		if err != nil {
+			return fmt.Errorf("批量回查互动计数失败 %w", err)
+		}
+
+		ids := make([]int64, 0, len(validRows))               // DB 批量更新 hot_score
+		scores := make([]float64, 0, len(validRows))          // 对应分值
+		redisArgs := make([]interface{}, 0, len(validRows)*2) // zadd 参数：score, member...
+
+		for _, row := range validRows {
 			// 冷更新分值是“时点重算值”，不是增量。
-			score := calcScore(calculator, row, now)
+			score := calcScore(calculator, row, countsByID[row.ID], now)
 			ids = append(ids, row.ID)
 			scores = append(scores, score)
 			redisArgs = append(redisArgs, score, strconv.FormatInt(row.ID, 10))
@@ -361,15 +375,37 @@ func (j *HotColdUpdateJob) rebuildFromDB(ctx context.Context, calculator hotrank
 	}
 }
 
-func calcScore(calculator hotrank.AdditiveTime, row *model.RanFeedContent, now time.Time) float64 {
+func calcScore(calculator hotrank.AdditiveTime, row *model.RanFeedContent, counts *count.ContentCountsItem, now time.Time) float64 {
 	publishedAt := now
 	if row.PublishedAt != nil {
 		publishedAt = row.PublishedAt.UTC()
 	}
-	weighted := calculator.Weighted(row.LikeCount, row.CommentCount, row.FavoriteCount)
+	weighted := calculator.Weighted(counts.GetLikeCount(), counts.GetCommentCount(), counts.GetFavoriteCount())
 
 	// 与 fast_update 完全一致的加法时间项公式 保证快慢任务口径统一
 	return calculator.Score(weighted, publishedAt)
+}
+
+// batchGetCounts 批量回查内容互动计数 由 count 服务提供
+func (j *HotColdUpdateJob) batchGetCounts(ctx context.Context, contentIDs []int64) (map[int64]*count.ContentCountsItem, error) {
+	countsByID := make(map[int64]*count.ContentCountsItem, len(contentIDs))
+	if len(contentIDs) == 0 {
+		return countsByID, nil
+	}
+
+	resp, err := j.svc.CountRpc.BatchGetContentCounts(ctx, &count.BatchGetContentCountsReq{
+		ContentIds: contentIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, item := range resp.GetItems() {
+		if item == nil || item.GetContentId() <= 0 {
+			continue
+		}
+		countsByID[item.GetContentId()] = item
+	}
+	return countsByID, nil
 }
 
 func (j *HotColdUpdateJob) batchUpdateHotScore(ctx context.Context, ids []int64, scores []float64, batchSize int) error {

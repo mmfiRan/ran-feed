@@ -12,7 +12,7 @@ func init() {
 		return &presenceCounterStrategy{
 			tableName: commentTableName,
 			isActive:  statusActiveNotDeleted,
-			targetsOf: contentTargets(count.BizType_COMMENT),
+			targetsOf: contentTargets(count.BizType_BIZ_TYPE_COMMENT),
 		}
 	})
 }

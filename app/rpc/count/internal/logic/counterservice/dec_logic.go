@@ -9,6 +9,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type DecLogic struct {
@@ -27,12 +28,12 @@ func NewDecLogic(ctx context.Context, svcCtx *svc.ServiceContext) *DecLogic {
 	}
 }
 
-func (l *DecLogic) Dec(in *count.DecReq) (*count.DecRes, error) {
+func (l *DecLogic) Dec(in *count.DecReq) (*emptypb.Empty, error) {
 	if in == nil {
 		return nil, errorx.NewMsg("减少计数请求无效")
 	}
-	if in.BizType == count.BizType_BIZ_TYPE_UNKNOWN ||
-		in.TargetType == count.TargetType_TARGET_TYPE_UNKNOWN ||
+	if in.BizType == count.BizType_BIZ_TYPE_UNSPECIFIED ||
+		in.TargetType == count.TargetType_TARGET_TYPE_UNSPECIFIED ||
 		in.TargetId <= 0 {
 		return nil, errorx.NewMsg("减少计数请求无效")
 	}
@@ -49,5 +50,5 @@ func (l *DecLogic) Dec(in *count.DecReq) (*count.DecRes, error) {
 
 	l.deltaOperator.InvalidateCountCache(in.BizType, in.TargetType, in.TargetId)
 
-	return &count.DecRes{}, nil
+	return &emptypb.Empty{}, nil
 }

@@ -8,6 +8,7 @@ import (
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
+	"ran-feed/app/rpc/count/count"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -48,15 +49,27 @@ func (l *AdminGetContentDetailLogic) AdminGetContentDetail(in *content.AdminGetC
 		return nil, errorx.NewMsg("内容不存在")
 	}
 
+	// 互动计数由 count 服务提供
+	countResp, err := l.svcCtx.CountRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
+		ContentIds: []int64{row.ID},
+	})
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
+	}
+	var counts *count.ContentCountsItem
+	if items := countResp.GetItems(); len(items) > 0 {
+		counts = items[0]
+	}
+
 	detail := &content.AdminContentDetail{
 		ContentId:     row.ID,
 		ContentType:   logichelper.ContentTypeValue(row.ContentType),
 		Status:        logichelper.ContentStatusValue(row.Status),
 		Visibility:    logichelper.VisibilityValue(row.Visibility),
 		AuthorId:      row.UserID,
-		LikeCount:     row.LikeCount,
-		FavoriteCount: row.FavoriteCount,
-		CommentCount:  row.CommentCount,
+		LikeCount:     counts.GetLikeCount(),
+		FavoriteCount: counts.GetFavoriteCount(),
+		CommentCount:  counts.GetCommentCount(),
 		CreatedAt:     timestamppb.New(row.CreatedAt),
 		UpdatedAt:     timestamppb.New(row.UpdatedAt),
 	}

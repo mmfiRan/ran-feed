@@ -17,9 +17,6 @@ type RanFeedContent struct {
 	ContentType    int32      `gorm:"column:content_type;not null;comment:内容类型 10=文章 20=视频" json:"content_type"`           // 内容类型 10=文章 20=视频
 	Status         int32      `gorm:"column:status;not null;comment:状态 10=草稿 20=处理中 30=已发布 40=失败" json:"status"`           // 状态 10=草稿 20=处理中 30=已发布 40=失败
 	Visibility     int32      `gorm:"column:visibility;not null;default:1;comment:可见性 10=公开 20=私密" json:"visibility"`      // 可见性 10=公开 20=私密
-	LikeCount      int64      `gorm:"column:like_count;not null;comment:点赞数" json:"like_count"`                            // 点赞数
-	FavoriteCount  int64      `gorm:"column:favorite_count;not null;comment:收藏数" json:"favorite_count"`                    // 收藏数
-	CommentCount   int64      `gorm:"column:comment_count;not null;comment:评论数" json:"comment_count"`                      // 评论数
 	HotScore       float64    `gorm:"column:hot_score;not null;comment:热度分" json:"hot_score"`                              // 热度分
 	LastHotScoreAt *time.Time `gorm:"column:last_hot_score_at;comment:热度分最后更新时间" json:"last_hot_score_at"`                 // 热度分最后更新时间
 	Version        int32      `gorm:"column:version;not null;default:1;comment:版本号（乐观锁）" json:"version"`                   // 版本号（乐观锁）

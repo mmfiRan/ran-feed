@@ -83,8 +83,8 @@ func (l *QueryLikeInfoLogic) queryFromCountService(contentID int64) (int64, erro
 		return 0, nil
 	}
 	res, err := l.svcCtx.CountRpc.GetCount(l.ctx, &count.GetCountReq{
-		BizType:    count.BizType_LIKE,
-		TargetType: count.TargetType_CONTENT,
+		BizType:    count.BizType_BIZ_TYPE_LIKE,
+		TargetType: count.TargetType_TARGET_TYPE_CONTENT,
 		TargetId:   contentID,
 	})
 	if err != nil {

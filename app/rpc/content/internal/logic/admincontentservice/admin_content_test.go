@@ -7,6 +7,7 @@ import (
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/common/logichelper"
 	"ran-feed/app/rpc/content/internal/entity/model"
+	"ran-feed/app/rpc/count/count"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -49,25 +50,36 @@ func TestBuildAdminContentItem(t *testing.T) {
 
 	t.Run("已发布带发布时间", func(t *testing.T) {
 		row := &model.RanFeedContent{
-			ID:            10,
-			UserID:        99,
-			ContentType:   int32(content.ContentType_CONTENT_TYPE_ARTICLE),
-			Status:        int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED),
-			Visibility:    int32(content.Visibility_VISIBILITY_PUBLIC),
-			LikeCount:     3,
-			FavoriteCount: 2,
-			CommentCount:  1,
-			PublishedAt:   &published,
-			CreatedAt:     created,
+			ID:          10,
+			UserID:      99,
+			ContentType: int32(content.ContentType_CONTENT_TYPE_ARTICLE),
+			Status:      int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED),
+			Visibility:  int32(content.Visibility_VISIBILITY_PUBLIC),
+			PublishedAt: &published,
+			CreatedAt:   created,
 		}
-		item := buildAdminContentItem(row, "标题A")
+		counts := &count.ContentCountsItem{ContentId: 10, LikeCount: 3, FavoriteCount: 2, CommentCount: 1}
+		item := buildAdminContentItem(row, "标题A", counts)
 		assert.Equal(t, int64(10), item.ContentId)
 		assert.Equal(t, logichelper.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_ARTICLE)), item.ContentType)
 		assert.Equal(t, logichelper.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)), item.Status)
 		assert.Equal(t, "标题A", item.Title)
 		assert.Equal(t, int64(3), item.LikeCount)
+		assert.Equal(t, int64(2), item.FavoriteCount)
+		assert.Equal(t, int64(1), item.CommentCount)
 		assert.Equal(t, published.UnixMilli(), item.PublishedAt.AsTime().UnixMilli())
 		assert.Equal(t, created.UnixMilli(), item.CreatedAt.AsTime().UnixMilli())
+	})
+
+	t.Run("计数缺省归零", func(t *testing.T) {
+		row := &model.RanFeedContent{
+			ID:        12,
+			CreatedAt: created,
+		}
+		item := buildAdminContentItem(row, "", nil)
+		assert.Equal(t, int64(0), item.LikeCount)
+		assert.Equal(t, int64(0), item.FavoriteCount)
+		assert.Equal(t, int64(0), item.CommentCount)
 	})
 
 	t.Run("未发布 published_at 归零", func(t *testing.T) {
@@ -77,7 +89,7 @@ func TestBuildAdminContentItem(t *testing.T) {
 			Status:      int32(content.ContentStatus_CONTENT_STATUS_DRAFT),
 			CreatedAt:   created,
 		}
-		item := buildAdminContentItem(row, "")
+		item := buildAdminContentItem(row, "", nil)
 		assert.Equal(t, int64(0), item.PublishedAt.AsTime().UnixMilli())
 		assert.Equal(t, logichelper.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_VIDEO)), item.ContentType)
 	})

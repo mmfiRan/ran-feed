@@ -35,12 +35,12 @@ func (s *changeSet) record(u strategy.Update, ownerID int64) {
 	s.counts[countKey{u.BizType, u.TargetType, u.TargetID}] = struct{}{}
 
 	switch u.TargetType {
-	case count.TargetType_CONTENT:
+	case count.TargetType_TARGET_TYPE_CONTENT:
 		if ownerID > 0 {
 			s.users[ownerID] = struct{}{}
 		}
 		s.contents[u.TargetID] = struct{}{}
-	case count.TargetType_USER:
+	case count.TargetType_TARGET_TYPE_USER:
 		s.users[u.TargetID] = struct{}{}
 	}
 }

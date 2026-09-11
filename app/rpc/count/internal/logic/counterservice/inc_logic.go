@@ -9,6 +9,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type IncLogic struct {
@@ -27,12 +28,12 @@ func NewIncLogic(ctx context.Context, svcCtx *svc.ServiceContext) *IncLogic {
 	}
 }
 
-func (l *IncLogic) Inc(in *count.IncReq) (*count.IncRes, error) {
+func (l *IncLogic) Inc(in *count.IncReq) (*emptypb.Empty, error) {
 	if in == nil {
 		return nil, errorx.NewMsg("新增计数请求无效")
 	}
-	if in.BizType == count.BizType_BIZ_TYPE_UNKNOWN ||
-		in.TargetType == count.TargetType_TARGET_TYPE_UNKNOWN ||
+	if in.BizType == count.BizType_BIZ_TYPE_UNSPECIFIED ||
+		in.TargetType == count.TargetType_TARGET_TYPE_UNSPECIFIED ||
 		in.TargetId <= 0 {
 		return nil, errorx.NewMsg("新增计数请求无效")
 	}
@@ -50,5 +51,5 @@ func (l *IncLogic) Inc(in *count.IncReq) (*count.IncRes, error) {
 
 	l.deltaOperator.InvalidateCountCache(in.BizType, in.TargetType, in.TargetId)
 
-	return &count.IncRes{}, nil
+	return &emptypb.Empty{}, nil
 }
