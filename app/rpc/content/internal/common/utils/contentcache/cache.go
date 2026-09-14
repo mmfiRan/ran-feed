@@ -97,7 +97,7 @@ func BatchGet(ctx context.Context, rds *redis.Redis, cfg config.ContentCacheConf
 	return result, nil
 }
 
-// Invalidate 删除指定内容的详情缓存 供内容编辑/删除/改可见性写路径调用
+// Invalidate 删除指定内容的详情缓存
 func Invalidate(ctx context.Context, rds *redis.Redis, contentIDs ...int64) error {
 	keys := make([]string, 0, len(contentIDs))
 	for _, id := range contentIDs {

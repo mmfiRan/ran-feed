@@ -12,34 +12,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidateStatusTransition(t *testing.T) {
+func TestFlipSourceStatus(t *testing.T) {
 	tests := []struct {
-		name     string
-		cur      content.ContentStatus
-		target   content.ContentStatus
-		wantNoop bool
-		wantErr  bool
+		name    string
+		target  content.ContentStatus
+		want    content.ContentStatus
+		wantErr bool
 	}{
-		{"下架 已发布->下架", content.ContentStatus_CONTENT_STATUS_PUBLISHED, content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, false, false},
-		{"恢复 下架->已发布", content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, content.ContentStatus_CONTENT_STATUS_PUBLISHED, false, false},
-		{"下架 幂等 已下架->下架", content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, true, false},
-		{"恢复 幂等 已发布->已发布", content.ContentStatus_CONTENT_STATUS_PUBLISHED, content.ContentStatus_CONTENT_STATUS_PUBLISHED, true, false},
-		{"下架 草稿不可下架", content.ContentStatus_CONTENT_STATUS_DRAFT, content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, false, true},
-		{"下架 待审不可下架", content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW, content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, false, true},
-		{"恢复 已发布不可恢复", content.ContentStatus_CONTENT_STATUS_PUBLISHED, content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, false, false}, // 属下架路径 见上
-		{"恢复 草稿不可恢复", content.ContentStatus_CONTENT_STATUS_DRAFT, content.ContentStatus_CONTENT_STATUS_PUBLISHED, false, true},
-		{"不支持的目标态 转草稿", content.ContentStatus_CONTENT_STATUS_PUBLISHED, content.ContentStatus_CONTENT_STATUS_DRAFT, false, true},
-		{"不支持的目标态 转拒绝", content.ContentStatus_CONTENT_STATUS_PUBLISHED, content.ContentStatus_CONTENT_STATUS_REJECTED, false, true},
+		{"下架 源自已发布", content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, content.ContentStatus_CONTENT_STATUS_PUBLISHED, false},
+		{"恢复 源自已下架", content.ContentStatus_CONTENT_STATUS_PUBLISHED, content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, false},
+		{"草稿不支持", content.ContentStatus_CONTENT_STATUS_DRAFT, content.ContentStatus_CONTENT_STATUS_UNSPECIFIED, true},
+		{"待审不支持", content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW, content.ContentStatus_CONTENT_STATUS_UNSPECIFIED, true},
+		{"拒绝不支持", content.ContentStatus_CONTENT_STATUS_REJECTED, content.ContentStatus_CONTENT_STATUS_UNSPECIFIED, true},
+		{"未指定不支持", content.ContentStatus_CONTENT_STATUS_UNSPECIFIED, content.ContentStatus_CONTENT_STATUS_UNSPECIFIED, true},
 	}
+	l := &AdminSetContentStatusLogic{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			noop, err := validateStatusTransition(tt.cur, tt.target)
+			got, err := l.flipSourceStatus(tt.target)
 			if tt.wantErr {
 				assert.Error(t, err)
 				return
 			}
 			assert.NoError(t, err)
-			assert.Equal(t, tt.wantNoop, noop)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -93,24 +89,5 @@ func TestBuildAdminContentItem(t *testing.T) {
 		item := buildAdminContentItem(row, "", "", nil)
 		assert.Equal(t, int64(0), item.PublishedAt.AsTime().UnixMilli())
 		assert.Equal(t, utils.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_VIDEO)), item.ContentType)
-	})
-}
-
-func TestBuildReviewDO(t *testing.T) {
-	approve := int32(content.ReviewDecision_REVIEW_DECISION_APPROVE)
-	reject := int32(content.ReviewDecision_REVIEW_DECISION_REJECT)
-	t.Run("拒绝带理由", func(t *testing.T) {
-		d := buildReviewDO(88, reject, "含敏感内容", 7)
-		assert.Equal(t, int64(88), d.ContentID)
-		assert.Equal(t, reject, d.Decision)
-		assert.Equal(t, "含敏感内容", d.Reason)
-		assert.Equal(t, int64(7), d.CreatedBy)
-		assert.Equal(t, int64(7), d.UpdatedBy)
-		assert.NotZero(t, d.ID)
-	})
-	t.Run("通过理由为空", func(t *testing.T) {
-		d := buildReviewDO(88, approve, "", 7)
-		assert.Equal(t, approve, d.Decision)
-		assert.Empty(t, d.Reason)
 	})
 }

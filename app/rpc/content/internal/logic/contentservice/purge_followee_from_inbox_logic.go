@@ -50,7 +50,7 @@ func (l *PurgeFolloweeFromInboxLogic) PurgeFolloweeFromInbox(in *content.PurgeFo
 	}
 
 	// 大 V 内容从未推入 inbox 无需 ZREM 查询失败仍继续清理 ZREM 对大 V 无害对小号必要
-	if isBig, err := isBigVAuthor(l.ctx, l.svcCtx, in.FolloweeId); err != nil {
+	if isBig, err := l.svcCtx.FeedPublisher.IsBigVAuthor(l.ctx, in.FolloweeId); err != nil {
 		l.Errorf("查询大 V 集合失败 followeeID=%d err=%v", in.FolloweeId, err)
 	} else if isBig {
 		return &content.PurgeFolloweeFromInboxRes{

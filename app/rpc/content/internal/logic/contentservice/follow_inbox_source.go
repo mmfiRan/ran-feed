@@ -17,11 +17,6 @@ type followeeContent struct {
 	publishedAt int64
 }
 
-// isBigVAuthor 命中全局大 V 集合即大 V 读失败保守按非大 V 处理 backfill/purge/fanout 共用
-func isBigVAuthor(ctx context.Context, svcCtx *svc.ServiceContext, authorID int64) (bool, error) {
-	return svcCtx.Redis.SismemberCtx(ctx, rediskey.RedisFeedBigVGlobalKey, strconv.FormatInt(authorID, 10))
-}
-
 // loadFolloweeWindowContent 取 followee 窗口内内容 publish zset 优先 冷则回源 DB 取 PUBLIC
 // backfill 灌入与 purge 清理共用同一取数口径 避免分叉
 func loadFolloweeWindowContent(ctx context.Context, svcCtx *svc.ServiceContext, contentRepo repositories.ContentRepository, followeeID, cutoffMillis int64, limit int) ([]followeeContent, error) {

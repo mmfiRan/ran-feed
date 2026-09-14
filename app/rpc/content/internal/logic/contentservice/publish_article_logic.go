@@ -14,8 +14,6 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-const userPublishFeedKeepN = 5000
-
 type PublishArticleLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
@@ -67,7 +65,7 @@ func (l *PublishArticleLogic) PublishArticle(in *content.ArticlePublishReq) (*co
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("发布文章失败"))
 	}
 
-	// 先审后发 发布不触发进 feed 副作用 待审核通过由 AdminReviewContent 触发 RunPublishFeedEffects
+	// 先审后发 发布不触发进 feed 副作用 待审核通过由 AdminReviewContent 触发 FeedPublisher.Publish
 	return &content.ArticlePublishRes{
 		ContentId: contentId,
 	}, nil

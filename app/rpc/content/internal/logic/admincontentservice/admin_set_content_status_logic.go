@@ -29,69 +29,40 @@ func NewAdminSetContentStatusLogic(ctx context.Context, svcCtx *svc.ServiceConte
 	}
 }
 
-// AdminSetContentStatus 下架/恢复 本轮仅支持两态互转
-//   - 下架 PUBLISHED -> TAKEN_DOWN
-//   - 恢复 TAKEN_DOWN -> PUBLISHED
-//
-// 状态翻转后失效二级缓存 feed 读路径 miss 回源经 BatchGetPublishedByIDs 过滤 下架内容自动从各流消失
+// AdminSetContentStatus 下架/恢复
+// 状态翻转后失效二级缓存
 func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetContentStatusReq) (*content.AdminSetContentStatusRes, error) {
-	if in == nil || in.ContentId <= 0 {
-		return nil, errorx.NewMsg("参数错误")
-	}
 	target := in.GetStatus()
-	if target != content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN && target != content.ContentStatus_CONTENT_STATUS_PUBLISHED {
-		return nil, errorx.NewMsg("不支持的目标状态")
-	}
-
-	row, err := l.contentRepo.AdminGetByID(in.ContentId)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容失败"))
-	}
-	if row == nil {
-		return nil, errorx.NewMsg("内容不存在")
-	}
-
-	cur := content.ContentStatus(row.Status)
-	noop, err := validateStatusTransition(cur, target)
+	from, err := l.flipSourceStatus(target)
 	if err != nil {
 		return nil, err
 	}
-	if noop {
-		return &content.AdminSetContentStatusRes{Status: utils.ContentStatusValue(int32(target))}, nil
-	}
 
-	if _, err = l.contentRepo.AdminUpdateStatus(in.ContentId, int32(target), in.GetOperatorId()); err != nil {
+	affected, err := l.contentRepo.AdminUpdateStatus(in.ContentId, int32(from), int32(target), in.GetOperatorId())
+	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("更新内容状态失败"))
 	}
+	if affected == 0 {
+		return nil, errorx.NewMsg("内容不存在或状态已变更，请刷新后重试")
+	}
 
-	// 失效二级缓存 失败不阻断 靠 TTL 收敛
+	// 失效二级缓存
 	if err = contentcache.Invalidate(l.ctx, l.svcCtx.Redis, in.ContentId); err != nil {
 		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
-	return &content.AdminSetContentStatusRes{Status: utils.ContentStatusValue(int32(target))}, nil
+	return &content.AdminSetContentStatusRes{
+		Status: utils.ContentStatusValue(int32(target)),
+	}, nil
 }
 
-// validateStatusTransition 校验下架/恢复状态机 返回 noop 表示当前已是目标态无需落库
-//   - 下架 TAKEN_DOWN 仅允许从 PUBLISHED 转入
-//   - 恢复 PUBLISHED 仅允许从 TAKEN_DOWN 转入
-//
-// 杜绝越权把草稿/待审/拒绝直接改成发布态
-func validateStatusTransition(cur, target content.ContentStatus) (noop bool, err error) {
-	if cur == target {
-		return true, nil
-	}
+func (l *AdminSetContentStatusLogic) flipSourceStatus(target content.ContentStatus) (content.ContentStatus, error) {
 	switch target {
 	case content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN:
-		if cur != content.ContentStatus_CONTENT_STATUS_PUBLISHED {
-			return false, errorx.NewMsg("仅已发布内容可下架")
-		}
+		return content.ContentStatus_CONTENT_STATUS_PUBLISHED, nil
 	case content.ContentStatus_CONTENT_STATUS_PUBLISHED:
-		if cur != content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN {
-			return false, errorx.NewMsg("仅已下架内容可恢复")
-		}
+		return content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, nil
 	default:
-		return false, errorx.NewMsg("不支持的目标状态")
+		return content.ContentStatus_CONTENT_STATUS_UNSPECIFIED, errorx.NewMsg("不支持的目标状态")
 	}
-	return false, nil
 }

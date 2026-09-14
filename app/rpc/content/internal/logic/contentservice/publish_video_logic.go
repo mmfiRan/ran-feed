@@ -68,7 +68,7 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("发布视频失败"))
 	}
 
-	// 先审后发 发布不触发进 feed 副作用 待审核通过由 AdminReviewContent 触发 RunPublishFeedEffects
+	// 先审后发 发布不触发进 feed 副作用 待审核通过由 AdminReviewContent 触发 FeedPublisher.Publish
 	return &content.VideoPublishRes{
 		ContentId: contentId,
 	}, nil

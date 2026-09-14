@@ -39,9 +39,9 @@ type ContentRepository interface {
 	AdminPageContents(status *int32, contentType *int32, authorID *int64, offset, limit int) ([]*model.RanFeedContent, int64, error)
 	// AdminGetByID 管理端取任意状态内容
 	AdminGetByID(contentID int64) (*model.RanFeedContent, error)
-	// AdminUpdateStatus 管理端翻转状态 落 updated_by 返回受影响行数
-	AdminUpdateStatus(contentID int64, status int32, operatorID int64) (int64, error)
-	// AdminApproveContent 先审后发审核通过 PENDING_REVIEW->PUBLISHED 落 published_at + updated_by 返回受影响行数
+	// AdminUpdateStatus 管理端条件翻转状态
+	AdminUpdateStatus(contentID int64, fromStatus, toStatus int32, operatorID int64) (int64, error)
+	// AdminApproveContent 审核通过 PENDING_REVIEW->PUBLISHED
 	AdminApproveContent(contentID, operatorID int64, publishedAt time.Time) (int64, error)
 }
 
@@ -514,8 +514,8 @@ func (r *ContentRepositoryImpl) AdminGetByID(contentID int64) (*model.RanFeedCon
 	return row, nil
 }
 
-// AdminUpdateStatus 管理端翻转状态 落 updated_by 仅软删过滤 返回受影响行数
-func (r *ContentRepositoryImpl) AdminUpdateStatus(contentID int64, status int32, operatorID int64) (int64, error) {
+// AdminUpdateStatus 管理端条件翻转状态
+func (r *ContentRepositoryImpl) AdminUpdateStatus(contentID int64, fromStatus, toStatus int32, operatorID int64) (int64, error) {
 	if contentID <= 0 {
 		return 0, nil
 	}
@@ -523,9 +523,10 @@ func (r *ContentRepositoryImpl) AdminUpdateStatus(contentID int64, status int32,
 	q := r.getQuery()
 	info, err := q.RanFeedContent.WithContext(r.ctx).
 		Where(q.RanFeedContent.ID.Eq(contentID)).
-		Where(q.RanFeedContent.IsDeleted.Eq(0)).
+		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Where(q.RanFeedContent.Status.Eq(fromStatus)).
 		UpdateSimple(
-			q.RanFeedContent.Status.Value(status),
+			q.RanFeedContent.Status.Value(toStatus),
 			q.RanFeedContent.UpdatedBy.Value(operatorID),
 		)
 	if err != nil {
@@ -543,7 +544,7 @@ func (r *ContentRepositoryImpl) AdminApproveContent(contentID, operatorID int64,
 	q := r.getQuery()
 	info, err := q.RanFeedContent.WithContext(r.ctx).
 		Where(q.RanFeedContent.ID.Eq(contentID)).
-		Where(q.RanFeedContent.IsDeleted.Eq(0)).
+		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Where(q.RanFeedContent.Status.Eq(int32(content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW))).
 		UpdateSimple(
 			q.RanFeedContent.Status.Value(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)),

@@ -9,7 +9,6 @@ import (
 	"ran-feed/app/rpc/content/internal/common/utils/contentcache"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/query"
-	contentservicelogic "ran-feed/app/rpc/content/internal/logic/contentservice"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -36,13 +35,8 @@ func NewAdminReviewContentLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	}
 }
 
-// AdminReviewContent 先审后发审核 仅 PENDING_REVIEW 可审
-//   - 通过 转 PUBLISHED 落 published_at=审核时刻 + 事务内记审核 提交后触发进 feed 副作用
-//   - 拒绝 转 REJECTED 事务内记审核(含理由) 无 feed 副作用
+// AdminReviewContent 内容审核
 func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewContentReq) (*content.AdminReviewContentRes, error) {
-	if in == nil || in.ContentId <= 0 {
-		return nil, errorx.NewMsg("参数错误")
-	}
 	if in.Decision != content.ReviewDecision_REVIEW_DECISION_APPROVE && in.Decision != content.ReviewDecision_REVIEW_DECISION_REJECT {
 		return nil, errorx.NewMsg("不支持的审核决策")
 	}
@@ -59,53 +53,61 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 	}
 
 	approve := in.Decision == content.ReviewDecision_REVIEW_DECISION_APPROVE
+	targetStatus := content.ContentStatus_CONTENT_STATUS_REJECTED
+	reason := in.RejectReason
+	if approve {
+		targetStatus = content.ContentStatus_CONTENT_STATUS_PUBLISHED
+		reason = ""
+	}
 	now := time.Now()
 
-	// 事务内翻状态 + 落审核记录 副作用留到提交后
-	if err = query.Q.Transaction(func(tx *query.Query) error {
+	err = query.Q.Transaction(func(tx *query.Query) error {
 		contentRepo := l.contentRepo.WithTx(tx)
-		reviewRepo := l.reviewRepo.WithTx(tx)
 
+		var (
+			affected int64
+			err      error
+		)
 		if approve {
-			affected, aErr := contentRepo.AdminApproveContent(in.ContentId, in.OperatorId, now)
-			if aErr != nil {
-				return aErr
-			}
-			if affected == 0 {
-				return errorx.NewMsg("内容不在待审状态")
-			}
-			return reviewRepo.Create(buildReviewDO(in.ContentId, int32(content.ReviewDecision_REVIEW_DECISION_APPROVE), "", in.OperatorId))
+			affected, err = contentRepo.AdminApproveContent(in.ContentId, in.OperatorId, now)
+		} else {
+			affected, err = contentRepo.AdminUpdateStatus(in.ContentId,
+				int32(content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW), int32(targetStatus), in.OperatorId)
+		}
+		if err != nil {
+			return err
+		}
+		if affected == 0 {
+			return errorx.NewMsg("内容不在待审状态")
 		}
 
-		if _, uErr := contentRepo.AdminUpdateStatus(in.ContentId, int32(content.ContentStatus_CONTENT_STATUS_REJECTED), in.OperatorId); uErr != nil {
-			return uErr
-		}
-		return reviewRepo.Create(buildReviewDO(in.ContentId, int32(content.ReviewDecision_REVIEW_DECISION_REJECT), in.RejectReason, in.OperatorId))
-	}); err != nil {
+		return l.reviewRepo.WithTx(tx).Create(&do.ContentReviewDO{
+			ID:        snowflake.GenID(),
+			ContentID: in.ContentId,
+			Decision:  int32(in.Decision),
+			Reason:    reason,
+			CreatedBy: in.OperatorId,
+			UpdatedBy: in.OperatorId,
+		})
+	})
+	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("审核失败"))
 	}
 
 	if !approve {
-		return &content.AdminReviewContentRes{Status: utils.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_REJECTED))}, nil
+		return &content.AdminReviewContentRes{
+			Status: utils.ContentStatusValue(int32(targetStatus)),
+		}, nil
 	}
 
-	// 通过 内容此刻进 feed 触发发布副作用(publish zset + 热榜脏集合 + follower 扩散)
-	contentservicelogic.RunPublishFeedEffects(l.ctx, l.svcCtx, in.ContentId, row.UserID, now.UnixMilli(), content.Visibility(row.Visibility))
-	// 失效二级缓存 失败不阻断 靠 TTL 收敛
+	// 通过内容此刻进 feed 触发发布
+	l.svcCtx.FeedPublisher.Publish(l.ctx, in.ContentId, row.UserID, now.UnixMilli(), content.Visibility(row.Visibility))
+	// 失效二级缓存
 	if err = contentcache.Invalidate(l.ctx, l.svcCtx.Redis, in.ContentId); err != nil {
 		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
-	return &content.AdminReviewContentRes{Status: utils.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED))}, nil
-}
-
-func buildReviewDO(contentID int64, decision int32, reason string, operatorID int64) *do.ContentReviewDO {
-	return &do.ContentReviewDO{
-		ID:        snowflake.GenID(),
-		ContentID: contentID,
-		Decision:  decision,
-		Reason:    reason,
-		CreatedBy: operatorID,
-		UpdatedBy: operatorID,
-	}
+	return &content.AdminReviewContentRes{
+		Status: utils.ContentStatusValue(int32(targetStatus)),
+	}, nil
 }

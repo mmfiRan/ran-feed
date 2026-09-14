@@ -52,7 +52,7 @@ func (l *BackfillFollowInboxLogic) BackfillFollowInbox(in *content.BackfillFollo
 	}
 
 	// 大 V 跳过回填 其内容由读路径 merge 大 V publish zset 覆盖 与写扩散对称 查询失败保守仍回填
-	if isBig, berr := isBigVAuthor(l.ctx, l.svcCtx, in.FolloweeId); berr != nil {
+	if isBig, berr := l.svcCtx.FeedPublisher.IsBigVAuthor(l.ctx, in.FolloweeId); berr != nil {
 		l.Errorf("查询大 V 集合失败 followeeID=%d err=%v", in.FolloweeId, berr)
 	} else if isBig {
 		return &content.BackfillFollowInboxRes{

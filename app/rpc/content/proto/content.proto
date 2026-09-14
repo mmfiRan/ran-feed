@@ -395,29 +395,29 @@ message AdminGetContentDetailRes {
   AdminContentDetail detail = 1;
 }
 
-// AdminSetContentStatusReq 下架/恢复 支持 TAKEN_DOWN(下架) 与 PUBLISHED(恢复)
+// AdminSetContentStatusReq 下架/恢复
 message AdminSetContentStatusReq {
   int64 content_id = 1;
   ContentStatus status = 2;
-  int64 operator_id = 3;  // 操作管理员 id 落 updated_by
+  int64 operator_id = 3;
 }
 
 // AdminSetContentStatusRes 状态变更响应
 message AdminSetContentStatusRes {
-  ranfeed.commonpb.EnumValue status = 1;  // 变更后状态
+  ranfeed.commonpb.EnumValue status = 1;
 }
 
-// AdminReviewContentReq 先审后发审核 仅对 PENDING_REVIEW 内容生效
+// AdminReviewContentReq 审核内容请求
 message AdminReviewContentReq {
   int64 content_id = 1;
   ReviewDecision decision = 2;
-  int64 operator_id = 3;      // 审核管理员 id 落 created_by 与 updated_by
-  string reject_reason = 4;   // 拒绝理由 通过时忽略
+  int64 operator_id = 3;
+  string reject_reason = 4;
 }
 
 // AdminReviewContentRes 审核结果响应
 message AdminReviewContentRes {
-  ranfeed.commonpb.EnumValue status = 1;  // 变更后状态 PUBLISHED 或 REJECTED
+  ranfeed.commonpb.EnumValue status = 1;
 }
 
 service ContentService {

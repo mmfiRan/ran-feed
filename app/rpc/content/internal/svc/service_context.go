@@ -6,6 +6,7 @@ import (
 	"ran-feed/app/rpc/content/internal/common/oss/strategy"
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/entity/query"
+	"ran-feed/app/rpc/content/internal/feedpub"
 	"ran-feed/app/rpc/count/client/counterservice"
 	"ran-feed/app/rpc/interaction/client/favoriteservice"
 	"ran-feed/app/rpc/interaction/client/followservice"
@@ -32,6 +33,8 @@ type ServiceContext struct {
 	CountRpc    counterservice.CounterService
 	// PublishBoxRebuildLocker 发件箱冷重建分布式锁 大V发件箱属跨 pod 热点 防击穿
 	PublishBoxRebuildLocker *cache.DistLocker
+	// FeedPublisher 内容发布
+	FeedPublisher *feedpub.Publisher
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
@@ -93,5 +96,6 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		FollowRpc:               followRpc,
 		CountRpc:                countRpc,
 		PublishBoxRebuildLocker: cache.NewDistLocker(redisClient),
+		FeedPublisher:           feedpub.NewPublisher(redisClient, followRpc, c.FollowFanOut),
 	}
 }

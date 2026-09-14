@@ -3219,12 +3219,12 @@ func (x *AdminGetContentDetailRes) GetDetail() *AdminContentDetail {
 	return nil
 }
 
-// AdminSetContentStatusReq 下架/恢复 支持 TAKEN_DOWN(下架) 与 PUBLISHED(恢复)
+// AdminSetContentStatusReq 下架/恢复
 type AdminSetContentStatusReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
 	Status        ContentStatus          `protobuf:"varint,2,opt,name=status,proto3,enum=ranfeed.content.ContentStatus" json:"status,omitempty"`
-	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"` // 操作管理员 id 落 updated_by
+	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3283,7 +3283,7 @@ func (x *AdminSetContentStatusReq) GetOperatorId() int64 {
 // AdminSetContentStatusRes 状态变更响应
 type AdminSetContentStatusRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        *commonpb.EnumValue    `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"` // 变更后状态
+	Status        *commonpb.EnumValue    `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3325,13 +3325,13 @@ func (x *AdminSetContentStatusRes) GetStatus() *commonpb.EnumValue {
 	return nil
 }
 
-// AdminReviewContentReq 先审后发审核 仅对 PENDING_REVIEW 内容生效
+// AdminReviewContentReq 审核内容请求
 type AdminReviewContentReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ContentId     int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
 	Decision      ReviewDecision         `protobuf:"varint,2,opt,name=decision,proto3,enum=ranfeed.content.ReviewDecision" json:"decision,omitempty"`
-	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`      // 审核管理员 id 落 created_by 与 updated_by
-	RejectReason  string                 `protobuf:"bytes,4,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"` // 拒绝理由 通过时忽略
+	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	RejectReason  string                 `protobuf:"bytes,4,opt,name=reject_reason,json=rejectReason,proto3" json:"reject_reason,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3397,7 +3397,7 @@ func (x *AdminReviewContentReq) GetRejectReason() string {
 // AdminReviewContentRes 审核结果响应
 type AdminReviewContentRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        *commonpb.EnumValue    `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"` // 变更后状态 PUBLISHED 或 REJECTED
+	Status        *commonpb.EnumValue    `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
