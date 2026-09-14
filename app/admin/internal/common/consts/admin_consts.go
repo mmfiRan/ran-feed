@@ -23,16 +23,6 @@ const (
 	RedisAdminPermLoadedSentinel = "__loaded__"
 
 	HeaderAuthorization = "Authorization"
-
-	// ContentActionTakedown 内容下架 action 入参约定值
-	ContentActionTakedown = "takedown"
-	// ContentActionRestore 内容恢复 action 入参约定值
-	ContentActionRestore = "restore"
-
-	// ContentReviewApprove 审核通过 decision 入参约定值
-	ContentReviewApprove = "approve"
-	// ContentReviewReject 审核拒绝 decision 入参约定值
-	ContentReviewReject = "reject"
 )
 
 // ErrAdminNotLogin 后台未登录

@@ -6,12 +6,10 @@ package content
 import (
 	"context"
 
-	"ran-feed/app/admin/internal/common/consts"
 	adminutils "ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/pkg/errorx"
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -32,26 +30,11 @@ func NewSetContentStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *SetContentStatusLogic) SetContentStatus(req *types.AdminContentStatusReq) (resp *types.AdminContentStatusRes, err error) {
-	if req.ContentId <= 0 {
-		return nil, errorx.NewMsg("参数错误")
-	}
-
-	// action 语义映射到目标状态 下架->TAKEN_DOWN 恢复->PUBLISHED
-	var target content.ContentStatus
-	switch req.Action {
-	case consts.ContentActionTakedown:
-		target = content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN
-	case consts.ContentActionRestore:
-		target = content.ContentStatus_CONTENT_STATUS_PUBLISHED
-	default:
-		return nil, errorx.NewMsg("不支持的操作")
-	}
-
 	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
 
 	rpcRes, err := l.svcCtx.ContentAdminRpc.AdminSetContentStatus(l.ctx, &content.AdminSetContentStatusReq{
 		ContentId:  req.ContentId,
-		Status:     target,
+		Status:     content.ContentStatus(req.Status),
 		OperatorId: operatorID,
 	})
 	if err != nil {

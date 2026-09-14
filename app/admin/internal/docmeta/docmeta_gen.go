@@ -28,7 +28,7 @@ var docMeta = map[string]map[string]string{
 	"POST /v1/admin/admins/roles":          {"description": "覆盖式设管理员角色", "permission": "admin:user:set-roles"},
 	"POST /v1/admin/admins/status":         {"description": "启用禁用管理员 禁用即踢下线", "permission": "admin:user:status"},
 	"POST /v1/admin/admins/update":         {"description": "修改管理员昵称", "permission": "admin:user:update"},
-	"POST /v1/admin/contents/review":       {"description": "先审后发审核", "permission": "admin:content:review"},
+	"POST /v1/admin/contents/review":       {"description": "内容审核", "permission": "admin:content:review"},
 	"POST /v1/admin/contents/status":       {"description": "内容下架/恢复", "permission": "admin:content:takedown"},
 	"POST /v1/admin/login":                 {"description": "管理员登录 成功返回 token 与权限点集合"},
 	"POST /v1/admin/logout":                {"description": "管理员登出"},

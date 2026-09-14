@@ -6,7 +6,6 @@ package content
 import (
 	"context"
 
-	"ran-feed/app/admin/internal/common/consts"
 	adminutils "ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
@@ -36,22 +35,11 @@ func (l *ReviewContentLogic) ReviewContent(req *types.AdminContentReviewReq) (re
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	// decision 语义映射到审核决策 拒绝时才带理由
-	var decision content.ReviewDecision
-	switch req.Decision {
-	case consts.ContentReviewApprove:
-		decision = content.ReviewDecision_REVIEW_DECISION_APPROVE
-	case consts.ContentReviewReject:
-		decision = content.ReviewDecision_REVIEW_DECISION_REJECT
-	default:
-		return nil, errorx.NewMsg("不支持的审核决策")
-	}
-
 	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
 
 	rpcRes, err := l.svcCtx.ContentAdminRpc.AdminReviewContent(l.ctx, &content.AdminReviewContentReq{
 		ContentId:    req.ContentId,
-		Decision:     decision,
+		Decision:     content.ReviewDecision(req.Decision),
 		OperatorId:   operatorID,
 		RejectReason: req.RejectReason,
 	})

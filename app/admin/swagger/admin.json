@@ -812,7 +812,7 @@
     },
     "/v1/admin/contents/review": {
       "post": {
-        "description": "先审后发审核",
+        "description": "内容审核",
         "consumes": [
           "application/json"
         ],
@@ -839,7 +839,7 @@
                   "type": "integer"
                 },
                 "decision": {
-                  "type": "string"
+                  "type": "integer"
                 },
                 "reject_reason": {
                   "type": "string"
@@ -905,10 +905,11 @@
             "schema": {
               "type": "object",
               "properties": {
-                "action": {
-                  "type": "string"
-                },
                 "content_id": {
+                  "type": "integer"
+                },
+                "status": {
+                  "description": "目标状态 30已发布 50已下架",
                   "type": "integer"
                 }
               }
@@ -922,7 +923,6 @@
               "type": "object",
               "properties": {
                 "status": {
-                  "description": "变更后状态",
                   "type": "object",
                   "required": [
                     "code",
@@ -2051,7 +2051,7 @@
       }
     }
   },
-  "x-date": "2026-09-14 15:30:35",
+  "x-date": "2026-09-14 17:59:42",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

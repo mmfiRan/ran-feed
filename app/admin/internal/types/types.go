@@ -62,7 +62,7 @@ type AdminContentListRes struct {
 
 type AdminContentReviewReq struct {
 	ContentId    int64  `json:"content_id,optional" validate:"required,gt=0"`
-	Decision     string `json:"decision,optional" validate:"required,oneof=approve reject"`
+	Decision     int32  `json:"decision,optional" validate:"required,oneof=10 20"`
 	RejectReason string `json:"reject_reason,optional"`
 }
 
@@ -71,12 +71,12 @@ type AdminContentReviewRes struct {
 }
 
 type AdminContentStatusReq struct {
-	ContentId int64  `json:"content_id,optional" validate:"required,gt=0"`
-	Action    string `json:"action,optional" validate:"required,oneof=takedown restore"`
+	ContentId int64 `json:"content_id,optional" validate:"required,gt=0"`
+	Status    int32 `json:"status,optional" validate:"required,oneof=30 50"` // 目标状态 30已发布 50已下架
 }
 
 type AdminContentStatusRes struct {
-	Status EnumValue `json:"status"` // 变更后状态
+	Status EnumValue `json:"status"`
 }
 
 type AdminInfo struct {
