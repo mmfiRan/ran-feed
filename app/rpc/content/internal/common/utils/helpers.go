@@ -1,5 +1,5 @@
-// Package logichelper content-rpc 各 service logic 共享的统一枚举响应组装
-package logichelper
+// Package utils content-rpc 各 service logic 共享的统一枚举响应组装
+package utils
 
 import (
 	contenums "ran-feed/app/rpc/content/internal/common/enums"

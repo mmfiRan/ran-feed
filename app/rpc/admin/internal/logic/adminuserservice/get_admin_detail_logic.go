@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/logichelper"
+	"ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -56,7 +56,7 @@ func (l *GetAdminDetailLogic) GetAdminDetail(in *admin.GetAdminDetailReq) (*admi
 	}
 
 	return &admin.GetAdminDetailRes{
-		Admin:   logichelper.BuildAdminListItem(row, codes),
+		Admin:   utils.BuildAdminListItem(row, codes),
 		RoleIds: roleIDs,
 	}, nil
 }

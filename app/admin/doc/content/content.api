@@ -30,7 +30,7 @@ type (
 		Items []AdminContentListItem `json:"items"`
 	}
 	AdminContentDetailReq {
-		ContentId int64 `form:"content_id"`
+		ContentId int64 `form:"content_id,optional" validate:"required,gt=0"`
 	}
 	AdminContentDetailData {
 		ContentId      int64     `json:"content_id"`
@@ -38,6 +38,7 @@ type (
 		Status         EnumValue `json:"status"`
 		Visibility     EnumValue `json:"visibility"`
 		AuthorId       int64     `json:"author_id"`
+		Username       string    `json:"username"`
 		Title          string    `json:"title"`
 		Description    string    `json:"description"`
 		CoverUrl       string    `json:"cover_url"`
@@ -88,7 +89,7 @@ service admin-api {
 	get /contents (AdminContentListReq) returns (AdminContentListRes)
 
 	@doc (
-		description: "内容详情 含非公开与正文"
+		description: "内容详情"
 		permission:  "admin:content:detail"
 	)
 	@handler GetContentDetail

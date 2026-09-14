@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/logichelper"
+	"ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/common/utils/contentcache"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/query"
@@ -86,7 +86,7 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 	}
 
 	if !approve {
-		return &content.AdminReviewContentRes{Status: logichelper.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_REJECTED))}, nil
+		return &content.AdminReviewContentRes{Status: utils.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_REJECTED))}, nil
 	}
 
 	// 通过 内容此刻进 feed 触发发布副作用(publish zset + 热榜脏集合 + follower 扩散)
@@ -96,7 +96,7 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
-	return &content.AdminReviewContentRes{Status: logichelper.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED))}, nil
+	return &content.AdminReviewContentRes{Status: utils.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED))}, nil
 }
 
 func buildReviewDO(contentID int64, decision int32, reason string, operatorID int64) *do.ContentReviewDO {

@@ -5,7 +5,6 @@ import (
 
 	"ran-feed/app/rpc/admin/admin"
 	"ran-feed/app/rpc/admin/internal/common/consts"
-	"ran-feed/app/rpc/admin/internal/common/logichelper"
 	"ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/entity/query"
 	"ran-feed/app/rpc/admin/internal/repositories"
@@ -63,8 +62,8 @@ func (l *SetAdminRolesLogic) SetAdminRoles(in *admin.SetAdminRolesReq) (*emptypb
 			if err != nil {
 				return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询管理员角色失败"))
 			}
-			hasSuper := logichelper.ContainsInt64(currentRoleIDs, superRole.ID)
-			if logichelper.RemovesSelfSuper(in.GetAdminId(), in.GetOperatorId(), superRole.ID, hasSuper, roleIDs) {
+			hasSuper := utils.ContainsInt64(currentRoleIDs, superRole.ID)
+			if utils.RemovesSelfSuper(in.GetAdminId(), in.GetOperatorId(), superRole.ID, hasSuper, roleIDs) {
 				return nil, errorx.NewMsg("不能移除自己的超级管理员角色")
 			}
 		}
@@ -74,7 +73,7 @@ func (l *SetAdminRolesLogic) SetAdminRoles(in *admin.SetAdminRolesReq) (*emptypb
 		if _, e := l.userRoleRepo.WithTx(tx).DeleteByAdminID(in.GetAdminId()); e != nil {
 			return e
 		}
-		return l.userRoleRepo.WithTx(tx).BatchCreate(logichelper.BuildUserRoleRows(in.GetAdminId(), roleIDs, in.GetOperatorId()))
+		return l.userRoleRepo.WithTx(tx).BatchCreate(utils.BuildUserRoleRows(in.GetAdminId(), roleIDs, in.GetOperatorId()))
 	}); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("设置管理员角色失败"))
 	}

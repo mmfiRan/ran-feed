@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/logichelper"
+	"ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/common/utils/contentcache"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -236,7 +236,7 @@ func buildContentItems(details []*do.ContentDetailDO, userMap map[int64]*user.Us
 		}
 		items = append(items, &content.ContentItem{
 			ContentId:    d.ContentID,
-			ContentType:  logichelper.ContentTypeValue(d.ContentType),
+			ContentType:  utils.ContentTypeValue(d.ContentType),
 			AuthorId:     d.AuthorID,
 			AuthorName:   authorName,
 			AuthorAvatar: authorAvatar,

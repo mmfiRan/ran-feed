@@ -6,6 +6,7 @@ import (
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
+	"ran-feed/pkg/enums"
 	"ran-feed/pkg/orm"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -87,7 +88,7 @@ func (r *VideoRepositoryImpl) GetByContentID(contentID int64) (*model.RanFeedVid
 	q := r.getQuery()
 	row, err := q.RanFeedVideo.WithContext(r.ctx).
 		Where(q.RanFeedVideo.ContentID.Eq(contentID)).
-		Where(q.RanFeedVideo.IsDeleted.Eq(0)).
+		Where(q.RanFeedVideo.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Take()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -107,6 +108,7 @@ func (r *VideoRepositoryImpl) BatchGetBriefByContentIDs(contentIDs []int64) (map
 	rows, err := q.RanFeedVideo.WithContext(r.ctx).
 		Select(q.RanFeedVideo.ContentID, q.RanFeedVideo.Title, q.RanFeedVideo.CoverURL).
 		Where(q.RanFeedVideo.ContentID.In(contentIDs...)).
+		Where(q.RanFeedVideo.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Find()
 	if err != nil {
 		return nil, err

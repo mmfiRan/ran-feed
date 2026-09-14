@@ -10,6 +10,7 @@ import (
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/content/content"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -35,8 +36,8 @@ func (l *ListContentsLogic) ListContents(req *types.AdminContentListReq) (resp *
 		PageSize:    req.PageSize,
 		AuthorId:    req.AuthorId,
 		Username:    req.Username,
-		Status:      utils.CastPtr[content.ContentStatus](req.Status),
-		ContentType: utils.CastPtr[content.ContentType](req.ContentType),
+		Status:      pkgutils.CastPtr[content.ContentStatus](req.Status),
+		ContentType: pkgutils.CastPtr[content.ContentType](req.ContentType),
 	}
 
 	rpcRes, err := l.svcCtx.ContentAdminRpc.AdminListContents(l.ctx, in)
@@ -52,6 +53,7 @@ func (l *ListContentsLogic) ListContents(req *types.AdminContentListReq) (resp *
 			Status:        utils.ToEnumValue(it.GetStatus()),
 			Visibility:    utils.ToEnumValue(it.GetVisibility()),
 			AuthorId:      it.GetAuthorId(),
+			Username:      it.GetUsername(),
 			Title:         it.GetTitle(),
 			LikeCount:     it.GetLikeCount(),
 			FavoriteCount: it.GetFavoriteCount(),

@@ -1,5 +1,5 @@
-// Package logichelper admin-rpc 各 service logic 共享的响应映射与护栏辅助
-package logichelper
+// Package utils admin-rpc 各 service logic 共享的响应映射与护栏辅助
+package utils
 
 import (
 	"ran-feed/app/rpc/admin/admin"

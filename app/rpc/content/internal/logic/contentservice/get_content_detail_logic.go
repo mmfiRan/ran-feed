@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/logichelper"
+	"ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -74,7 +74,7 @@ func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, vi
 	contentType := content.ContentType(contentRow.ContentType)
 	detail := &content.ContentDetail{
 		ContentId:   contentRow.ID,
-		ContentType: logichelper.ContentTypeValue(contentRow.ContentType),
+		ContentType: utils.ContentTypeValue(contentRow.ContentType),
 		AuthorId:    contentRow.UserID,
 	}
 	if contentRow.PublishedAt != nil {

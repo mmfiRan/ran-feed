@@ -6,6 +6,7 @@ import (
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
+	"ran-feed/pkg/enums"
 	"ran-feed/pkg/orm"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -87,7 +88,7 @@ func (r *ArticleRepositoryImpl) GetByContentID(contentID int64) (*model.RanFeedA
 	q := r.getQuery()
 	row, err := q.RanFeedArticle.WithContext(r.ctx).
 		Where(q.RanFeedArticle.ContentID.Eq(contentID)).
-		Where(q.RanFeedArticle.IsDeleted.Eq(0)).
+		Where(q.RanFeedArticle.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Take()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -107,6 +108,7 @@ func (r *ArticleRepositoryImpl) BatchGetBriefByContentIDs(contentIDs []int64) (m
 	rows, err := q.RanFeedArticle.WithContext(r.ctx).
 		Select(q.RanFeedArticle.ContentID, q.RanFeedArticle.Title, q.RanFeedArticle.Cover).
 		Where(q.RanFeedArticle.ContentID.In(contentIDs...)).
+		Where(q.RanFeedArticle.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Find()
 	if err != nil {
 		return nil, err

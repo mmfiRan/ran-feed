@@ -3,7 +3,6 @@ package adminuserservicelogic
 import (
 	"context"
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/logichelper"
 	adminutils "ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/entity/query"
@@ -64,7 +63,7 @@ func (l *CreateAdminLogic) CreateAdmin(in *admin.CreateAdminReq) (*admin.CreateA
 		}); e != nil {
 			return e
 		}
-		return l.userRoleRepo.WithTx(tx).BatchCreate(logichelper.BuildUserRoleRows(adminID, roleIDs, in.GetOperatorId()))
+		return l.userRoleRepo.WithTx(tx).BatchCreate(adminutils.BuildUserRoleRows(adminID, roleIDs, in.GetOperatorId()))
 	})
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("创建管理员失败"))

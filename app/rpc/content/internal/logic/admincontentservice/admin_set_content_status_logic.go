@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/logichelper"
+	"ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/common/utils/contentcache"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -57,7 +57,7 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 		return nil, err
 	}
 	if noop {
-		return &content.AdminSetContentStatusRes{Status: logichelper.ContentStatusValue(int32(target))}, nil
+		return &content.AdminSetContentStatusRes{Status: utils.ContentStatusValue(int32(target))}, nil
 	}
 
 	if _, err = l.contentRepo.AdminUpdateStatus(in.ContentId, int32(target), in.GetOperatorId()); err != nil {
@@ -69,7 +69,7 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
-	return &content.AdminSetContentStatusRes{Status: logichelper.ContentStatusValue(int32(target))}, nil
+	return &content.AdminSetContentStatusRes{Status: utils.ContentStatusValue(int32(target))}, nil
 }
 
 // validateStatusTransition 校验下架/恢复状态机 返回 noop 表示当前已是目标态无需落库

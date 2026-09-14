@@ -2993,7 +2993,7 @@ func (x *AdminGetContentDetailReq) GetContentId() int64 {
 	return 0
 }
 
-// AdminContentDetail 管理端详情 含正文/非公开 无 viewer 相关互动字段
+// AdminContentDetail 管理端内容详情
 type AdminContentDetail struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	ContentId      int64                  `protobuf:"varint,1,opt,name=content_id,json=contentId,proto3" json:"content_id,omitempty"`
@@ -3001,18 +3001,19 @@ type AdminContentDetail struct {
 	Status         *commonpb.EnumValue    `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`                              // 内容状态
 	Visibility     *commonpb.EnumValue    `protobuf:"bytes,4,opt,name=visibility,proto3" json:"visibility,omitempty"`                      // 可见性
 	AuthorId       int64                  `protobuf:"varint,5,opt,name=author_id,json=authorId,proto3" json:"author_id,omitempty"`
-	Title          string                 `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
-	Description    string                 `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
-	CoverUrl       string                 `protobuf:"bytes,8,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
-	ArticleContent string                 `protobuf:"bytes,9,opt,name=article_content,json=articleContent,proto3" json:"article_content,omitempty"`
-	VideoUrl       string                 `protobuf:"bytes,10,opt,name=video_url,json=videoUrl,proto3" json:"video_url,omitempty"`
-	VideoDuration  int32                  `protobuf:"varint,11,opt,name=video_duration,json=videoDuration,proto3" json:"video_duration,omitempty"`
-	LikeCount      int64                  `protobuf:"varint,12,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
-	FavoriteCount  int64                  `protobuf:"varint,13,opt,name=favorite_count,json=favoriteCount,proto3" json:"favorite_count,omitempty"`
-	CommentCount   int64                  `protobuf:"varint,14,opt,name=comment_count,json=commentCount,proto3" json:"comment_count,omitempty"`
-	PublishedAt    *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 发布时间 毫秒 0 表示未发布
-	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`       // 创建时间 毫秒
-	UpdatedAt      *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`       // 更新时间 毫秒
+	Username       string                 `protobuf:"bytes,6,opt,name=username,proto3" json:"username,omitempty"`
+	Title          string                 `protobuf:"bytes,7,opt,name=title,proto3" json:"title,omitempty"`
+	Description    string                 `protobuf:"bytes,8,opt,name=description,proto3" json:"description,omitempty"`
+	CoverUrl       string                 `protobuf:"bytes,9,opt,name=cover_url,json=coverUrl,proto3" json:"cover_url,omitempty"`
+	ArticleContent string                 `protobuf:"bytes,10,opt,name=article_content,json=articleContent,proto3" json:"article_content,omitempty"`
+	VideoUrl       string                 `protobuf:"bytes,11,opt,name=video_url,json=videoUrl,proto3" json:"video_url,omitempty"`
+	VideoDuration  int32                  `protobuf:"varint,12,opt,name=video_duration,json=videoDuration,proto3" json:"video_duration,omitempty"`
+	LikeCount      int64                  `protobuf:"varint,13,opt,name=like_count,json=likeCount,proto3" json:"like_count,omitempty"`
+	FavoriteCount  int64                  `protobuf:"varint,14,opt,name=favorite_count,json=favoriteCount,proto3" json:"favorite_count,omitempty"`
+	CommentCount   int64                  `protobuf:"varint,15,opt,name=comment_count,json=commentCount,proto3" json:"comment_count,omitempty"`
+	PublishedAt    *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=published_at,json=publishedAt,proto3" json:"published_at,omitempty"` // 发布时间
+	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,17,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`       // 创建时间
+	UpdatedAt      *timestamppb.Timestamp `protobuf:"bytes,18,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`       // 更新时间
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -3080,6 +3081,13 @@ func (x *AdminContentDetail) GetAuthorId() int64 {
 		return x.AuthorId
 	}
 	return 0
+}
+
+func (x *AdminContentDetail) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
 }
 
 func (x *AdminContentDetail) GetTitle() string {
@@ -3690,7 +3698,7 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\tpage_size\x18\x04 \x01(\rR\bpageSize\"9\n" +
 	"\x18AdminGetContentDetailReq\x12\x1d\n" +
 	"\n" +
-	"content_id\x18\x01 \x01(\x03R\tcontentId\"\xe4\x05\n" +
+	"content_id\x18\x01 \x01(\x03R\tcontentId\"\x80\x06\n" +
 	"\x12AdminContentDetail\x12\x1d\n" +
 	"\n" +
 	"content_id\x18\x01 \x01(\x03R\tcontentId\x12>\n" +
@@ -3699,23 +3707,24 @@ const file_app_rpc_content_proto_content_proto_rawDesc = "" +
 	"\n" +
 	"visibility\x18\x04 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\n" +
 	"visibility\x12\x1b\n" +
-	"\tauthor_id\x18\x05 \x01(\x03R\bauthorId\x12\x14\n" +
-	"\x05title\x18\x06 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\a \x01(\tR\vdescription\x12\x1b\n" +
-	"\tcover_url\x18\b \x01(\tR\bcoverUrl\x12'\n" +
-	"\x0farticle_content\x18\t \x01(\tR\x0earticleContent\x12\x1b\n" +
-	"\tvideo_url\x18\n" +
-	" \x01(\tR\bvideoUrl\x12%\n" +
-	"\x0evideo_duration\x18\v \x01(\x05R\rvideoDuration\x12\x1d\n" +
+	"\tauthor_id\x18\x05 \x01(\x03R\bauthorId\x12\x1a\n" +
+	"\busername\x18\x06 \x01(\tR\busername\x12\x14\n" +
+	"\x05title\x18\a \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\b \x01(\tR\vdescription\x12\x1b\n" +
+	"\tcover_url\x18\t \x01(\tR\bcoverUrl\x12'\n" +
+	"\x0farticle_content\x18\n" +
+	" \x01(\tR\x0earticleContent\x12\x1b\n" +
+	"\tvideo_url\x18\v \x01(\tR\bvideoUrl\x12%\n" +
+	"\x0evideo_duration\x18\f \x01(\x05R\rvideoDuration\x12\x1d\n" +
 	"\n" +
-	"like_count\x18\f \x01(\x03R\tlikeCount\x12%\n" +
-	"\x0efavorite_count\x18\r \x01(\x03R\rfavoriteCount\x12#\n" +
-	"\rcomment_count\x18\x0e \x01(\x03R\fcommentCount\x12=\n" +
-	"\fpublished_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x129\n" +
+	"like_count\x18\r \x01(\x03R\tlikeCount\x12%\n" +
+	"\x0efavorite_count\x18\x0e \x01(\x03R\rfavoriteCount\x12#\n" +
+	"\rcomment_count\x18\x0f \x01(\x03R\fcommentCount\x12=\n" +
+	"\fpublished_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\vpublishedAt\x129\n" +
 	"\n" +
-	"created_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x11 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"W\n" +
+	"updated_at\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"W\n" +
 	"\x18AdminGetContentDetailRes\x12;\n" +
 	"\x06detail\x18\x01 \x01(\v2#.ranfeed.content.AdminContentDetailR\x06detail\"\x92\x01\n" +
 	"\x18AdminSetContentStatusReq\x12\x1d\n" +

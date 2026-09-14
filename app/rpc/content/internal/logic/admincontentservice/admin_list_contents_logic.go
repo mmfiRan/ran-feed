@@ -4,15 +4,17 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/logichelper"
+	"ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/app/rpc/count/count"
+	"ran-feed/app/rpc/user/client/userservice"
 	"ran-feed/pkg/errorx"
-	"ran-feed/pkg/utils"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/mr"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -38,12 +40,13 @@ func NewAdminListContentsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 
 func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContentsReq) (*content.AdminListContentsRes, error) {
 
-	statusFilter := optionalStatus(in)
-	typeFilter := optionalContentType(in)
-	authorFilter := optionalAuthorID(in)
-
-	offset, limit := utils.NormalizePage(in.GetPage(), in.GetPageSize())
-	rows, total, err := l.contentRepo.AdminPageContents(statusFilter, typeFilter, authorFilter, offset, limit)
+	offset, limit := pkgutils.NormalizePage(in.GetPage(), in.GetPageSize())
+	rows, total, err := l.contentRepo.AdminPageContents(
+		pkgutils.CastPtr[int32](in.Status),
+		pkgutils.CastPtr[int32](in.ContentType),
+		in.AuthorId,
+		offset, limit,
+	)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
 	}
@@ -56,25 +59,51 @@ func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContents
 		return res, nil
 	}
 
-	titles, err := l.loadTitles(rows)
-	if err != nil {
-		return nil, err
-	}
-
-	countsByID, err := l.loadCounts(rows)
+	// 标题 计数 作者用户名 三路互不依赖 并行取
+	var (
+		titles     map[int64]string
+		countsByID map[int64]*count.ContentCountsItem
+		usernames  map[int64]string
+	)
+	err = mr.Finish(
+		func() error {
+			titleMap, err := l.loadTitles(rows)
+			if err != nil {
+				return err
+			}
+			titles = titleMap
+			return nil
+		},
+		func() error {
+			countMap, err := l.loadCounts(rows)
+			if err != nil {
+				return err
+			}
+			countsByID = countMap
+			return nil
+		},
+		func() error {
+			usernameMap, err := l.loadUsernames(rows)
+			if err != nil {
+				return err
+			}
+			usernames = usernameMap
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	items := make([]*content.AdminContentItem, 0, len(rows))
 	for _, row := range rows {
-		items = append(items, buildAdminContentItem(row, titles[row.ID], countsByID[row.ID]))
+		items = append(items, buildAdminContentItem(row, titles[row.ID], usernames[row.ID], countsByID[row.ID]))
 	}
 	res.Items = items
 	return res, nil
 }
 
-// loadCounts 一次批量取本页内容的互动计数 由 count 服务提供
+// loadCounts 批量获取内容的互动计数
 func (l *AdminListContentsLogic) loadCounts(rows []*model.RanFeedContent) (map[int64]*count.ContentCountsItem, error) {
 	contentIDs := make([]int64, 0, len(rows))
 	for _, row := range rows {
@@ -98,7 +127,31 @@ func (l *AdminListContentsLogic) loadCounts(rows []*model.RanFeedContent) (map[i
 	return countsByID, nil
 }
 
-// loadTitles 按类型分组批量取文章/视频标题
+// loadUsernames 批量取本页作者用户名 由 user 服务提供
+func (l *AdminListContentsLogic) loadUsernames(rows []*model.RanFeedContent) (map[int64]string, error) {
+	authorIDs := make([]int64, 0, len(rows))
+	for _, row := range rows {
+		authorIDs = append(authorIDs, row.UserID)
+	}
+
+	resp, err := l.svcCtx.UserRpc.BatchGetUser(l.ctx, &userservice.BatchGetUserReq{
+		UserIds: authorIDs,
+	})
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
+	}
+
+	usernames := make(map[int64]string, len(authorIDs))
+	for _, u := range resp.GetUsers() {
+		if u == nil || u.GetUserId() <= 0 {
+			continue
+		}
+		usernames[u.GetUserId()] = u.GetUsername()
+	}
+	return usernames, nil
+}
+
+// loadTitles 按类型分组批量取文章/视频标题 两类查询并行
 func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[int64]string, error) {
 	articleIDs := make([]int64, 0, len(rows))
 	videoIDs := make([]int64, 0, len(rows))
@@ -111,35 +164,56 @@ func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[i
 		}
 	}
 
-	titles := make(map[int64]string, len(rows))
-	if len(articleIDs) > 0 {
-		articles, err := l.articleRepo.BatchGetBriefByContentIDs(articleIDs)
-		if err != nil {
-			return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
-		}
-		for id, a := range articles {
-			titles[id] = a.Title
-		}
+	var (
+		articles map[int64]*model.RanFeedArticle
+		videos   map[int64]*model.RanFeedVideo
+	)
+	err := mr.Finish(
+		func() error {
+			if len(articleIDs) == 0 {
+				return nil
+			}
+			articleMap, err := l.articleRepo.BatchGetBriefByContentIDs(articleIDs)
+			if err != nil {
+				return err
+			}
+			articles = articleMap
+			return nil
+		},
+		func() error {
+			if len(videoIDs) == 0 {
+				return nil
+			}
+			videoMap, err := l.videoRepo.BatchGetBriefByContentIDs(videoIDs)
+			if err != nil {
+				return err
+			}
+			videos = videoMap
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
 	}
-	if len(videoIDs) > 0 {
-		videos, err := l.videoRepo.BatchGetBriefByContentIDs(videoIDs)
-		if err != nil {
-			return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容列表失败"))
-		}
-		for id, v := range videos {
-			titles[id] = v.Title
-		}
+
+	titles := make(map[int64]string, len(rows))
+	for id, a := range articles {
+		titles[id] = a.Title
+	}
+	for id, v := range videos {
+		titles[id] = v.Title
 	}
 	return titles, nil
 }
 
-func buildAdminContentItem(row *model.RanFeedContent, title string, counts *count.ContentCountsItem) *content.AdminContentItem {
+func buildAdminContentItem(row *model.RanFeedContent, title, username string, counts *count.ContentCountsItem) *content.AdminContentItem {
 	item := &content.AdminContentItem{
 		ContentId:     row.ID,
-		ContentType:   logichelper.ContentTypeValue(row.ContentType),
-		Status:        logichelper.ContentStatusValue(row.Status),
-		Visibility:    logichelper.VisibilityValue(row.Visibility),
+		ContentType:   utils.ContentTypeValue(row.ContentType),
+		Status:        utils.ContentStatusValue(row.Status),
+		Visibility:    utils.VisibilityValue(row.Visibility),
 		AuthorId:      row.UserID,
+		Username:      username,
 		Title:         title,
 		LikeCount:     counts.GetLikeCount(),
 		FavoriteCount: counts.GetFavoriteCount(),
@@ -150,28 +224,4 @@ func buildAdminContentItem(row *model.RanFeedContent, title string, counts *coun
 		item.PublishedAt = timestamppb.New(*row.PublishedAt)
 	}
 	return item
-}
-
-func optionalStatus(in *content.AdminListContentsReq) *int32 {
-	if in.Status == nil {
-		return nil
-	}
-	v := int32(in.GetStatus())
-	return &v
-}
-
-func optionalContentType(in *content.AdminListContentsReq) *int32 {
-	if in.ContentType == nil {
-		return nil
-	}
-	v := int32(in.GetContentType())
-	return &v
-}
-
-func optionalAuthorID(in *content.AdminListContentsReq) *int64 {
-	if in.AuthorId == nil {
-		return nil
-	}
-	v := in.GetAuthorId()
-	return &v
 }

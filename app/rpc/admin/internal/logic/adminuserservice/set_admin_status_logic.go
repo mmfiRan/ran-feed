@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/logichelper"
+	"ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/common/utils/session"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
@@ -39,7 +39,7 @@ func (l *SetAdminStatusLogic) SetAdminStatus(in *admin.SetAdminStatusReq) (*empt
 	if status != admin.AdminStatus_ADMIN_STATUS_ENABLED && status != admin.AdminStatus_ADMIN_STATUS_DISABLED {
 		return nil, errorx.NewMsg("不支持的状态")
 	}
-	if logichelper.IsSelfDisable(in.GetId(), in.GetOperatorId(), status) {
+	if utils.IsSelfDisable(in.GetId(), in.GetOperatorId(), status) {
 		return nil, errorx.NewMsg("不能禁用自己")
 	}
 

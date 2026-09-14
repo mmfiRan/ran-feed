@@ -10,7 +10,6 @@ import (
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -30,10 +29,6 @@ func NewGetContentDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *GetContentDetailLogic) GetContentDetail(req *types.AdminContentDetailReq) (resp *types.AdminContentDetailRes, err error) {
-	if req.ContentId <= 0 {
-		return nil, errorx.NewMsg("参数错误")
-	}
-
 	rpcRes, err := l.svcCtx.ContentAdminRpc.AdminGetContentDetail(l.ctx, &content.AdminGetContentDetailReq{
 		ContentId: req.ContentId,
 	})
@@ -49,6 +44,7 @@ func (l *GetContentDetailLogic) GetContentDetail(req *types.AdminContentDetailRe
 			Status:         utils.ToEnumValue(d.GetStatus()),
 			Visibility:     utils.ToEnumValue(d.GetVisibility()),
 			AuthorId:       d.GetAuthorId(),
+			Username:       d.GetUsername(),
 			Title:          d.GetTitle(),
 			Description:    d.GetDescription(),
 			CoverUrl:       d.GetCoverUrl(),

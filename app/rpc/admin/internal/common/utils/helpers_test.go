@@ -1,4 +1,4 @@
-package logichelper
+package utils
 
 import (
 	"testing"

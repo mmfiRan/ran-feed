@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/logichelper"
+	"ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/app/rpc/admin/internal/types"
 	"ran-feed/pkg/errorx"
-	"ran-feed/pkg/utils"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -44,7 +44,7 @@ func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsRe
 		filter.EndMillis = et.AsTime().UnixMilli()
 	}
 
-	offset, limit := utils.NormalizePage(in.GetPage(), in.GetPageSize())
+	offset, limit := pkgutils.NormalizePage(in.GetPage(), in.GetPageSize())
 	rows, total, err := l.operationLogRepo.Page(filter, offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询审计日志失败"))
@@ -60,7 +60,7 @@ func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsRe
 
 	items := make([]*admin.OperationLogItem, 0, len(rows))
 	for _, row := range rows {
-		if item := logichelper.BuildOperationLogItem(row); item != nil {
+		if item := utils.BuildOperationLogItem(row); item != nil {
 			items = append(items, item)
 		}
 	}

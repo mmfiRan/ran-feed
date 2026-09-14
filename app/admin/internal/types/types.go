@@ -9,6 +9,7 @@ type AdminContentDetailData struct {
 	Status         EnumValue `json:"status"`
 	Visibility     EnumValue `json:"visibility"`
 	AuthorId       int64     `json:"author_id"`
+	Username       string    `json:"username"`
 	Title          string    `json:"title"`
 	Description    string    `json:"description"`
 	CoverUrl       string    `json:"cover_url"`
@@ -24,7 +25,7 @@ type AdminContentDetailData struct {
 }
 
 type AdminContentDetailReq struct {
-	ContentId int64 `form:"content_id"`
+	ContentId int64 `form:"content_id,optional" validate:"required,gt=0"`
 }
 
 type AdminContentDetailRes struct {

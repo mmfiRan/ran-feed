@@ -368,25 +368,26 @@ message AdminGetContentDetailReq {
   int64 content_id = 1;
 }
 
-// AdminContentDetail 管理端详情 含正文/非公开 无 viewer 相关互动字段
+// AdminContentDetail 管理端内容详情
 message AdminContentDetail {
   int64 content_id = 1;
   ranfeed.commonpb.EnumValue content_type = 2;  // 内容类型
   ranfeed.commonpb.EnumValue status = 3;        // 内容状态
   ranfeed.commonpb.EnumValue visibility = 4;    // 可见性
   int64 author_id = 5;
-  string title = 6;
-  string description = 7;
-  string cover_url = 8;
-  string article_content = 9;
-  string video_url = 10;
-  int32 video_duration = 11;
-  int64 like_count = 12;
-  int64 favorite_count = 13;
-  int64 comment_count = 14;
-  google.protobuf.Timestamp published_at = 15;  // 发布时间 毫秒 0 表示未发布
-  google.protobuf.Timestamp created_at = 16;    // 创建时间 毫秒
-  google.protobuf.Timestamp updated_at = 17;    // 更新时间 毫秒
+  string username = 6;
+  string title = 7;
+  string description = 8;
+  string cover_url = 9;
+  string article_content = 10;
+  string video_url = 11;
+  int32 video_duration = 12;
+  int64 like_count = 13;
+  int64 favorite_count = 14;
+  int64 comment_count = 15;
+  google.protobuf.Timestamp published_at = 16;  // 发布时间
+  google.protobuf.Timestamp created_at = 17;    // 创建时间
+  google.protobuf.Timestamp updated_at = 18;    // 更新时间
 }
 
 // AdminGetContentDetailRes 管理端内容详情响应

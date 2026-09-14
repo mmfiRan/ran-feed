@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/logichelper"
+	"ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -48,7 +48,7 @@ func (l *GetRoleDetailLogic) GetRoleDetail(in *admin.GetRoleDetailReq) (*admin.G
 	}
 
 	return &admin.GetRoleDetailRes{
-		Role:          logichelper.BuildRoleItem(role),
+		Role:          utils.BuildRoleItem(role),
 		PermissionIds: permIDs,
 	}, nil
 }

@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/logichelper"
+	"ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/repositories"
 	"ran-feed/app/rpc/admin/internal/svc"
 	"ran-feed/pkg/errorx"
-	"ran-feed/pkg/utils"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -31,7 +31,7 @@ func NewListRolesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListRol
 
 // ListRoles 角色分页
 func (l *ListRolesLogic) ListRoles(in *admin.ListRolesReq) (*admin.ListRolesRes, error) {
-	offset, limit := utils.NormalizePage(in.GetPage(), in.GetPageSize())
+	offset, limit := pkgutils.NormalizePage(in.GetPage(), in.GetPageSize())
 	rows, total, err := l.roleRepo.Page(offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询角色失败"))
@@ -47,7 +47,7 @@ func (l *ListRolesLogic) ListRoles(in *admin.ListRolesReq) (*admin.ListRolesRes,
 
 	items := make([]*admin.RoleItem, 0, len(rows))
 	for _, row := range rows {
-		if item := logichelper.BuildRoleItem(row); item != nil {
+		if item := utils.BuildRoleItem(row); item != nil {
 			items = append(items, item)
 		}
 	}

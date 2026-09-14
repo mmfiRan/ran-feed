@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/app/rpc/admin/internal/common/logichelper"
 	adminutils "ran-feed/app/rpc/admin/internal/common/utils"
 	"ran-feed/app/rpc/admin/internal/entity/model"
 	"ran-feed/app/rpc/admin/internal/repositories"
@@ -62,7 +61,7 @@ func (l *ListAdminsLogic) ListAdmins(in *admin.ListAdminsReq) (*admin.ListAdmins
 		if row == nil {
 			continue
 		}
-		items = append(items, logichelper.BuildAdminListItem(row, roleCodesByAdmin[row.ID]))
+		items = append(items, adminutils.BuildAdminListItem(row, roleCodesByAdmin[row.ID]))
 	}
 	res.Items = items
 	return res, nil

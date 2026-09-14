@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/logichelper"
+	"ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/count/count"
 
@@ -59,10 +59,11 @@ func TestBuildAdminContentItem(t *testing.T) {
 			CreatedAt:   created,
 		}
 		counts := &count.ContentCountsItem{ContentId: 10, LikeCount: 3, FavoriteCount: 2, CommentCount: 1}
-		item := buildAdminContentItem(row, "标题A", counts)
+		item := buildAdminContentItem(row, "标题A", "user99", counts)
 		assert.Equal(t, int64(10), item.ContentId)
-		assert.Equal(t, logichelper.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_ARTICLE)), item.ContentType)
-		assert.Equal(t, logichelper.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)), item.Status)
+		assert.Equal(t, "user99", item.Username)
+		assert.Equal(t, utils.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_ARTICLE)), item.ContentType)
+		assert.Equal(t, utils.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)), item.Status)
 		assert.Equal(t, "标题A", item.Title)
 		assert.Equal(t, int64(3), item.LikeCount)
 		assert.Equal(t, int64(2), item.FavoriteCount)
@@ -76,7 +77,7 @@ func TestBuildAdminContentItem(t *testing.T) {
 			ID:        12,
 			CreatedAt: created,
 		}
-		item := buildAdminContentItem(row, "", nil)
+		item := buildAdminContentItem(row, "", "", nil)
 		assert.Equal(t, int64(0), item.LikeCount)
 		assert.Equal(t, int64(0), item.FavoriteCount)
 		assert.Equal(t, int64(0), item.CommentCount)
@@ -89,30 +90,11 @@ func TestBuildAdminContentItem(t *testing.T) {
 			Status:      int32(content.ContentStatus_CONTENT_STATUS_DRAFT),
 			CreatedAt:   created,
 		}
-		item := buildAdminContentItem(row, "", nil)
+		item := buildAdminContentItem(row, "", "", nil)
 		assert.Equal(t, int64(0), item.PublishedAt.AsTime().UnixMilli())
-		assert.Equal(t, logichelper.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_VIDEO)), item.ContentType)
+		assert.Equal(t, utils.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_VIDEO)), item.ContentType)
 	})
 }
-
-func TestOptionalFilters(t *testing.T) {
-	t.Run("零值转 nil", func(t *testing.T) {
-		req := &content.AdminListContentsReq{}
-		assert.Nil(t, optionalStatus(req))
-		assert.Nil(t, optionalContentType(req))
-		assert.Nil(t, optionalAuthorID(req))
-	})
-	t.Run("非零透传", func(t *testing.T) {
-		s := content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN
-		ct := content.ContentType_CONTENT_TYPE_VIDEO
-		req := &content.AdminListContentsReq{Status: &s, ContentType: &ct, AuthorId: ptrInt64(7)}
-		assert.Equal(t, int32(content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN), *optionalStatus(req))
-		assert.Equal(t, int32(content.ContentType_CONTENT_TYPE_VIDEO), *optionalContentType(req))
-		assert.Equal(t, int64(7), *optionalAuthorID(req))
-	})
-}
-
-func ptrInt64(v int64) *int64 { return &v }
 
 func TestBuildReviewDO(t *testing.T) {
 	approve := int32(content.ReviewDecision_REVIEW_DECISION_APPROVE)

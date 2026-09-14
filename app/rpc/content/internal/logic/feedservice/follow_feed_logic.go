@@ -10,7 +10,7 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	"ran-feed/app/rpc/content/internal/common/logichelper"
+	"ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
 	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
 	"ran-feed/app/rpc/content/internal/do"
@@ -295,7 +295,7 @@ func buildFollowItems(details []*do.ContentDetailDO, userMap map[int64]*user.Use
 		}
 		items = append(items, &content.FollowFeedItem{
 			ContentId:    d.ContentID,
-			ContentType:  logichelper.ContentTypeValue(d.ContentType),
+			ContentType:  utils.ContentTypeValue(d.ContentType),
 			AuthorId:     d.AuthorID,
 			AuthorName:   authorName,
 			AuthorAvatar: authorAvatar,

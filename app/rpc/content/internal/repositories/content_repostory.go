@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/pkg/enums"
 	"time"
 
 	"ran-feed/app/rpc/content/internal/do"
@@ -36,7 +37,7 @@ type ContentRepository interface {
 	BatchUpdateHotScores(ids []int64, scores []float64, updatedAt time.Time) error
 	// AdminPageContents 管理端多条件筛选
 	AdminPageContents(status *int32, contentType *int32, authorID *int64, offset, limit int) ([]*model.RanFeedContent, int64, error)
-	// AdminGetByID 管理端取任意状态内容(含非公开) 仅软删过滤
+	// AdminGetByID 管理端取任意状态内容
 	AdminGetByID(contentID int64) (*model.RanFeedContent, error)
 	// AdminUpdateStatus 管理端翻转状态 落 updated_by 返回受影响行数
 	AdminUpdateStatus(contentID int64, status int32, operatorID int64) (int64, error)
@@ -463,10 +464,13 @@ func (r *ContentRepositoryImpl) BatchUpdateHotScores(ids []int64, scores []float
 	})
 }
 
-// adminContentQuery 组装管理端筛选 软删过滤 + 可选 status/content_type/author
-func (r *ContentRepositoryImpl) adminContentQuery(status *int32, contentType *int32, authorID *int64) query.IRanFeedContentDo {
+// AdminPageContents 管理端分页查询
+func (r *ContentRepositoryImpl) AdminPageContents(status *int32, contentType *int32, authorID *int64, offset, limit int) ([]*model.RanFeedContent, int64, error) {
+	if limit <= 0 {
+		return []*model.RanFeedContent{}, 0, nil
+	}
 	q := r.getQuery()
-	stmt := q.RanFeedContent.WithContext(r.ctx).Where(q.RanFeedContent.IsDeleted.Eq(0))
+	stmt := q.RanFeedContent.WithContext(r.ctx).Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32()))
 	if status != nil {
 		stmt = stmt.Where(q.RanFeedContent.Status.Eq(*status))
 	}
@@ -476,16 +480,7 @@ func (r *ContentRepositoryImpl) adminContentQuery(status *int32, contentType *in
 	if authorID != nil {
 		stmt = stmt.Where(q.RanFeedContent.UserID.Eq(*authorID))
 	}
-	return stmt
-}
-
-// AdminPageContents 管理端分页列表 id 倒序 不限状态/可见性 仅软删过滤 复用 FindByPage 末页不满免 COUNT
-func (r *ContentRepositoryImpl) AdminPageContents(status *int32, contentType *int32, authorID *int64, offset, limit int) ([]*model.RanFeedContent, int64, error) {
-	if limit <= 0 {
-		return []*model.RanFeedContent{}, 0, nil
-	}
-	q := r.getQuery()
-	return r.adminContentQuery(status, contentType, authorID).
+	return stmt.
 		Select(
 			q.RanFeedContent.ID,
 			q.RanFeedContent.UserID,
@@ -499,7 +494,7 @@ func (r *ContentRepositoryImpl) AdminPageContents(status *int32, contentType *in
 		FindByPage(offset, limit)
 }
 
-// AdminGetByID 管理端取任意状态内容(含非公开) 仅软删过滤 未命中返回 nil
+// AdminGetByID 管理端取任意状态内容
 func (r *ContentRepositoryImpl) AdminGetByID(contentID int64) (*model.RanFeedContent, error) {
 	if contentID <= 0 {
 		return nil, nil
@@ -508,7 +503,7 @@ func (r *ContentRepositoryImpl) AdminGetByID(contentID int64) (*model.RanFeedCon
 	q := r.getQuery()
 	row, err := q.RanFeedContent.WithContext(r.ctx).
 		Where(q.RanFeedContent.ID.Eq(contentID)).
-		Where(q.RanFeedContent.IsDeleted.Eq(0)).
+		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Take()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
