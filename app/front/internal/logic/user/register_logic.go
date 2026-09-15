@@ -5,8 +5,10 @@ package user
 
 import (
 	"context"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
 	"ran-feed/app/rpc/user/user"
@@ -36,7 +38,7 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 		Bio:      req.Bio,
 		Email:    *req.Email,
 		Gender:   user.Gender(*req.Gender),
-		Birthday: *req.Birthday,
+		Birthday: timestamppb.New(time.Unix(*req.Birthday, 0)),
 	})
 	if err != nil {
 		return nil, err
@@ -45,6 +47,6 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 	return &types.RegisterRes{
 		UserId:    rpcResp.UserId,
 		Token:     rpcResp.Token,
-		ExpiredAt: rpcResp.ExpiredAt,
+		ExpiredAt: rpcResp.ExpiredAt.AsTime().Unix(),
 	}, nil
 }

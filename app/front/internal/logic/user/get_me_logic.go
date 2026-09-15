@@ -6,6 +6,7 @@ package user
 import (
 	"context"
 
+	frontutils "ran-feed/app/front/internal/common/utils"
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
 	"ran-feed/app/rpc/user/user"
@@ -52,8 +53,8 @@ func (l *GetMeLogic) GetMe() (resp *types.GetMeRes, err error) {
 			Nickname: rpcResp.UserInfo.Nickname,
 			Avatar:   rpcResp.UserInfo.Avatar,
 			Bio:      rpcResp.UserInfo.Bio,
-			Gender:   int32(rpcResp.UserInfo.Gender),
-			Status:   int32(rpcResp.UserInfo.Status),
+			Gender:   frontutils.ToEnumValue(rpcResp.UserInfo.Gender),
+			Status:   frontutils.ToEnumValue(rpcResp.UserInfo.Status),
 		}
 	}
 	resp.FolloweeCount = rpcResp.FolloweeCount

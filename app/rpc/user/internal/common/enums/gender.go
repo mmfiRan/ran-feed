@@ -12,7 +12,7 @@ const (
 )
 
 var genderNames = map[GenderEnum]string{
-	GenderUnknown: "UNKNOWN",
+	GenderUnknown: "UNSPECIFIED",
 	GenderMale:    "MALE",
 	GenderFemale:  "FEMALE",
 }

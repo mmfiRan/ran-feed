@@ -14,7 +14,7 @@ const (
 )
 
 var userStatusNames = map[UserStatusEnum]string{
-	UserStatusUnknown:   "UNKNOWN",
+	UserStatusUnknown:   "UNSPECIFIED",
 	UserStatusActive:    "ACTIVE",
 	UserStatusDisabled:  "DISABLED",
 	UserStatusCancelled: "CANCELLED",

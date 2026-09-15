@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"ran-feed/app/rpc/user/internal/common/utils"
 	"ran-feed/app/rpc/user/internal/entity/model"
 	"ran-feed/app/rpc/user/user"
 )
@@ -30,6 +31,6 @@ func TestBuildAdminUserItem(t *testing.T) {
 	assert.Equal(t, "测试用户", item.Nickname)
 	assert.Equal(t, "13800138000", item.Mobile)
 	assert.Equal(t, "http://example.com/avatar.jpg", item.Avatar)
-	assert.Equal(t, user.UserStatus_USER_STATUS_ACTIVE, item.Status)
-	assert.Equal(t, now.UnixMilli(), item.CreatedAt)
+	assert.Equal(t, utils.UserStatusValue(int32(user.UserStatus_USER_STATUS_ACTIVE)), item.Status)
+	assert.Equal(t, now.UnixMilli(), item.CreatedAt.AsTime().UnixMilli())
 }

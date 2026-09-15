@@ -104,7 +104,7 @@ func TestLogin_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, int64(1), res.UserId)
 	assert.NotEmpty(t, res.Token)
-	assert.Greater(t, res.ExpiredAt, int64(0))
+	assert.Greater(t, res.ExpiredAt.AsTime().Unix(), int64(0))
 }
 
 func TestLogin_UserNotFound(t *testing.T) {

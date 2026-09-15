@@ -308,17 +308,17 @@ type AdminUserUpdateRes struct {
 }
 
 type CUserDetailData struct {
-	UserId    int64  `json:"user_id"`
-	Username  string `json:"username"`
-	Nickname  string `json:"nickname"`
-	Mobile    string `json:"mobile"`
-	Avatar    string `json:"avatar"`
-	Status    int32  `json:"status"`
-	Bio       string `json:"bio"`
-	Gender    int32  `json:"gender"`
-	Email     string `json:"email"`
-	CreatedAt int64  `json:"created_at"` // 毫秒
-	UpdatedAt int64  `json:"updated_at"` // 毫秒
+	UserId    int64     `json:"user_id"`
+	Username  string    `json:"username"`
+	Nickname  string    `json:"nickname"`
+	Mobile    string    `json:"mobile"`
+	Avatar    string    `json:"avatar"`
+	Status    EnumValue `json:"status"`
+	Bio       string    `json:"bio"`
+	Gender    EnumValue `json:"gender"`
+	Email     string    `json:"email"`
+	CreatedAt int64     `json:"created_at"` // 毫秒
+	UpdatedAt int64     `json:"updated_at"` // 毫秒
 }
 
 type CUserDetailReq struct {
@@ -330,13 +330,13 @@ type CUserDetailRes struct {
 }
 
 type CUserItem struct {
-	UserId    int64  `json:"user_id"`
-	Username  string `json:"username"`
-	Nickname  string `json:"nickname"`
-	Mobile    string `json:"mobile"`
-	Avatar    string `json:"avatar"`
-	Status    int32  `json:"status"`
-	CreatedAt int64  `json:"created_at"` // 毫秒
+	UserId    int64     `json:"user_id"`
+	Username  string    `json:"username"`
+	Nickname  string    `json:"nickname"`
+	Mobile    string    `json:"mobile"`
+	Avatar    string    `json:"avatar"`
+	Status    EnumValue `json:"status"`
+	CreatedAt int64     `json:"created_at"` // 毫秒
 }
 
 type CUserListReq struct {

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"ran-feed/app/rpc/user/internal/common/utils/session"
 	"ran-feed/app/rpc/user/internal/do"
@@ -47,13 +48,12 @@ func (l *RegisterLogic) Register(in *user.RegisterReq) (*user.RegisterRes, error
 	bio := in.GetBio()
 	email := strings.ToLower(strings.TrimSpace(in.GetEmail()))
 	gender := in.GetGender()
-	birthday := in.GetBirthday()
 	if nickname == "" {
 		nickname = mobile
 	}
 
-	// 生日默认截取到日
-	birthdayTime := l.truncateToDate(time.Unix(birthday, 0))
+	// 生日按原秒级语义还原 保持本地时区取日 用 AsTime 的 UTC 会让日期偏一天
+	birthdayTime := l.truncateToDate(time.Unix(in.GetBirthday().GetSeconds(), 0))
 
 	// 校验手机号是否已注册
 	exist, err := l.userRepo.GetByMobile(mobile)
@@ -97,7 +97,7 @@ func (l *RegisterLogic) Register(in *user.RegisterReq) (*user.RegisterRes, error
 	return &user.RegisterRes{
 		UserId:    userID,
 		Token:     token,
-		ExpiredAt: time.Now().Add(sessionTTL).Unix(),
+		ExpiredAt: timestamppb.New(time.Now().Add(sessionTTL)),
 	}, nil
 }
 

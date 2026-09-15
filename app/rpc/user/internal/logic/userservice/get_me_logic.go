@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/count/client/counterservice"
+	"ran-feed/app/rpc/user/internal/common/utils"
 	"ran-feed/app/rpc/user/internal/repositories"
 	"ran-feed/app/rpc/user/internal/svc"
 	"ran-feed/app/rpc/user/user"
@@ -53,8 +54,8 @@ func (l *GetMeLogic) GetMe(in *user.GetMeReq) (*user.GetMeRes, error) {
 				Nickname: userDO.Nickname,
 				Avatar:   userDO.Avatar,
 				Bio:      userDO.Bio,
-				Gender:   user.Gender(userDO.Gender),
-				Status:   user.UserStatus(userDO.Status),
+				Gender:   utils.GenderValue(userDO.Gender),
+				Status:   utils.UserStatusValue(userDO.Status),
 			}
 			return nil
 		},

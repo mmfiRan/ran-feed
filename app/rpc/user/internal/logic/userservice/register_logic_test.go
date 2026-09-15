@@ -48,7 +48,7 @@ func TestRegister_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, int64(100), res.UserId)
 	assert.NotEmpty(t, res.Token)
-	assert.Greater(t, res.ExpiredAt, int64(0))
+	assert.Greater(t, res.ExpiredAt.AsTime().Unix(), int64(0))
 }
 
 func TestRegister_MobileAlreadyExists(t *testing.T) {

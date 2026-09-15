@@ -9,7 +9,7 @@ import (
 )
 
 func TestValidateUserStatusTransition(t *testing.T) {
-	const canceled = user.UserStatus(30) // 注销 不在 proto enum 内
+	const canceled = user.UserStatus_USER_STATUS_CANCELLED // 注销
 
 	tests := []struct {
 		name     string
@@ -25,7 +25,7 @@ func TestValidateUserStatusTransition(t *testing.T) {
 		{"封禁 注销不可封禁", canceled, user.UserStatus_USER_STATUS_DISABLED, false, true},
 		{"恢复 注销不可复活", canceled, user.UserStatus_USER_STATUS_ACTIVE, false, true},
 		{"恢复 正常不可恢复", user.UserStatus_USER_STATUS_ACTIVE, user.UserStatus_USER_STATUS_ACTIVE, true, false},
-		{"不支持的目标态 UNKNOWN", user.UserStatus_USER_STATUS_ACTIVE, user.UserStatus_USER_STATUS_UNKNOWN, false, true},
+		{"不支持的目标态 UNSPECIFIED", user.UserStatus_USER_STATUS_ACTIVE, user.UserStatus_USER_STATUS_UNSPECIFIED, false, true},
 	}
 
 	for _, tt := range tests {

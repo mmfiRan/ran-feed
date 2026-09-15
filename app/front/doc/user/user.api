@@ -1,5 +1,7 @@
 syntax = "v1"
 
+import "../base/base.api"
+
 type (
 	RegisterReq {
 		Mobile   *string `json:"mobile,optional" validate:"required,e164"`
@@ -29,13 +31,13 @@ type (
 	}
 	LogoutRes  {}
 	UserInfo {
-		UserId   int64  `json:"user_id"`
-		Mobile   string `json:"mobile"`
-		Nickname string `json:"nickname"`
-		Avatar   string `json:"avatar"`
-		Bio      string `json:"bio"`
-		Gender   int32  `json:"gender"`
-		Status   int32  `json:"status"`
+		UserId   int64     `json:"user_id"`
+		Mobile   string    `json:"mobile"`
+		Nickname string    `json:"nickname"`
+		Avatar   string    `json:"avatar"`
+		Bio      string    `json:"bio"`
+		Gender   EnumValue `json:"gender"`
+		Status   EnumValue `json:"status"`
 	}
 	GetMeRes {
 		UserInfo UserInfo `json:"user_info"`
@@ -59,11 +61,11 @@ type (
 		ViewerProfileState ViewerProfileState `json:"viewer"`
 	}
 	UserProfileInfo {
-		UserId   int64  `json:"user_id"`
-		Nickname string `json:"nickname"`
-		Avatar   string `json:"avatar"`
-		Bio      string `json:"bio"`
-		Gender   int32  `json:"gender"`
+		UserId   int64     `json:"user_id"`
+		Nickname string    `json:"nickname"`
+		Avatar   string    `json:"avatar"`
+		Bio      string    `json:"bio"`
+		Gender   EnumValue `json:"gender"`
 	}
 	UserProfileCounts {
 		FolloweeCount         int64 `json:"followee_count"`
@@ -127,4 +129,3 @@ service front-api {
 	@handler QueryUserProfile
 	get /user/profile/:userId (QueryUserProfileReq) returns (QueryUserProfileRes)
 }
-

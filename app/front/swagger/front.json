@@ -2529,7 +2529,23 @@
                       "type": "string"
                     },
                     "gender": {
-                      "type": "integer"
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "name",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
                     },
                     "nickname": {
                       "type": "string"
@@ -2719,7 +2735,23 @@
                       "type": "string"
                     },
                     "gender": {
-                      "type": "integer"
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "name",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
                     },
                     "mobile": {
                       "type": "string"
@@ -2728,7 +2760,23 @@
                       "type": "string"
                     },
                     "status": {
-                      "type": "integer"
+                      "type": "object",
+                      "required": [
+                        "code",
+                        "name",
+                        "message"
+                      ],
+                      "properties": {
+                        "code": {
+                          "type": "integer"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
                     },
                     "user_id": {
                       "type": "integer"
@@ -2742,7 +2790,7 @@
       }
     }
   },
-  "x-date": "2026-09-10 17:15:25",
+  "x-date": "2026-09-15 17:16:56",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

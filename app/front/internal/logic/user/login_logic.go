@@ -39,7 +39,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginRes, err error
 	return &types.LoginRes{
 		UserId:    rpcResp.UserId,
 		Token:     rpcResp.Token,
-		ExpiredAt: rpcResp.ExpiredAt,
+		ExpiredAt: rpcResp.ExpiredAt.AsTime().Unix(),
 		Nickname:  rpcResp.Nickname,
 		Avatar:    rpcResp.Avatar,
 	}, nil

@@ -9,6 +9,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type LogoutLogic struct {
@@ -25,7 +26,7 @@ func NewLogoutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LogoutLogi
 	}
 }
 
-func (l *LogoutLogic) Logout(in *user.LogoutReq) (*user.LogoutRes, error) {
+func (l *LogoutLogic) Logout(in *user.LogoutReq) (*emptypb.Empty, error) {
 	if in == nil {
 		return nil, errorx.NewMsg("参数错误")
 	}
@@ -34,5 +35,5 @@ func (l *LogoutLogic) Logout(in *user.LogoutReq) (*user.LogoutRes, error) {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("退出登录失败"))
 	}
 
-	return &user.LogoutRes{}, nil
+	return &emptypb.Empty{}, nil
 }

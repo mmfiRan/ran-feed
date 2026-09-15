@@ -6,6 +6,7 @@ package user
 import (
 	"context"
 
+	"ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/user/user"
@@ -55,8 +56,8 @@ func (l *ListUsersLogic) ListUsers(req *types.CUserListReq) (resp *types.CUserLi
 			Nickname:  it.GetNickname(),
 			Mobile:    it.GetMobile(),
 			Avatar:    it.GetAvatar(),
-			Status:    int32(it.GetStatus()),
-			CreatedAt: it.GetCreatedAt(),
+			Status:    utils.ToEnumValue(it.GetStatus()),
+			CreatedAt: it.GetCreatedAt().AsTime().UnixMilli(),
 		})
 	}
 
@@ -65,7 +66,7 @@ func (l *ListUsersLogic) ListUsers(req *types.CUserListReq) (resp *types.CUserLi
 		PageQueryResp: types.PageQueryResp{
 			Page:     rpcRes.GetPage(),
 			PageSize: rpcRes.GetPageSize(),
-			Total:    rpcRes.GetTotal(),
+			Total:    uint32(rpcRes.GetTotal()),
 		},
 	}, nil
 }

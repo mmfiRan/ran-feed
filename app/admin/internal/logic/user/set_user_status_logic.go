@@ -62,6 +62,6 @@ func mapUserStatusAction(action string) (user.UserStatus, error) {
 	case "restore":
 		return user.UserStatus_USER_STATUS_ACTIVE, nil
 	default:
-		return user.UserStatus_USER_STATUS_UNKNOWN, errorx.NewMsg("不支持的操作")
+		return user.UserStatus_USER_STATUS_UNSPECIFIED, errorx.NewMsg("不支持的操作")
 	}
 }

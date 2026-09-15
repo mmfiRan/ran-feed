@@ -528,13 +528,13 @@ type UserFavoriteFeedRes struct {
 }
 
 type UserInfo struct {
-	UserId   int64  `json:"user_id"`
-	Mobile   string `json:"mobile"`
-	Nickname string `json:"nickname"`
-	Avatar   string `json:"avatar"`
-	Bio      string `json:"bio"`
-	Gender   int32  `json:"gender"`
-	Status   int32  `json:"status"`
+	UserId   int64     `json:"user_id"`
+	Mobile   string    `json:"mobile"`
+	Nickname string    `json:"nickname"`
+	Avatar   string    `json:"avatar"`
+	Bio      string    `json:"bio"`
+	Gender   EnumValue `json:"gender"`
+	Status   EnumValue `json:"status"`
 }
 
 type UserProfileCounts struct {
@@ -546,11 +546,11 @@ type UserProfileCounts struct {
 }
 
 type UserProfileInfo struct {
-	UserId   int64  `json:"user_id"`
-	Nickname string `json:"nickname"`
-	Avatar   string `json:"avatar"`
-	Bio      string `json:"bio"`
-	Gender   int32  `json:"gender"`
+	UserId   int64     `json:"user_id"`
+	Nickname string    `json:"nickname"`
+	Avatar   string    `json:"avatar"`
+	Bio      string    `json:"bio"`
+	Gender   EnumValue `json:"gender"`
 }
 
 type UserPublishFeedItem struct {

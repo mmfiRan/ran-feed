@@ -30,7 +30,7 @@ func TestMapUserStatusAction(t *testing.T) {
 		{
 			name:       "未知 action 返回错误",
 			action:     "unknown",
-			wantStatus: user.UserStatus_USER_STATUS_UNKNOWN,
+			wantStatus: user.UserStatus_USER_STATUS_UNSPECIFIED,
 			wantErr:    true,
 		},
 	}

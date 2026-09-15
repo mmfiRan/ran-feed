@@ -14,6 +14,7 @@ import (
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type LoginLogic struct {
@@ -79,7 +80,7 @@ func (l *LoginLogic) Login(in *user.LoginReq) (*user.LoginRes, error) {
 	return &user.LoginRes{
 		UserId:    u.ID,
 		Token:     token,
-		ExpiredAt: time.Now().Add(sessionTTL).Unix(),
+		ExpiredAt: timestamppb.New(time.Now().Add(sessionTTL)),
 		Nickname:  u.Nickname,
 		Avatar:    u.Avatar,
 	}, nil

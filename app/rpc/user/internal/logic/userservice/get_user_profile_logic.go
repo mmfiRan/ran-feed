@@ -3,6 +3,7 @@ package userservicelogic
 import (
 	"context"
 
+	"ran-feed/app/rpc/user/internal/common/utils"
 	"ran-feed/app/rpc/user/internal/common/utils/usercache"
 	"ran-feed/app/rpc/user/internal/repositories"
 	"ran-feed/app/rpc/user/internal/svc"
@@ -50,8 +51,8 @@ func (l *GetUserProfileLogic) GetUserProfile(in *user.GetUserProfileReq) (*user.
 			Nickname: u.Nickname,
 			Avatar:   u.Avatar,
 			Bio:      u.Bio,
-			Gender:   user.Gender(u.Gender),
-			Status:   user.UserStatus(u.Status),
+			Gender:   utils.GenderValue(u.Gender),
+			Status:   utils.UserStatusValue(u.Status),
 		},
 	}, nil
 }

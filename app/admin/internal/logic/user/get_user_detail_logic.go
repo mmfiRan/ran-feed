@@ -6,6 +6,7 @@ package user
 import (
 	"context"
 
+	"ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/user/user"
@@ -43,12 +44,12 @@ func (l *GetUserDetailLogic) GetUserDetail(req *types.CUserDetailReq) (resp *typ
 			Nickname:  detail.GetNickname(),
 			Mobile:    detail.GetMobile(),
 			Avatar:    detail.GetAvatar(),
-			Status:    int32(detail.GetStatus()),
+			Status:    utils.ToEnumValue(detail.GetStatus()),
 			Bio:       detail.GetBio(),
-			Gender:    int32(detail.GetGender()),
+			Gender:    utils.ToEnumValue(detail.GetGender()),
 			Email:     detail.GetEmail(),
-			CreatedAt: detail.GetCreatedAt(),
-			UpdatedAt: detail.GetUpdatedAt(),
+			CreatedAt: detail.GetCreatedAt().AsTime().UnixMilli(),
+			UpdatedAt: detail.GetUpdatedAt().AsTime().UnixMilli(),
 		},
 	}, nil
 }

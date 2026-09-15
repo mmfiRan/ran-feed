@@ -10,6 +10,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type AdminSetUserStatusLogic struct {
@@ -28,7 +29,7 @@ func NewAdminSetUserStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	}
 }
 
-func (l *AdminSetUserStatusLogic) AdminSetUserStatus(in *user.AdminSetUserStatusReq) (*user.AdminSetUserStatusRes, error) {
+func (l *AdminSetUserStatusLogic) AdminSetUserStatus(in *user.AdminSetUserStatusReq) (*emptypb.Empty, error) {
 	if in == nil || in.UserId <= 0 {
 		return nil, errorx.NewMsg("参数错误")
 	}
@@ -48,7 +49,7 @@ func (l *AdminSetUserStatusLogic) AdminSetUserStatus(in *user.AdminSetUserStatus
 	}
 	// 当前已是目标态 幂等直接返回
 	if noop {
-		return &user.AdminSetUserStatusRes{}, nil
+		return &emptypb.Empty{}, nil
 	}
 
 	if _, err = l.userRepo.AdminUpdateStatus(in.UserId, int32(in.Status), in.OperatorId); err != nil {
@@ -62,7 +63,7 @@ func (l *AdminSetUserStatusLogic) AdminSetUserStatus(in *user.AdminSetUserStatus
 		}
 	}
 
-	return &user.AdminSetUserStatusRes{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 // validateUserStatusTransition 校验封禁/恢复状态机 返回 noop 表示当前已是目标态无需落库

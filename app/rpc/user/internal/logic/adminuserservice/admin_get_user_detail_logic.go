@@ -3,13 +3,15 @@ package adminuserservicelogic
 import (
 	"context"
 
+	"ran-feed/app/rpc/user/internal/common/utils"
 	"ran-feed/app/rpc/user/internal/repositories"
 	"ran-feed/app/rpc/user/internal/svc"
 	"ran-feed/app/rpc/user/user"
 	"ran-feed/pkg/errorx"
-	"ran-feed/pkg/utils"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type AdminGetUserDetailLogic struct {
@@ -41,14 +43,14 @@ func (l *AdminGetUserDetailLogic) AdminGetUserDetail(in *user.AdminGetUserDetail
 		UserId:    row.ID,
 		Username:  row.Username,
 		Nickname:  row.Nickname,
-		Mobile:    utils.Deref(row.Mobile),
+		Mobile:    pkgutils.Deref(row.Mobile),
 		Avatar:    row.Avatar,
-		Status:    user.UserStatus(row.Status),
+		Status:    utils.UserStatusValue(row.Status),
 		Bio:       row.Bio,
-		Gender:    user.Gender(row.Gender),
-		Email:     utils.Deref(row.Email),
-		CreatedAt: row.CreatedAt.UnixMilli(),
-		UpdatedAt: row.UpdatedAt.UnixMilli(),
+		Gender:    utils.GenderValue(row.Gender),
+		Email:     pkgutils.Deref(row.Email),
+		CreatedAt: timestamppb.New(row.CreatedAt),
+		UpdatedAt: timestamppb.New(row.UpdatedAt),
 	}
 
 	return &user.AdminGetUserDetailRes{Detail: detail}, nil

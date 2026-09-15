@@ -3,13 +3,15 @@ package adminuserservicelogic
 import (
 	"context"
 
+	"ran-feed/app/rpc/user/internal/common/utils"
 	"ran-feed/app/rpc/user/internal/entity/model"
 	"ran-feed/app/rpc/user/internal/repositories"
 	"ran-feed/app/rpc/user/internal/svc"
 	"ran-feed/app/rpc/user/user"
-	"ran-feed/pkg/utils"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type AdminListUsersLogic struct {
@@ -38,7 +40,7 @@ func (l *AdminListUsersLogic) AdminListUsers(in *user.AdminListUsersReq) (*user.
 		keyword = *in.Keyword
 	}
 
-	offset, pageSize := utils.NormalizePage(in.GetPage(), in.GetPageSize())
+	offset, pageSize := pkgutils.NormalizePage(in.GetPage(), in.GetPageSize())
 	rows, total, err := l.userRepo.AdminPageUsers(status, keyword, offset, pageSize)
 	if err != nil {
 		return nil, err
@@ -62,7 +64,7 @@ func (l *AdminListUsersLogic) AdminListUsers(in *user.AdminListUsersReq) (*user.
 
 	return &user.AdminListUsersRes{
 		Items:    items,
-		Total:    uint32(total),
+		Total:    total,
 		Page:     in.GetPage(),
 		PageSize: in.GetPageSize(),
 	}, nil
@@ -73,9 +75,9 @@ func buildAdminUserItem(row *model.RanFeedUser) *user.AdminUserItem {
 		UserId:    row.ID,
 		Username:  row.Username,
 		Nickname:  row.Nickname,
-		Mobile:    utils.Deref(row.Mobile),
+		Mobile:    pkgutils.Deref(row.Mobile),
 		Avatar:    row.Avatar,
-		Status:    user.UserStatus(row.Status),
-		CreatedAt: row.CreatedAt.UnixMilli(),
+		Status:    utils.UserStatusValue(row.Status),
+		CreatedAt: timestamppb.New(row.CreatedAt),
 	}
 }

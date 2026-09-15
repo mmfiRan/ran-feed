@@ -9,6 +9,9 @@ package user
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	commonpb "ran-feed/pkg/commonpb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -25,22 +28,22 @@ const (
 type Gender int32
 
 const (
-	Gender_GENDER_UNKNOWN Gender = 0 // 未知
-	Gender_GENDER_MALE    Gender = 1 // 男
-	Gender_GENDER_FEMALE  Gender = 2 // 女
+	Gender_GENDER_UNSPECIFIED Gender = 0 // 未知
+	Gender_GENDER_MALE        Gender = 1 // 男
+	Gender_GENDER_FEMALE      Gender = 2 // 女
 )
 
 // Enum value maps for Gender.
 var (
 	Gender_name = map[int32]string{
-		0: "GENDER_UNKNOWN",
+		0: "GENDER_UNSPECIFIED",
 		1: "GENDER_MALE",
 		2: "GENDER_FEMALE",
 	}
 	Gender_value = map[string]int32{
-		"GENDER_UNKNOWN": 0,
-		"GENDER_MALE":    1,
-		"GENDER_FEMALE":  2,
+		"GENDER_UNSPECIFIED": 0,
+		"GENDER_MALE":        1,
+		"GENDER_FEMALE":      2,
 	}
 )
 
@@ -75,22 +78,25 @@ func (Gender) EnumDescriptor() ([]byte, []int) {
 type UserStatus int32
 
 const (
-	UserStatus_USER_STATUS_UNKNOWN  UserStatus = 0  // 未知
-	UserStatus_USER_STATUS_ACTIVE   UserStatus = 10 // 正常
-	UserStatus_USER_STATUS_DISABLED UserStatus = 20 // 禁用
+	UserStatus_USER_STATUS_UNSPECIFIED UserStatus = 0  // 未知
+	UserStatus_USER_STATUS_ACTIVE      UserStatus = 10 // 正常
+	UserStatus_USER_STATUS_DISABLED    UserStatus = 20 // 禁用
+	UserStatus_USER_STATUS_CANCELLED   UserStatus = 30 // 注销
 )
 
 // Enum value maps for UserStatus.
 var (
 	UserStatus_name = map[int32]string{
-		0:  "USER_STATUS_UNKNOWN",
+		0:  "USER_STATUS_UNSPECIFIED",
 		10: "USER_STATUS_ACTIVE",
 		20: "USER_STATUS_DISABLED",
+		30: "USER_STATUS_CANCELLED",
 	}
 	UserStatus_value = map[string]int32{
-		"USER_STATUS_UNKNOWN":  0,
-		"USER_STATUS_ACTIVE":   10,
-		"USER_STATUS_DISABLED": 20,
+		"USER_STATUS_UNSPECIFIED": 0,
+		"USER_STATUS_ACTIVE":      10,
+		"USER_STATUS_DISABLED":    20,
+		"USER_STATUS_CANCELLED":   30,
 	}
 )
 
@@ -130,8 +136,8 @@ type UserInfo struct {
 	Nickname      string                 `protobuf:"bytes,4,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Avatar        string                 `protobuf:"bytes,5,opt,name=avatar,proto3" json:"avatar,omitempty"`
 	Bio           string                 `protobuf:"bytes,6,opt,name=bio,proto3" json:"bio,omitempty"`
-	Gender        Gender                 `protobuf:"varint,7,opt,name=gender,proto3,enum=user.Gender" json:"gender,omitempty"`
-	Status        UserStatus             `protobuf:"varint,8,opt,name=status,proto3,enum=user.UserStatus" json:"status,omitempty"`
+	Gender        *commonpb.EnumValue    `protobuf:"bytes,7,opt,name=gender,proto3" json:"gender,omitempty"`
+	Status        *commonpb.EnumValue    `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -208,18 +214,18 @@ func (x *UserInfo) GetBio() string {
 	return ""
 }
 
-func (x *UserInfo) GetGender() Gender {
+func (x *UserInfo) GetGender() *commonpb.EnumValue {
 	if x != nil {
 		return x.Gender
 	}
-	return Gender_GENDER_UNKNOWN
+	return nil
 }
 
-func (x *UserInfo) GetStatus() UserStatus {
+func (x *UserInfo) GetStatus() *commonpb.EnumValue {
 	if x != nil {
 		return x.Status
 	}
-	return UserStatus_USER_STATUS_UNKNOWN
+	return nil
 }
 
 // 用户主页资料
@@ -229,8 +235,8 @@ type UserProfile struct {
 	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Avatar        string                 `protobuf:"bytes,3,opt,name=avatar,proto3" json:"avatar,omitempty"`
 	Bio           string                 `protobuf:"bytes,4,opt,name=bio,proto3" json:"bio,omitempty"`
-	Gender        Gender                 `protobuf:"varint,5,opt,name=gender,proto3,enum=user.Gender" json:"gender,omitempty"`
-	Status        UserStatus             `protobuf:"varint,6,opt,name=status,proto3,enum=user.UserStatus" json:"status,omitempty"`
+	Gender        *commonpb.EnumValue    `protobuf:"bytes,5,opt,name=gender,proto3" json:"gender,omitempty"`
+	Status        *commonpb.EnumValue    `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -293,21 +299,21 @@ func (x *UserProfile) GetBio() string {
 	return ""
 }
 
-func (x *UserProfile) GetGender() Gender {
+func (x *UserProfile) GetGender() *commonpb.EnumValue {
 	if x != nil {
 		return x.Gender
 	}
-	return Gender_GENDER_UNKNOWN
+	return nil
 }
 
-func (x *UserProfile) GetStatus() UserStatus {
+func (x *UserProfile) GetStatus() *commonpb.EnumValue {
 	if x != nil {
 		return x.Status
 	}
-	return UserStatus_USER_STATUS_UNKNOWN
+	return nil
 }
 
-// 注册
+// 注册请求
 type RegisterReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Mobile        string                 `protobuf:"bytes,1,opt,name=mobile,proto3" json:"mobile,omitempty"`
@@ -316,8 +322,8 @@ type RegisterReq struct {
 	Avatar        string                 `protobuf:"bytes,4,opt,name=avatar,proto3" json:"avatar,omitempty"`
 	Bio           *string                `protobuf:"bytes,5,opt,name=bio,proto3,oneof" json:"bio,omitempty"`
 	Email         string                 `protobuf:"bytes,6,opt,name=email,proto3" json:"email,omitempty"`
-	Gender        Gender                 `protobuf:"varint,7,opt,name=gender,proto3,enum=user.Gender" json:"gender,omitempty"`
-	Birthday      int64                  `protobuf:"varint,8,opt,name=birthday,proto3" json:"birthday,omitempty"`
+	Gender        Gender                 `protobuf:"varint,7,opt,name=gender,proto3,enum=ranfeed.user.Gender" json:"gender,omitempty"`
+	Birthday      *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=birthday,proto3" json:"birthday,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -398,21 +404,22 @@ func (x *RegisterReq) GetGender() Gender {
 	if x != nil {
 		return x.Gender
 	}
-	return Gender_GENDER_UNKNOWN
+	return Gender_GENDER_UNSPECIFIED
 }
 
-func (x *RegisterReq) GetBirthday() int64 {
+func (x *RegisterReq) GetBirthday() *timestamppb.Timestamp {
 	if x != nil {
 		return x.Birthday
 	}
-	return 0
+	return nil
 }
 
+// 注册响应
 type RegisterRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Token         string                 `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
-	ExpiredAt     int64                  `protobuf:"varint,3,opt,name=expired_at,json=expiredAt,proto3" json:"expired_at,omitempty"` // 过期时间戳（秒）
+	ExpiredAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=expired_at,json=expiredAt,proto3" json:"expired_at,omitempty"` // 过期时间
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -461,14 +468,14 @@ func (x *RegisterRes) GetToken() string {
 	return ""
 }
 
-func (x *RegisterRes) GetExpiredAt() int64 {
+func (x *RegisterRes) GetExpiredAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.ExpiredAt
 	}
-	return 0
+	return nil
 }
 
-// 登录
+// 登录请求
 type LoginReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Mobile        string                 `protobuf:"bytes,1,opt,name=mobile,proto3" json:"mobile,omitempty"`
@@ -521,11 +528,12 @@ func (x *LoginReq) GetPassword() string {
 	return ""
 }
 
+// 登录响应
 type LoginRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Token         string                 `protobuf:"bytes,2,opt,name=token,proto3" json:"token,omitempty"`
-	ExpiredAt     int64                  `protobuf:"varint,3,opt,name=expired_at,json=expiredAt,proto3" json:"expired_at,omitempty"` // 过期时间戳（秒）
+	ExpiredAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=expired_at,json=expiredAt,proto3" json:"expired_at,omitempty"` // 过期时间
 	Nickname      string                 `protobuf:"bytes,4,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Avatar        string                 `protobuf:"bytes,5,opt,name=avatar,proto3" json:"avatar,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -576,11 +584,11 @@ func (x *LoginRes) GetToken() string {
 	return ""
 }
 
-func (x *LoginRes) GetExpiredAt() int64 {
+func (x *LoginRes) GetExpiredAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.ExpiredAt
 	}
-	return 0
+	return nil
 }
 
 func (x *LoginRes) GetNickname() string {
@@ -597,7 +605,7 @@ func (x *LoginRes) GetAvatar() string {
 	return ""
 }
 
-// 退出登录
+// 退出登录请求
 type LogoutReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -650,43 +658,7 @@ func (x *LogoutReq) GetToken() string {
 	return ""
 }
 
-type LogoutRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *LogoutRes) Reset() {
-	*x = LogoutRes{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *LogoutRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*LogoutRes) ProtoMessage() {}
-
-func (x *LogoutRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use LogoutRes.ProtoReflect.Descriptor instead.
-func (*LogoutRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{7}
-}
-
-// 获取当前用户信息
+// 获取当前用户信息请求
 type GetMeReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -696,7 +668,7 @@ type GetMeReq struct {
 
 func (x *GetMeReq) Reset() {
 	*x = GetMeReq{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[8]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -708,7 +680,7 @@ func (x *GetMeReq) String() string {
 func (*GetMeReq) ProtoMessage() {}
 
 func (x *GetMeReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[8]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -721,7 +693,7 @@ func (x *GetMeReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMeReq.ProtoReflect.Descriptor instead.
 func (*GetMeReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{8}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetMeReq) GetUserId() int64 {
@@ -731,6 +703,7 @@ func (x *GetMeReq) GetUserId() int64 {
 	return 0
 }
 
+// 获取当前用户信息响应
 type GetMeRes struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
 	UserInfo              *UserInfo              `protobuf:"bytes,1,opt,name=user_info,json=userInfo,proto3" json:"user_info,omitempty"`
@@ -744,7 +717,7 @@ type GetMeRes struct {
 
 func (x *GetMeRes) Reset() {
 	*x = GetMeRes{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[9]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -756,7 +729,7 @@ func (x *GetMeRes) String() string {
 func (*GetMeRes) ProtoMessage() {}
 
 func (x *GetMeRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[9]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -769,7 +742,7 @@ func (x *GetMeRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMeRes.ProtoReflect.Descriptor instead.
 func (*GetMeRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{9}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetMeRes) GetUserInfo() *UserInfo {
@@ -807,7 +780,7 @@ func (x *GetMeRes) GetFavoriteReceivedCount() int64 {
 	return 0
 }
 
-// 根据 user_id 查询单个用户
+// 按 user_id 查询单个用户请求
 type GetUserReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -817,7 +790,7 @@ type GetUserReq struct {
 
 func (x *GetUserReq) Reset() {
 	*x = GetUserReq{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[10]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -829,7 +802,7 @@ func (x *GetUserReq) String() string {
 func (*GetUserReq) ProtoMessage() {}
 
 func (x *GetUserReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[10]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -842,7 +815,7 @@ func (x *GetUserReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserReq.ProtoReflect.Descriptor instead.
 func (*GetUserReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{10}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetUserReq) GetUserId() int64 {
@@ -852,6 +825,7 @@ func (x *GetUserReq) GetUserId() int64 {
 	return 0
 }
 
+// 按 user_id 查询单个用户响应
 type GetUserRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserInfo      *UserInfo              `protobuf:"bytes,1,opt,name=user_info,json=userInfo,proto3" json:"user_info,omitempty"`
@@ -861,7 +835,7 @@ type GetUserRes struct {
 
 func (x *GetUserRes) Reset() {
 	*x = GetUserRes{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[11]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -873,7 +847,7 @@ func (x *GetUserRes) String() string {
 func (*GetUserRes) ProtoMessage() {}
 
 func (x *GetUserRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[11]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -886,7 +860,7 @@ func (x *GetUserRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserRes.ProtoReflect.Descriptor instead.
 func (*GetUserRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{11}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetUserRes) GetUserInfo() *UserInfo {
@@ -896,7 +870,7 @@ func (x *GetUserRes) GetUserInfo() *UserInfo {
 	return nil
 }
 
-// 查询用户主页资料
+// 查询用户主页资料请求
 type GetUserProfileReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -906,7 +880,7 @@ type GetUserProfileReq struct {
 
 func (x *GetUserProfileReq) Reset() {
 	*x = GetUserProfileReq{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[12]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -918,7 +892,7 @@ func (x *GetUserProfileReq) String() string {
 func (*GetUserProfileReq) ProtoMessage() {}
 
 func (x *GetUserProfileReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[12]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -931,7 +905,7 @@ func (x *GetUserProfileReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserProfileReq.ProtoReflect.Descriptor instead.
 func (*GetUserProfileReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{12}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetUserProfileReq) GetUserId() int64 {
@@ -941,6 +915,7 @@ func (x *GetUserProfileReq) GetUserId() int64 {
 	return 0
 }
 
+// 查询用户主页资料响应
 type GetUserProfileRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserProfile   *UserProfile           `protobuf:"bytes,1,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
@@ -950,7 +925,7 @@ type GetUserProfileRes struct {
 
 func (x *GetUserProfileRes) Reset() {
 	*x = GetUserProfileRes{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[13]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -962,7 +937,7 @@ func (x *GetUserProfileRes) String() string {
 func (*GetUserProfileRes) ProtoMessage() {}
 
 func (x *GetUserProfileRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[13]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -975,7 +950,7 @@ func (x *GetUserProfileRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserProfileRes.ProtoReflect.Descriptor instead.
 func (*GetUserProfileRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{13}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *GetUserProfileRes) GetUserProfile() *UserProfile {
@@ -985,7 +960,7 @@ func (x *GetUserProfileRes) GetUserProfile() *UserProfile {
 	return nil
 }
 
-// 批量查询用户信息
+// 批量查询用户信息请求
 type BatchGetUserReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserIds       []int64                `protobuf:"varint,1,rep,packed,name=user_ids,json=userIds,proto3" json:"user_ids,omitempty"`
@@ -995,7 +970,7 @@ type BatchGetUserReq struct {
 
 func (x *BatchGetUserReq) Reset() {
 	*x = BatchGetUserReq{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[14]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1007,7 +982,7 @@ func (x *BatchGetUserReq) String() string {
 func (*BatchGetUserReq) ProtoMessage() {}
 
 func (x *BatchGetUserReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[14]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1020,7 +995,7 @@ func (x *BatchGetUserReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetUserReq.ProtoReflect.Descriptor instead.
 func (*BatchGetUserReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{14}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *BatchGetUserReq) GetUserIds() []int64 {
@@ -1030,6 +1005,7 @@ func (x *BatchGetUserReq) GetUserIds() []int64 {
 	return nil
 }
 
+// 批量查询用户信息响应
 type BatchGetUserRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Users         []*UserInfo            `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
@@ -1039,7 +1015,7 @@ type BatchGetUserRes struct {
 
 func (x *BatchGetUserRes) Reset() {
 	*x = BatchGetUserRes{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[15]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1051,7 +1027,7 @@ func (x *BatchGetUserRes) String() string {
 func (*BatchGetUserRes) ProtoMessage() {}
 
 func (x *BatchGetUserRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[15]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1064,7 +1040,7 @@ func (x *BatchGetUserRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetUserRes.ProtoReflect.Descriptor instead.
 func (*BatchGetUserRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{15}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *BatchGetUserRes) GetUsers() []*UserInfo {
@@ -1081,15 +1057,15 @@ type UserIndexItem struct {
 	Nickname      string                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Bio           string                 `protobuf:"bytes,3,opt,name=bio,proto3" json:"bio,omitempty"`
 	Username      string                 `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
-	Status        UserStatus             `protobuf:"varint,5,opt,name=status,proto3,enum=user.UserStatus" json:"status,omitempty"` // 恒为正常 带上供 search 纯拷贝写入
-	Version       int64                  `protobuf:"varint,6,opt,name=version,proto3" json:"version,omitempty"`                    // user.updated_at 毫秒 供全量重建 ES external version
+	Status        UserStatus             `protobuf:"varint,5,opt,name=status,proto3,enum=ranfeed.user.UserStatus" json:"status,omitempty"` // 恒为正常 带上供 search 纯拷贝写入
+	Version       int64                  `protobuf:"varint,6,opt,name=version,proto3" json:"version,omitempty"`                            // user.updated_at 毫秒 供全量重建 ES external version
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UserIndexItem) Reset() {
 	*x = UserIndexItem{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[16]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1101,7 +1077,7 @@ func (x *UserIndexItem) String() string {
 func (*UserIndexItem) ProtoMessage() {}
 
 func (x *UserIndexItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[16]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1114,7 +1090,7 @@ func (x *UserIndexItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserIndexItem.ProtoReflect.Descriptor instead.
 func (*UserIndexItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{16}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *UserIndexItem) GetUserId() int64 {
@@ -1149,7 +1125,7 @@ func (x *UserIndexItem) GetStatus() UserStatus {
 	if x != nil {
 		return x.Status
 	}
-	return UserStatus_USER_STATUS_UNKNOWN
+	return UserStatus_USER_STATUS_UNSPECIFIED
 }
 
 func (x *UserIndexItem) GetVersion() int64 {
@@ -1169,7 +1145,7 @@ type BatchGetUserForIndexReq struct {
 
 func (x *BatchGetUserForIndexReq) Reset() {
 	*x = BatchGetUserForIndexReq{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[17]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1181,7 +1157,7 @@ func (x *BatchGetUserForIndexReq) String() string {
 func (*BatchGetUserForIndexReq) ProtoMessage() {}
 
 func (x *BatchGetUserForIndexReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[17]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1194,7 +1170,7 @@ func (x *BatchGetUserForIndexReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetUserForIndexReq.ProtoReflect.Descriptor instead.
 func (*BatchGetUserForIndexReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{17}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *BatchGetUserForIndexReq) GetUserIds() []int64 {
@@ -1204,6 +1180,7 @@ func (x *BatchGetUserForIndexReq) GetUserIds() []int64 {
 	return nil
 }
 
+// BatchGetUserForIndexRes 增量回源响应
 type BatchGetUserForIndexRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*UserIndexItem       `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -1213,7 +1190,7 @@ type BatchGetUserForIndexRes struct {
 
 func (x *BatchGetUserForIndexRes) Reset() {
 	*x = BatchGetUserForIndexRes{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[18]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1225,7 +1202,7 @@ func (x *BatchGetUserForIndexRes) String() string {
 func (*BatchGetUserForIndexRes) ProtoMessage() {}
 
 func (x *BatchGetUserForIndexRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[18]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1238,7 +1215,7 @@ func (x *BatchGetUserForIndexRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BatchGetUserForIndexRes.ProtoReflect.Descriptor instead.
 func (*BatchGetUserForIndexRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{18}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *BatchGetUserForIndexRes) GetItems() []*UserIndexItem {
@@ -1259,7 +1236,7 @@ type ListUserForIndexReq struct {
 
 func (x *ListUserForIndexReq) Reset() {
 	*x = ListUserForIndexReq{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[19]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1271,7 +1248,7 @@ func (x *ListUserForIndexReq) String() string {
 func (*ListUserForIndexReq) ProtoMessage() {}
 
 func (x *ListUserForIndexReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[19]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1284,7 +1261,7 @@ func (x *ListUserForIndexReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUserForIndexReq.ProtoReflect.Descriptor instead.
 func (*ListUserForIndexReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{19}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ListUserForIndexReq) GetCursor() int64 {
@@ -1301,6 +1278,7 @@ func (x *ListUserForIndexReq) GetLimit() int32 {
 	return 0
 }
 
+// ListUserForIndexRes 全量重建响应
 type ListUserForIndexRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*UserIndexItem       `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
@@ -1310,7 +1288,7 @@ type ListUserForIndexRes struct {
 
 func (x *ListUserForIndexRes) Reset() {
 	*x = ListUserForIndexRes{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[20]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1322,7 +1300,7 @@ func (x *ListUserForIndexRes) String() string {
 func (*ListUserForIndexRes) ProtoMessage() {}
 
 func (x *ListUserForIndexRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[20]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1335,7 +1313,7 @@ func (x *ListUserForIndexRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListUserForIndexRes.ProtoReflect.Descriptor instead.
 func (*ListUserForIndexRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{20}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ListUserForIndexRes) GetItems() []*UserIndexItem {
@@ -1353,15 +1331,15 @@ type AdminUserItem struct {
 	Nickname      string                 `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Mobile        string                 `protobuf:"bytes,4,opt,name=mobile,proto3" json:"mobile,omitempty"`
 	Avatar        string                 `protobuf:"bytes,5,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	Status        UserStatus             `protobuf:"varint,6,opt,name=status,proto3,enum=user.UserStatus" json:"status,omitempty"`
-	CreatedAt     int64                  `protobuf:"varint,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // 毫秒
+	Status        *commonpb.EnumValue    `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AdminUserItem) Reset() {
 	*x = AdminUserItem{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[21]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1373,7 +1351,7 @@ func (x *AdminUserItem) String() string {
 func (*AdminUserItem) ProtoMessage() {}
 
 func (x *AdminUserItem) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[21]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1386,7 +1364,7 @@ func (x *AdminUserItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminUserItem.ProtoReflect.Descriptor instead.
 func (*AdminUserItem) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{21}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *AdminUserItem) GetUserId() int64 {
@@ -1424,18 +1402,18 @@ func (x *AdminUserItem) GetAvatar() string {
 	return ""
 }
 
-func (x *AdminUserItem) GetStatus() UserStatus {
+func (x *AdminUserItem) GetStatus() *commonpb.EnumValue {
 	if x != nil {
 		return x.Status
 	}
-	return UserStatus_USER_STATUS_UNKNOWN
+	return nil
 }
 
-func (x *AdminUserItem) GetCreatedAt() int64 {
+func (x *AdminUserItem) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
-	return 0
+	return nil
 }
 
 // 后台管理用户详情
@@ -1446,19 +1424,19 @@ type AdminUserDetail struct {
 	Nickname      string                 `protobuf:"bytes,3,opt,name=nickname,proto3" json:"nickname,omitempty"`
 	Mobile        string                 `protobuf:"bytes,4,opt,name=mobile,proto3" json:"mobile,omitempty"`
 	Avatar        string                 `protobuf:"bytes,5,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	Status        UserStatus             `protobuf:"varint,6,opt,name=status,proto3,enum=user.UserStatus" json:"status,omitempty"`
+	Status        *commonpb.EnumValue    `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
 	Bio           string                 `protobuf:"bytes,7,opt,name=bio,proto3" json:"bio,omitempty"`
-	Gender        Gender                 `protobuf:"varint,8,opt,name=gender,proto3,enum=user.Gender" json:"gender,omitempty"`
+	Gender        *commonpb.EnumValue    `protobuf:"bytes,8,opt,name=gender,proto3" json:"gender,omitempty"`
 	Email         string                 `protobuf:"bytes,9,opt,name=email,proto3" json:"email,omitempty"`
-	CreatedAt     int64                  `protobuf:"varint,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // 毫秒
-	UpdatedAt     int64                  `protobuf:"varint,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"` // 毫秒
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AdminUserDetail) Reset() {
 	*x = AdminUserDetail{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[22]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1470,7 +1448,7 @@ func (x *AdminUserDetail) String() string {
 func (*AdminUserDetail) ProtoMessage() {}
 
 func (x *AdminUserDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[22]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1483,7 +1461,7 @@ func (x *AdminUserDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminUserDetail.ProtoReflect.Descriptor instead.
 func (*AdminUserDetail) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{22}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *AdminUserDetail) GetUserId() int64 {
@@ -1521,11 +1499,11 @@ func (x *AdminUserDetail) GetAvatar() string {
 	return ""
 }
 
-func (x *AdminUserDetail) GetStatus() UserStatus {
+func (x *AdminUserDetail) GetStatus() *commonpb.EnumValue {
 	if x != nil {
 		return x.Status
 	}
-	return UserStatus_USER_STATUS_UNKNOWN
+	return nil
 }
 
 func (x *AdminUserDetail) GetBio() string {
@@ -1535,11 +1513,11 @@ func (x *AdminUserDetail) GetBio() string {
 	return ""
 }
 
-func (x *AdminUserDetail) GetGender() Gender {
+func (x *AdminUserDetail) GetGender() *commonpb.EnumValue {
 	if x != nil {
 		return x.Gender
 	}
-	return Gender_GENDER_UNKNOWN
+	return nil
 }
 
 func (x *AdminUserDetail) GetEmail() string {
@@ -1549,25 +1527,25 @@ func (x *AdminUserDetail) GetEmail() string {
 	return ""
 }
 
-func (x *AdminUserDetail) GetCreatedAt() int64 {
+func (x *AdminUserDetail) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
-	return 0
+	return nil
 }
 
-func (x *AdminUserDetail) GetUpdatedAt() int64 {
+func (x *AdminUserDetail) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
 	}
-	return 0
+	return nil
 }
 
-// 后台管理列表用户
+// 后台管理列表用户请求
 type AdminListUsersReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        *UserStatus            `protobuf:"varint,1,opt,name=status,proto3,enum=user.UserStatus,oneof" json:"status,omitempty"` // UNKNOWN=0 表示不限
-	Keyword       *string                `protobuf:"bytes,2,opt,name=keyword,proto3,oneof" json:"keyword,omitempty"`                     // 昵称模糊搜索
+	Status        *UserStatus            `protobuf:"varint,1,opt,name=status,proto3,enum=ranfeed.user.UserStatus,oneof" json:"status,omitempty"` // UNSPECIFIED=0 表示不限
+	Keyword       *string                `protobuf:"bytes,2,opt,name=keyword,proto3,oneof" json:"keyword,omitempty"`                             // 昵称模糊搜索
 	Page          uint32                 `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      uint32                 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1576,7 +1554,7 @@ type AdminListUsersReq struct {
 
 func (x *AdminListUsersReq) Reset() {
 	*x = AdminListUsersReq{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[23]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1588,7 +1566,7 @@ func (x *AdminListUsersReq) String() string {
 func (*AdminListUsersReq) ProtoMessage() {}
 
 func (x *AdminListUsersReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[23]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1601,14 +1579,14 @@ func (x *AdminListUsersReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListUsersReq.ProtoReflect.Descriptor instead.
 func (*AdminListUsersReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{23}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *AdminListUsersReq) GetStatus() UserStatus {
 	if x != nil && x.Status != nil {
 		return *x.Status
 	}
-	return UserStatus_USER_STATUS_UNKNOWN
+	return UserStatus_USER_STATUS_UNSPECIFIED
 }
 
 func (x *AdminListUsersReq) GetKeyword() string {
@@ -1632,10 +1610,11 @@ func (x *AdminListUsersReq) GetPageSize() uint32 {
 	return 0
 }
 
+// 后台管理列表用户响应
 type AdminListUsersRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Items         []*AdminUserItem       `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	Total         uint32                 `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	Total         int64                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
 	Page          uint32                 `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      uint32                 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1644,7 +1623,7 @@ type AdminListUsersRes struct {
 
 func (x *AdminListUsersRes) Reset() {
 	*x = AdminListUsersRes{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[24]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1656,7 +1635,7 @@ func (x *AdminListUsersRes) String() string {
 func (*AdminListUsersRes) ProtoMessage() {}
 
 func (x *AdminListUsersRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[24]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1669,7 +1648,7 @@ func (x *AdminListUsersRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListUsersRes.ProtoReflect.Descriptor instead.
 func (*AdminListUsersRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{24}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *AdminListUsersRes) GetItems() []*AdminUserItem {
@@ -1679,7 +1658,7 @@ func (x *AdminListUsersRes) GetItems() []*AdminUserItem {
 	return nil
 }
 
-func (x *AdminListUsersRes) GetTotal() uint32 {
+func (x *AdminListUsersRes) GetTotal() int64 {
 	if x != nil {
 		return x.Total
 	}
@@ -1700,7 +1679,7 @@ func (x *AdminListUsersRes) GetPageSize() uint32 {
 	return 0
 }
 
-// 后台管理获取用户详情
+// 后台管理获取用户详情请求
 type AdminGetUserDetailReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -1710,7 +1689,7 @@ type AdminGetUserDetailReq struct {
 
 func (x *AdminGetUserDetailReq) Reset() {
 	*x = AdminGetUserDetailReq{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[25]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1722,7 +1701,7 @@ func (x *AdminGetUserDetailReq) String() string {
 func (*AdminGetUserDetailReq) ProtoMessage() {}
 
 func (x *AdminGetUserDetailReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[25]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1735,7 +1714,7 @@ func (x *AdminGetUserDetailReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetUserDetailReq.ProtoReflect.Descriptor instead.
 func (*AdminGetUserDetailReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{25}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *AdminGetUserDetailReq) GetUserId() int64 {
@@ -1745,6 +1724,7 @@ func (x *AdminGetUserDetailReq) GetUserId() int64 {
 	return 0
 }
 
+// 后台管理获取用户详情响应
 type AdminGetUserDetailRes struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Detail        *AdminUserDetail       `protobuf:"bytes,1,opt,name=detail,proto3" json:"detail,omitempty"`
@@ -1754,7 +1734,7 @@ type AdminGetUserDetailRes struct {
 
 func (x *AdminGetUserDetailRes) Reset() {
 	*x = AdminGetUserDetailRes{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[26]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1766,7 +1746,7 @@ func (x *AdminGetUserDetailRes) String() string {
 func (*AdminGetUserDetailRes) ProtoMessage() {}
 
 func (x *AdminGetUserDetailRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[26]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1779,7 +1759,7 @@ func (x *AdminGetUserDetailRes) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminGetUserDetailRes.ProtoReflect.Descriptor instead.
 func (*AdminGetUserDetailRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{26}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *AdminGetUserDetailRes) GetDetail() *AdminUserDetail {
@@ -1789,11 +1769,11 @@ func (x *AdminGetUserDetailRes) GetDetail() *AdminUserDetail {
 	return nil
 }
 
-// 后台管理设置用户状态
+// 后台管理设置用户状态请求
 type AdminSetUserStatusReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        int64                  `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Status        UserStatus             `protobuf:"varint,2,opt,name=status,proto3,enum=user.UserStatus" json:"status,omitempty"`
+	Status        UserStatus             `protobuf:"varint,2,opt,name=status,proto3,enum=ranfeed.user.UserStatus" json:"status,omitempty"`
 	OperatorId    int64                  `protobuf:"varint,3,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1801,7 +1781,7 @@ type AdminSetUserStatusReq struct {
 
 func (x *AdminSetUserStatusReq) Reset() {
 	*x = AdminSetUserStatusReq{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[27]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1813,7 +1793,7 @@ func (x *AdminSetUserStatusReq) String() string {
 func (*AdminSetUserStatusReq) ProtoMessage() {}
 
 func (x *AdminSetUserStatusReq) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[27]
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1826,7 +1806,7 @@ func (x *AdminSetUserStatusReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminSetUserStatusReq.ProtoReflect.Descriptor instead.
 func (*AdminSetUserStatusReq) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{27}
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *AdminSetUserStatusReq) GetUserId() int64 {
@@ -1840,7 +1820,7 @@ func (x *AdminSetUserStatusReq) GetStatus() UserStatus {
 	if x != nil {
 		return x.Status
 	}
-	return UserStatus_USER_STATUS_UNKNOWN
+	return UserStatus_USER_STATUS_UNSPECIFIED
 }
 
 func (x *AdminSetUserStatusReq) GetOperatorId() int64 {
@@ -1850,201 +1830,164 @@ func (x *AdminSetUserStatusReq) GetOperatorId() int64 {
 	return 0
 }
 
-type AdminSetUserStatusRes struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AdminSetUserStatusRes) Reset() {
-	*x = AdminSetUserStatusRes{}
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[28]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AdminSetUserStatusRes) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AdminSetUserStatusRes) ProtoMessage() {}
-
-func (x *AdminSetUserStatusRes) ProtoReflect() protoreflect.Message {
-	mi := &file_app_rpc_user_proto_user_proto_msgTypes[28]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AdminSetUserStatusRes.ProtoReflect.Descriptor instead.
-func (*AdminSetUserStatusRes) Descriptor() ([]byte, []int) {
-	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{28}
-}
-
 var File_app_rpc_user_proto_user_proto protoreflect.FileDescriptor
 
 const file_app_rpc_user_proto_user_proto_rawDesc = "" +
 	"\n" +
-	"\x1dapp/rpc/user/proto/user.proto\x12\x04user\"\xed\x01\n" +
+	"\x1dapp/rpc/user/proto/user.proto\x12\franfeed.user\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x19pkg/commonpb/common.proto\"\x87\x02\n" +
 	"\bUserInfo\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x16\n" +
 	"\x06mobile\x18\x03 \x01(\tR\x06mobile\x12\x1a\n" +
 	"\bnickname\x18\x04 \x01(\tR\bnickname\x12\x16\n" +
 	"\x06avatar\x18\x05 \x01(\tR\x06avatar\x12\x10\n" +
-	"\x03bio\x18\x06 \x01(\tR\x03bio\x12$\n" +
-	"\x06gender\x18\a \x01(\x0e2\f.user.GenderR\x06gender\x12(\n" +
-	"\x06status\x18\b \x01(\x0e2\x10.user.UserStatusR\x06status\"\xbc\x01\n" +
+	"\x03bio\x18\x06 \x01(\tR\x03bio\x123\n" +
+	"\x06gender\x18\a \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06gender\x123\n" +
+	"\x06status\x18\b \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status\"\xd6\x01\n" +
 	"\vUserProfile\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
 	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x16\n" +
 	"\x06avatar\x18\x03 \x01(\tR\x06avatar\x12\x10\n" +
-	"\x03bio\x18\x04 \x01(\tR\x03bio\x12$\n" +
-	"\x06gender\x18\x05 \x01(\x0e2\f.user.GenderR\x06gender\x12(\n" +
-	"\x06status\x18\x06 \x01(\x0e2\x10.user.UserStatusR\x06status\"\xec\x01\n" +
+	"\x03bio\x18\x04 \x01(\tR\x03bio\x123\n" +
+	"\x06gender\x18\x05 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06gender\x123\n" +
+	"\x06status\x18\x06 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status\"\x90\x02\n" +
 	"\vRegisterReq\x12\x16\n" +
 	"\x06mobile\x18\x01 \x01(\tR\x06mobile\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1a\n" +
 	"\bnickname\x18\x03 \x01(\tR\bnickname\x12\x16\n" +
 	"\x06avatar\x18\x04 \x01(\tR\x06avatar\x12\x15\n" +
 	"\x03bio\x18\x05 \x01(\tH\x00R\x03bio\x88\x01\x01\x12\x14\n" +
-	"\x05email\x18\x06 \x01(\tR\x05email\x12$\n" +
-	"\x06gender\x18\a \x01(\x0e2\f.user.GenderR\x06gender\x12\x1a\n" +
-	"\bbirthday\x18\b \x01(\x03R\bbirthdayB\x06\n" +
-	"\x04_bio\"[\n" +
+	"\x05email\x18\x06 \x01(\tR\x05email\x12,\n" +
+	"\x06gender\x18\a \x01(\x0e2\x14.ranfeed.user.GenderR\x06gender\x126\n" +
+	"\bbirthday\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\bbirthdayB\x06\n" +
+	"\x04_bio\"w\n" +
 	"\vRegisterRes\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x14\n" +
-	"\x05token\x18\x02 \x01(\tR\x05token\x12\x1d\n" +
+	"\x05token\x18\x02 \x01(\tR\x05token\x129\n" +
 	"\n" +
-	"expired_at\x18\x03 \x01(\x03R\texpiredAt\">\n" +
+	"expired_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiredAt\">\n" +
 	"\bLoginReq\x12\x16\n" +
 	"\x06mobile\x18\x01 \x01(\tR\x06mobile\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x8c\x01\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"\xa8\x01\n" +
 	"\bLoginRes\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x14\n" +
-	"\x05token\x18\x02 \x01(\tR\x05token\x12\x1d\n" +
+	"\x05token\x18\x02 \x01(\tR\x05token\x129\n" +
 	"\n" +
-	"expired_at\x18\x03 \x01(\x03R\texpiredAt\x12\x1a\n" +
+	"expired_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\texpiredAt\x12\x1a\n" +
 	"\bnickname\x18\x04 \x01(\tR\bnickname\x12\x16\n" +
 	"\x06avatar\x18\x05 \x01(\tR\x06avatar\":\n" +
 	"\tLogoutReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x14\n" +
-	"\x05token\x18\x02 \x01(\tR\x05token\"\v\n" +
-	"\tLogoutRes\"#\n" +
+	"\x05token\x18\x02 \x01(\tR\x05token\"#\n" +
 	"\bGetMeReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\"\xed\x01\n" +
-	"\bGetMeRes\x12+\n" +
-	"\tuser_info\x18\x01 \x01(\v2\x0e.user.UserInfoR\buserInfo\x12%\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\"\xf5\x01\n" +
+	"\bGetMeRes\x123\n" +
+	"\tuser_info\x18\x01 \x01(\v2\x16.ranfeed.user.UserInfoR\buserInfo\x12%\n" +
 	"\x0efollowee_count\x18\x02 \x01(\x03R\rfolloweeCount\x12%\n" +
 	"\x0efollower_count\x18\x03 \x01(\x03R\rfollowerCount\x12.\n" +
 	"\x13like_received_count\x18\x04 \x01(\x03R\x11likeReceivedCount\x126\n" +
 	"\x17favorite_received_count\x18\x05 \x01(\x03R\x15favoriteReceivedCount\"%\n" +
 	"\n" +
 	"GetUserReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\"9\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\"A\n" +
 	"\n" +
-	"GetUserRes\x12+\n" +
-	"\tuser_info\x18\x01 \x01(\v2\x0e.user.UserInfoR\buserInfo\",\n" +
+	"GetUserRes\x123\n" +
+	"\tuser_info\x18\x01 \x01(\v2\x16.ranfeed.user.UserInfoR\buserInfo\",\n" +
 	"\x11GetUserProfileReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\"I\n" +
-	"\x11GetUserProfileRes\x124\n" +
-	"\fuser_profile\x18\x01 \x01(\v2\x11.user.UserProfileR\vuserProfile\",\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\"Q\n" +
+	"\x11GetUserProfileRes\x12<\n" +
+	"\fuser_profile\x18\x01 \x01(\v2\x19.ranfeed.user.UserProfileR\vuserProfile\",\n" +
 	"\x0fBatchGetUserReq\x12\x19\n" +
-	"\buser_ids\x18\x01 \x03(\x03R\auserIds\"7\n" +
-	"\x0fBatchGetUserRes\x12$\n" +
-	"\x05users\x18\x01 \x03(\v2\x0e.user.UserInfoR\x05users\"\xb6\x01\n" +
+	"\buser_ids\x18\x01 \x03(\x03R\auserIds\"?\n" +
+	"\x0fBatchGetUserRes\x12,\n" +
+	"\x05users\x18\x01 \x03(\v2\x16.ranfeed.user.UserInfoR\x05users\"\xbe\x01\n" +
 	"\rUserIndexItem\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
 	"\bnickname\x18\x02 \x01(\tR\bnickname\x12\x10\n" +
 	"\x03bio\x18\x03 \x01(\tR\x03bio\x12\x1a\n" +
-	"\busername\x18\x04 \x01(\tR\busername\x12(\n" +
-	"\x06status\x18\x05 \x01(\x0e2\x10.user.UserStatusR\x06status\x12\x18\n" +
+	"\busername\x18\x04 \x01(\tR\busername\x120\n" +
+	"\x06status\x18\x05 \x01(\x0e2\x18.ranfeed.user.UserStatusR\x06status\x12\x18\n" +
 	"\aversion\x18\x06 \x01(\x03R\aversion\"4\n" +
 	"\x17BatchGetUserForIndexReq\x12\x19\n" +
-	"\buser_ids\x18\x01 \x03(\x03R\auserIds\"D\n" +
-	"\x17BatchGetUserForIndexRes\x12)\n" +
-	"\x05items\x18\x01 \x03(\v2\x13.user.UserIndexItemR\x05items\"C\n" +
+	"\buser_ids\x18\x01 \x03(\x03R\auserIds\"L\n" +
+	"\x17BatchGetUserForIndexRes\x121\n" +
+	"\x05items\x18\x01 \x03(\v2\x1b.ranfeed.user.UserIndexItemR\x05items\"C\n" +
 	"\x13ListUserForIndexReq\x12\x16\n" +
 	"\x06cursor\x18\x01 \x01(\x03R\x06cursor\x12\x14\n" +
-	"\x05limit\x18\x02 \x01(\x05R\x05limit\"@\n" +
-	"\x13ListUserForIndexRes\x12)\n" +
-	"\x05items\x18\x01 \x03(\v2\x13.user.UserIndexItemR\x05items\"\xd9\x01\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"H\n" +
+	"\x13ListUserForIndexRes\x121\n" +
+	"\x05items\x18\x01 \x03(\v2\x1b.ranfeed.user.UserIndexItemR\x05items\"\x80\x02\n" +
 	"\rAdminUserItem\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
 	"\bnickname\x18\x03 \x01(\tR\bnickname\x12\x16\n" +
 	"\x06mobile\x18\x04 \x01(\tR\x06mobile\x12\x16\n" +
-	"\x06avatar\x18\x05 \x01(\tR\x06avatar\x12(\n" +
-	"\x06status\x18\x06 \x01(\x0e2\x10.user.UserStatusR\x06status\x12\x1d\n" +
+	"\x06avatar\x18\x05 \x01(\tR\x06avatar\x123\n" +
+	"\x06status\x18\x06 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status\x129\n" +
 	"\n" +
-	"created_at\x18\a \x01(\x03R\tcreatedAt\"\xc8\x02\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x9a\x03\n" +
 	"\x0fAdminUserDetail\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12\x1a\n" +
 	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
 	"\bnickname\x18\x03 \x01(\tR\bnickname\x12\x16\n" +
 	"\x06mobile\x18\x04 \x01(\tR\x06mobile\x12\x16\n" +
-	"\x06avatar\x18\x05 \x01(\tR\x06avatar\x12(\n" +
-	"\x06status\x18\x06 \x01(\x0e2\x10.user.UserStatusR\x06status\x12\x10\n" +
-	"\x03bio\x18\a \x01(\tR\x03bio\x12$\n" +
-	"\x06gender\x18\b \x01(\x0e2\f.user.GenderR\x06gender\x12\x14\n" +
-	"\x05email\x18\t \x01(\tR\x05email\x12\x1d\n" +
+	"\x06avatar\x18\x05 \x01(\tR\x06avatar\x123\n" +
+	"\x06status\x18\x06 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status\x12\x10\n" +
+	"\x03bio\x18\a \x01(\tR\x03bio\x123\n" +
+	"\x06gender\x18\b \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06gender\x12\x14\n" +
+	"\x05email\x18\t \x01(\tR\x05email\x129\n" +
 	"\n" +
 	"created_at\x18\n" +
-	" \x01(\x03R\tcreatedAt\x12\x1d\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\x03R\tupdatedAt\"\xa9\x01\n" +
-	"\x11AdminListUsersReq\x12-\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x10.user.UserStatusH\x00R\x06status\x88\x01\x01\x12\x1d\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb1\x01\n" +
+	"\x11AdminListUsersReq\x125\n" +
+	"\x06status\x18\x01 \x01(\x0e2\x18.ranfeed.user.UserStatusH\x00R\x06status\x88\x01\x01\x12\x1d\n" +
 	"\akeyword\x18\x02 \x01(\tH\x01R\akeyword\x88\x01\x01\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\rR\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\rR\bpageSizeB\t\n" +
 	"\a_statusB\n" +
 	"\n" +
-	"\b_keyword\"\x85\x01\n" +
-	"\x11AdminListUsersRes\x12)\n" +
-	"\x05items\x18\x01 \x03(\v2\x13.user.AdminUserItemR\x05items\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\rR\x05total\x12\x12\n" +
+	"\b_keyword\"\x8d\x01\n" +
+	"\x11AdminListUsersRes\x121\n" +
+	"\x05items\x18\x01 \x03(\v2\x1b.ranfeed.user.AdminUserItemR\x05items\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\rR\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\rR\bpageSize\"0\n" +
 	"\x15AdminGetUserDetailReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\"F\n" +
-	"\x15AdminGetUserDetailRes\x12-\n" +
-	"\x06detail\x18\x01 \x01(\v2\x15.user.AdminUserDetailR\x06detail\"{\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\"N\n" +
+	"\x15AdminGetUserDetailRes\x125\n" +
+	"\x06detail\x18\x01 \x01(\v2\x1d.ranfeed.user.AdminUserDetailR\x06detail\"\x83\x01\n" +
 	"\x15AdminSetUserStatusReq\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\x03R\x06userId\x12(\n" +
-	"\x06status\x18\x02 \x01(\x0e2\x10.user.UserStatusR\x06status\x12\x1f\n" +
+	"\auser_id\x18\x01 \x01(\x03R\x06userId\x120\n" +
+	"\x06status\x18\x02 \x01(\x0e2\x18.ranfeed.user.UserStatusR\x06status\x12\x1f\n" +
 	"\voperator_id\x18\x03 \x01(\x03R\n" +
-	"operatorId\"\x17\n" +
-	"\x15AdminSetUserStatusRes*@\n" +
-	"\x06Gender\x12\x12\n" +
-	"\x0eGENDER_UNKNOWN\x10\x00\x12\x0f\n" +
+	"operatorId*D\n" +
+	"\x06Gender\x12\x16\n" +
+	"\x12GENDER_UNSPECIFIED\x10\x00\x12\x0f\n" +
 	"\vGENDER_MALE\x10\x01\x12\x11\n" +
-	"\rGENDER_FEMALE\x10\x02*W\n" +
+	"\rGENDER_FEMALE\x10\x02*v\n" +
 	"\n" +
-	"UserStatus\x12\x17\n" +
-	"\x13USER_STATUS_UNKNOWN\x10\x00\x12\x16\n" +
+	"UserStatus\x12\x1b\n" +
+	"\x17USER_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12USER_STATUS_ACTIVE\x10\n" +
 	"\x12\x18\n" +
-	"\x14USER_STATUS_DISABLED\x10\x142\x8e\x04\n" +
-	"\vUserService\x120\n" +
-	"\bRegister\x12\x11.user.RegisterReq\x1a\x11.user.RegisterRes\x12'\n" +
-	"\x05Login\x12\x0e.user.LoginReq\x1a\x0e.user.LoginRes\x12*\n" +
-	"\x06Logout\x12\x0f.user.LogoutReq\x1a\x0f.user.LogoutRes\x12'\n" +
-	"\x05GetMe\x12\x0e.user.GetMeReq\x1a\x0e.user.GetMeRes\x12-\n" +
-	"\aGetUser\x12\x10.user.GetUserReq\x1a\x10.user.GetUserRes\x12B\n" +
-	"\x0eGetUserProfile\x12\x17.user.GetUserProfileReq\x1a\x17.user.GetUserProfileRes\x12<\n" +
-	"\fBatchGetUser\x12\x15.user.BatchGetUserReq\x1a\x15.user.BatchGetUserRes\x12T\n" +
-	"\x14BatchGetUserForIndex\x12\x1d.user.BatchGetUserForIndexReq\x1a\x1d.user.BatchGetUserForIndexRes\x12H\n" +
-	"\x10ListUserForIndex\x12\x19.user.ListUserForIndexReq\x1a\x19.user.ListUserForIndexRes2\xf6\x01\n" +
-	"\x10AdminUserService\x12B\n" +
-	"\x0eAdminListUsers\x12\x17.user.AdminListUsersReq\x1a\x17.user.AdminListUsersRes\x12N\n" +
-	"\x12AdminGetUserDetail\x12\x1b.user.AdminGetUserDetailReq\x1a\x1b.user.AdminGetUserDetailRes\x12N\n" +
-	"\x12AdminSetUserStatus\x12\x1b.user.AdminSetUserStatusReq\x1a\x1b.user.AdminSetUserStatusResB\bZ\x06./userb\x06proto3"
+	"\x14USER_STATUS_DISABLED\x10\x14\x12\x19\n" +
+	"\x15USER_STATUS_CANCELLED\x10\x1e2\x9d\x05\n" +
+	"\vUserService\x12@\n" +
+	"\bRegister\x12\x19.ranfeed.user.RegisterReq\x1a\x19.ranfeed.user.RegisterRes\x127\n" +
+	"\x05Login\x12\x16.ranfeed.user.LoginReq\x1a\x16.ranfeed.user.LoginRes\x129\n" +
+	"\x06Logout\x12\x17.ranfeed.user.LogoutReq\x1a\x16.google.protobuf.Empty\x127\n" +
+	"\x05GetMe\x12\x16.ranfeed.user.GetMeReq\x1a\x16.ranfeed.user.GetMeRes\x12=\n" +
+	"\aGetUser\x12\x18.ranfeed.user.GetUserReq\x1a\x18.ranfeed.user.GetUserRes\x12R\n" +
+	"\x0eGetUserProfile\x12\x1f.ranfeed.user.GetUserProfileReq\x1a\x1f.ranfeed.user.GetUserProfileRes\x12L\n" +
+	"\fBatchGetUser\x12\x1d.ranfeed.user.BatchGetUserReq\x1a\x1d.ranfeed.user.BatchGetUserRes\x12d\n" +
+	"\x14BatchGetUserForIndex\x12%.ranfeed.user.BatchGetUserForIndexReq\x1a%.ranfeed.user.BatchGetUserForIndexRes\x12X\n" +
+	"\x10ListUserForIndex\x12!.ranfeed.user.ListUserForIndexReq\x1a!.ranfeed.user.ListUserForIndexRes2\x99\x02\n" +
+	"\x10AdminUserService\x12R\n" +
+	"\x0eAdminListUsers\x12\x1f.ranfeed.user.AdminListUsersReq\x1a\x1f.ranfeed.user.AdminListUsersRes\x12^\n" +
+	"\x12AdminGetUserDetail\x12#.ranfeed.user.AdminGetUserDetailReq\x1a#.ranfeed.user.AdminGetUserDetailRes\x12Q\n" +
+	"\x12AdminSetUserStatus\x12#.ranfeed.user.AdminSetUserStatusReq\x1a\x16.google.protobuf.EmptyB\x1cZ\x1aran-feed/app/rpc/user/userb\x06proto3"
 
 var (
 	file_app_rpc_user_proto_user_proto_rawDescOnce sync.Once
@@ -2059,89 +2002,96 @@ func file_app_rpc_user_proto_user_proto_rawDescGZIP() []byte {
 }
 
 var file_app_rpc_user_proto_user_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_app_rpc_user_proto_user_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_app_rpc_user_proto_user_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_app_rpc_user_proto_user_proto_goTypes = []any{
-	(Gender)(0),                     // 0: user.Gender
-	(UserStatus)(0),                 // 1: user.UserStatus
-	(*UserInfo)(nil),                // 2: user.UserInfo
-	(*UserProfile)(nil),             // 3: user.UserProfile
-	(*RegisterReq)(nil),             // 4: user.RegisterReq
-	(*RegisterRes)(nil),             // 5: user.RegisterRes
-	(*LoginReq)(nil),                // 6: user.LoginReq
-	(*LoginRes)(nil),                // 7: user.LoginRes
-	(*LogoutReq)(nil),               // 8: user.LogoutReq
-	(*LogoutRes)(nil),               // 9: user.LogoutRes
-	(*GetMeReq)(nil),                // 10: user.GetMeReq
-	(*GetMeRes)(nil),                // 11: user.GetMeRes
-	(*GetUserReq)(nil),              // 12: user.GetUserReq
-	(*GetUserRes)(nil),              // 13: user.GetUserRes
-	(*GetUserProfileReq)(nil),       // 14: user.GetUserProfileReq
-	(*GetUserProfileRes)(nil),       // 15: user.GetUserProfileRes
-	(*BatchGetUserReq)(nil),         // 16: user.BatchGetUserReq
-	(*BatchGetUserRes)(nil),         // 17: user.BatchGetUserRes
-	(*UserIndexItem)(nil),           // 18: user.UserIndexItem
-	(*BatchGetUserForIndexReq)(nil), // 19: user.BatchGetUserForIndexReq
-	(*BatchGetUserForIndexRes)(nil), // 20: user.BatchGetUserForIndexRes
-	(*ListUserForIndexReq)(nil),     // 21: user.ListUserForIndexReq
-	(*ListUserForIndexRes)(nil),     // 22: user.ListUserForIndexRes
-	(*AdminUserItem)(nil),           // 23: user.AdminUserItem
-	(*AdminUserDetail)(nil),         // 24: user.AdminUserDetail
-	(*AdminListUsersReq)(nil),       // 25: user.AdminListUsersReq
-	(*AdminListUsersRes)(nil),       // 26: user.AdminListUsersRes
-	(*AdminGetUserDetailReq)(nil),   // 27: user.AdminGetUserDetailReq
-	(*AdminGetUserDetailRes)(nil),   // 28: user.AdminGetUserDetailRes
-	(*AdminSetUserStatusReq)(nil),   // 29: user.AdminSetUserStatusReq
-	(*AdminSetUserStatusRes)(nil),   // 30: user.AdminSetUserStatusRes
+	(Gender)(0),                     // 0: ranfeed.user.Gender
+	(UserStatus)(0),                 // 1: ranfeed.user.UserStatus
+	(*UserInfo)(nil),                // 2: ranfeed.user.UserInfo
+	(*UserProfile)(nil),             // 3: ranfeed.user.UserProfile
+	(*RegisterReq)(nil),             // 4: ranfeed.user.RegisterReq
+	(*RegisterRes)(nil),             // 5: ranfeed.user.RegisterRes
+	(*LoginReq)(nil),                // 6: ranfeed.user.LoginReq
+	(*LoginRes)(nil),                // 7: ranfeed.user.LoginRes
+	(*LogoutReq)(nil),               // 8: ranfeed.user.LogoutReq
+	(*GetMeReq)(nil),                // 9: ranfeed.user.GetMeReq
+	(*GetMeRes)(nil),                // 10: ranfeed.user.GetMeRes
+	(*GetUserReq)(nil),              // 11: ranfeed.user.GetUserReq
+	(*GetUserRes)(nil),              // 12: ranfeed.user.GetUserRes
+	(*GetUserProfileReq)(nil),       // 13: ranfeed.user.GetUserProfileReq
+	(*GetUserProfileRes)(nil),       // 14: ranfeed.user.GetUserProfileRes
+	(*BatchGetUserReq)(nil),         // 15: ranfeed.user.BatchGetUserReq
+	(*BatchGetUserRes)(nil),         // 16: ranfeed.user.BatchGetUserRes
+	(*UserIndexItem)(nil),           // 17: ranfeed.user.UserIndexItem
+	(*BatchGetUserForIndexReq)(nil), // 18: ranfeed.user.BatchGetUserForIndexReq
+	(*BatchGetUserForIndexRes)(nil), // 19: ranfeed.user.BatchGetUserForIndexRes
+	(*ListUserForIndexReq)(nil),     // 20: ranfeed.user.ListUserForIndexReq
+	(*ListUserForIndexRes)(nil),     // 21: ranfeed.user.ListUserForIndexRes
+	(*AdminUserItem)(nil),           // 22: ranfeed.user.AdminUserItem
+	(*AdminUserDetail)(nil),         // 23: ranfeed.user.AdminUserDetail
+	(*AdminListUsersReq)(nil),       // 24: ranfeed.user.AdminListUsersReq
+	(*AdminListUsersRes)(nil),       // 25: ranfeed.user.AdminListUsersRes
+	(*AdminGetUserDetailReq)(nil),   // 26: ranfeed.user.AdminGetUserDetailReq
+	(*AdminGetUserDetailRes)(nil),   // 27: ranfeed.user.AdminGetUserDetailRes
+	(*AdminSetUserStatusReq)(nil),   // 28: ranfeed.user.AdminSetUserStatusReq
+	(*commonpb.EnumValue)(nil),      // 29: ranfeed.commonpb.EnumValue
+	(*timestamppb.Timestamp)(nil),   // 30: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),           // 31: google.protobuf.Empty
 }
 var file_app_rpc_user_proto_user_proto_depIdxs = []int32{
-	0,  // 0: user.UserInfo.gender:type_name -> user.Gender
-	1,  // 1: user.UserInfo.status:type_name -> user.UserStatus
-	0,  // 2: user.UserProfile.gender:type_name -> user.Gender
-	1,  // 3: user.UserProfile.status:type_name -> user.UserStatus
-	0,  // 4: user.RegisterReq.gender:type_name -> user.Gender
-	2,  // 5: user.GetMeRes.user_info:type_name -> user.UserInfo
-	2,  // 6: user.GetUserRes.user_info:type_name -> user.UserInfo
-	3,  // 7: user.GetUserProfileRes.user_profile:type_name -> user.UserProfile
-	2,  // 8: user.BatchGetUserRes.users:type_name -> user.UserInfo
-	1,  // 9: user.UserIndexItem.status:type_name -> user.UserStatus
-	18, // 10: user.BatchGetUserForIndexRes.items:type_name -> user.UserIndexItem
-	18, // 11: user.ListUserForIndexRes.items:type_name -> user.UserIndexItem
-	1,  // 12: user.AdminUserItem.status:type_name -> user.UserStatus
-	1,  // 13: user.AdminUserDetail.status:type_name -> user.UserStatus
-	0,  // 14: user.AdminUserDetail.gender:type_name -> user.Gender
-	1,  // 15: user.AdminListUsersReq.status:type_name -> user.UserStatus
-	23, // 16: user.AdminListUsersRes.items:type_name -> user.AdminUserItem
-	24, // 17: user.AdminGetUserDetailRes.detail:type_name -> user.AdminUserDetail
-	1,  // 18: user.AdminSetUserStatusReq.status:type_name -> user.UserStatus
-	4,  // 19: user.UserService.Register:input_type -> user.RegisterReq
-	6,  // 20: user.UserService.Login:input_type -> user.LoginReq
-	8,  // 21: user.UserService.Logout:input_type -> user.LogoutReq
-	10, // 22: user.UserService.GetMe:input_type -> user.GetMeReq
-	12, // 23: user.UserService.GetUser:input_type -> user.GetUserReq
-	14, // 24: user.UserService.GetUserProfile:input_type -> user.GetUserProfileReq
-	16, // 25: user.UserService.BatchGetUser:input_type -> user.BatchGetUserReq
-	19, // 26: user.UserService.BatchGetUserForIndex:input_type -> user.BatchGetUserForIndexReq
-	21, // 27: user.UserService.ListUserForIndex:input_type -> user.ListUserForIndexReq
-	25, // 28: user.AdminUserService.AdminListUsers:input_type -> user.AdminListUsersReq
-	27, // 29: user.AdminUserService.AdminGetUserDetail:input_type -> user.AdminGetUserDetailReq
-	29, // 30: user.AdminUserService.AdminSetUserStatus:input_type -> user.AdminSetUserStatusReq
-	5,  // 31: user.UserService.Register:output_type -> user.RegisterRes
-	7,  // 32: user.UserService.Login:output_type -> user.LoginRes
-	9,  // 33: user.UserService.Logout:output_type -> user.LogoutRes
-	11, // 34: user.UserService.GetMe:output_type -> user.GetMeRes
-	13, // 35: user.UserService.GetUser:output_type -> user.GetUserRes
-	15, // 36: user.UserService.GetUserProfile:output_type -> user.GetUserProfileRes
-	17, // 37: user.UserService.BatchGetUser:output_type -> user.BatchGetUserRes
-	20, // 38: user.UserService.BatchGetUserForIndex:output_type -> user.BatchGetUserForIndexRes
-	22, // 39: user.UserService.ListUserForIndex:output_type -> user.ListUserForIndexRes
-	26, // 40: user.AdminUserService.AdminListUsers:output_type -> user.AdminListUsersRes
-	28, // 41: user.AdminUserService.AdminGetUserDetail:output_type -> user.AdminGetUserDetailRes
-	30, // 42: user.AdminUserService.AdminSetUserStatus:output_type -> user.AdminSetUserStatusRes
-	31, // [31:43] is the sub-list for method output_type
-	19, // [19:31] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	29, // 0: ranfeed.user.UserInfo.gender:type_name -> ranfeed.commonpb.EnumValue
+	29, // 1: ranfeed.user.UserInfo.status:type_name -> ranfeed.commonpb.EnumValue
+	29, // 2: ranfeed.user.UserProfile.gender:type_name -> ranfeed.commonpb.EnumValue
+	29, // 3: ranfeed.user.UserProfile.status:type_name -> ranfeed.commonpb.EnumValue
+	0,  // 4: ranfeed.user.RegisterReq.gender:type_name -> ranfeed.user.Gender
+	30, // 5: ranfeed.user.RegisterReq.birthday:type_name -> google.protobuf.Timestamp
+	30, // 6: ranfeed.user.RegisterRes.expired_at:type_name -> google.protobuf.Timestamp
+	30, // 7: ranfeed.user.LoginRes.expired_at:type_name -> google.protobuf.Timestamp
+	2,  // 8: ranfeed.user.GetMeRes.user_info:type_name -> ranfeed.user.UserInfo
+	2,  // 9: ranfeed.user.GetUserRes.user_info:type_name -> ranfeed.user.UserInfo
+	3,  // 10: ranfeed.user.GetUserProfileRes.user_profile:type_name -> ranfeed.user.UserProfile
+	2,  // 11: ranfeed.user.BatchGetUserRes.users:type_name -> ranfeed.user.UserInfo
+	1,  // 12: ranfeed.user.UserIndexItem.status:type_name -> ranfeed.user.UserStatus
+	17, // 13: ranfeed.user.BatchGetUserForIndexRes.items:type_name -> ranfeed.user.UserIndexItem
+	17, // 14: ranfeed.user.ListUserForIndexRes.items:type_name -> ranfeed.user.UserIndexItem
+	29, // 15: ranfeed.user.AdminUserItem.status:type_name -> ranfeed.commonpb.EnumValue
+	30, // 16: ranfeed.user.AdminUserItem.created_at:type_name -> google.protobuf.Timestamp
+	29, // 17: ranfeed.user.AdminUserDetail.status:type_name -> ranfeed.commonpb.EnumValue
+	29, // 18: ranfeed.user.AdminUserDetail.gender:type_name -> ranfeed.commonpb.EnumValue
+	30, // 19: ranfeed.user.AdminUserDetail.created_at:type_name -> google.protobuf.Timestamp
+	30, // 20: ranfeed.user.AdminUserDetail.updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 21: ranfeed.user.AdminListUsersReq.status:type_name -> ranfeed.user.UserStatus
+	22, // 22: ranfeed.user.AdminListUsersRes.items:type_name -> ranfeed.user.AdminUserItem
+	23, // 23: ranfeed.user.AdminGetUserDetailRes.detail:type_name -> ranfeed.user.AdminUserDetail
+	1,  // 24: ranfeed.user.AdminSetUserStatusReq.status:type_name -> ranfeed.user.UserStatus
+	4,  // 25: ranfeed.user.UserService.Register:input_type -> ranfeed.user.RegisterReq
+	6,  // 26: ranfeed.user.UserService.Login:input_type -> ranfeed.user.LoginReq
+	8,  // 27: ranfeed.user.UserService.Logout:input_type -> ranfeed.user.LogoutReq
+	9,  // 28: ranfeed.user.UserService.GetMe:input_type -> ranfeed.user.GetMeReq
+	11, // 29: ranfeed.user.UserService.GetUser:input_type -> ranfeed.user.GetUserReq
+	13, // 30: ranfeed.user.UserService.GetUserProfile:input_type -> ranfeed.user.GetUserProfileReq
+	15, // 31: ranfeed.user.UserService.BatchGetUser:input_type -> ranfeed.user.BatchGetUserReq
+	18, // 32: ranfeed.user.UserService.BatchGetUserForIndex:input_type -> ranfeed.user.BatchGetUserForIndexReq
+	20, // 33: ranfeed.user.UserService.ListUserForIndex:input_type -> ranfeed.user.ListUserForIndexReq
+	24, // 34: ranfeed.user.AdminUserService.AdminListUsers:input_type -> ranfeed.user.AdminListUsersReq
+	26, // 35: ranfeed.user.AdminUserService.AdminGetUserDetail:input_type -> ranfeed.user.AdminGetUserDetailReq
+	28, // 36: ranfeed.user.AdminUserService.AdminSetUserStatus:input_type -> ranfeed.user.AdminSetUserStatusReq
+	5,  // 37: ranfeed.user.UserService.Register:output_type -> ranfeed.user.RegisterRes
+	7,  // 38: ranfeed.user.UserService.Login:output_type -> ranfeed.user.LoginRes
+	31, // 39: ranfeed.user.UserService.Logout:output_type -> google.protobuf.Empty
+	10, // 40: ranfeed.user.UserService.GetMe:output_type -> ranfeed.user.GetMeRes
+	12, // 41: ranfeed.user.UserService.GetUser:output_type -> ranfeed.user.GetUserRes
+	14, // 42: ranfeed.user.UserService.GetUserProfile:output_type -> ranfeed.user.GetUserProfileRes
+	16, // 43: ranfeed.user.UserService.BatchGetUser:output_type -> ranfeed.user.BatchGetUserRes
+	19, // 44: ranfeed.user.UserService.BatchGetUserForIndex:output_type -> ranfeed.user.BatchGetUserForIndexRes
+	21, // 45: ranfeed.user.UserService.ListUserForIndex:output_type -> ranfeed.user.ListUserForIndexRes
+	25, // 46: ranfeed.user.AdminUserService.AdminListUsers:output_type -> ranfeed.user.AdminListUsersRes
+	27, // 47: ranfeed.user.AdminUserService.AdminGetUserDetail:output_type -> ranfeed.user.AdminGetUserDetailRes
+	31, // 48: ranfeed.user.AdminUserService.AdminSetUserStatus:output_type -> google.protobuf.Empty
+	37, // [37:49] is the sub-list for method output_type
+	25, // [25:37] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_app_rpc_user_proto_user_proto_init() }
@@ -2150,14 +2100,14 @@ func file_app_rpc_user_proto_user_proto_init() {
 		return
 	}
 	file_app_rpc_user_proto_user_proto_msgTypes[2].OneofWrappers = []any{}
-	file_app_rpc_user_proto_user_proto_msgTypes[23].OneofWrappers = []any{}
+	file_app_rpc_user_proto_user_proto_msgTypes[22].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_app_rpc_user_proto_user_proto_rawDesc), len(file_app_rpc_user_proto_user_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   29,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

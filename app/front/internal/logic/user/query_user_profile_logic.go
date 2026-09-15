@@ -6,6 +6,7 @@ package user
 import (
 	"context"
 
+	frontutils "ran-feed/app/front/internal/common/utils"
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
 	"ran-feed/app/rpc/content/content"
@@ -91,7 +92,7 @@ func (l *QueryUserProfileLogic) QueryUserProfile(req *types.QueryUserProfileReq)
 			Nickname: profileResp.UserProfile.Nickname,
 			Avatar:   profileResp.UserProfile.Avatar,
 			Bio:      profileResp.UserProfile.Bio,
-			Gender:   int32(profileResp.UserProfile.Gender),
+			Gender:   frontutils.ToEnumValue(profileResp.UserProfile.Gender),
 		},
 		UserProfileCounts:  types.UserProfileCounts{},
 		ViewerProfileState: types.ViewerProfileState{},
