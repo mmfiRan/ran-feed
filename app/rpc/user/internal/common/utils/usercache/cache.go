@@ -26,8 +26,8 @@ import (
 	"ran-feed/app/rpc/user/internal/repositories"
 )
 
-// userCacheDO 缓存中存放的字段子集，去掉了 PasswordHash / PasswordSalt /
-// Email 等敏感字段（这些字段调用方接口从不返回）。
+// userCacheDO 缓存中存放的字段子集，去掉了 PasswordHash / Email
+// 等敏感字段（这些字段调用方接口从不返回）。
 type userCacheDO struct {
 	ID        int64      `json:"id"`
 	Username  string     `json:"username"`

@@ -3,7 +3,7 @@ syntax = "v1"
 import "../base/base.api"
 
 type (
-	// CUserListReq C端用户列表筛选 status 0 表示不限
+	// CUserListReq C端用户列表
 	CUserListReq {
 		PageQueryReq
 		Status  int32  `form:"status,optional"`
@@ -59,7 +59,7 @@ type (
 )
 service admin-api {
 	@doc (
-		description: "C端用户列表 多条件筛选 + 分页"
+		description: "C端用户列表"
 		permission:  "admin:cuser:list"
 	)
 	@handler ListUsers

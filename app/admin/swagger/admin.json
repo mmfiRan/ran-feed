@@ -1810,7 +1810,7 @@
     },
     "/v1/admin/users": {
       "get": {
-        "description": "C端用户列表 多条件筛选 + 分页",
+        "description": "C端用户列表",
         "produces": [
           "application/json"
         ],
@@ -2051,7 +2051,7 @@
       }
     }
   },
-  "x-date": "2026-09-14 17:59:42",
+  "x-date": "2026-09-15 13:22:50",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

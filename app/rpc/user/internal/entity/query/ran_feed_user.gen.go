@@ -35,12 +35,11 @@ func newRanFeedUser(db *gorm.DB, opts ...gen.DOOption) ranFeedUser {
 	_ranFeedUser.Mobile = field.NewString(tableName, "mobile")
 	_ranFeedUser.Email = field.NewString(tableName, "email")
 	_ranFeedUser.PasswordHash = field.NewString(tableName, "password_hash")
-	_ranFeedUser.PasswordSalt = field.NewString(tableName, "password_salt")
 	_ranFeedUser.Gender = field.NewInt32(tableName, "gender")
 	_ranFeedUser.Birthday = field.NewTime(tableName, "birthday")
 	_ranFeedUser.Status = field.NewInt32(tableName, "status")
 	_ranFeedUser.Version = field.NewInt32(tableName, "version")
-	_ranFeedUser.IsDeleted = field.NewInt32(tableName, "is_deleted")
+	_ranFeedUser.IsDeleted = field.NewInt64(tableName, "is_deleted")
 	_ranFeedUser.CreatedBy = field.NewInt64(tableName, "created_by")
 	_ranFeedUser.UpdatedBy = field.NewInt64(tableName, "updated_by")
 	_ranFeedUser.CreatedAt = field.NewTime(tableName, "created_at")
@@ -57,19 +56,18 @@ type ranFeedUser struct {
 
 	ALL          field.Asterisk
 	ID           field.Int64  // 用户ID
-	Username     field.String // 用户名唯一
+	Username     field.String // 用户名
 	Nickname     field.String // 昵称
 	Avatar       field.String // 头像地址
 	Bio          field.String // 个人简介
-	Mobile       field.String // 手机号
+	Mobile       field.String // 手机号E.164格式
 	Email        field.String // 邮箱
-	PasswordHash field.String // 密码哈希
-	PasswordSalt field.String // 密码盐
+	PasswordHash field.String // 密码哈希 bcrypt 自带盐
 	Gender       field.Int32  // 性别 0=未知 1=男 2=女
 	Birthday     field.Time   // 生日
-	Status       field.Int32  // 状态 10=正常 20=禁用 30=注销
+	Status       field.Int32  // 状态 10=正常 20=禁用
 	Version      field.Int32  // 版本号（乐观锁）
-	IsDeleted    field.Int32  // 逻辑删除 0=正常 1=删除
+	IsDeleted    field.Int64  // 逻辑删除 0=正常 非0=已删
 	CreatedBy    field.Int64  // 创建人
 	UpdatedBy    field.Int64  // 最后修改人
 	CreatedAt    field.Time   // 创建时间
@@ -78,56 +76,53 @@ type ranFeedUser struct {
 	fieldMap map[string]field.Expr
 }
 
-func (z ranFeedUser) Table(newTableName string) *ranFeedUser {
-	z.ranFeedUserDo.UseTable(newTableName)
-	return z.updateTableName(newTableName)
+func (r ranFeedUser) Table(newTableName string) *ranFeedUser {
+	r.ranFeedUserDo.UseTable(newTableName)
+	return r.updateTableName(newTableName)
 }
 
-func (z ranFeedUser) As(alias string) *ranFeedUser {
-	z.ranFeedUserDo.DO = *(z.ranFeedUserDo.As(alias).(*gen.DO))
-	return z.updateTableName(alias)
+func (r ranFeedUser) As(alias string) *ranFeedUser {
+	r.ranFeedUserDo.DO = *(r.ranFeedUserDo.As(alias).(*gen.DO))
+	return r.updateTableName(alias)
 }
 
-func (z *ranFeedUser) updateTableName(table string) *ranFeedUser {
-	z.ALL = field.NewAsterisk(table)
-	z.ID = field.NewInt64(table, "id")
-	z.Username = field.NewString(table, "username")
-	z.Nickname = field.NewString(table, "nickname")
-	z.Avatar = field.NewString(table, "avatar")
-	z.Bio = field.NewString(table, "bio")
-	z.Mobile = field.NewString(table, "mobile")
-	z.Email = field.NewString(table, "email")
-	z.PasswordHash = field.NewString(table, "password_hash")
-	z.PasswordSalt = field.NewString(table, "password_salt")
-	z.Gender = field.NewInt32(table, "gender")
-	z.Birthday = field.NewTime(table, "birthday")
-	z.Status = field.NewInt32(table, "status")
-	z.Version = field.NewInt32(table, "version")
-	z.IsDeleted = field.NewInt32(table, "is_deleted")
-	z.CreatedBy = field.NewInt64(table, "created_by")
-	z.UpdatedBy = field.NewInt64(table, "updated_by")
-	z.CreatedAt = field.NewTime(table, "created_at")
-	z.UpdatedAt = field.NewTime(table, "updated_at")
+func (r *ranFeedUser) updateTableName(table string) *ranFeedUser {
+	r.ALL = field.NewAsterisk(table)
+	r.ID = field.NewInt64(table, "id")
+	r.Username = field.NewString(table, "username")
+	r.Nickname = field.NewString(table, "nickname")
+	r.Avatar = field.NewString(table, "avatar")
+	r.Bio = field.NewString(table, "bio")
+	r.Mobile = field.NewString(table, "mobile")
+	r.Email = field.NewString(table, "email")
+	r.PasswordHash = field.NewString(table, "password_hash")
+	r.Gender = field.NewInt32(table, "gender")
+	r.Birthday = field.NewTime(table, "birthday")
+	r.Status = field.NewInt32(table, "status")
+	r.Version = field.NewInt32(table, "version")
+	r.IsDeleted = field.NewInt64(table, "is_deleted")
+	r.CreatedBy = field.NewInt64(table, "created_by")
+	r.UpdatedBy = field.NewInt64(table, "updated_by")
+	r.CreatedAt = field.NewTime(table, "created_at")
+	r.UpdatedAt = field.NewTime(table, "updated_at")
 
-	z.fillFieldMap()
+	r.fillFieldMap()
 
-	return z
+	return r
 }
 
-func (z *ranFeedUser) WithContext(ctx context.Context) IRanFeedUserDo {
-	return z.ranFeedUserDo.WithContext(ctx)
+func (r *ranFeedUser) WithContext(ctx context.Context) IRanFeedUserDo {
+	return r.ranFeedUserDo.WithContext(ctx)
 }
 
-func (z ranFeedUser) TableName() string { return z.ranFeedUserDo.TableName() }
+func (r ranFeedUser) TableName() string { return r.ranFeedUserDo.TableName() }
 
-func (z ranFeedUser) Alias() string { return z.ranFeedUserDo.Alias() }
+func (r ranFeedUser) Alias() string { return r.ranFeedUserDo.Alias() }
 
-func (z ranFeedUser) Columns(cols ...field.Expr) gen.Columns {
-	return z.ranFeedUserDo.Columns(cols...)
-}
+func (r ranFeedUser) Columns(cols ...field.Expr) gen.Columns { return r.ranFeedUserDo.Columns(cols...) }
 
-func (z *ranFeedUser) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
-	_f, ok := z.fieldMap[fieldName]
+func (r *ranFeedUser) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
+	_f, ok := r.fieldMap[fieldName]
 	if !ok || _f == nil {
 		return nil, false
 	}
@@ -135,36 +130,35 @@ func (z *ranFeedUser) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	return _oe, ok
 }
 
-func (z *ranFeedUser) fillFieldMap() {
-	z.fieldMap = make(map[string]field.Expr, 18)
-	z.fieldMap["id"] = z.ID
-	z.fieldMap["username"] = z.Username
-	z.fieldMap["nickname"] = z.Nickname
-	z.fieldMap["avatar"] = z.Avatar
-	z.fieldMap["bio"] = z.Bio
-	z.fieldMap["mobile"] = z.Mobile
-	z.fieldMap["email"] = z.Email
-	z.fieldMap["password_hash"] = z.PasswordHash
-	z.fieldMap["password_salt"] = z.PasswordSalt
-	z.fieldMap["gender"] = z.Gender
-	z.fieldMap["birthday"] = z.Birthday
-	z.fieldMap["status"] = z.Status
-	z.fieldMap["version"] = z.Version
-	z.fieldMap["is_deleted"] = z.IsDeleted
-	z.fieldMap["created_by"] = z.CreatedBy
-	z.fieldMap["updated_by"] = z.UpdatedBy
-	z.fieldMap["created_at"] = z.CreatedAt
-	z.fieldMap["updated_at"] = z.UpdatedAt
+func (r *ranFeedUser) fillFieldMap() {
+	r.fieldMap = make(map[string]field.Expr, 17)
+	r.fieldMap["id"] = r.ID
+	r.fieldMap["username"] = r.Username
+	r.fieldMap["nickname"] = r.Nickname
+	r.fieldMap["avatar"] = r.Avatar
+	r.fieldMap["bio"] = r.Bio
+	r.fieldMap["mobile"] = r.Mobile
+	r.fieldMap["email"] = r.Email
+	r.fieldMap["password_hash"] = r.PasswordHash
+	r.fieldMap["gender"] = r.Gender
+	r.fieldMap["birthday"] = r.Birthday
+	r.fieldMap["status"] = r.Status
+	r.fieldMap["version"] = r.Version
+	r.fieldMap["is_deleted"] = r.IsDeleted
+	r.fieldMap["created_by"] = r.CreatedBy
+	r.fieldMap["updated_by"] = r.UpdatedBy
+	r.fieldMap["created_at"] = r.CreatedAt
+	r.fieldMap["updated_at"] = r.UpdatedAt
 }
 
-func (z ranFeedUser) clone(db *gorm.DB) ranFeedUser {
-	z.ranFeedUserDo.ReplaceConnPool(db.Statement.ConnPool)
-	return z
+func (r ranFeedUser) clone(db *gorm.DB) ranFeedUser {
+	r.ranFeedUserDo.ReplaceConnPool(db.Statement.ConnPool)
+	return r
 }
 
-func (z ranFeedUser) replaceDB(db *gorm.DB) ranFeedUser {
-	z.ranFeedUserDo.ReplaceDB(db)
-	return z
+func (r ranFeedUser) replaceDB(db *gorm.DB) ranFeedUser {
+	r.ranFeedUserDo.ReplaceDB(db)
+	return r
 }
 
 type ranFeedUserDo struct{ gen.DO }
@@ -230,200 +224,200 @@ type IRanFeedUserDo interface {
 	schema.Tabler
 }
 
-func (z ranFeedUserDo) Debug() IRanFeedUserDo {
-	return z.withDO(z.DO.Debug())
+func (r ranFeedUserDo) Debug() IRanFeedUserDo {
+	return r.withDO(r.DO.Debug())
 }
 
-func (z ranFeedUserDo) WithContext(ctx context.Context) IRanFeedUserDo {
-	return z.withDO(z.DO.WithContext(ctx))
+func (r ranFeedUserDo) WithContext(ctx context.Context) IRanFeedUserDo {
+	return r.withDO(r.DO.WithContext(ctx))
 }
 
-func (z ranFeedUserDo) ReadDB() IRanFeedUserDo {
-	return z.Clauses(dbresolver.Read)
+func (r ranFeedUserDo) ReadDB() IRanFeedUserDo {
+	return r.Clauses(dbresolver.Read)
 }
 
-func (z ranFeedUserDo) WriteDB() IRanFeedUserDo {
-	return z.Clauses(dbresolver.Write)
+func (r ranFeedUserDo) WriteDB() IRanFeedUserDo {
+	return r.Clauses(dbresolver.Write)
 }
 
-func (z ranFeedUserDo) Session(config *gorm.Session) IRanFeedUserDo {
-	return z.withDO(z.DO.Session(config))
+func (r ranFeedUserDo) Session(config *gorm.Session) IRanFeedUserDo {
+	return r.withDO(r.DO.Session(config))
 }
 
-func (z ranFeedUserDo) Clauses(conds ...clause.Expression) IRanFeedUserDo {
-	return z.withDO(z.DO.Clauses(conds...))
+func (r ranFeedUserDo) Clauses(conds ...clause.Expression) IRanFeedUserDo {
+	return r.withDO(r.DO.Clauses(conds...))
 }
 
-func (z ranFeedUserDo) Returning(value interface{}, columns ...string) IRanFeedUserDo {
-	return z.withDO(z.DO.Returning(value, columns...))
+func (r ranFeedUserDo) Returning(value interface{}, columns ...string) IRanFeedUserDo {
+	return r.withDO(r.DO.Returning(value, columns...))
 }
 
-func (z ranFeedUserDo) Not(conds ...gen.Condition) IRanFeedUserDo {
-	return z.withDO(z.DO.Not(conds...))
+func (r ranFeedUserDo) Not(conds ...gen.Condition) IRanFeedUserDo {
+	return r.withDO(r.DO.Not(conds...))
 }
 
-func (z ranFeedUserDo) Or(conds ...gen.Condition) IRanFeedUserDo {
-	return z.withDO(z.DO.Or(conds...))
+func (r ranFeedUserDo) Or(conds ...gen.Condition) IRanFeedUserDo {
+	return r.withDO(r.DO.Or(conds...))
 }
 
-func (z ranFeedUserDo) Select(conds ...field.Expr) IRanFeedUserDo {
-	return z.withDO(z.DO.Select(conds...))
+func (r ranFeedUserDo) Select(conds ...field.Expr) IRanFeedUserDo {
+	return r.withDO(r.DO.Select(conds...))
 }
 
-func (z ranFeedUserDo) Where(conds ...gen.Condition) IRanFeedUserDo {
-	return z.withDO(z.DO.Where(conds...))
+func (r ranFeedUserDo) Where(conds ...gen.Condition) IRanFeedUserDo {
+	return r.withDO(r.DO.Where(conds...))
 }
 
-func (z ranFeedUserDo) Order(conds ...field.Expr) IRanFeedUserDo {
-	return z.withDO(z.DO.Order(conds...))
+func (r ranFeedUserDo) Order(conds ...field.Expr) IRanFeedUserDo {
+	return r.withDO(r.DO.Order(conds...))
 }
 
-func (z ranFeedUserDo) Distinct(cols ...field.Expr) IRanFeedUserDo {
-	return z.withDO(z.DO.Distinct(cols...))
+func (r ranFeedUserDo) Distinct(cols ...field.Expr) IRanFeedUserDo {
+	return r.withDO(r.DO.Distinct(cols...))
 }
 
-func (z ranFeedUserDo) Omit(cols ...field.Expr) IRanFeedUserDo {
-	return z.withDO(z.DO.Omit(cols...))
+func (r ranFeedUserDo) Omit(cols ...field.Expr) IRanFeedUserDo {
+	return r.withDO(r.DO.Omit(cols...))
 }
 
-func (z ranFeedUserDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedUserDo {
-	return z.withDO(z.DO.Join(table, on...))
+func (r ranFeedUserDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedUserDo {
+	return r.withDO(r.DO.Join(table, on...))
 }
 
-func (z ranFeedUserDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedUserDo {
-	return z.withDO(z.DO.LeftJoin(table, on...))
+func (r ranFeedUserDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedUserDo {
+	return r.withDO(r.DO.LeftJoin(table, on...))
 }
 
-func (z ranFeedUserDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedUserDo {
-	return z.withDO(z.DO.RightJoin(table, on...))
+func (r ranFeedUserDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedUserDo {
+	return r.withDO(r.DO.RightJoin(table, on...))
 }
 
-func (z ranFeedUserDo) Group(cols ...field.Expr) IRanFeedUserDo {
-	return z.withDO(z.DO.Group(cols...))
+func (r ranFeedUserDo) Group(cols ...field.Expr) IRanFeedUserDo {
+	return r.withDO(r.DO.Group(cols...))
 }
 
-func (z ranFeedUserDo) Having(conds ...gen.Condition) IRanFeedUserDo {
-	return z.withDO(z.DO.Having(conds...))
+func (r ranFeedUserDo) Having(conds ...gen.Condition) IRanFeedUserDo {
+	return r.withDO(r.DO.Having(conds...))
 }
 
-func (z ranFeedUserDo) Limit(limit int) IRanFeedUserDo {
-	return z.withDO(z.DO.Limit(limit))
+func (r ranFeedUserDo) Limit(limit int) IRanFeedUserDo {
+	return r.withDO(r.DO.Limit(limit))
 }
 
-func (z ranFeedUserDo) Offset(offset int) IRanFeedUserDo {
-	return z.withDO(z.DO.Offset(offset))
+func (r ranFeedUserDo) Offset(offset int) IRanFeedUserDo {
+	return r.withDO(r.DO.Offset(offset))
 }
 
-func (z ranFeedUserDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedUserDo {
-	return z.withDO(z.DO.Scopes(funcs...))
+func (r ranFeedUserDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedUserDo {
+	return r.withDO(r.DO.Scopes(funcs...))
 }
 
-func (z ranFeedUserDo) Unscoped() IRanFeedUserDo {
-	return z.withDO(z.DO.Unscoped())
+func (r ranFeedUserDo) Unscoped() IRanFeedUserDo {
+	return r.withDO(r.DO.Unscoped())
 }
 
-func (z ranFeedUserDo) Create(values ...*model.RanFeedUser) error {
+func (r ranFeedUserDo) Create(values ...*model.RanFeedUser) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Create(values)
+	return r.DO.Create(values)
 }
 
-func (z ranFeedUserDo) CreateInBatches(values []*model.RanFeedUser, batchSize int) error {
-	return z.DO.CreateInBatches(values, batchSize)
+func (r ranFeedUserDo) CreateInBatches(values []*model.RanFeedUser, batchSize int) error {
+	return r.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (z ranFeedUserDo) Save(values ...*model.RanFeedUser) error {
+func (r ranFeedUserDo) Save(values ...*model.RanFeedUser) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Save(values)
+	return r.DO.Save(values)
 }
 
-func (z ranFeedUserDo) First() (*model.RanFeedUser, error) {
-	if result, err := z.DO.First(); err != nil {
+func (r ranFeedUserDo) First() (*model.RanFeedUser, error) {
+	if result, err := r.DO.First(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedUser), nil
 	}
 }
 
-func (z ranFeedUserDo) Take() (*model.RanFeedUser, error) {
-	if result, err := z.DO.Take(); err != nil {
+func (r ranFeedUserDo) Take() (*model.RanFeedUser, error) {
+	if result, err := r.DO.Take(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedUser), nil
 	}
 }
 
-func (z ranFeedUserDo) Last() (*model.RanFeedUser, error) {
-	if result, err := z.DO.Last(); err != nil {
+func (r ranFeedUserDo) Last() (*model.RanFeedUser, error) {
+	if result, err := r.DO.Last(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedUser), nil
 	}
 }
 
-func (z ranFeedUserDo) Find() ([]*model.RanFeedUser, error) {
-	result, err := z.DO.Find()
+func (r ranFeedUserDo) Find() ([]*model.RanFeedUser, error) {
+	result, err := r.DO.Find()
 	return result.([]*model.RanFeedUser), err
 }
 
-func (z ranFeedUserDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedUser, err error) {
+func (r ranFeedUserDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedUser, err error) {
 	buf := make([]*model.RanFeedUser, 0, batchSize)
-	err = z.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
+	err = r.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
 	})
 	return results, err
 }
 
-func (z ranFeedUserDo) FindInBatches(result *[]*model.RanFeedUser, batchSize int, fc func(tx gen.Dao, batch int) error) error {
-	return z.DO.FindInBatches(result, batchSize, fc)
+func (r ranFeedUserDo) FindInBatches(result *[]*model.RanFeedUser, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+	return r.DO.FindInBatches(result, batchSize, fc)
 }
 
-func (z ranFeedUserDo) Attrs(attrs ...field.AssignExpr) IRanFeedUserDo {
-	return z.withDO(z.DO.Attrs(attrs...))
+func (r ranFeedUserDo) Attrs(attrs ...field.AssignExpr) IRanFeedUserDo {
+	return r.withDO(r.DO.Attrs(attrs...))
 }
 
-func (z ranFeedUserDo) Assign(attrs ...field.AssignExpr) IRanFeedUserDo {
-	return z.withDO(z.DO.Assign(attrs...))
+func (r ranFeedUserDo) Assign(attrs ...field.AssignExpr) IRanFeedUserDo {
+	return r.withDO(r.DO.Assign(attrs...))
 }
 
-func (z ranFeedUserDo) Joins(fields ...field.RelationField) IRanFeedUserDo {
+func (r ranFeedUserDo) Joins(fields ...field.RelationField) IRanFeedUserDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Joins(_f))
+		r = *r.withDO(r.DO.Joins(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedUserDo) Preload(fields ...field.RelationField) IRanFeedUserDo {
+func (r ranFeedUserDo) Preload(fields ...field.RelationField) IRanFeedUserDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Preload(_f))
+		r = *r.withDO(r.DO.Preload(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedUserDo) FirstOrInit() (*model.RanFeedUser, error) {
-	if result, err := z.DO.FirstOrInit(); err != nil {
+func (r ranFeedUserDo) FirstOrInit() (*model.RanFeedUser, error) {
+	if result, err := r.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedUser), nil
 	}
 }
 
-func (z ranFeedUserDo) FirstOrCreate() (*model.RanFeedUser, error) {
-	if result, err := z.DO.FirstOrCreate(); err != nil {
+func (r ranFeedUserDo) FirstOrCreate() (*model.RanFeedUser, error) {
+	if result, err := r.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedUser), nil
 	}
 }
 
-func (z ranFeedUserDo) FindByPage(offset int, limit int) (result []*model.RanFeedUser, count int64, err error) {
-	result, err = z.Offset(offset).Limit(limit).Find()
+func (r ranFeedUserDo) FindByPage(offset int, limit int) (result []*model.RanFeedUser, count int64, err error) {
+	result, err = r.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
 	}
@@ -433,29 +427,29 @@ func (z ranFeedUserDo) FindByPage(offset int, limit int) (result []*model.RanFee
 		return
 	}
 
-	count, err = z.Offset(-1).Limit(-1).Count()
+	count, err = r.Offset(-1).Limit(-1).Count()
 	return
 }
 
-func (z ranFeedUserDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
-	count, err = z.Count()
+func (r ranFeedUserDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
+	count, err = r.Count()
 	if err != nil {
 		return
 	}
 
-	err = z.Offset(offset).Limit(limit).Scan(result)
+	err = r.Offset(offset).Limit(limit).Scan(result)
 	return
 }
 
-func (z ranFeedUserDo) Scan(result interface{}) (err error) {
-	return z.DO.Scan(result)
+func (r ranFeedUserDo) Scan(result interface{}) (err error) {
+	return r.DO.Scan(result)
 }
 
-func (z ranFeedUserDo) Delete(models ...*model.RanFeedUser) (result gen.ResultInfo, err error) {
-	return z.DO.Delete(models)
+func (r ranFeedUserDo) Delete(models ...*model.RanFeedUser) (result gen.ResultInfo, err error) {
+	return r.DO.Delete(models)
 }
 
-func (z *ranFeedUserDo) withDO(do gen.Dao) *ranFeedUserDo {
-	z.DO = *do.(*gen.DO)
-	return z
+func (r *ranFeedUserDo) withDO(do gen.Dao) *ranFeedUserDo {
+	r.DO = *do.(*gen.DO)
+	return r
 }

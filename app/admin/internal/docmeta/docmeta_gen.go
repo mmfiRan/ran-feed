@@ -21,7 +21,7 @@ var docMeta = map[string]map[string]string{
 	"GET /v1/admin/permissions":            {"description": "权限点目录", "permission": "admin:permission:list"},
 	"GET /v1/admin/roles":                  {"description": "角色列表", "permission": "admin:role:list"},
 	"GET /v1/admin/roles/detail":           {"description": "角色详情 含权限点ID集合", "permission": "admin:role:detail"},
-	"GET /v1/admin/users":                  {"description": "C端用户列表 多条件筛选 + 分页", "permission": "admin:cuser:list"},
+	"GET /v1/admin/users":                  {"description": "C端用户列表", "permission": "admin:cuser:list"},
 	"GET /v1/admin/users/detail":           {"description": "C端用户详情", "permission": "admin:cuser:detail"},
 	"POST /v1/admin/admins/create":         {"description": "创建管理员", "permission": "admin:user:create"},
 	"POST /v1/admin/admins/reset-password": {"description": "重置管理员密码 重置即踢下线", "permission": "admin:user:reset-password"},

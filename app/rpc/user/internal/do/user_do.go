@@ -12,7 +12,6 @@ type UserDO struct {
 	Mobile       string
 	Email        string
 	PasswordHash string
-	PasswordSalt string
 	Gender       int32
 	Birthday     *time.Time
 	Status       int32

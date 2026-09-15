@@ -79,13 +79,11 @@ func newTestLoginLogicWithCfg(t *testing.T, repo repositories.UserRepository, cf
 }
 
 func testActiveUser(password string) *do.UserDO {
-	salt := "testsalt"
-	hash, _ := utils.HashPassword(password + salt)
+	hash, _ := utils.HashPassword(password)
 	return &do.UserDO{
 		ID:           1,
-		Mobile:       "13800138000",
+		Mobile:       "+8613800138000",
 		PasswordHash: hash,
-		PasswordSalt: salt,
 		Status:       int32(user.UserStatus_USER_STATUS_ACTIVE),
 		Nickname:     "tester",
 		Avatar:       "",
@@ -148,6 +146,29 @@ func TestLogin_NilRequest(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestLogin_InvalidMobile(t *testing.T) {
+	logic, _ := newTestLoginLogic(t, &mockUserRepository{})
+	_, err := logic.Login(&user.LoginReq{Mobile: "abc", Password: "any"})
+	assert.Error(t, err)
+}
+
+func TestLogin_NormalizesMobileForLookup(t *testing.T) {
+	var lookedUp string
+	u := testActiveUser("correct-password")
+	repo := &mockUserRepository{
+		getByMobileFn: func(mobile string) (*do.UserDO, error) {
+			lookedUp = mobile
+			return u, nil
+		},
+	}
+	logic, _ := newTestLoginLogic(t, repo)
+
+	// 裸号也要能查到 带区号存储的账号
+	_, err := logic.Login(&user.LoginReq{Mobile: "138 0013 8000", Password: "correct-password"})
+	require.NoError(t, err)
+	assert.Equal(t, "+8613800138000", lookedUp)
+}
+
 func TestLogin_RateLimited(t *testing.T) {
 	u := testActiveUser("correct-password")
 	repo := &mockUserRepository{
@@ -180,10 +201,11 @@ func TestLogin_SuccessClearsRateLimitCounter(t *testing.T) {
 		_, err := logic.Login(&user.LoginReq{Mobile: "13800138000", Password: "wrong"})
 		assert.Error(t, err)
 	}
-	assert.True(t, mr.Exists("user:login:fail:13800138000"))
+	// 限频 key 用归一化后的 E.164 号 裸号与带区号共用同一计数
+	assert.True(t, mr.Exists("user:login:fail:+8613800138000"))
 
 	// 第三次成功 → 计数清零
 	_, err := logic.Login(&user.LoginReq{Mobile: "13800138000", Password: "correct-password"})
 	require.NoError(t, err)
-	assert.False(t, mr.Exists("user:login:fail:13800138000"))
+	assert.False(t, mr.Exists("user:login:fail:+8613800138000"))
 }

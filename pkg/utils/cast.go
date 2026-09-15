@@ -8,3 +8,20 @@ func CastPtr[T Integer, U Integer](v *U) *T {
 	t := T(*v)
 	return &t
 }
+
+// Deref 取指针值 nil 返回零值
+func Deref[T any](p *T) T {
+	if p == nil {
+		var zero T
+		return zero
+	}
+	return *p
+}
+
+// PtrOrNil 空字符串转 nil 便于写入可空列
+func PtrOrNil(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}

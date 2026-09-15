@@ -7,6 +7,7 @@ import (
 	"ran-feed/app/rpc/user/internal/svc"
 	"ran-feed/app/rpc/user/user"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -40,12 +41,12 @@ func (l *AdminGetUserDetailLogic) AdminGetUserDetail(in *user.AdminGetUserDetail
 		UserId:    row.ID,
 		Username:  row.Username,
 		Nickname:  row.Nickname,
-		Mobile:    row.Mobile,
+		Mobile:    utils.Deref(row.Mobile),
 		Avatar:    row.Avatar,
 		Status:    user.UserStatus(row.Status),
 		Bio:       row.Bio,
 		Gender:    user.Gender(row.Gender),
-		Email:     row.Email,
+		Email:     utils.Deref(row.Email),
 		CreatedAt: row.CreatedAt.UnixMilli(),
 		UpdatedAt: row.UpdatedAt.UnixMilli(),
 	}

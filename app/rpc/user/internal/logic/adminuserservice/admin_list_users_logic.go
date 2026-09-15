@@ -73,7 +73,7 @@ func buildAdminUserItem(row *model.RanFeedUser) *user.AdminUserItem {
 		UserId:    row.ID,
 		Username:  row.Username,
 		Nickname:  row.Nickname,
-		Mobile:    row.Mobile,
+		Mobile:    utils.Deref(row.Mobile),
 		Avatar:    row.Avatar,
 		Status:    user.UserStatus(row.Status),
 		CreatedAt: row.CreatedAt.UnixMilli(),

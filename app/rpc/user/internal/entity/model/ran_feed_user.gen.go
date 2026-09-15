@@ -13,19 +13,18 @@ const TableNameRanFeedUser = "ran_feed_user"
 // RanFeedUser 用户基础信息表
 type RanFeedUser struct {
 	ID           int64      `gorm:"column:id;primaryKey;autoIncrement:true;comment:用户ID" json:"id"`                      // 用户ID
-	Username     string     `gorm:"column:username;not null;comment:用户名唯一" json:"username"`                              // 用户名唯一
+	Username     string     `gorm:"column:username;not null;comment:用户名" json:"username"`                                // 用户名
 	Nickname     string     `gorm:"column:nickname;not null;comment:昵称" json:"nickname"`                                 // 昵称
 	Avatar       string     `gorm:"column:avatar;not null;comment:头像地址" json:"avatar"`                                   // 头像地址
 	Bio          string     `gorm:"column:bio;not null;comment:个人简介" json:"bio"`                                         // 个人简介
-	Mobile       string     `gorm:"column:mobile;not null;comment:手机号" json:"mobile"`                                    // 手机号
-	Email        string     `gorm:"column:email;not null;comment:邮箱" json:"email"`                                       // 邮箱
-	PasswordHash string     `gorm:"column:password_hash;not null;comment:密码哈希" json:"password_hash"`                     // 密码哈希
-	PasswordSalt string     `gorm:"column:password_salt;not null;comment:密码盐" json:"password_salt"`                      // 密码盐
+	Mobile       *string    `gorm:"column:mobile;comment:手机号E.164格式" json:"mobile"`                                      // 手机号E.164格式
+	Email        *string    `gorm:"column:email;comment:邮箱" json:"email"`                                                // 邮箱
+	PasswordHash string     `gorm:"column:password_hash;not null;comment:密码哈希 bcrypt 自带盐" json:"password_hash"`          // 密码哈希 bcrypt 自带盐
 	Gender       int32      `gorm:"column:gender;not null;comment:性别 0=未知 1=男 2=女" json:"gender"`                        // 性别 0=未知 1=男 2=女
 	Birthday     *time.Time `gorm:"column:birthday;comment:生日" json:"birthday"`                                          // 生日
-	Status       int32      `gorm:"column:status;not null;default:10;comment:状态 10=正常 20=禁用 30=注销" json:"status"`        // 状态 10=正常 20=禁用 30=注销
+	Status       int32      `gorm:"column:status;not null;default:10;comment:状态 10=正常 20=禁用" json:"status"`              // 状态 10=正常 20=禁用
 	Version      int32      `gorm:"column:version;not null;default:1;comment:版本号（乐观锁）" json:"version"`                   // 版本号（乐观锁）
-	IsDeleted    int32      `gorm:"column:is_deleted;not null;comment:逻辑删除 0=正常 1=删除" json:"is_deleted"`                 // 逻辑删除 0=正常 1=删除
+	IsDeleted    int64      `gorm:"column:is_deleted;not null;comment:逻辑删除 0=正常 非0=已删" json:"is_deleted"`                // 逻辑删除 0=正常 非0=已删
 	CreatedBy    int64      `gorm:"column:created_by;not null;comment:创建人" json:"created_by"`                            // 创建人
 	UpdatedBy    int64      `gorm:"column:updated_by;not null;comment:最后修改人" json:"updated_by"`                          // 最后修改人
 	CreatedAt    time.Time  `gorm:"column:created_at;not null;default:CURRENT_TIMESTAMP;comment:创建时间" json:"created_at"` // 创建时间

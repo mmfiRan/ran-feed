@@ -11,6 +11,7 @@ import (
 	"ran-feed/app/rpc/user/internal/entity/model"
 	"ran-feed/app/rpc/user/internal/entity/query"
 	"ran-feed/pkg/orm"
+	"ran-feed/pkg/utils"
 )
 
 const (
@@ -90,10 +91,9 @@ func (r *userRepositoryImpl) GetByMobile(mobile string) (*do.UserDO, error) {
 		Nickname:     row.Nickname,
 		Avatar:       row.Avatar,
 		Bio:          row.Bio,
-		Mobile:       row.Mobile,
-		Email:        row.Email,
+		Mobile:       utils.Deref(row.Mobile),
+		Email:        utils.Deref(row.Email),
 		PasswordHash: row.PasswordHash,
-		PasswordSalt: row.PasswordSalt,
 		Gender:       row.Gender,
 		Birthday:     row.Birthday,
 		Status:       row.Status,
@@ -128,10 +128,9 @@ func (r *userRepositoryImpl) GetByID(userID int64) (*do.UserDO, error) {
 		Nickname:     row.Nickname,
 		Avatar:       row.Avatar,
 		Bio:          row.Bio,
-		Mobile:       row.Mobile,
-		Email:        row.Email,
+		Mobile:       utils.Deref(row.Mobile),
+		Email:        utils.Deref(row.Email),
 		PasswordHash: row.PasswordHash,
-		PasswordSalt: row.PasswordSalt,
 		Gender:       row.Gender,
 		Birthday:     row.Birthday,
 		Status:       row.Status,
@@ -165,10 +164,9 @@ func (r *userRepositoryImpl) BatchGetByIDs(userIDs []int64) (map[int64]*do.UserD
 			Nickname:     row.Nickname,
 			Avatar:       row.Avatar,
 			Bio:          row.Bio,
-			Mobile:       row.Mobile,
-			Email:        row.Email,
+			Mobile:       utils.Deref(row.Mobile),
+			Email:        utils.Deref(row.Email),
 			PasswordHash: row.PasswordHash,
-			PasswordSalt: row.PasswordSalt,
 			Gender:       row.Gender,
 			Birthday:     row.Birthday,
 			Status:       row.Status,
@@ -233,10 +231,9 @@ func (r *userRepositoryImpl) Create(userDO *do.UserDO) (int64, error) {
 		Nickname:     userDO.Nickname,
 		Avatar:       userDO.Avatar,
 		Bio:          userDO.Bio,
-		Mobile:       userDO.Mobile,
-		Email:        userDO.Email,
+		Mobile:       utils.PtrOrNil(userDO.Mobile),
+		Email:        utils.PtrOrNil(userDO.Email),
 		PasswordHash: userDO.PasswordHash,
-		PasswordSalt: userDO.PasswordSalt,
 		Gender:       userDO.Gender,
 		Birthday:     userDO.Birthday,
 		Status:       userDO.Status,

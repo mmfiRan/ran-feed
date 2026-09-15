@@ -2,8 +2,7 @@ package userservicelogic
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/base64"
+	"strings"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -38,12 +37,15 @@ func (l *RegisterLogic) Register(in *user.RegisterReq) (*user.RegisterRes, error
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	mobile := in.GetMobile()
+	mobile, err := utils.NormalizeMobile(in.GetMobile())
+	if err != nil {
+		return nil, errorx.NewMsg("手机号格式错误")
+	}
 	password := in.GetPassword()
 	nickname := in.GetNickname()
 	avatar := in.GetAvatar()
 	bio := in.GetBio()
-	email := in.GetEmail()
+	email := strings.ToLower(strings.TrimSpace(in.GetEmail()))
 	gender := in.GetGender()
 	birthday := in.GetBirthday()
 	if nickname == "" {
@@ -62,12 +64,8 @@ func (l *RegisterLogic) Register(in *user.RegisterReq) (*user.RegisterRes, error
 		return nil, errorx.NewMsg("手机号已注册")
 	}
 
-	// 生成密码哈希
-	passwordSalt, err := l.newPasswordSalt()
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("生成密码盐失败"))
-	}
-	passwordHash, err := utils.HashPassword(password + passwordSalt)
+	// 生成密码哈希 bcrypt 自带随机盐
+	passwordHash, err := utils.HashPassword(password)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("密码加密失败"))
 	}
@@ -81,7 +79,6 @@ func (l *RegisterLogic) Register(in *user.RegisterReq) (*user.RegisterRes, error
 		Mobile:       mobile,
 		Email:        email,
 		PasswordHash: passwordHash,
-		PasswordSalt: passwordSalt,
 		Birthday:     birthdayTime,
 		Gender:       int32(gender),
 		Status:       int32(user.UserStatus_USER_STATUS_ACTIVE),
@@ -102,14 +99,6 @@ func (l *RegisterLogic) Register(in *user.RegisterReq) (*user.RegisterRes, error
 		Token:     token,
 		ExpiredAt: time.Now().Add(sessionTTL).Unix(),
 	}, nil
-}
-
-func (l *RegisterLogic) newPasswordSalt() (string, error) {
-	b := make([]byte, 16)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-	return base64.RawStdEncoding.EncodeToString(b), nil
 }
 
 func (l *RegisterLogic) truncateToDate(t time.Time) *time.Time {

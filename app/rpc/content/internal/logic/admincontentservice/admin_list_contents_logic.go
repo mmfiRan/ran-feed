@@ -59,7 +59,6 @@ func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContents
 		return res, nil
 	}
 
-	// 标题 计数 作者用户名 三路互不依赖 并行取
 	var (
 		titles     map[int64]string
 		countsByID map[int64]*count.ContentCountsItem
@@ -97,7 +96,7 @@ func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContents
 
 	items := make([]*content.AdminContentItem, 0, len(rows))
 	for _, row := range rows {
-		items = append(items, buildAdminContentItem(row, titles[row.ID], usernames[row.ID], countsByID[row.ID]))
+		items = append(items, l.buildAdminContentItem(row, titles[row.ID], usernames[row.ID], countsByID[row.ID]))
 	}
 	res.Items = items
 	return res, nil
@@ -127,7 +126,7 @@ func (l *AdminListContentsLogic) loadCounts(rows []*model.RanFeedContent) (map[i
 	return countsByID, nil
 }
 
-// loadUsernames 批量取本页作者用户名 由 user 服务提供
+// loadUsernames 批量取本页作者用户名
 func (l *AdminListContentsLogic) loadUsernames(rows []*model.RanFeedContent) (map[int64]string, error) {
 	authorIDs := make([]int64, 0, len(rows))
 	for _, row := range rows {
@@ -151,7 +150,7 @@ func (l *AdminListContentsLogic) loadUsernames(rows []*model.RanFeedContent) (ma
 	return usernames, nil
 }
 
-// loadTitles 按类型分组批量取文章/视频标题 两类查询并行
+// loadTitles 按类型分组批量取文章/视频标题
 func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[int64]string, error) {
 	articleIDs := make([]int64, 0, len(rows))
 	videoIDs := make([]int64, 0, len(rows))
@@ -206,7 +205,7 @@ func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[i
 	return titles, nil
 }
 
-func buildAdminContentItem(row *model.RanFeedContent, title, username string, counts *count.ContentCountsItem) *content.AdminContentItem {
+func (l *AdminListContentsLogic) buildAdminContentItem(row *model.RanFeedContent, title, username string, counts *count.ContentCountsItem) *content.AdminContentItem {
 	item := &content.AdminContentItem{
 		ContentId:     row.ID,
 		ContentType:   utils.ContentTypeValue(row.ContentType),

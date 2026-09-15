@@ -71,6 +71,15 @@ func TestRegister_NilRequest(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestRegister_InvalidMobile(t *testing.T) {
+	logic, _ := newTestRegisterLogic(t, &mockUserRepository{})
+	_, err := logic.Register(&user.RegisterReq{
+		Mobile:   "not-a-phone",
+		Password: "pass123",
+	})
+	assert.Error(t, err)
+}
+
 func TestRegister_DefaultNickname(t *testing.T) {
 	var captured *do.UserDO
 	repo := &mockUserRepository{
@@ -88,5 +97,31 @@ func TestRegister_DefaultNickname(t *testing.T) {
 		Nickname: "", // 空昵称应默认为手机号
 	})
 	require.NoError(t, err)
-	assert.Equal(t, "13900139000", captured.Nickname)
+	assert.Equal(t, "+8613900139000", captured.Nickname)
+}
+
+func TestRegister_NormalizesMobileAndEmail(t *testing.T) {
+	var captured *do.UserDO
+	repo := &mockUserRepository{
+		getByMobileFn: func(mobile string) (*do.UserDO, error) {
+			// 查重同样用归一化后的号 避免裸号与带区号查不到同一个账号
+			assert.Equal(t, "+8613800138001", mobile)
+			return nil, nil
+		},
+		createFn: func(u *do.UserDO) (int64, error) {
+			captured = u
+			return 200, nil
+		},
+	}
+	logic, _ := newTestRegisterLogic(t, repo)
+
+	_, err := logic.Register(&user.RegisterReq{
+		Mobile:   "138 0013 8001",
+		Password: "pass123",
+		Email:    "Foo@Bar.com",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "+8613800138001", captured.Mobile)
+	assert.Equal(t, "+8613800138001", captured.Username)
+	assert.Equal(t, "foo@bar.com", captured.Email)
 }

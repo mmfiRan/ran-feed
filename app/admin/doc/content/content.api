@@ -3,7 +3,7 @@ syntax = "v1"
 import "../base/base.api"
 
 type (
-	// AdminContentListReq 筛选项不传即不限 故用指针区分未传
+	// AdminContentListReq
 	AdminContentListReq {
 		PageQueryReq
 		Status      *int32  `form:"status,optional" validate:"omitempty,oneof=10 20 30 40 50 60 70"` // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝

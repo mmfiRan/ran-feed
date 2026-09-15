@@ -12,11 +12,12 @@ import (
 
 func TestBuildAdminUserItem(t *testing.T) {
 	now := time.Now()
+	mobile := "13800138000"
 	row := &model.RanFeedUser{
 		ID:        123,
 		Username:  "testuser",
 		Nickname:  "测试用户",
-		Mobile:    "13800138000",
+		Mobile:    &mobile,
 		Avatar:    "http://example.com/avatar.jpg",
 		Status:    10,
 		CreatedAt: now,

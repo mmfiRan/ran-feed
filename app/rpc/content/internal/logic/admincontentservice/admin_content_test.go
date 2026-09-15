@@ -41,6 +41,7 @@ func TestFlipSourceStatus(t *testing.T) {
 }
 
 func TestBuildAdminContentItem(t *testing.T) {
+	l := &AdminListContentsLogic{}
 	published := time.UnixMilli(1_700_000_000_000)
 	created := time.UnixMilli(1_699_000_000_000)
 
@@ -55,7 +56,7 @@ func TestBuildAdminContentItem(t *testing.T) {
 			CreatedAt:   created,
 		}
 		counts := &count.ContentCountsItem{ContentId: 10, LikeCount: 3, FavoriteCount: 2, CommentCount: 1}
-		item := buildAdminContentItem(row, "标题A", "user99", counts)
+		item := l.buildAdminContentItem(row, "标题A", "user99", counts)
 		assert.Equal(t, int64(10), item.ContentId)
 		assert.Equal(t, "user99", item.Username)
 		assert.Equal(t, utils.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_ARTICLE)), item.ContentType)
@@ -73,7 +74,7 @@ func TestBuildAdminContentItem(t *testing.T) {
 			ID:        12,
 			CreatedAt: created,
 		}
-		item := buildAdminContentItem(row, "", "", nil)
+		item := l.buildAdminContentItem(row, "", "", nil)
 		assert.Equal(t, int64(0), item.LikeCount)
 		assert.Equal(t, int64(0), item.FavoriteCount)
 		assert.Equal(t, int64(0), item.CommentCount)
@@ -86,7 +87,7 @@ func TestBuildAdminContentItem(t *testing.T) {
 			Status:      int32(content.ContentStatus_CONTENT_STATUS_DRAFT),
 			CreatedAt:   created,
 		}
-		item := buildAdminContentItem(row, "", "", nil)
+		item := l.buildAdminContentItem(row, "", "", nil)
 		assert.Equal(t, int64(0), item.PublishedAt.AsTime().UnixMilli())
 		assert.Equal(t, utils.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_VIDEO)), item.ContentType)
 	})

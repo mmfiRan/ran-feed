@@ -10,7 +10,6 @@ import (
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/pkg/errorx"
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -31,10 +30,6 @@ func NewReviewContentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Rev
 }
 
 func (l *ReviewContentLogic) ReviewContent(req *types.AdminContentReviewReq) (resp *types.AdminContentReviewRes, err error) {
-	if req.ContentId <= 0 {
-		return nil, errorx.NewMsg("参数错误")
-	}
-
 	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
 
 	rpcRes, err := l.svcCtx.ContentAdminRpc.AdminReviewContent(l.ctx, &content.AdminReviewContentReq{
