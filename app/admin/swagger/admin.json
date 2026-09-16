@@ -1841,13 +1841,20 @@
           },
           {
             "type": "integer",
+            "description": "状态 10正常 20禁用 30注销",
             "name": "status",
             "in": "query",
             "allowEmptyValue": true
           },
           {
             "type": "string",
-            "name": "keyword",
+            "name": "username",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "string",
+            "name": "nickname",
             "in": "query",
             "allowEmptyValue": true
           }
@@ -2099,7 +2106,7 @@
       }
     }
   },
-  "x-date": "2026-09-15 17:16:55",
+  "x-date": "2026-09-16 17:10:37",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

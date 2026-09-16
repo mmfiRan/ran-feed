@@ -31,17 +31,13 @@ func NewAdminListUsersLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ad
 }
 
 func (l *AdminListUsersLogic) AdminListUsers(in *user.AdminListUsersReq) (*user.AdminListUsersRes, error) {
-	status := int32(0)
-	if in.Status != nil {
-		status = int32(*in.Status)
-	}
-	keyword := ""
-	if in.Keyword != nil {
-		keyword = *in.Keyword
-	}
-
 	offset, pageSize := pkgutils.NormalizePage(in.GetPage(), in.GetPageSize())
-	rows, total, err := l.userRepo.AdminPageUsers(status, keyword, offset, pageSize)
+	rows, total, err := l.userRepo.AdminPageUsers(
+		pkgutils.CastPtr[int32](in.Status),
+		in.Username,
+		in.Nickname,
+		offset, pageSize,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -35,7 +35,7 @@ func (m *mockRepo) BatchGetActiveForIndex([]int64) (map[int64]*model.RanFeedUser
 	return nil, nil
 }
 func (m *mockRepo) ScanActiveForIndex(int64, int) ([]*model.RanFeedUser, error) { return nil, nil }
-func (m *mockRepo) AdminPageUsers(int32, string, int, int) ([]*model.RanFeedUser, int64, error) {
+func (m *mockRepo) AdminPageUsers(*int32, *string, *string, int, int) ([]*model.RanFeedUser, int64, error) {
 	return nil, 0, nil
 }
 func (m *mockRepo) AdminGetByID(int64) (*model.RanFeedUser, error)       { return nil, nil }

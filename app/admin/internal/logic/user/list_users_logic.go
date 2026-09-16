@@ -10,6 +10,7 @@ import (
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/user/user"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -32,15 +33,9 @@ func (l *ListUsersLogic) ListUsers(req *types.CUserListReq) (resp *types.CUserLi
 	in := &user.AdminListUsersReq{
 		Page:     req.Page,
 		PageSize: req.PageSize,
-	}
-	// 各筛选项 0 表示不限 转成可选指针
-	if req.Status > 0 {
-		s := user.UserStatus(req.Status)
-		in.Status = &s
-	}
-	if req.Keyword != "" {
-		k := req.Keyword
-		in.Keyword = &k
+		Status:   pkgutils.CastPtr[user.UserStatus](req.Status),
+		Username: req.Username,
+		Nickname: req.Nickname,
 	}
 
 	rpcRes, err := l.svcCtx.UserAdminRpc.AdminListUsers(l.ctx, in)

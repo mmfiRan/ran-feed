@@ -188,10 +188,11 @@ message AdminUserDetail {
 
 // 后台管理列表用户请求
 message AdminListUsersReq {
-  optional UserStatus status = 1; // UNSPECIFIED=0 表示不限
-  optional string keyword = 2;    // 昵称模糊搜索
-  uint32 page = 3;
-  uint32 page_size = 4;
+  optional UserStatus status = 1;
+  optional string username = 2;
+  optional string nickname = 3;
+  uint32 page = 4;
+  uint32 page_size = 5;
 }
 
 // 后台管理列表用户响应

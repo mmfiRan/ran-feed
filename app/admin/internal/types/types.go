@@ -341,8 +341,9 @@ type CUserItem struct {
 
 type CUserListReq struct {
 	PageQueryReq
-	Status  int32  `form:"status,optional"`
-	Keyword string `form:"keyword,optional"`
+	Status   *int32  `form:"status,optional" validate:"omitempty,oneof=10 20 30"` // 状态 10正常 20禁用 30注销
+	Username *string `form:"username,optional" validate:"omitempty,max=64"`
+	Nickname *string `form:"nickname,optional" validate:"omitempty,max=64"`
 }
 
 type CUserListRes struct {

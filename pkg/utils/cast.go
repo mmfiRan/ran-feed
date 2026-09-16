@@ -18,7 +18,7 @@ func Deref[T any](p *T) T {
 	return *p
 }
 
-// PtrOrNil 空字符串转 nil 便于写入可空列
+// PtrOrNil 空字符串转 nil
 func PtrOrNil(s string) *string {
 	if s == "" {
 		return nil

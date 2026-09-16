@@ -1544,10 +1544,11 @@ func (x *AdminUserDetail) GetUpdatedAt() *timestamppb.Timestamp {
 // 后台管理列表用户请求
 type AdminListUsersReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        *UserStatus            `protobuf:"varint,1,opt,name=status,proto3,enum=ranfeed.user.UserStatus,oneof" json:"status,omitempty"` // UNSPECIFIED=0 表示不限
-	Keyword       *string                `protobuf:"bytes,2,opt,name=keyword,proto3,oneof" json:"keyword,omitempty"`                             // 昵称模糊搜索
-	Page          uint32                 `protobuf:"varint,3,opt,name=page,proto3" json:"page,omitempty"`
-	PageSize      uint32                 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	Status        *UserStatus            `protobuf:"varint,1,opt,name=status,proto3,enum=ranfeed.user.UserStatus,oneof" json:"status,omitempty"`
+	Username      *string                `protobuf:"bytes,2,opt,name=username,proto3,oneof" json:"username,omitempty"`
+	Nickname      *string                `protobuf:"bytes,3,opt,name=nickname,proto3,oneof" json:"nickname,omitempty"`
+	Page          uint32                 `protobuf:"varint,4,opt,name=page,proto3" json:"page,omitempty"`
+	PageSize      uint32                 `protobuf:"varint,5,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1589,9 +1590,16 @@ func (x *AdminListUsersReq) GetStatus() UserStatus {
 	return UserStatus_USER_STATUS_UNSPECIFIED
 }
 
-func (x *AdminListUsersReq) GetKeyword() string {
-	if x != nil && x.Keyword != nil {
-		return *x.Keyword
+func (x *AdminListUsersReq) GetUsername() string {
+	if x != nil && x.Username != nil {
+		return *x.Username
+	}
+	return ""
+}
+
+func (x *AdminListUsersReq) GetNickname() string {
+	if x != nil && x.Nickname != nil {
+		return *x.Nickname
 	}
 	return ""
 }
@@ -1940,15 +1948,16 @@ const file_app_rpc_user_proto_user_proto_rawDesc = "" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb1\x01\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xe2\x01\n" +
 	"\x11AdminListUsersReq\x125\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x18.ranfeed.user.UserStatusH\x00R\x06status\x88\x01\x01\x12\x1d\n" +
-	"\akeyword\x18\x02 \x01(\tH\x01R\akeyword\x88\x01\x01\x12\x12\n" +
-	"\x04page\x18\x03 \x01(\rR\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\rR\bpageSizeB\t\n" +
-	"\a_statusB\n" +
-	"\n" +
-	"\b_keyword\"\x8d\x01\n" +
+	"\x06status\x18\x01 \x01(\x0e2\x18.ranfeed.user.UserStatusH\x00R\x06status\x88\x01\x01\x12\x1f\n" +
+	"\busername\x18\x02 \x01(\tH\x01R\busername\x88\x01\x01\x12\x1f\n" +
+	"\bnickname\x18\x03 \x01(\tH\x02R\bnickname\x88\x01\x01\x12\x12\n" +
+	"\x04page\x18\x04 \x01(\rR\x04page\x12\x1b\n" +
+	"\tpage_size\x18\x05 \x01(\rR\bpageSizeB\t\n" +
+	"\a_statusB\v\n" +
+	"\t_usernameB\v\n" +
+	"\t_nickname\"\x8d\x01\n" +
 	"\x11AdminListUsersRes\x121\n" +
 	"\x05items\x18\x01 \x03(\v2\x1b.ranfeed.user.AdminUserItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +

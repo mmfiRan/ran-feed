@@ -32,8 +32,8 @@ type UserRepository interface {
 	ScanActiveForIndex(cursorID int64, limit int) ([]*model.RanFeedUser, error)
 	// Create 创建用户
 	Create(userDO *do.UserDO) (int64, error)
-	// AdminPageUsers 后台管理分页列表用户 返回列表与总数
-	AdminPageUsers(status int32, keyword string, offset, limit int) ([]*model.RanFeedUser, int64, error)
+	// AdminPageUsers 后台管理分页列表用户
+	AdminPageUsers(status *int32, username, nickname *string, offset, limit int) ([]*model.RanFeedUser, int64, error)
 	// AdminGetByID 后台管理获取用户详情 任意状态
 	AdminGetByID(userID int64) (*model.RanFeedUser, error)
 	// AdminUpdateStatus 后台管理更新用户状态
@@ -246,31 +246,24 @@ func (r *userRepositoryImpl) Create(userDO *do.UserDO) (int64, error) {
 	return row.ID, nil
 }
 
-// adminUserQuery 后台管理用户查询共享筛选
-func (r *userRepositoryImpl) adminUserQuery(status int32, keyword string) query.IRanFeedUserDo {
+// AdminPageUsers 后台管理分页列表用户
+func (r *userRepositoryImpl) AdminPageUsers(status *int32, username, nickname *string, offset, limit int) ([]*model.RanFeedUser, int64, error) {
 	q := r.getQuery()
 	doQuery := q.RanFeedUser.WithContext(r.ctx).Where(q.RanFeedUser.IsDeleted.Eq(0))
 
-	if status > 0 {
-		doQuery = doQuery.Where(q.RanFeedUser.Status.Eq(status))
+	if status != nil {
+		doQuery = doQuery.Where(q.RanFeedUser.Status.Eq(*status))
 	}
 
-	// keyword 命中 username nickname mobile 任一 子 DO 作为分组条件 OR 被括号包住不破坏外层软删与状态过滤
-	if keyword != "" {
-		kw := "%" + keyword + "%"
-		keywordGroup := q.RanFeedUser.WithContext(r.ctx).
-			Where(q.RanFeedUser.Username.Like(kw)).
-			Or(q.RanFeedUser.Nickname.Like(kw)).
-			Or(q.RanFeedUser.Mobile.Like(kw))
-		doQuery = doQuery.Where(keywordGroup)
+	if username != nil && *username != "" {
+		doQuery = doQuery.Where(q.RanFeedUser.Username.Like("%" + *username + "%"))
 	}
 
-	return doQuery
-}
+	if nickname != nil && *nickname != "" {
+		doQuery = doQuery.Where(q.RanFeedUser.Nickname.Like("%" + *nickname + "%"))
+	}
 
-func (r *userRepositoryImpl) AdminPageUsers(status int32, keyword string, offset, limit int) ([]*model.RanFeedUser, int64, error) {
-	q := r.getQuery().RanFeedUser
-	return r.adminUserQuery(status, keyword).Order(q.ID.Desc()).FindByPage(offset, limit)
+	return doQuery.Order(q.RanFeedUser.ID.Desc()).FindByPage(offset, limit)
 }
 
 func (r *userRepositoryImpl) AdminGetByID(userID int64) (*model.RanFeedUser, error) {
