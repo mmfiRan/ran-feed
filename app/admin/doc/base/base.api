@@ -2,8 +2,8 @@ syntax = "v1"
 
 type (
 	PageQueryReq {
-		Page     uint32 `form:"page,default=1"`
-		PageSize uint32 `form:"page_size,default=10"`
+		Page     uint32 `form:"page,default=1" validate:"omitempty,gt=0"`
+		PageSize uint32 `form:"page_size,default=10" validate:"omitempty,gt=0,max=50"`
 	}
 	PageQueryResp {
 		Page     uint32 `json:"page"`

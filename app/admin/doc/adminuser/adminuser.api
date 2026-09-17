@@ -5,7 +5,7 @@ import "../base/base.api"
 type (
 	AdminUserListReq {
 		PageQueryReq
-		Status int32 `form:"status,optional"`
+		Status *int32 `form:"status,optional" validate:"omitempty,oneof=10 20"` // 状态 10启用 20禁用
 	}
 	AdminUserItem {
 		Id        int64     `json:"id"`
@@ -20,7 +20,7 @@ type (
 		Items []AdminUserItem `json:"items"`
 	}
 	AdminUserDetailReq {
-		Id int64 `form:"id"`
+		Id int64 `form:"id,optional" validate:"required,gt=0"`
 	}
 	AdminUserDetailRes {
 		Admin   AdminUserItem `json:"admin"`
@@ -43,7 +43,7 @@ type (
 	// AdminUserStatusReq
 	AdminUserStatusReq {
 		Id     int64 `json:"id,optional" validate:"required,gt=0"`
-		Status int32 `json:"status,optional" validate:"required"`
+		Status int32 `json:"status,optional" validate:"required,oneof=10 20"`
 	}
 	AdminUserStatusRes  {}
 	AdminUserResetPasswordReq {

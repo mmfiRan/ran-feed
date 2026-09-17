@@ -443,7 +443,7 @@ const (
 type AdminUserServiceClient interface {
 	AdminListUsers(ctx context.Context, in *AdminListUsersReq, opts ...grpc.CallOption) (*AdminListUsersRes, error)
 	AdminGetUserDetail(ctx context.Context, in *AdminGetUserDetailReq, opts ...grpc.CallOption) (*AdminGetUserDetailRes, error)
-	AdminSetUserStatus(ctx context.Context, in *AdminSetUserStatusReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	AdminSetUserStatus(ctx context.Context, in *AdminSetUserStatusReq, opts ...grpc.CallOption) (*AdminSetUserStatusRes, error)
 }
 
 type adminUserServiceClient struct {
@@ -474,9 +474,9 @@ func (c *adminUserServiceClient) AdminGetUserDetail(ctx context.Context, in *Adm
 	return out, nil
 }
 
-func (c *adminUserServiceClient) AdminSetUserStatus(ctx context.Context, in *AdminSetUserStatusReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *adminUserServiceClient) AdminSetUserStatus(ctx context.Context, in *AdminSetUserStatusReq, opts ...grpc.CallOption) (*AdminSetUserStatusRes, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(emptypb.Empty)
+	out := new(AdminSetUserStatusRes)
 	err := c.cc.Invoke(ctx, AdminUserService_AdminSetUserStatus_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -492,7 +492,7 @@ func (c *adminUserServiceClient) AdminSetUserStatus(ctx context.Context, in *Adm
 type AdminUserServiceServer interface {
 	AdminListUsers(context.Context, *AdminListUsersReq) (*AdminListUsersRes, error)
 	AdminGetUserDetail(context.Context, *AdminGetUserDetailReq) (*AdminGetUserDetailRes, error)
-	AdminSetUserStatus(context.Context, *AdminSetUserStatusReq) (*emptypb.Empty, error)
+	AdminSetUserStatus(context.Context, *AdminSetUserStatusReq) (*AdminSetUserStatusRes, error)
 	mustEmbedUnimplementedAdminUserServiceServer()
 }
 
@@ -509,7 +509,7 @@ func (UnimplementedAdminUserServiceServer) AdminListUsers(context.Context, *Admi
 func (UnimplementedAdminUserServiceServer) AdminGetUserDetail(context.Context, *AdminGetUserDetailReq) (*AdminGetUserDetailRes, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminGetUserDetail not implemented")
 }
-func (UnimplementedAdminUserServiceServer) AdminSetUserStatus(context.Context, *AdminSetUserStatusReq) (*emptypb.Empty, error) {
+func (UnimplementedAdminUserServiceServer) AdminSetUserStatus(context.Context, *AdminSetUserStatusReq) (*AdminSetUserStatusRes, error) {
 	return nil, status.Error(codes.Unimplemented, "method AdminSetUserStatus not implemented")
 }
 func (UnimplementedAdminUserServiceServer) mustEmbedUnimplementedAdminUserServiceServer() {}

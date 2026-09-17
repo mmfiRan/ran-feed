@@ -17,14 +17,14 @@ type (
 		Mobile    string    `json:"mobile"`
 		Avatar    string    `json:"avatar"`
 		Status    EnumValue `json:"status"`
-		CreatedAt int64     `json:"created_at"` // 毫秒
+		CreatedAt int64     `json:"created_at"`
 	}
 	CUserListRes {
 		PageQueryResp
 		Items []CUserItem `json:"items"`
 	}
 	CUserDetailReq {
-		UserId int64 `form:"user_id"`
+		UserId int64 `form:"user_id,optional" validate:"required,gt=0"`
 	}
 	CUserDetailData {
 		UserId    int64     `json:"user_id"`
@@ -36,19 +36,19 @@ type (
 		Bio       string    `json:"bio"`
 		Gender    EnumValue `json:"gender"`
 		Email     string    `json:"email"`
-		CreatedAt int64     `json:"created_at"` // 毫秒
-		UpdatedAt int64     `json:"updated_at"` // 毫秒
+		CreatedAt int64     `json:"created_at"`
+		UpdatedAt int64     `json:"updated_at"`
 	}
 	CUserDetailRes {
 		Detail CUserDetailData `json:"detail"`
 	}
-	// CUserStatusReq action 取 ban(封禁) 或 restore(恢复)
+	// CUserStatusReq status 取 10 恢复 或 20 封禁
 	CUserStatusReq {
-		UserId int64  `json:"user_id,optional" validate:"required,gt=0"`
-		Action string `json:"action,optional" validate:"required,oneof=ban restore"`
+		UserId int64 `json:"user_id,optional" validate:"required,gt=0"`
+		Status int32 `json:"status,optional" validate:"required,oneof=10 20"`
 	}
 	CUserStatusRes {
-		Status int32 `json:"status"` // 变更后状态
+		Status EnumValue `json:"status"` // 变更后状态
 	}
 )
 

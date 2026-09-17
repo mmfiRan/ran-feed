@@ -35,15 +35,17 @@ func NewListLoginLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Lis
 // ListLoginLogs 按条件分页查登录日志
 func (l *ListLoginLogsLogic) ListLoginLogs(in *admin.ListLoginLogsReq) (*admin.ListLoginLogsRes, error) {
 	filter := types.LoginLogFilter{
-		Username: in.GetUsername(),
-		IP:       in.GetIp(),
-		Status:   int32(in.GetStatus()),
+		Username: in.Username,
+		IP:       in.Ip,
+		Status:   utils.CastPtr[int32](in.Status),
 	}
 	if st := in.GetStartTime(); st != nil {
-		filter.StartMillis = st.AsTime().UnixMilli()
+		ms := st.AsTime().UnixMilli()
+		filter.StartMillis = &ms
 	}
 	if et := in.GetEndTime(); et != nil {
-		filter.EndMillis = et.AsTime().UnixMilli()
+		ms := et.AsTime().UnixMilli()
+		filter.EndMillis = &ms
 	}
 
 	offset, limit := utils.NormalizePage(in.GetPage(), in.GetPageSize())

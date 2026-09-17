@@ -33,15 +33,18 @@ func NewListOperationLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 // ListOperationLogs 按条件分页查操作审计日志 先统计总数为0直接返回
 func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsReq) (*admin.ListOperationLogsRes, error) {
 	filter := types.OperationLogFilter{
-		Username: in.GetUsername(),
-		Action:   in.GetAction(),
-		Status:   int32(in.GetStatus()),
+		AdminID:  in.AdminId,
+		Username: in.Username,
+		Action:   in.Action,
+		Status:   pkgutils.CastPtr[int32](in.Status),
 	}
 	if st := in.GetStartTime(); st != nil {
-		filter.StartMillis = st.AsTime().UnixMilli()
+		ms := st.AsTime().UnixMilli()
+		filter.StartMillis = &ms
 	}
 	if et := in.GetEndTime(); et != nil {
-		filter.EndMillis = et.AsTime().UnixMilli()
+		ms := et.AsTime().UnixMilli()
+		filter.EndMillis = &ms
 	}
 
 	offset, limit := pkgutils.NormalizePage(in.GetPage(), in.GetPageSize())

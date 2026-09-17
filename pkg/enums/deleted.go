@@ -24,6 +24,10 @@ func (d IsDeleted) Int32() int32 {
 	return int32(d)
 }
 
+func (d IsDeleted) Int64() int64 {
+	return int64(d)
+}
+
 func (d IsDeleted) Valid() bool {
 	_, ok := isDeletedNames[d]
 	return ok

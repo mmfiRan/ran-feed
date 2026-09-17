@@ -10,6 +10,7 @@ import (
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -30,7 +31,7 @@ func NewListAdminsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListAd
 
 func (l *ListAdminsLogic) ListAdmins(req *types.AdminUserListReq) (resp *types.AdminUserListRes, err error) {
 	rpcRes, err := l.svcCtx.AdminUserRpc.ListAdmins(l.ctx, &admin.ListAdminsReq{
-		Status:   admin.AdminStatus(req.Status),
+		Status:   pkgutils.CastPtr[admin.AdminStatus](req.Status),
 		Page:     req.Page,
 		PageSize: req.PageSize,
 	})

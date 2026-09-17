@@ -7,7 +7,6 @@ package server
 import (
 	"context"
 
-	"google.golang.org/protobuf/types/known/emptypb"
 	"ran-feed/app/rpc/user/internal/logic/adminuserservice"
 	"ran-feed/app/rpc/user/internal/svc"
 	"ran-feed/app/rpc/user/user"
@@ -34,7 +33,7 @@ func (s *AdminUserServiceServer) AdminGetUserDetail(ctx context.Context, in *use
 	return l.AdminGetUserDetail(in)
 }
 
-func (s *AdminUserServiceServer) AdminSetUserStatus(ctx context.Context, in *user.AdminSetUserStatusReq) (*emptypb.Empty, error) {
+func (s *AdminUserServiceServer) AdminSetUserStatus(ctx context.Context, in *user.AdminSetUserStatusReq) (*user.AdminSetUserStatusRes, error) {
 	l := adminuserservicelogic.NewAdminSetUserStatusLogic(ctx, s.svcCtx)
 	return l.AdminSetUserStatus(in)
 }

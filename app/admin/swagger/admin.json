@@ -53,6 +53,7 @@
           },
           {
             "type": "integer",
+            "description": "状态 10启用 20禁用",
             "name": "status",
             "in": "query",
             "allowEmptyValue": true
@@ -210,7 +211,7 @@
             "type": "integer",
             "name": "id",
             "in": "query",
-            "required": true
+            "allowEmptyValue": true
           }
         ],
         "responses": {
@@ -1057,6 +1058,7 @@
           },
           {
             "type": "integer",
+            "description": "结果 1成功 2失败",
             "name": "status",
             "in": "query",
             "allowEmptyValue": true
@@ -1299,6 +1301,7 @@
           },
           {
             "type": "integer",
+            "description": "结果 1成功 2失败",
             "name": "status",
             "in": "query",
             "allowEmptyValue": true
@@ -1664,7 +1667,7 @@
             "type": "integer",
             "name": "id",
             "in": "query",
-            "required": true
+            "allowEmptyValue": true
           }
         ],
         "responses": {
@@ -1883,7 +1886,6 @@
                         "type": "string"
                       },
                       "created_at": {
-                        "description": "毫秒",
                         "type": "integer"
                       },
                       "mobile": {
@@ -1954,7 +1956,7 @@
             "type": "integer",
             "name": "user_id",
             "in": "query",
-            "required": true
+            "allowEmptyValue": true
           }
         ],
         "responses": {
@@ -1986,7 +1988,6 @@
                       "type": "string"
                     },
                     "created_at": {
-                      "description": "毫秒",
                       "type": "integer"
                     },
                     "email": {
@@ -2037,7 +2038,6 @@
                       }
                     },
                     "updated_at": {
-                      "description": "毫秒",
                       "type": "integer"
                     },
                     "user_id": {
@@ -2079,8 +2079,8 @@
             "schema": {
               "type": "object",
               "properties": {
-                "action": {
-                  "type": "string"
+                "status": {
+                  "type": "integer"
                 },
                 "user_id": {
                   "type": "integer"
@@ -2097,7 +2097,23 @@
               "properties": {
                 "status": {
                   "description": "变更后状态",
-                  "type": "integer"
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "name",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
@@ -2106,7 +2122,7 @@
       }
     }
   },
-  "x-date": "2026-09-16 17:10:37",
+  "x-date": "2026-09-17 15:02:22",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

@@ -1838,6 +1838,51 @@ func (x *AdminSetUserStatusReq) GetOperatorId() int64 {
 	return 0
 }
 
+// 后台管理设置用户状态响应
+type AdminSetUserStatusRes struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Status        *commonpb.EnumValue    `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdminSetUserStatusRes) Reset() {
+	*x = AdminSetUserStatusRes{}
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdminSetUserStatusRes) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdminSetUserStatusRes) ProtoMessage() {}
+
+func (x *AdminSetUserStatusRes) ProtoReflect() protoreflect.Message {
+	mi := &file_app_rpc_user_proto_user_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdminSetUserStatusRes.ProtoReflect.Descriptor instead.
+func (*AdminSetUserStatusRes) Descriptor() ([]byte, []int) {
+	return file_app_rpc_user_proto_user_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *AdminSetUserStatusRes) GetStatus() *commonpb.EnumValue {
+	if x != nil {
+		return x.Status
+	}
+	return nil
+}
+
 var File_app_rpc_user_proto_user_proto protoreflect.FileDescriptor
 
 const file_app_rpc_user_proto_user_proto_rawDesc = "" +
@@ -1971,7 +2016,9 @@ const file_app_rpc_user_proto_user_proto_rawDesc = "" +
 	"\auser_id\x18\x01 \x01(\x03R\x06userId\x120\n" +
 	"\x06status\x18\x02 \x01(\x0e2\x18.ranfeed.user.UserStatusR\x06status\x12\x1f\n" +
 	"\voperator_id\x18\x03 \x01(\x03R\n" +
-	"operatorId*D\n" +
+	"operatorId\"L\n" +
+	"\x15AdminSetUserStatusRes\x123\n" +
+	"\x06status\x18\x01 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status*D\n" +
 	"\x06Gender\x12\x16\n" +
 	"\x12GENDER_UNSPECIFIED\x10\x00\x12\x0f\n" +
 	"\vGENDER_MALE\x10\x01\x12\x11\n" +
@@ -1992,11 +2039,11 @@ const file_app_rpc_user_proto_user_proto_rawDesc = "" +
 	"\x0eGetUserProfile\x12\x1f.ranfeed.user.GetUserProfileReq\x1a\x1f.ranfeed.user.GetUserProfileRes\x12L\n" +
 	"\fBatchGetUser\x12\x1d.ranfeed.user.BatchGetUserReq\x1a\x1d.ranfeed.user.BatchGetUserRes\x12d\n" +
 	"\x14BatchGetUserForIndex\x12%.ranfeed.user.BatchGetUserForIndexReq\x1a%.ranfeed.user.BatchGetUserForIndexRes\x12X\n" +
-	"\x10ListUserForIndex\x12!.ranfeed.user.ListUserForIndexReq\x1a!.ranfeed.user.ListUserForIndexRes2\x99\x02\n" +
+	"\x10ListUserForIndex\x12!.ranfeed.user.ListUserForIndexReq\x1a!.ranfeed.user.ListUserForIndexRes2\xa6\x02\n" +
 	"\x10AdminUserService\x12R\n" +
 	"\x0eAdminListUsers\x12\x1f.ranfeed.user.AdminListUsersReq\x1a\x1f.ranfeed.user.AdminListUsersRes\x12^\n" +
-	"\x12AdminGetUserDetail\x12#.ranfeed.user.AdminGetUserDetailReq\x1a#.ranfeed.user.AdminGetUserDetailRes\x12Q\n" +
-	"\x12AdminSetUserStatus\x12#.ranfeed.user.AdminSetUserStatusReq\x1a\x16.google.protobuf.EmptyB\x1cZ\x1aran-feed/app/rpc/user/userb\x06proto3"
+	"\x12AdminGetUserDetail\x12#.ranfeed.user.AdminGetUserDetailReq\x1a#.ranfeed.user.AdminGetUserDetailRes\x12^\n" +
+	"\x12AdminSetUserStatus\x12#.ranfeed.user.AdminSetUserStatusReq\x1a#.ranfeed.user.AdminSetUserStatusResB\x1cZ\x1aran-feed/app/rpc/user/userb\x06proto3"
 
 var (
 	file_app_rpc_user_proto_user_proto_rawDescOnce sync.Once
@@ -2011,7 +2058,7 @@ func file_app_rpc_user_proto_user_proto_rawDescGZIP() []byte {
 }
 
 var file_app_rpc_user_proto_user_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_app_rpc_user_proto_user_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_app_rpc_user_proto_user_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_app_rpc_user_proto_user_proto_goTypes = []any{
 	(Gender)(0),                     // 0: ranfeed.user.Gender
 	(UserStatus)(0),                 // 1: ranfeed.user.UserStatus
@@ -2042,19 +2089,20 @@ var file_app_rpc_user_proto_user_proto_goTypes = []any{
 	(*AdminGetUserDetailReq)(nil),   // 26: ranfeed.user.AdminGetUserDetailReq
 	(*AdminGetUserDetailRes)(nil),   // 27: ranfeed.user.AdminGetUserDetailRes
 	(*AdminSetUserStatusReq)(nil),   // 28: ranfeed.user.AdminSetUserStatusReq
-	(*commonpb.EnumValue)(nil),      // 29: ranfeed.commonpb.EnumValue
-	(*timestamppb.Timestamp)(nil),   // 30: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),           // 31: google.protobuf.Empty
+	(*AdminSetUserStatusRes)(nil),   // 29: ranfeed.user.AdminSetUserStatusRes
+	(*commonpb.EnumValue)(nil),      // 30: ranfeed.commonpb.EnumValue
+	(*timestamppb.Timestamp)(nil),   // 31: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),           // 32: google.protobuf.Empty
 }
 var file_app_rpc_user_proto_user_proto_depIdxs = []int32{
-	29, // 0: ranfeed.user.UserInfo.gender:type_name -> ranfeed.commonpb.EnumValue
-	29, // 1: ranfeed.user.UserInfo.status:type_name -> ranfeed.commonpb.EnumValue
-	29, // 2: ranfeed.user.UserProfile.gender:type_name -> ranfeed.commonpb.EnumValue
-	29, // 3: ranfeed.user.UserProfile.status:type_name -> ranfeed.commonpb.EnumValue
+	30, // 0: ranfeed.user.UserInfo.gender:type_name -> ranfeed.commonpb.EnumValue
+	30, // 1: ranfeed.user.UserInfo.status:type_name -> ranfeed.commonpb.EnumValue
+	30, // 2: ranfeed.user.UserProfile.gender:type_name -> ranfeed.commonpb.EnumValue
+	30, // 3: ranfeed.user.UserProfile.status:type_name -> ranfeed.commonpb.EnumValue
 	0,  // 4: ranfeed.user.RegisterReq.gender:type_name -> ranfeed.user.Gender
-	30, // 5: ranfeed.user.RegisterReq.birthday:type_name -> google.protobuf.Timestamp
-	30, // 6: ranfeed.user.RegisterRes.expired_at:type_name -> google.protobuf.Timestamp
-	30, // 7: ranfeed.user.LoginRes.expired_at:type_name -> google.protobuf.Timestamp
+	31, // 5: ranfeed.user.RegisterReq.birthday:type_name -> google.protobuf.Timestamp
+	31, // 6: ranfeed.user.RegisterRes.expired_at:type_name -> google.protobuf.Timestamp
+	31, // 7: ranfeed.user.LoginRes.expired_at:type_name -> google.protobuf.Timestamp
 	2,  // 8: ranfeed.user.GetMeRes.user_info:type_name -> ranfeed.user.UserInfo
 	2,  // 9: ranfeed.user.GetUserRes.user_info:type_name -> ranfeed.user.UserInfo
 	3,  // 10: ranfeed.user.GetUserProfileRes.user_profile:type_name -> ranfeed.user.UserProfile
@@ -2062,45 +2110,46 @@ var file_app_rpc_user_proto_user_proto_depIdxs = []int32{
 	1,  // 12: ranfeed.user.UserIndexItem.status:type_name -> ranfeed.user.UserStatus
 	17, // 13: ranfeed.user.BatchGetUserForIndexRes.items:type_name -> ranfeed.user.UserIndexItem
 	17, // 14: ranfeed.user.ListUserForIndexRes.items:type_name -> ranfeed.user.UserIndexItem
-	29, // 15: ranfeed.user.AdminUserItem.status:type_name -> ranfeed.commonpb.EnumValue
-	30, // 16: ranfeed.user.AdminUserItem.created_at:type_name -> google.protobuf.Timestamp
-	29, // 17: ranfeed.user.AdminUserDetail.status:type_name -> ranfeed.commonpb.EnumValue
-	29, // 18: ranfeed.user.AdminUserDetail.gender:type_name -> ranfeed.commonpb.EnumValue
-	30, // 19: ranfeed.user.AdminUserDetail.created_at:type_name -> google.protobuf.Timestamp
-	30, // 20: ranfeed.user.AdminUserDetail.updated_at:type_name -> google.protobuf.Timestamp
+	30, // 15: ranfeed.user.AdminUserItem.status:type_name -> ranfeed.commonpb.EnumValue
+	31, // 16: ranfeed.user.AdminUserItem.created_at:type_name -> google.protobuf.Timestamp
+	30, // 17: ranfeed.user.AdminUserDetail.status:type_name -> ranfeed.commonpb.EnumValue
+	30, // 18: ranfeed.user.AdminUserDetail.gender:type_name -> ranfeed.commonpb.EnumValue
+	31, // 19: ranfeed.user.AdminUserDetail.created_at:type_name -> google.protobuf.Timestamp
+	31, // 20: ranfeed.user.AdminUserDetail.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 21: ranfeed.user.AdminListUsersReq.status:type_name -> ranfeed.user.UserStatus
 	22, // 22: ranfeed.user.AdminListUsersRes.items:type_name -> ranfeed.user.AdminUserItem
 	23, // 23: ranfeed.user.AdminGetUserDetailRes.detail:type_name -> ranfeed.user.AdminUserDetail
 	1,  // 24: ranfeed.user.AdminSetUserStatusReq.status:type_name -> ranfeed.user.UserStatus
-	4,  // 25: ranfeed.user.UserService.Register:input_type -> ranfeed.user.RegisterReq
-	6,  // 26: ranfeed.user.UserService.Login:input_type -> ranfeed.user.LoginReq
-	8,  // 27: ranfeed.user.UserService.Logout:input_type -> ranfeed.user.LogoutReq
-	9,  // 28: ranfeed.user.UserService.GetMe:input_type -> ranfeed.user.GetMeReq
-	11, // 29: ranfeed.user.UserService.GetUser:input_type -> ranfeed.user.GetUserReq
-	13, // 30: ranfeed.user.UserService.GetUserProfile:input_type -> ranfeed.user.GetUserProfileReq
-	15, // 31: ranfeed.user.UserService.BatchGetUser:input_type -> ranfeed.user.BatchGetUserReq
-	18, // 32: ranfeed.user.UserService.BatchGetUserForIndex:input_type -> ranfeed.user.BatchGetUserForIndexReq
-	20, // 33: ranfeed.user.UserService.ListUserForIndex:input_type -> ranfeed.user.ListUserForIndexReq
-	24, // 34: ranfeed.user.AdminUserService.AdminListUsers:input_type -> ranfeed.user.AdminListUsersReq
-	26, // 35: ranfeed.user.AdminUserService.AdminGetUserDetail:input_type -> ranfeed.user.AdminGetUserDetailReq
-	28, // 36: ranfeed.user.AdminUserService.AdminSetUserStatus:input_type -> ranfeed.user.AdminSetUserStatusReq
-	5,  // 37: ranfeed.user.UserService.Register:output_type -> ranfeed.user.RegisterRes
-	7,  // 38: ranfeed.user.UserService.Login:output_type -> ranfeed.user.LoginRes
-	31, // 39: ranfeed.user.UserService.Logout:output_type -> google.protobuf.Empty
-	10, // 40: ranfeed.user.UserService.GetMe:output_type -> ranfeed.user.GetMeRes
-	12, // 41: ranfeed.user.UserService.GetUser:output_type -> ranfeed.user.GetUserRes
-	14, // 42: ranfeed.user.UserService.GetUserProfile:output_type -> ranfeed.user.GetUserProfileRes
-	16, // 43: ranfeed.user.UserService.BatchGetUser:output_type -> ranfeed.user.BatchGetUserRes
-	19, // 44: ranfeed.user.UserService.BatchGetUserForIndex:output_type -> ranfeed.user.BatchGetUserForIndexRes
-	21, // 45: ranfeed.user.UserService.ListUserForIndex:output_type -> ranfeed.user.ListUserForIndexRes
-	25, // 46: ranfeed.user.AdminUserService.AdminListUsers:output_type -> ranfeed.user.AdminListUsersRes
-	27, // 47: ranfeed.user.AdminUserService.AdminGetUserDetail:output_type -> ranfeed.user.AdminGetUserDetailRes
-	31, // 48: ranfeed.user.AdminUserService.AdminSetUserStatus:output_type -> google.protobuf.Empty
-	37, // [37:49] is the sub-list for method output_type
-	25, // [25:37] is the sub-list for method input_type
-	25, // [25:25] is the sub-list for extension type_name
-	25, // [25:25] is the sub-list for extension extendee
-	0,  // [0:25] is the sub-list for field type_name
+	30, // 25: ranfeed.user.AdminSetUserStatusRes.status:type_name -> ranfeed.commonpb.EnumValue
+	4,  // 26: ranfeed.user.UserService.Register:input_type -> ranfeed.user.RegisterReq
+	6,  // 27: ranfeed.user.UserService.Login:input_type -> ranfeed.user.LoginReq
+	8,  // 28: ranfeed.user.UserService.Logout:input_type -> ranfeed.user.LogoutReq
+	9,  // 29: ranfeed.user.UserService.GetMe:input_type -> ranfeed.user.GetMeReq
+	11, // 30: ranfeed.user.UserService.GetUser:input_type -> ranfeed.user.GetUserReq
+	13, // 31: ranfeed.user.UserService.GetUserProfile:input_type -> ranfeed.user.GetUserProfileReq
+	15, // 32: ranfeed.user.UserService.BatchGetUser:input_type -> ranfeed.user.BatchGetUserReq
+	18, // 33: ranfeed.user.UserService.BatchGetUserForIndex:input_type -> ranfeed.user.BatchGetUserForIndexReq
+	20, // 34: ranfeed.user.UserService.ListUserForIndex:input_type -> ranfeed.user.ListUserForIndexReq
+	24, // 35: ranfeed.user.AdminUserService.AdminListUsers:input_type -> ranfeed.user.AdminListUsersReq
+	26, // 36: ranfeed.user.AdminUserService.AdminGetUserDetail:input_type -> ranfeed.user.AdminGetUserDetailReq
+	28, // 37: ranfeed.user.AdminUserService.AdminSetUserStatus:input_type -> ranfeed.user.AdminSetUserStatusReq
+	5,  // 38: ranfeed.user.UserService.Register:output_type -> ranfeed.user.RegisterRes
+	7,  // 39: ranfeed.user.UserService.Login:output_type -> ranfeed.user.LoginRes
+	32, // 40: ranfeed.user.UserService.Logout:output_type -> google.protobuf.Empty
+	10, // 41: ranfeed.user.UserService.GetMe:output_type -> ranfeed.user.GetMeRes
+	12, // 42: ranfeed.user.UserService.GetUser:output_type -> ranfeed.user.GetUserRes
+	14, // 43: ranfeed.user.UserService.GetUserProfile:output_type -> ranfeed.user.GetUserProfileRes
+	16, // 44: ranfeed.user.UserService.BatchGetUser:output_type -> ranfeed.user.BatchGetUserRes
+	19, // 45: ranfeed.user.UserService.BatchGetUserForIndex:output_type -> ranfeed.user.BatchGetUserForIndexRes
+	21, // 46: ranfeed.user.UserService.ListUserForIndex:output_type -> ranfeed.user.ListUserForIndexRes
+	25, // 47: ranfeed.user.AdminUserService.AdminListUsers:output_type -> ranfeed.user.AdminListUsersRes
+	27, // 48: ranfeed.user.AdminUserService.AdminGetUserDetail:output_type -> ranfeed.user.AdminGetUserDetailRes
+	29, // 49: ranfeed.user.AdminUserService.AdminSetUserStatus:output_type -> ranfeed.user.AdminSetUserStatusRes
+	38, // [38:50] is the sub-list for method output_type
+	26, // [26:38] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_app_rpc_user_proto_user_proto_init() }
@@ -2116,7 +2165,7 @@ func file_app_rpc_user_proto_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_app_rpc_user_proto_user_proto_rawDesc), len(file_app_rpc_user_proto_user_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   27,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

@@ -29,7 +29,7 @@ func NewListPermissionsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *L
 
 // ListPermissions 权限点目录 供前端角色分权时选择 module 空则全量
 func (l *ListPermissionsLogic) ListPermissions(in *admin.ListPermissionsReq) (*admin.ListPermissionsRes, error) {
-	rows, err := l.permissionRepo.ListAll(in.GetModule())
+	rows, err := l.permissionRepo.ListAll(in.Module)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询权限点失败"))
 	}

@@ -10,6 +10,7 @@ import (
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -31,17 +32,17 @@ func NewListOperationLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 
 func (l *ListOperationLogsLogic) ListOperationLogs(req *types.AdminOperationLogListReq) (resp *types.AdminOperationLogListRes, err error) {
 	var startTime, endTime *timestamppb.Timestamp
-	if req.StartTime > 0 {
-		startTime = timestamppb.New(time.UnixMilli(req.StartTime))
+	if st := req.StartTime; st != nil && *st > 0 {
+		startTime = timestamppb.New(time.UnixMilli(*st))
 	}
-	if req.EndTime > 0 {
-		endTime = timestamppb.New(time.UnixMilli(req.EndTime))
+	if et := req.EndTime; et != nil && *et > 0 {
+		endTime = timestamppb.New(time.UnixMilli(*et))
 	}
 	rpcRes, err := l.svcCtx.AdminAuditRpc.ListOperationLogs(l.ctx, &admin.ListOperationLogsReq{
 		AdminId:   req.AdminId,
 		Username:  req.Username,
 		Action:    req.Action,
-		Status:    admin.OperateStatus(req.Status),
+		Status:    pkgutils.CastPtr[admin.OperateStatus](req.Status),
 		StartTime: startTime,
 		EndTime:   endTime,
 		Page:      req.Page,

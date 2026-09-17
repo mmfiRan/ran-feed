@@ -99,11 +99,11 @@ type AdminLoginLogItem struct {
 
 type AdminLoginLogListReq struct {
 	PageQueryReq
-	Username  string `form:"username,optional"`
-	Ip        string `form:"ip,optional"`
-	Status    int32  `form:"status,optional"`
-	StartTime int64  `form:"start_time,optional"`
-	EndTime   int64  `form:"end_time,optional"`
+	Username  *string `form:"username,optional" validate:"omitempty,max=64"`
+	Ip        *string `form:"ip,optional" validate:"omitempty,max=64"`
+	Status    *int32  `form:"status,optional" validate:"omitempty,oneof=1 2"` // 结果 1成功 2失败
+	StartTime *int64  `form:"start_time,optional" validate:"omitempty,gt=0"`
+	EndTime   *int64  `form:"end_time,optional" validate:"omitempty,gt=0"`
 }
 
 type AdminLoginLogListRes struct {
@@ -112,8 +112,8 @@ type AdminLoginLogListRes struct {
 }
 
 type AdminLoginReq struct {
-	Username *string `json:"username,optional" validate:"required,max=64"`
-	Password *string `json:"password,optional" validate:"required"`
+	Username string `json:"username,optional" validate:"required,max=64"`
+	Password string `json:"password,optional" validate:"required"`
 }
 
 type AdminLoginRes struct {
@@ -148,12 +148,12 @@ type AdminOperationLogItem struct {
 
 type AdminOperationLogListReq struct {
 	PageQueryReq
-	AdminId   int64  `form:"admin_id,optional"`
-	Username  string `form:"username,optional"`
-	Action    string `form:"action,optional"`
-	Status    int32  `form:"status,optional"`
-	StartTime int64  `form:"start_time,optional"`
-	EndTime   int64  `form:"end_time,optional"`
+	AdminId   *int64  `form:"admin_id,optional" validate:"omitempty,gt=0"`
+	Username  *string `form:"username,optional" validate:"omitempty,max=64"`
+	Action    *string `form:"action,optional" validate:"omitempty,max=128"`
+	Status    *int32  `form:"status,optional" validate:"omitempty,oneof=1 2"` // 结果 1成功 2失败
+	StartTime *int64  `form:"start_time,optional" validate:"omitempty,gt=0"`
+	EndTime   *int64  `form:"end_time,optional" validate:"omitempty,gt=0"`
 }
 
 type AdminOperationLogListRes struct {
@@ -169,7 +169,7 @@ type AdminPermissionItem struct {
 }
 
 type AdminPermissionListReq struct {
-	Module string `form:"module,optional"`
+	Module *string `form:"module,optional" validate:"omitempty,max=64"`
 }
 
 type AdminPermissionListRes struct {
@@ -194,7 +194,7 @@ type AdminRoleDeleteRes struct {
 }
 
 type AdminRoleDetailReq struct {
-	Id int64 `form:"id"`
+	Id int64 `form:"id,optional" validate:"required,gt=0"`
 }
 
 type AdminRoleDetailRes struct {
@@ -248,7 +248,7 @@ type AdminUserCreateRes struct {
 }
 
 type AdminUserDetailReq struct {
-	Id int64 `form:"id"`
+	Id int64 `form:"id,optional" validate:"required,gt=0"`
 }
 
 type AdminUserDetailRes struct {
@@ -267,7 +267,7 @@ type AdminUserItem struct {
 
 type AdminUserListReq struct {
 	PageQueryReq
-	Status int32 `form:"status,optional"`
+	Status *int32 `form:"status,optional" validate:"omitempty,oneof=10 20"` // 状态 10启用 20禁用
 }
 
 type AdminUserListRes struct {
@@ -293,7 +293,7 @@ type AdminUserSetRolesRes struct {
 
 type AdminUserStatusReq struct {
 	Id     int64 `json:"id,optional" validate:"required,gt=0"`
-	Status int32 `json:"status,optional" validate:"required"`
+	Status int32 `json:"status,optional" validate:"required,oneof=10 20"`
 }
 
 type AdminUserStatusRes struct {
@@ -317,12 +317,12 @@ type CUserDetailData struct {
 	Bio       string    `json:"bio"`
 	Gender    EnumValue `json:"gender"`
 	Email     string    `json:"email"`
-	CreatedAt int64     `json:"created_at"` // 毫秒
-	UpdatedAt int64     `json:"updated_at"` // 毫秒
+	CreatedAt int64     `json:"created_at"`
+	UpdatedAt int64     `json:"updated_at"`
 }
 
 type CUserDetailReq struct {
-	UserId int64 `form:"user_id"`
+	UserId int64 `form:"user_id,optional" validate:"required,gt=0"`
 }
 
 type CUserDetailRes struct {
@@ -336,7 +336,7 @@ type CUserItem struct {
 	Mobile    string    `json:"mobile"`
 	Avatar    string    `json:"avatar"`
 	Status    EnumValue `json:"status"`
-	CreatedAt int64     `json:"created_at"` // 毫秒
+	CreatedAt int64     `json:"created_at"`
 }
 
 type CUserListReq struct {
@@ -352,12 +352,12 @@ type CUserListRes struct {
 }
 
 type CUserStatusReq struct {
-	UserId int64  `json:"user_id,optional" validate:"required,gt=0"`
-	Action string `json:"action,optional" validate:"required,oneof=ban restore"`
+	UserId int64 `json:"user_id,optional" validate:"required,gt=0"`
+	Status int32 `json:"status,optional" validate:"required,oneof=10 20"`
 }
 
 type CUserStatusRes struct {
-	Status int32 `json:"status"` // 变更后状态
+	Status EnumValue `json:"status"` // 变更后状态
 }
 
 type EnumValue struct {
@@ -367,8 +367,8 @@ type EnumValue struct {
 }
 
 type PageQueryReq struct {
-	Page     uint32 `form:"page,default=1"`
-	PageSize uint32 `form:"page_size,default=10"`
+	Page     uint32 `form:"page,default=1" validate:"omitempty,gt=0"`
+	PageSize uint32 `form:"page_size,default=10" validate:"omitempty,gt=0,max=50"`
 }
 
 type PageQueryResp struct {

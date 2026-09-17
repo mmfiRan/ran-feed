@@ -15,8 +15,8 @@ type AdminPermissionRepository interface {
 	ListCodesByIDs(ids []int64) ([]string, error)
 	// ListCodesByAdminID 查询权限集合
 	ListCodesByAdminID(adminID int64) ([]string, error)
-	// ListAll 取权限点目录
-	ListAll(module string) ([]*model.RanFeedAdminPermission, error)
+	// ListAll 取权限点目录 module 为 nil 表示不限
+	ListAll(module *string) ([]*model.RanFeedAdminPermission, error)
 }
 
 type adminPermissionRepositoryImpl struct {
@@ -77,11 +77,11 @@ func (r *adminPermissionRepositoryImpl) ListCodesByAdminID(adminID int64) ([]str
 }
 
 // ListAll 取权限点目录
-func (r *adminPermissionRepositoryImpl) ListAll(module string) ([]*model.RanFeedAdminPermission, error) {
+func (r *adminPermissionRepositoryImpl) ListAll(module *string) ([]*model.RanFeedAdminPermission, error) {
 	q := query.Q.RanFeedAdminPermission
 	do := q.WithContext(r.ctx).Where(q.IsDeleted.Eq(enums.NotDeleted.Int32()))
-	if module != "" {
-		do = do.Where(q.Module.Eq(module))
+	if module != nil {
+		do = do.Where(q.Module.Eq(*module))
 	}
 	return do.Order(q.Module, q.ID).Find()
 }

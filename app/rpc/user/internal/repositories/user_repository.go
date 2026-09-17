@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"ran-feed/pkg/enums"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/gorm"
@@ -249,7 +250,7 @@ func (r *userRepositoryImpl) Create(userDO *do.UserDO) (int64, error) {
 // AdminPageUsers 后台管理分页列表用户
 func (r *userRepositoryImpl) AdminPageUsers(status *int32, username, nickname *string, offset, limit int) ([]*model.RanFeedUser, int64, error) {
 	q := r.getQuery()
-	doQuery := q.RanFeedUser.WithContext(r.ctx).Where(q.RanFeedUser.IsDeleted.Eq(0))
+	doQuery := q.RanFeedUser.WithContext(r.ctx).Where(q.RanFeedUser.IsDeleted.Eq(enums.NotDeleted.Int64()))
 
 	if status != nil {
 		doQuery = doQuery.Where(q.RanFeedUser.Status.Eq(*status))

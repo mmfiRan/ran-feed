@@ -17,8 +17,8 @@ type AdminUserRepository interface {
 	WithTx(tx *query.Query) AdminUserRepository
 	GetByUsername(username string) (*model.RanFeedAdminUser, error)
 	GetByID(id int64) (*model.RanFeedAdminUser, error)
-	// Page 管理员分页 status>enums.NotDeleted.Int32() 时按状态筛选 id 倒序 返回列表与总数
-	Page(status int32, offset, limit int) ([]*model.RanFeedAdminUser, int64, error)
+	// Page 管理员分页 status 为 nil 表示不限 id 倒序 返回列表与总数
+	Page(status *int32, offset, limit int) ([]*model.RanFeedAdminUser, int64, error)
 	// Create 建管理员
 	Create(row *model.RanFeedAdminUser) error
 	// UpdateProfile 修改昵称
@@ -93,11 +93,11 @@ func (r *adminUserRepositoryImpl) GetByID(id int64) (*model.RanFeedAdminUser, er
 }
 
 // Page 管理员分页查询
-func (r *adminUserRepositoryImpl) Page(status int32, offset, limit int) ([]*model.RanFeedAdminUser, int64, error) {
+func (r *adminUserRepositoryImpl) Page(status *int32, offset, limit int) ([]*model.RanFeedAdminUser, int64, error) {
 	q := r.getQuery().RanFeedAdminUser
 	do := q.WithContext(r.ctx).Where(q.IsDeleted.Eq(enums.NotDeleted.Int32()))
-	if status > enums.NotDeleted.Int32() {
-		do = do.Where(q.Status.Eq(status))
+	if status != nil {
+		do = do.Where(q.Status.Eq(*status))
 	}
 	return do.Order(q.ID.Desc()).FindByPage(offset, limit)
 }

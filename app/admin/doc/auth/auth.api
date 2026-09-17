@@ -4,8 +4,8 @@ import "../base/base.api"
 
 type (
 	AdminLoginReq {
-		Username *string `json:"username,optional" validate:"required,max=64"`
-		Password *string `json:"password,optional" validate:"required"`
+		Username string `json:"username,optional" validate:"required,max=64"`
+		Password string `json:"password,optional" validate:"required"`
 	}
 	AdminLoginRes {
 		AdminId     int64    `json:"admin_id"`

@@ -9,8 +9,6 @@ import (
 
 	"ran-feed/app/rpc/user/user"
 
-	"google.golang.org/protobuf/types/known/emptypb"
-
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"
 )
@@ -21,13 +19,14 @@ type (
 	AdminListUsersReq     = user.AdminListUsersReq
 	AdminListUsersRes     = user.AdminListUsersRes
 	AdminSetUserStatusReq = user.AdminSetUserStatusReq
+	AdminSetUserStatusRes = user.AdminSetUserStatusRes
 	AdminUserDetail       = user.AdminUserDetail
 	AdminUserItem         = user.AdminUserItem
 
 	AdminUserService interface {
 		AdminListUsers(ctx context.Context, in *AdminListUsersReq, opts ...grpc.CallOption) (*AdminListUsersRes, error)
 		AdminGetUserDetail(ctx context.Context, in *AdminGetUserDetailReq, opts ...grpc.CallOption) (*AdminGetUserDetailRes, error)
-		AdminSetUserStatus(ctx context.Context, in *AdminSetUserStatusReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
+		AdminSetUserStatus(ctx context.Context, in *AdminSetUserStatusReq, opts ...grpc.CallOption) (*AdminSetUserStatusRes, error)
 	}
 
 	defaultAdminUserService struct {
@@ -51,7 +50,7 @@ func (m *defaultAdminUserService) AdminGetUserDetail(ctx context.Context, in *Ad
 	return client.AdminGetUserDetail(ctx, in, opts...)
 }
 
-func (m *defaultAdminUserService) AdminSetUserStatus(ctx context.Context, in *AdminSetUserStatusReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (m *defaultAdminUserService) AdminSetUserStatus(ctx context.Context, in *AdminSetUserStatusReq, opts ...grpc.CallOption) (*AdminSetUserStatusRes, error) {
 	client := user.NewAdminUserServiceClient(m.cli.Conn())
 	return client.AdminSetUserStatus(ctx, in, opts...)
 }

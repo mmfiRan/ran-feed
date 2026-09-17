@@ -5,12 +5,12 @@ import "../base/base.api"
 type (
 	AdminOperationLogListReq {
 		PageQueryReq
-		AdminId   int64  `form:"admin_id,optional"`
-		Username  string `form:"username,optional"`
-		Action    string `form:"action,optional"`
-		Status    int32  `form:"status,optional"`
-		StartTime int64  `form:"start_time,optional"`
-		EndTime   int64  `form:"end_time,optional"`
+		AdminId   *int64  `form:"admin_id,optional" validate:"omitempty,gt=0"`
+		Username  *string `form:"username,optional" validate:"omitempty,max=64"`
+		Action    *string `form:"action,optional" validate:"omitempty,max=128"`
+		Status    *int32  `form:"status,optional" validate:"omitempty,oneof=1 2"` // 结果 1成功 2失败
+		StartTime *int64  `form:"start_time,optional" validate:"omitempty,gt=0"`
+		EndTime   *int64  `form:"end_time,optional" validate:"omitempty,gt=0"`
 	}
 	AdminOperationLogItem {
 		Id        int64     `json:"id"`
@@ -31,11 +31,11 @@ type (
 	}
 	AdminLoginLogListReq {
 		PageQueryReq
-		Username  string `form:"username,optional"`
-		Ip        string `form:"ip,optional"`
-		Status    int32  `form:"status,optional"`
-		StartTime int64  `form:"start_time,optional"`
-		EndTime   int64  `form:"end_time,optional"`
+		Username  *string `form:"username,optional" validate:"omitempty,max=64"`
+		Ip        *string `form:"ip,optional" validate:"omitempty,max=64"`
+		Status    *int32  `form:"status,optional" validate:"omitempty,oneof=1 2"` // 结果 1成功 2失败
+		StartTime *int64  `form:"start_time,optional" validate:"omitempty,gt=0"`
+		EndTime   *int64  `form:"end_time,optional" validate:"omitempty,gt=0"`
 	}
 	AdminLoginLogItem {
 		Id        int64     `json:"id"`

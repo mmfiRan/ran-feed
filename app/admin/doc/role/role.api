@@ -18,7 +18,7 @@ type (
 		Items []AdminRoleItem `json:"items"`
 	}
 	AdminRoleDetailReq {
-		Id int64 `form:"id"`
+		Id int64 `form:"id,optional" validate:"required,gt=0"`
 	}
 	AdminRoleDetailRes {
 		Role          AdminRoleItem `json:"role"`

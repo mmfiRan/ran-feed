@@ -593,10 +593,10 @@ func (x *PermissionItem) GetModule() string {
 	return ""
 }
 
-// ListPermissionsReq 查询权限点目录
+// ListPermissionsReq 查询权限点目录 不传 module 表示不限
 type ListPermissionsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Module        string                 `protobuf:"bytes,1,opt,name=module,proto3" json:"module,omitempty"`
+	Module        *string                `protobuf:"bytes,1,opt,name=module,proto3,oneof" json:"module,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -632,8 +632,8 @@ func (*ListPermissionsReq) Descriptor() ([]byte, []int) {
 }
 
 func (x *ListPermissionsReq) GetModule() string {
-	if x != nil {
-		return x.Module
+	if x != nil && x.Module != nil {
+		return *x.Module
 	}
 	return ""
 }
@@ -808,17 +808,17 @@ func (x *OperationLogItem) GetUsername() string {
 	return ""
 }
 
-// ListOperationLogsReq 查询操作审计日志
+// ListOperationLogsReq 查询操作审计日志 筛选项不传表示不限
 type ListOperationLogsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdminId       int64                  `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
-	Action        string                 `protobuf:"bytes,2,opt,name=action,proto3" json:"action,omitempty"`
-	Status        OperateStatus          `protobuf:"varint,3,opt,name=status,proto3,enum=ranfeed.admin.OperateStatus" json:"status,omitempty"`
-	StartTime     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
-	EndTime       *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	AdminId       *int64                 `protobuf:"varint,1,opt,name=admin_id,json=adminId,proto3,oneof" json:"admin_id,omitempty"`
+	Action        *string                `protobuf:"bytes,2,opt,name=action,proto3,oneof" json:"action,omitempty"`
+	Status        *OperateStatus         `protobuf:"varint,3,opt,name=status,proto3,enum=ranfeed.admin.OperateStatus,oneof" json:"status,omitempty"`
+	StartTime     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=start_time,json=startTime,proto3,oneof" json:"start_time,omitempty"`
+	EndTime       *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=end_time,json=endTime,proto3,oneof" json:"end_time,omitempty"`
 	Page          uint32                 `protobuf:"varint,6,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      uint32                 `protobuf:"varint,7,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	Username      string                 `protobuf:"bytes,8,opt,name=username,proto3" json:"username,omitempty"`
+	Username      *string                `protobuf:"bytes,8,opt,name=username,proto3,oneof" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -854,22 +854,22 @@ func (*ListOperationLogsReq) Descriptor() ([]byte, []int) {
 }
 
 func (x *ListOperationLogsReq) GetAdminId() int64 {
-	if x != nil {
-		return x.AdminId
+	if x != nil && x.AdminId != nil {
+		return *x.AdminId
 	}
 	return 0
 }
 
 func (x *ListOperationLogsReq) GetAction() string {
-	if x != nil {
-		return x.Action
+	if x != nil && x.Action != nil {
+		return *x.Action
 	}
 	return ""
 }
 
 func (x *ListOperationLogsReq) GetStatus() OperateStatus {
-	if x != nil {
-		return x.Status
+	if x != nil && x.Status != nil {
+		return *x.Status
 	}
 	return OperateStatus_OPERATE_STATUS_UNSPECIFIED
 }
@@ -903,8 +903,8 @@ func (x *ListOperationLogsReq) GetPageSize() uint32 {
 }
 
 func (x *ListOperationLogsReq) GetUsername() string {
-	if x != nil {
-		return x.Username
+	if x != nil && x.Username != nil {
+		return *x.Username
 	}
 	return ""
 }
@@ -1209,14 +1209,14 @@ func (x *LoginLogItem) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-// ListLoginLogsReq 查询登录日志
+// ListLoginLogsReq 查询登录日志 筛选项不传表示不限
 type ListLoginLogsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
-	Ip            string                 `protobuf:"bytes,2,opt,name=ip,proto3" json:"ip,omitempty"`
-	Status        LoginStatus            `protobuf:"varint,3,opt,name=status,proto3,enum=ranfeed.admin.LoginStatus" json:"status,omitempty"`
-	StartTime     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
-	EndTime       *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	Username      *string                `protobuf:"bytes,1,opt,name=username,proto3,oneof" json:"username,omitempty"`
+	Ip            *string                `protobuf:"bytes,2,opt,name=ip,proto3,oneof" json:"ip,omitempty"`
+	Status        *LoginStatus           `protobuf:"varint,3,opt,name=status,proto3,enum=ranfeed.admin.LoginStatus,oneof" json:"status,omitempty"`
+	StartTime     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=start_time,json=startTime,proto3,oneof" json:"start_time,omitempty"`
+	EndTime       *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=end_time,json=endTime,proto3,oneof" json:"end_time,omitempty"`
 	Page          uint32                 `protobuf:"varint,6,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      uint32                 `protobuf:"varint,7,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -1254,22 +1254,22 @@ func (*ListLoginLogsReq) Descriptor() ([]byte, []int) {
 }
 
 func (x *ListLoginLogsReq) GetUsername() string {
-	if x != nil {
-		return x.Username
+	if x != nil && x.Username != nil {
+		return *x.Username
 	}
 	return ""
 }
 
 func (x *ListLoginLogsReq) GetIp() string {
-	if x != nil {
-		return x.Ip
+	if x != nil && x.Ip != nil {
+		return *x.Ip
 	}
 	return ""
 }
 
 func (x *ListLoginLogsReq) GetStatus() LoginStatus {
-	if x != nil {
-		return x.Status
+	if x != nil && x.Status != nil {
+		return *x.Status
 	}
 	return LoginStatus_LOGIN_STATUS_UNSPECIFIED
 }
@@ -2140,10 +2140,10 @@ func (x *AdminListItem) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
-// ListAdminsReq 管理员分页查询 status 为空查全部
+// ListAdminsReq 管理员分页查询 不传 status 表示不限
 type ListAdminsReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Status        AdminStatus            `protobuf:"varint,1,opt,name=status,proto3,enum=ranfeed.admin.AdminStatus" json:"status,omitempty"`
+	Status        *AdminStatus           `protobuf:"varint,1,opt,name=status,proto3,enum=ranfeed.admin.AdminStatus,oneof" json:"status,omitempty"`
 	Page          uint32                 `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`
 	PageSize      uint32                 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -2181,8 +2181,8 @@ func (*ListAdminsReq) Descriptor() ([]byte, []int) {
 }
 
 func (x *ListAdminsReq) GetStatus() AdminStatus {
-	if x != nil {
-		return x.Status
+	if x != nil && x.Status != nil {
+		return *x.Status
 	}
 	return AdminStatus_ADMIN_STATUS_UNSPECIFIED
 }
@@ -2896,9 +2896,10 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04code\x18\x02 \x01(\tR\x04code\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x16\n" +
-	"\x06module\x18\x04 \x01(\tR\x06module\",\n" +
-	"\x12ListPermissionsReq\x12\x16\n" +
-	"\x06module\x18\x01 \x01(\tR\x06module\"I\n" +
+	"\x06module\x18\x04 \x01(\tR\x06module\"<\n" +
+	"\x12ListPermissionsReq\x12\x1b\n" +
+	"\x06module\x18\x01 \x01(\tH\x00R\x06module\x88\x01\x01B\t\n" +
+	"\a_module\"I\n" +
 	"\x12ListPermissionsRes\x123\n" +
 	"\x05items\x18\x01 \x03(\v2\x1d.ranfeed.admin.PermissionItemR\x05items\"\xe0\x02\n" +
 	"\x10OperationLogItem\x12\x0e\n" +
@@ -2915,17 +2916,23 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1a\n" +
-	"\busername\x18\v \x01(\tR\busername\"\xbe\x02\n" +
-	"\x14ListOperationLogsReq\x12\x19\n" +
-	"\badmin_id\x18\x01 \x01(\x03R\aadminId\x12\x16\n" +
-	"\x06action\x18\x02 \x01(\tR\x06action\x124\n" +
-	"\x06status\x18\x03 \x01(\x0e2\x1c.ranfeed.admin.OperateStatusR\x06status\x129\n" +
+	"\busername\x18\v \x01(\tR\busername\"\xa8\x03\n" +
+	"\x14ListOperationLogsReq\x12\x1e\n" +
+	"\badmin_id\x18\x01 \x01(\x03H\x00R\aadminId\x88\x01\x01\x12\x1b\n" +
+	"\x06action\x18\x02 \x01(\tH\x01R\x06action\x88\x01\x01\x129\n" +
+	"\x06status\x18\x03 \x01(\x0e2\x1c.ranfeed.admin.OperateStatusH\x02R\x06status\x88\x01\x01\x12>\n" +
 	"\n" +
-	"start_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
-	"\bend_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x12\x12\n" +
+	"start_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampH\x03R\tstartTime\x88\x01\x01\x12:\n" +
+	"\bend_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampH\x04R\aendTime\x88\x01\x01\x12\x12\n" +
 	"\x04page\x18\x06 \x01(\rR\x04page\x12\x1b\n" +
-	"\tpage_size\x18\a \x01(\rR\bpageSize\x12\x1a\n" +
-	"\busername\x18\b \x01(\tR\busername\"\x94\x01\n" +
+	"\tpage_size\x18\a \x01(\rR\bpageSize\x12\x1f\n" +
+	"\busername\x18\b \x01(\tH\x05R\busername\x88\x01\x01B\v\n" +
+	"\t_admin_idB\t\n" +
+	"\a_actionB\t\n" +
+	"\a_statusB\r\n" +
+	"\v_start_timeB\v\n" +
+	"\t_end_timeB\v\n" +
+	"\t_username\"\x94\x01\n" +
 	"\x14ListOperationLogsRes\x125\n" +
 	"\x05items\x18\x01 \x03(\v2\x1f.ranfeed.admin.OperationLogItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +
@@ -2951,16 +2958,21 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\x06status\x18\x06 \x01(\v2\x1b.ranfeed.commonpb.EnumValueR\x06status\x12\x10\n" +
 	"\x03msg\x18\a \x01(\tR\x03msg\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x95\x02\n" +
-	"\x10ListLoginLogsReq\x12\x1a\n" +
-	"\busername\x18\x01 \x01(\tR\busername\x12\x0e\n" +
-	"\x02ip\x18\x02 \x01(\tR\x02ip\x122\n" +
-	"\x06status\x18\x03 \x01(\x0e2\x1a.ranfeed.admin.LoginStatusR\x06status\x129\n" +
+	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xe9\x02\n" +
+	"\x10ListLoginLogsReq\x12\x1f\n" +
+	"\busername\x18\x01 \x01(\tH\x00R\busername\x88\x01\x01\x12\x13\n" +
+	"\x02ip\x18\x02 \x01(\tH\x01R\x02ip\x88\x01\x01\x127\n" +
+	"\x06status\x18\x03 \x01(\x0e2\x1a.ranfeed.admin.LoginStatusH\x02R\x06status\x88\x01\x01\x12>\n" +
 	"\n" +
-	"start_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tstartTime\x125\n" +
-	"\bend_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\aendTime\x12\x12\n" +
+	"start_time\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampH\x03R\tstartTime\x88\x01\x01\x12:\n" +
+	"\bend_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampH\x04R\aendTime\x88\x01\x01\x12\x12\n" +
 	"\x04page\x18\x06 \x01(\rR\x04page\x12\x1b\n" +
-	"\tpage_size\x18\a \x01(\rR\bpageSize\"\x8c\x01\n" +
+	"\tpage_size\x18\a \x01(\rR\bpageSizeB\v\n" +
+	"\t_usernameB\x05\n" +
+	"\x03_ipB\t\n" +
+	"\a_statusB\r\n" +
+	"\v_start_timeB\v\n" +
+	"\t_end_time\"\x8c\x01\n" +
 	"\x10ListLoginLogsRes\x121\n" +
 	"\x05items\x18\x01 \x03(\v2\x1b.ranfeed.admin.LoginLogItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +
@@ -3021,11 +3033,12 @@ const file_app_rpc_admin_proto_admin_proto_rawDesc = "" +
 	"\n" +
 	"role_codes\x18\x05 \x03(\tR\troleCodes\x129\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"t\n" +
-	"\rListAdminsReq\x122\n" +
-	"\x06status\x18\x01 \x01(\x0e2\x1a.ranfeed.admin.AdminStatusR\x06status\x12\x12\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x84\x01\n" +
+	"\rListAdminsReq\x127\n" +
+	"\x06status\x18\x01 \x01(\x0e2\x1a.ranfeed.admin.AdminStatusH\x00R\x06status\x88\x01\x01\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\rR\x04page\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\rR\bpageSize\"\x8a\x01\n" +
+	"\tpage_size\x18\x03 \x01(\rR\bpageSizeB\t\n" +
+	"\a_status\"\x8a\x01\n" +
 	"\rListAdminsRes\x122\n" +
 	"\x05items\x18\x01 \x03(\v2\x1c.ranfeed.admin.AdminListItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x03R\x05total\x12\x12\n" +
@@ -3263,6 +3276,10 @@ func file_app_rpc_admin_proto_admin_proto_init() {
 	if File_app_rpc_admin_proto_admin_proto != nil {
 		return
 	}
+	file_app_rpc_admin_proto_admin_proto_msgTypes[7].OneofWrappers = []any{}
+	file_app_rpc_admin_proto_admin_proto_msgTypes[10].OneofWrappers = []any{}
+	file_app_rpc_admin_proto_admin_proto_msgTypes[15].OneofWrappers = []any{}
+	file_app_rpc_admin_proto_admin_proto_msgTypes[30].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

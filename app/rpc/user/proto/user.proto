@@ -220,6 +220,11 @@ message AdminSetUserStatusReq {
   int64 operator_id = 3;
 }
 
+// 后台管理设置用户状态响应
+message AdminSetUserStatusRes {
+  ranfeed.commonpb.EnumValue status = 1;
+}
+
 // C 端用户服务
 service UserService {
   rpc Register(RegisterReq) returns (RegisterRes);
@@ -237,5 +242,5 @@ service UserService {
 service AdminUserService {
   rpc AdminListUsers(AdminListUsersReq) returns (AdminListUsersRes);
   rpc AdminGetUserDetail(AdminGetUserDetailReq) returns (AdminGetUserDetailRes);
-  rpc AdminSetUserStatus(AdminSetUserStatusReq) returns (google.protobuf.Empty);
+  rpc AdminSetUserStatus(AdminSetUserStatusReq) returns (AdminSetUserStatusRes);
 }

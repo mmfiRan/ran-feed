@@ -36,9 +36,8 @@ func NewListAdminsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListAd
 
 // ListAdmins 管理员分页查询
 func (l *ListAdminsLogic) ListAdmins(in *admin.ListAdminsReq) (*admin.ListAdminsRes, error) {
-	status := int32(in.GetStatus())
 	offset, limit := utils.NormalizePage[uint32, uint32](in.GetPage(), in.GetPageSize())
-	rows, total, err := l.adminUserRepo.Page(status, offset, limit)
+	rows, total, err := l.adminUserRepo.Page(utils.CastPtr[int32](in.Status), offset, limit)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询管理员失败"))
 	}

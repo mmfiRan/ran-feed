@@ -6,11 +6,12 @@ package user
 import (
 	"context"
 
+	"ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/user/user"
 	"ran-feed/pkg/errorx"
-	"ran-feed/pkg/utils"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -30,19 +31,14 @@ func NewSetUserStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Set
 }
 
 func (l *SetUserStatusLogic) SetUserStatus(req *types.CUserStatusReq) (resp *types.CUserStatusRes, err error) {
-	status, err := mapUserStatusAction(req.Action)
-	if err != nil {
-		return nil, err
-	}
-
-	operatorID, err := utils.GetContextAdminId(l.ctx)
+	operatorID, err := pkgutils.GetContextAdminId(l.ctx)
 	if err != nil || operatorID <= 0 {
 		return nil, errorx.NewMsg("操作者ID获取失败")
 	}
 
-	_, err = l.svcCtx.UserAdminRpc.AdminSetUserStatus(l.ctx, &user.AdminSetUserStatusReq{
+	rpcRes, err := l.svcCtx.UserAdminRpc.AdminSetUserStatus(l.ctx, &user.AdminSetUserStatusReq{
 		UserId:     req.UserId,
-		Status:     status,
+		Status:     user.UserStatus(req.Status),
 		OperatorId: operatorID,
 	})
 	if err != nil {
@@ -50,18 +46,6 @@ func (l *SetUserStatusLogic) SetUserStatus(req *types.CUserStatusReq) (resp *typ
 	}
 
 	return &types.CUserStatusRes{
-		Status: int32(status),
+		Status: utils.ToEnumValue(rpcRes.GetStatus()),
 	}, nil
-}
-
-// mapUserStatusAction 将 action 映射为 UserStatus
-func mapUserStatusAction(action string) (user.UserStatus, error) {
-	switch action {
-	case "ban":
-		return user.UserStatus_USER_STATUS_DISABLED, nil
-	case "restore":
-		return user.UserStatus_USER_STATUS_ACTIVE, nil
-	default:
-		return user.UserStatus_USER_STATUS_UNSPECIFIED, errorx.NewMsg("不支持的操作")
-	}
 }

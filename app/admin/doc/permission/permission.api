@@ -2,7 +2,7 @@ syntax = "v1"
 
 type (
 	AdminPermissionListReq {
-		Module string `form:"module,optional"`
+		Module *string `form:"module,optional" validate:"omitempty,max=64"`
 	}
 	AdminPermissionItem {
 		Id     int64  `json:"id"`

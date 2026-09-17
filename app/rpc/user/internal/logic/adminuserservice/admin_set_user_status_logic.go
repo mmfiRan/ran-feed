@@ -3,6 +3,7 @@ package adminuserservicelogic
 import (
 	"context"
 
+	"ran-feed/app/rpc/user/internal/common/utils"
 	"ran-feed/app/rpc/user/internal/common/utils/session"
 	"ran-feed/app/rpc/user/internal/repositories"
 	"ran-feed/app/rpc/user/internal/svc"
@@ -10,7 +11,6 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type AdminSetUserStatusLogic struct {
@@ -29,7 +29,7 @@ func NewAdminSetUserStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	}
 }
 
-func (l *AdminSetUserStatusLogic) AdminSetUserStatus(in *user.AdminSetUserStatusReq) (*emptypb.Empty, error) {
+func (l *AdminSetUserStatusLogic) AdminSetUserStatus(in *user.AdminSetUserStatusReq) (*user.AdminSetUserStatusRes, error) {
 	if in == nil || in.UserId <= 0 {
 		return nil, errorx.NewMsg("参数错误")
 	}
@@ -42,14 +42,14 @@ func (l *AdminSetUserStatusLogic) AdminSetUserStatus(in *user.AdminSetUserStatus
 		return nil, errorx.NewMsg("用户不存在")
 	}
 
-	cur := user.UserStatus(row.Status)
-	noop, err := validateUserStatusTransition(cur, in.Status)
+	target := utils.UserStatusValue(int32(in.Status))
+	noop, err := validateUserStatusTransition(user.UserStatus(row.Status), in.Status)
 	if err != nil {
 		return nil, err
 	}
 	// 当前已是目标态 幂等直接返回
 	if noop {
-		return &emptypb.Empty{}, nil
+		return &user.AdminSetUserStatusRes{Status: target}, nil
 	}
 
 	if _, err = l.userRepo.AdminUpdateStatus(in.UserId, int32(in.Status), in.OperatorId); err != nil {
@@ -63,7 +63,7 @@ func (l *AdminSetUserStatusLogic) AdminSetUserStatus(in *user.AdminSetUserStatus
 		}
 	}
 
-	return &emptypb.Empty{}, nil
+	return &user.AdminSetUserStatusRes{Status: target}, nil
 }
 
 // validateUserStatusTransition 校验封禁/恢复状态机 返回 noop 表示当前已是目标态无需落库

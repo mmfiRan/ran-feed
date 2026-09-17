@@ -70,20 +70,23 @@ func (r *operationLogRepositoryImpl) Page(filter types.OperationLogFilter, offse
 	do := logT.WithContext(r.ctx).Where(logT.IsDeleted.Eq(enums.NotDeleted.Int32()))
 	do = do.LeftJoin(userT, logT.AdminID.EqCol(userT.ID))
 	do = do.Where(userT.IsDeleted.Eq(enums.NotDeleted.Int32()))
-	if filter.Username != "" {
-		do = do.Where(userT.Username.Like("%" + filter.Username + "%"))
+	if filter.AdminID != nil {
+		do = do.Where(logT.AdminID.Eq(*filter.AdminID))
 	}
-	if filter.Action != "" {
-		do = do.Where(logT.Action.Like("%" + filter.Action + "%"))
+	if filter.Username != nil {
+		do = do.Where(userT.Username.Like("%" + *filter.Username + "%"))
 	}
-	if filter.Status > 0 {
-		do = do.Where(logT.Status.Eq(filter.Status))
+	if filter.Action != nil {
+		do = do.Where(logT.Action.Like("%" + *filter.Action + "%"))
 	}
-	if filter.StartMillis > 0 {
-		do = do.Where(logT.CreatedAt.Gte(time.UnixMilli(filter.StartMillis)))
+	if filter.Status != nil {
+		do = do.Where(logT.Status.Eq(*filter.Status))
 	}
-	if filter.EndMillis > 0 {
-		do = do.Where(logT.CreatedAt.Lte(time.UnixMilli(filter.EndMillis)))
+	if filter.StartMillis != nil {
+		do = do.Where(logT.CreatedAt.Gte(time.UnixMilli(*filter.StartMillis)))
+	}
+	if filter.EndMillis != nil {
+		do = do.Where(logT.CreatedAt.Lte(time.UnixMilli(*filter.EndMillis)))
 	}
 	rows := make([]*types.OperationLogRow, 0)
 	total, err := do.Select(logT.ALL, userT.Username).

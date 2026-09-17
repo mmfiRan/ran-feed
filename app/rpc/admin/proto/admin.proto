@@ -77,9 +77,9 @@ message PermissionItem {
   string module = 4;
 }
 
-// ListPermissionsReq 查询权限点目录
+// ListPermissionsReq 查询权限点目录 不传 module 表示不限
 message ListPermissionsReq {
-  string module = 1;
+  optional string module = 1;
 }
 
 // ListPermissionsRes 权限点目录
@@ -102,16 +102,16 @@ message OperationLogItem {
   string username = 11;
 }
 
-// ListOperationLogsReq 查询操作审计日志
+// ListOperationLogsReq 查询操作审计日志 筛选项不传表示不限
 message ListOperationLogsReq {
-  int64 admin_id = 1;
-  string action = 2;
-  OperateStatus status = 3;
-  google.protobuf.Timestamp start_time = 4;
-  google.protobuf.Timestamp end_time = 5;
+  optional int64 admin_id = 1;
+  optional string action = 2;
+  optional OperateStatus status = 3;
+  optional google.protobuf.Timestamp start_time = 4;
+  optional google.protobuf.Timestamp end_time = 5;
   uint32 page = 6;
   uint32 page_size = 7;
-  string username = 8;
+  optional string username = 8;
 }
 
 // ListOperationLogsRes 审计日志分页查询结果
@@ -149,13 +149,13 @@ message LoginLogItem {
   google.protobuf.Timestamp created_at = 8;
 }
 
-// ListLoginLogsReq 查询登录日志
+// ListLoginLogsReq 查询登录日志 筛选项不传表示不限
 message ListLoginLogsReq {
-  string username = 1;
-  string ip = 2;
-  LoginStatus status = 3;
-  google.protobuf.Timestamp start_time = 4;
-  google.protobuf.Timestamp end_time = 5;
+  optional string username = 1;
+  optional string ip = 2;
+  optional LoginStatus status = 3;
+  optional google.protobuf.Timestamp start_time = 4;
+  optional google.protobuf.Timestamp end_time = 5;
   uint32 page = 6;
   uint32 page_size = 7;
 }
@@ -256,9 +256,9 @@ message AdminListItem {
   google.protobuf.Timestamp created_at = 6;
 }
 
-// ListAdminsReq 管理员分页查询 status 为空查全部
+// ListAdminsReq 管理员分页查询 不传 status 表示不限
 message ListAdminsReq {
-  AdminStatus status = 1;
+  optional AdminStatus status = 1;
   uint32 page = 2;
   uint32 page_size = 3;
 }

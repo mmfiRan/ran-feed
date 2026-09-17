@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/user/internal/common/utils"
-	"ran-feed/app/rpc/user/internal/entity/model"
 	"ran-feed/app/rpc/user/internal/repositories"
 	"ran-feed/app/rpc/user/internal/svc"
 	"ran-feed/app/rpc/user/user"
@@ -55,7 +54,15 @@ func (l *AdminListUsersLogic) AdminListUsers(in *user.AdminListUsersReq) (*user.
 		if row == nil {
 			continue
 		}
-		items = append(items, buildAdminUserItem(row))
+		items = append(items, &user.AdminUserItem{
+			UserId:    row.ID,
+			Username:  row.Username,
+			Nickname:  row.Nickname,
+			Mobile:    pkgutils.Deref(row.Mobile),
+			Avatar:    row.Avatar,
+			Status:    utils.UserStatusValue(row.Status),
+			CreatedAt: timestamppb.New(row.CreatedAt),
+		})
 	}
 
 	return &user.AdminListUsersRes{
@@ -64,16 +71,4 @@ func (l *AdminListUsersLogic) AdminListUsers(in *user.AdminListUsersReq) (*user.
 		Page:     in.GetPage(),
 		PageSize: in.GetPageSize(),
 	}, nil
-}
-
-func buildAdminUserItem(row *model.RanFeedUser) *user.AdminUserItem {
-	return &user.AdminUserItem{
-		UserId:    row.ID,
-		Username:  row.Username,
-		Nickname:  row.Nickname,
-		Mobile:    pkgutils.Deref(row.Mobile),
-		Avatar:    row.Avatar,
-		Status:    utils.UserStatusValue(row.Status),
-		CreatedAt: timestamppb.New(row.CreatedAt),
-	}
 }

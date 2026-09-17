@@ -66,20 +66,20 @@ func (r *loginLogRepositoryImpl) Create(row *model.RanFeedLoginLog) (int64, erro
 func (r *loginLogRepositoryImpl) Page(filter types.LoginLogFilter, offset, limit int) ([]*model.RanFeedLoginLog, int64, error) {
 	q := r.getQuery().RanFeedLoginLog
 	do := q.WithContext(r.ctx).Where(q.IsDeleted.Eq(enums.NotDeleted.Int32()))
-	if filter.Username != "" {
-		do = do.Where(q.Username.Like("%" + filter.Username + "%"))
+	if filter.Username != nil {
+		do = do.Where(q.Username.Like("%" + *filter.Username + "%"))
 	}
-	if filter.IP != "" {
-		do = do.Where(q.IP.Like("%" + filter.IP + "%"))
+	if filter.IP != nil {
+		do = do.Where(q.IP.Like("%" + *filter.IP + "%"))
 	}
-	if filter.Status > 0 {
-		do = do.Where(q.Status.Eq(filter.Status))
+	if filter.Status != nil {
+		do = do.Where(q.Status.Eq(*filter.Status))
 	}
-	if filter.StartMillis > 0 {
-		do = do.Where(q.CreatedAt.Gte(time.UnixMilli(filter.StartMillis)))
+	if filter.StartMillis != nil {
+		do = do.Where(q.CreatedAt.Gte(time.UnixMilli(*filter.StartMillis)))
 	}
-	if filter.EndMillis > 0 {
-		do = do.Where(q.CreatedAt.Lte(time.UnixMilli(filter.EndMillis)))
+	if filter.EndMillis != nil {
+		do = do.Where(q.CreatedAt.Lte(time.UnixMilli(*filter.EndMillis)))
 	}
 	return do.Order(q.ID.Desc()).FindByPage(offset, limit)
 }
