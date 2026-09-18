@@ -90,6 +90,22 @@ goctl rpc protoc app/rpc/user/proto/user.proto \
 - 字段 snake_case（`target_id` `user_id`）
 - 一个 RPC 配一对 `XxxReq` / `XxxRes`，不复用模糊的通用 message
 
+## 公共 pb（pkg/commonpb）
+
+`EnumValue` 等跨域通用 message 放在 `pkg/commonpb/common.proto`（`go_package = ran-feed/pkg/commonpb`，完整模块路径）；
+各服务 proto 用 `import "pkg/commonpb/common.proto"` 引用，字段类型写 `ranfeed.commonpb.EnumValue`，不要各 proto 重复定义。
+
+它没有 service，改动后按下方命令单独重生成；不要手改产物：
+
+```bash
+# 生成到临时目录再覆盖（不带 module 选项 go_package 全路径会落在 ran-feed/pkg/commonpb/ 下）
+protoc --proto_path=. --go_out=/tmp/commonpb --go-grpc_out=/tmp/commonpb pkg/commonpb/common.proto
+cp /tmp/commonpb/ran-feed/pkg/commonpb/common.pb.go pkg/commonpb/common.pb.go
+```
+
+改完 `go build ./...` 验证。注意：改了 `common.proto`（package 名、注释等）必须同步重生成，
+否则产物会一直停在旧描述符上（本次收尾发现它曾比 proto 落后两代，编译能过但描述符里还是旧的 package 名/注释）。
+
 ## ORM 模型（GORM Gen）
 
 改了数据库 Schema 后，在数据库可访问时重新生成模型，输出到 `internal/entity/query/`：

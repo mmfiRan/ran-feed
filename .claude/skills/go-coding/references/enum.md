@@ -1,7 +1,7 @@
 # 业务枚举（Go 层）
 
 DB 枚举字段的 Go 层规范：业务枚举是 DB 映射 + 合法校验 + 中文描述的真相源。
-proto 层的枚举命名见 [proto-style.md](proto-style.md)，规范全文见 `.harness/ENUM-RULES.md`。
+proto 层的枚举命名见 [proto-style.md](proto-style.md)。
 
 ## 基础设施（pkg/enums）
 
