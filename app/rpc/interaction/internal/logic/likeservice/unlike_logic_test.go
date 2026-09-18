@@ -34,7 +34,7 @@ func unlikeReq(userID, contentID int64) *interaction.UnlikeReq {
 		UserId:        userID,
 		ContentId:     contentID,
 		ContentUserId: 999,
-		Scene:         interaction.Scene_ARTICLE,
+		Scene:         interaction.Scene_SCENE_ARTICLE,
 	}
 }
 

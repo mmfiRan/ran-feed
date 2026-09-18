@@ -18,6 +18,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	redislock "github.com/zeromicro/go-zero/core/stores/redis"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type RefillCommentCacheLogic struct {
@@ -210,7 +211,7 @@ func (l *RefillCommentCacheLogic) batchGetFromRedis(ids []int64) (map[int64]*int
 			ParentId:      parentID,
 			RootId:        rootID,
 			Comment:       comment,
-			CreatedAt:     createdAt,
+			CreatedAt:     timestamppb.New(time.Unix(createdAt, 0)),
 			Status:        status,
 			UserName:      userName,
 			UserAvatar:    userAvatar,
@@ -247,7 +248,7 @@ func (l *RefillCommentCacheLogic) queryFromDB(ids []int64) (map[int64]*interacti
 			ParentId:      r.ParentID,
 			RootId:        r.RootID,
 			Comment:       commentText,
-			CreatedAt:     r.CreatedAt.Unix(),
+			CreatedAt:     timestamppb.New(r.CreatedAt),
 			Status:        status,
 		}
 	}
@@ -321,7 +322,10 @@ func (l *RefillCommentCacheLogic) fillObjCacheBestEffort(items []*interaction.Co
 			continue
 		}
 		objKey := rediskey.BuildCommentObjKey(strconv.FormatInt(c.CommentId, 10))
-		createdAt := c.CreatedAt
+		createdAt := int64(0)
+		if ts := c.GetCreatedAt(); ts != nil {
+			createdAt = ts.AsTime().Unix()
+		}
 		if createdAt <= 0 {
 			createdAt = time.Now().Unix()
 		}

@@ -149,6 +149,19 @@ func TestQueryCommentList_LastPage(t *testing.T) {
 	assert.Equal(t, int64(0), out.NextCursor)
 }
 
+func TestQueryCommentList_CreatedAt(t *testing.T) {
+	repo := &fakeCommentRepo{rootRows: []*model.RanFeedComment{cmtRow(30, 1, 100, 0, 0, 0, 10)}}
+	logic := newCommentListLogic(repo, &fakeUserRpc{})
+
+	out, err := logic.QueryCommentList(&interaction.QueryCommentListReq{ContentId: 1, PageSize: 20})
+	require.NoError(t, err)
+	require.Len(t, out.Comments, 1)
+
+	ts := out.Comments[0].GetCreatedAt()
+	require.NotNil(t, ts, "created_at 应回填 Timestamp")
+	assert.Equal(t, int64(1700000000), ts.AsTime().Unix(), "对外仍是秒级时间戳 不可变成毫秒")
+}
+
 func TestQueryCommentList_Empty(t *testing.T) {
 	logic := newCommentListLogic(&fakeCommentRepo{rootRows: nil}, &fakeUserRpc{})
 

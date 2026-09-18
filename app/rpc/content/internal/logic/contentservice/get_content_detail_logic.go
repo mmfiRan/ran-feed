@@ -87,9 +87,9 @@ func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, vi
 	}
 	switch contentType {
 	case content.ContentType_CONTENT_TYPE_ARTICLE:
-		scene = interaction.Scene_ARTICLE
+		scene = interaction.Scene_SCENE_ARTICLE
 	case content.ContentType_CONTENT_TYPE_VIDEO:
-		scene = interaction.Scene_VIDEO
+		scene = interaction.Scene_SCENE_VIDEO
 	default:
 		return nil, errorx.NewMsg("内容类型错误")
 	}

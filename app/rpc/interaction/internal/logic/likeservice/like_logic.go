@@ -6,6 +6,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"ran-feed/app/rpc/interaction/interaction"
 	"ran-feed/app/rpc/interaction/internal/common/consts"
@@ -29,7 +30,7 @@ func NewLikeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LikeLogic {
 	}
 }
 
-func (l *LikeLogic) Like(in *interaction.LikeReq) (*interaction.LikeRes, error) {
+func (l *LikeLogic) Like(in *interaction.LikeReq) (*emptypb.Empty, error) {
 	scene := in.Scene.String()
 
 	// 用户维度缓存：避免 content 维度大 key，用 _mincid 区分冷热数据
@@ -45,7 +46,7 @@ func (l *LikeLogic) Like(in *interaction.LikeReq) (*interaction.LikeRes, error) 
 		})
 	}
 
-	return &interaction.LikeRes{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (l *LikeLogic) processLike(userID, contentID int64) (changed, trusted bool, err error) {

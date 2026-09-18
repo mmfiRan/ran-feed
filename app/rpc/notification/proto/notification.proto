@@ -1,79 +1,82 @@
 syntax = "proto3";
 
-package notification;
+package ranfeed.notification;
 
-option go_package = "./notification";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "ran-feed/app/rpc/notification/notification";
 
 // NotifyType 通知类型
 enum NotifyType {
-  NOTIFY_TYPE_UNKNOWN = 0;
-  LIKE_FAVORITE = 10;   // 赞或收藏 按内容聚合
-  COMMENT_REPLY = 20;   // 评论或回复 单条
-  FOLLOW = 30;          // 关注 单条
+  NOTIFY_TYPE_UNSPECIFIED = 0; // 未指定
+  NOTIFY_TYPE_LIKE_FAVORITE = 10; // 赞或收藏 按内容聚合
+  NOTIFY_TYPE_COMMENT_REPLY = 20; // 评论或回复 单条
+  NOTIFY_TYPE_FOLLOW = 30;        // 关注 单条
 }
 
 // NotificationItem 通知原始行 富化在 front BFF 完成
 message NotificationItem {
-  int64 id = 1;
-  int64 recipient_id = 2;
-  int64 actor_id = 3;
-  NotifyType notify_type = 4;
-  int64 agg_count = 5;
-  int64 content_id = 6;
-  int64 comment_id = 7;
-  string snippet = 8;
-  bool is_read = 9;
-  int64 updated_at = 10;  // 毫秒时间戳
+  int64 id = 1;                             // 通知ID
+  int64 recipient_id = 2;                   // 接收人ID
+  int64 actor_id = 3;                       // 触发人ID
+  NotifyType notify_type = 4;               // 通知类型
+  int64 agg_count = 5;                      // 聚合条数
+  int64 content_id = 6;                     // 内容ID
+  int64 comment_id = 7;                     // 评论ID
+  string snippet = 8;                       // 摘要文案
+  bool is_read = 9;                         // 是否已读
+  google.protobuf.Timestamp updated_at = 10; // 更新时间
 }
 
 // ListNotificationsReq 收件箱列表 updated_at,id 复合游标
 message ListNotificationsReq {
-  int64 recipient_id = 1;
-  int64 cursor_updated_at = 2;  // 0 表示首页
-  int64 cursor_id = 3;
-  uint32 page_size = 4;
-  NotifyType type_filter = 5;   // NOTIFY_TYPE_UNKNOWN 表示全部
+  int64 recipient_id = 1;       // 接收人ID
+  int64 cursor_updated_at = 2;  // 游标时间 0 表示首页
+  int64 cursor_id = 3;          // 游标ID
+  uint32 page_size = 4;         // 每页条数
+  NotifyType type_filter = 5;   // 类型过滤 NOTIFY_TYPE_UNSPECIFIED 表示全部
 }
 
 // ListNotificationsRes 列表结果
 message ListNotificationsRes {
-  repeated NotificationItem items = 1;
-  int64 next_cursor_updated_at = 2;
-  int64 next_cursor_id = 3;
-  bool has_more = 4;
+  repeated NotificationItem items = 1; // 通知列表
+  int64 next_cursor_updated_at = 2;    // 下一页游标时间
+  int64 next_cursor_id = 3;            // 下一页游标ID
+  bool has_more = 4;                   // 是否还有下一页
 }
 
 // GetUnreadCountReq 查询未读数
 message GetUnreadCountReq {
-  int64 recipient_id = 1;
+  int64 recipient_id = 1; // 接收人ID
 }
 
 // GetUnreadCountRes 未读数结果
 message GetUnreadCountRes {
-  int64 total = 1;
+  int64 total = 1; // 未读总数
 }
 
 // MarkReadReq 按 id 标已读 recipient_id 限定作用域防越权
 message MarkReadReq {
-  int64 recipient_id = 1;
-  repeated int64 ids = 2;
+  int64 recipient_id = 1;     // 接收人ID
+  repeated int64 ids = 2;     // 待标记的通知ID
 }
 
 // MarkReadRes 标已读结果
 message MarkReadRes {
-  int64 affected = 1;
+  int64 affected = 1; // 影响行数
 }
 
 // MarkAllReadReq 全部标已读
 message MarkAllReadReq {
-  int64 recipient_id = 1;
+  int64 recipient_id = 1; // 接收人ID
 }
 
 // MarkAllReadRes 全部标已读结果
 message MarkAllReadRes {
-  int64 affected = 1;
+  int64 affected = 1; // 影响行数
 }
 
+// NotificationService 通知收件箱与已读
 service NotificationService {
   rpc ListNotifications(ListNotificationsReq) returns (ListNotificationsRes);
   rpc GetUnreadCount(GetUnreadCountReq) returns (GetUnreadCountRes);

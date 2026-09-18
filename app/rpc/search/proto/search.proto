@@ -1,121 +1,122 @@
 syntax = "proto3";
 
-package search;
+package ranfeed.search;
 
-option go_package = "./search";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
-// ContentType 内容类型 与 content 域对齐
+option go_package = "ran-feed/app/rpc/search/search";
+
+// ContentType 内容类型枚举 与 content 域对齐
 enum ContentType {
-  CONTENT_TYPE_UNKNOWN = 0;
-  ARTICLE = 10;
-  VIDEO = 20;
+  CONTENT_TYPE_UNSPECIFIED = 0; // 未指定
+  CONTENT_TYPE_ARTICLE = 10;    // 文章
+  CONTENT_TYPE_VIDEO = 20;      // 视频
 }
 
 // SearchContentReq 内容搜索请求 content_type 为 0 表示全部 cursor 空为首页
 message SearchContentReq {
-  string keyword = 1;
-  ContentType content_type = 2;
-  string cursor = 3;
-  int32 size = 4;
+  string keyword = 1;           // 搜索词
+  ContentType content_type = 2; // 内容类型 0 表示全部
+  string cursor = 3;            // 游标 空表示首页
+  int32 size = 4;               // 返回条数
 }
 
 // ContentHit 内容命中 只含 id 排序分与高亮 展示字段由 front 富化
 message ContentHit {
-  int64 content_id = 1;
-  double score = 2;
-  string highlight_title = 3;
-  string highlight_description = 4;
+  int64 content_id = 1;           // 内容ID
+  double score = 2;               // 相关性得分
+  string highlight_title = 3;     // 高亮标题
+  string highlight_description = 4; // 高亮正文片段
 }
 
 // SearchContentRes 内容搜索结果 next_cursor 空表示无下一页
 message SearchContentRes {
-  repeated ContentHit hits = 1;
-  int64 total = 2;
-  string next_cursor = 3;
+  repeated ContentHit hits = 1; // 命中列表
+  int64 total = 2;              // 命中总数
+  string next_cursor = 3;       // 下一页游标
 }
 
 // SearchUserReq 用户搜索请求 cursor 空为首页
 message SearchUserReq {
-  string keyword = 1;
-  string cursor = 2;
-  int32 size = 3;
+  string keyword = 1; // 搜索词
+  string cursor = 2;  // 游标 空表示首页
+  int32 size = 3;     // 返回条数
 }
 
 // UserHit 用户命中 只含 id 与排序分
 message UserHit {
-  int64 user_id = 1;
-  double score = 2;
+  int64 user_id = 1; // 用户ID
+  double score = 2;  // 相关性得分
 }
 
 // SearchUserRes 用户搜索结果 next_cursor 空表示无下一页
 message SearchUserRes {
-  repeated UserHit hits = 1;
-  int64 total = 2;
-  string next_cursor = 3;
+  repeated UserHit hits = 1; // 命中列表
+  int64 total = 2;           // 命中总数
+  string next_cursor = 3;    // 下一页游标
 }
 
 // SuggestType 补全项类型 决定前端点击后落哪条搜索路径
 enum SuggestType {
-  SUGGEST_TYPE_UNKNOWN = 0;
-  SUGGEST_CONTENT = 1;
-  SUGGEST_USER = 2;
+  SUGGEST_TYPE_UNSPECIFIED = 0; // 未指定
+  SUGGEST_TYPE_CONTENT = 1;     // 内容建议
+  SUGGEST_TYPE_USER = 2;        // 用户建议
 }
 
 // SuggestReq 自动补全请求 keyword 为已输入前缀
 message SuggestReq {
-  string keyword = 1;
-  int32 size = 2;
+  string keyword = 1; // 已输入前缀
+  int32 size = 2;     // 返回条数
 }
 
 // SuggestItem 单条补全 text 为建议词 type 区分内容/用户
 message SuggestItem {
-  string text = 1;
-  SuggestType type = 2;
+  string text = 1;      // 建议词
+  SuggestType type = 2; // 建议类型
 }
 
 // SuggestRes 补全结果 内容与用户建议混合返回 各带 type
 message SuggestRes {
-  repeated SuggestItem items = 1;
+  repeated SuggestItem items = 1; // 建议列表
 }
 
 // RecordHistoryReq 记录一次搜索 user_id<=0 或 keyword 空则忽略
 message RecordHistoryReq {
-  int64 user_id = 1;
-  string keyword = 2;
+  int64 user_id = 1; // 用户ID
+  string keyword = 2; // 搜索词
 }
-
-message RecordHistoryRes {}
 
 // ListHistoryReq 取最近 limit 条搜索历史
 message ListHistoryReq {
-  int64 user_id = 1;
-  int32 limit = 2;
+  int64 user_id = 1; // 用户ID
+  int32 limit = 2;   // 取多少条
 }
 
-// HistoryItem 单条历史 updated_at 为毫秒时间戳
+// HistoryItem 单条历史
 message HistoryItem {
-  string keyword = 1;
-  int64 updated_at = 2;
+  string keyword = 1;                       // 搜索词
+  google.protobuf.Timestamp updated_at = 2; // 最近一次搜索时间
 }
 
+// ListHistoryRes 搜索历史响应
 message ListHistoryRes {
-  repeated HistoryItem items = 1;
+  repeated HistoryItem items = 1; // 历史列表
 }
 
 // DeleteHistoryReq all 为 true 清空 否则按 keyword 删单条
 message DeleteHistoryReq {
-  int64 user_id = 1;
-  string keyword = 2;
-  bool all = 3;
+  int64 user_id = 1;  // 用户ID
+  string keyword = 2; // 搜索词 all 为 true 时忽略
+  bool all = 3;       // 是否清空
 }
 
-message DeleteHistoryRes {}
-
+// SearchService 检索与搜索历史
 service SearchService {
   rpc SearchContent(SearchContentReq) returns (SearchContentRes);
   rpc SearchUser(SearchUserReq) returns (SearchUserRes);
   rpc Suggest(SuggestReq) returns (SuggestRes);
-  rpc RecordHistory(RecordHistoryReq) returns (RecordHistoryRes);
+  rpc RecordHistory(RecordHistoryReq) returns (google.protobuf.Empty);
   rpc ListHistory(ListHistoryReq) returns (ListHistoryRes);
-  rpc DeleteHistory(DeleteHistoryReq) returns (DeleteHistoryRes);
+  rpc DeleteHistory(DeleteHistoryReq) returns (google.protobuf.Empty);
 }

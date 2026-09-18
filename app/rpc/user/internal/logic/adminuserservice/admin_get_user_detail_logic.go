@@ -33,7 +33,7 @@ func NewAdminGetUserDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 func (l *AdminGetUserDetailLogic) AdminGetUserDetail(in *user.AdminGetUserDetailReq) (*user.AdminGetUserDetailRes, error) {
 	row, err := l.userRepo.AdminGetByID(in.UserId)
 	if err != nil {
-		return nil, err
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("获取用户信息失败"))
 	}
 	if row == nil {
 		return nil, errorx.NewMsg("用户不存在")
@@ -53,5 +53,7 @@ func (l *AdminGetUserDetailLogic) AdminGetUserDetail(in *user.AdminGetUserDetail
 		UpdatedAt: timestamppb.New(row.UpdatedAt),
 	}
 
-	return &user.AdminGetUserDetailRes{Detail: detail}, nil
+	return &user.AdminGetUserDetailRes{
+		Detail: detail,
+	}, nil
 }

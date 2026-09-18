@@ -98,7 +98,7 @@ func TestPersistEvent_Aggregate_调UpsertAggregate(t *testing.T) {
 	c := newTestConsumer(notify, &mockDedupRepo{seen: map[string]bool{}})
 	err := c.persistEvent(notify, strategy.NotifyEvent{
 		RecipientID: 200, ActorID: 100,
-		NotifyType: int32(notification.NotifyType_LIKE_FAVORITE),
+		NotifyType: int32(notification.NotifyType_NOTIFY_TYPE_LIKE_FAVORITE),
 		AggKey:     "LF:500", Action: strategy.PersistAggregate, ContentID: 500,
 	}, time.Now())
 	require.NoError(t, err)
@@ -115,7 +115,7 @@ func TestPersistEvent_InsertOne_调Insert(t *testing.T) {
 	c := newTestConsumer(notify, &mockDedupRepo{seen: map[string]bool{}})
 	err := c.persistEvent(notify, strategy.NotifyEvent{
 		RecipientID: 200, ActorID: 100,
-		NotifyType: int32(notification.NotifyType_COMMENT_REPLY),
+		NotifyType: int32(notification.NotifyType_NOTIFY_TYPE_COMMENT_REPLY),
 		AggKey:     "CR:1000", Action: strategy.PersistInsertOne,
 		ContentID: 500, CommentID: 1000, Snippet: "hi",
 	}, time.Now())

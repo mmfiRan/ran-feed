@@ -136,7 +136,7 @@ func assembleNotificationItems(items []*notifypb.NotificationItem, userMap map[i
 			CommentId: nilSafeInt64(it.CommentId),
 			Snippet:   nilSafeString(it.Snippet),
 			IsRead:    it.IsRead,
-			UpdatedAt: it.UpdatedAt,
+			UpdatedAt: it.GetUpdatedAt().AsTime().UnixMilli(),
 		})
 	}
 	return out

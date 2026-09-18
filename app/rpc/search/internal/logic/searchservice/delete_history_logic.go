@@ -9,6 +9,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type DeleteHistoryLogic struct {
@@ -28,9 +29,9 @@ func NewDeleteHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Del
 }
 
 // DeleteHistory all 为 true 清空 否则删单条 匿名忽略
-func (l *DeleteHistoryLogic) DeleteHistory(in *search.DeleteHistoryReq) (*search.DeleteHistoryRes, error) {
+func (l *DeleteHistoryLogic) DeleteHistory(in *search.DeleteHistoryReq) (*emptypb.Empty, error) {
 	if in == nil || in.UserId <= 0 {
-		return &search.DeleteHistoryRes{}, nil
+		return &emptypb.Empty{}, nil
 	}
 
 	var err error
@@ -42,5 +43,5 @@ func (l *DeleteHistoryLogic) DeleteHistory(in *search.DeleteHistoryReq) (*search
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除搜索历史失败"))
 	}
-	return &search.DeleteHistoryRes{}, nil
+	return &emptypb.Empty{}, nil
 }

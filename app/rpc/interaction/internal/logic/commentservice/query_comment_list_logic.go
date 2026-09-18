@@ -11,6 +11,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const commentDeletedText = "该评论已删除"
@@ -118,7 +119,7 @@ func buildCommentItemFromRow(row *model.RanFeedComment) *interaction.CommentItem
 		ParentId:      row.ParentID,
 		RootId:        row.RootID,
 		Comment:       commentText,
-		CreatedAt:     row.CreatedAt.Unix(),
+		CreatedAt:     timestamppb.New(row.CreatedAt),
 		Status:        status,
 	}
 }

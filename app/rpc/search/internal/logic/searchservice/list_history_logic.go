@@ -9,6 +9,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // defaultHistoryLimit 历史记录默认返回条数
@@ -53,7 +54,7 @@ func (l *ListHistoryLogic) ListHistory(in *search.ListHistoryReq) (*search.ListH
 		}
 		items = append(items, &search.HistoryItem{
 			Keyword:   row.Keyword,
-			UpdatedAt: row.UpdatedAt.UnixMilli(),
+			UpdatedAt: timestamppb.New(row.UpdatedAt),
 		})
 	}
 	return &search.ListHistoryRes{

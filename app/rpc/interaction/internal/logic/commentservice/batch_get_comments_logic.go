@@ -15,6 +15,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // fillObjCacheTimeout: 单条评论缓存回填的最大耗时，防止 Redis 卡住时 goroutine 泄漏。
@@ -127,7 +128,7 @@ func (l *BatchGetCommentsLogic) BatchGetComments(in *interaction.BatchGetComment
 			ParentId:      parentID,
 			RootId:        rootID,
 			Comment:       comment,
-			CreatedAt:     createdAt,
+			CreatedAt:     timestamppb.New(time.Unix(createdAt, 0)),
 			Status:        status,
 			UserName:      userName,
 			UserAvatar:    userAvatar,
@@ -163,7 +164,7 @@ func (l *BatchGetCommentsLogic) BatchGetComments(in *interaction.BatchGetComment
 				ParentId:      r.ParentID,
 				RootId:        r.RootID,
 				Comment:       commentText,
-				CreatedAt:     r.CreatedAt.Unix(),
+				CreatedAt:     timestamppb.New(r.CreatedAt),
 				Status:        status,
 			}
 		}
@@ -274,7 +275,7 @@ func (l *BatchGetCommentsLogic) queryFromDBAndFill(ids []int64) (*interaction.Ba
 			ParentId:      r.ParentID,
 			RootId:        r.RootID,
 			Comment:       r.Comment,
-			CreatedAt:     r.CreatedAt.Unix(),
+			CreatedAt:     timestamppb.New(r.CreatedAt),
 			Status:        r.Status,
 		}
 	}
@@ -350,7 +351,10 @@ func (l *BatchGetCommentsLogic) fillObjCacheBestEffort(items []*interaction.Comm
 			continue
 		}
 		objKey := rediskey.BuildCommentObjKey(strconv.FormatInt(c.CommentId, 10))
-		createdAt := c.CreatedAt
+		createdAt := int64(0)
+		if ts := c.GetCreatedAt(); ts != nil {
+			createdAt = ts.AsTime().Unix()
+		}
 		if createdAt <= 0 {
 			createdAt = time.Now().Unix()
 		}

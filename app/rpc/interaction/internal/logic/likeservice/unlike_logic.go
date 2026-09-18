@@ -6,6 +6,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"ran-feed/app/rpc/interaction/interaction"
 	"ran-feed/app/rpc/interaction/internal/common/consts"
@@ -29,7 +30,7 @@ func NewUnlikeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UnlikeLogi
 	}
 }
 
-func (l *UnlikeLogic) Unlike(in *interaction.UnlikeReq) (*interaction.UnlikeRes, error) {
+func (l *UnlikeLogic) Unlike(in *interaction.UnlikeReq) (*emptypb.Empty, error) {
 	scene := in.Scene.String()
 
 	changed, trusted, err := l.processUnlike(in.UserId, in.ContentId)
@@ -43,7 +44,7 @@ func (l *UnlikeLogic) Unlike(in *interaction.UnlikeReq) (*interaction.UnlikeRes,
 		})
 	}
 
-	return &interaction.UnlikeRes{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (l *UnlikeLogic) processUnlike(userID, contentID int64) (changed, trusted bool, err error) {

@@ -12,6 +12,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type DeleteCommentLogic struct {
@@ -30,7 +31,7 @@ func NewDeleteCommentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Del
 	}
 }
 
-func (l *DeleteCommentLogic) DeleteComment(in *interaction.DeleteCommentReq) (*interaction.DeleteCommentRes, error) {
+func (l *DeleteCommentLogic) DeleteComment(in *interaction.DeleteCommentReq) (*emptypb.Empty, error) {
 	if in == nil || in.CommentId <= 0 {
 		return nil, errorx.NewMsg("参数错误")
 	}
@@ -49,7 +50,7 @@ func (l *DeleteCommentLogic) DeleteComment(in *interaction.DeleteCommentReq) (*i
 		return nil, errorx.NewMsg("无权限删除评论")
 	}
 	if comment.IsDeleted == 1 {
-		return &interaction.DeleteCommentRes{}, nil
+		return &emptypb.Empty{}, nil
 	}
 
 	hasRef, err := l.commentRepo.HasReferences(comment.ID)
@@ -63,7 +64,7 @@ func (l *DeleteCommentLogic) DeleteComment(in *interaction.DeleteCommentReq) (*i
 			return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除评论失败"))
 		}
 		l.invalidateCommentCache(comment)
-		return &interaction.DeleteCommentRes{}, nil
+		return &emptypb.Empty{}, nil
 	}
 
 	// 无后代，物理删除
@@ -75,7 +76,7 @@ func (l *DeleteCommentLogic) DeleteComment(in *interaction.DeleteCommentReq) (*i
 	// 清理父链：若父评论为墓碑且已无子评论，则物理删除
 	l.cleanupDeletedAncestors(comment.ParentID)
 
-	return &interaction.DeleteCommentRes{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 // invalidateCommentCache 仅失效自身 obj obj 为不可变快照 回复数在 by-id 路径实时重算无需连删父根

@@ -44,7 +44,7 @@ func (s *followStrategy) ExtractEvents(ctx context.Context, op string, row, oldR
 	return []strategy.NotifyEvent{{
 		RecipientID: recipientID,
 		ActorID:     actorID,
-		NotifyType:  int32(notification.NotifyType_FOLLOW),
+		NotifyType:  int32(notification.NotifyType_NOTIFY_TYPE_FOLLOW),
 		AggKey:      fmt.Sprintf("FO:%d", actorID),
 		Action:      strategy.PersistAggregate,
 	}}

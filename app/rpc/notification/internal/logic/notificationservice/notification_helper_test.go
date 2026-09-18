@@ -19,7 +19,7 @@ func TestBuildNotificationItem(t *testing.T) {
 		ID:          100,
 		RecipientID: 200,
 		ActorID:     300,
-		NotifyType:  int32(notification.NotifyType_LIKE_FAVORITE),
+		NotifyType:  int32(notification.NotifyType_NOTIFY_TYPE_LIKE_FAVORITE),
 		AggCount:    3,
 		ContentID:   500,
 		CommentID:   0,
@@ -31,11 +31,11 @@ func TestBuildNotificationItem(t *testing.T) {
 	assert.Equal(t, int64(100), item.Id)
 	assert.Equal(t, int64(200), item.RecipientId)
 	assert.Equal(t, int64(300), item.ActorId)
-	assert.Equal(t, notification.NotifyType_LIKE_FAVORITE, item.NotifyType)
+	assert.Equal(t, notification.NotifyType_NOTIFY_TYPE_LIKE_FAVORITE, item.NotifyType)
 	assert.Equal(t, int64(3), item.AggCount)
 	assert.Equal(t, int64(500), item.ContentId)
 	assert.False(t, item.IsRead)
-	assert.Equal(t, now.UnixMilli(), item.UpdatedAt)
+	assert.Equal(t, now.UnixMilli(), item.GetUpdatedAt().AsTime().UnixMilli())
 }
 
 func TestBuildNotificationItem_已读转Bool(t *testing.T) {

@@ -35,7 +35,7 @@ type UserRepository interface {
 	Create(userDO *do.UserDO) (int64, error)
 	// AdminPageUsers 后台管理分页列表用户
 	AdminPageUsers(status *int32, username, nickname *string, offset, limit int) ([]*model.RanFeedUser, int64, error)
-	// AdminGetByID 后台管理获取用户详情 任意状态
+	// AdminGetByID 后台管理获取用户详情
 	AdminGetByID(userID int64) (*model.RanFeedUser, error)
 	// AdminUpdateStatus 后台管理更新用户状态
 	AdminUpdateStatus(userID int64, status int32, updatedBy int64) (int64, error)
@@ -275,7 +275,7 @@ func (r *userRepositoryImpl) AdminGetByID(userID int64) (*model.RanFeedUser, err
 	q := r.getQuery()
 	row, err := q.RanFeedUser.WithContext(r.ctx).
 		Where(q.RanFeedUser.ID.Eq(userID)).
-		Where(q.RanFeedUser.IsDeleted.Eq(0)).
+		Where(q.RanFeedUser.IsDeleted.Eq(enums.NotDeleted.Int64())).
 		First()
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -286,12 +286,12 @@ func (r *userRepositoryImpl) AdminGetByID(userID int64) (*model.RanFeedUser, err
 	return row, nil
 }
 
-// AdminUpdateStatus 更新用户状态 updatedBy 为管理员 id 与 C 端用户 id 不同域 真实操作审计走 admin AuditMiddleware
+// AdminUpdateStatus 更新用户状态 updatedBy
 func (r *userRepositoryImpl) AdminUpdateStatus(userID int64, status int32, updatedBy int64) (int64, error) {
 	q := r.getQuery()
 	result, err := q.RanFeedUser.WithContext(r.ctx).
 		Where(q.RanFeedUser.ID.Eq(userID)).
-		Where(q.RanFeedUser.IsDeleted.Eq(0)).
+		Where(q.RanFeedUser.IsDeleted.Eq(enums.NotDeleted.Int64())).
 		Updates(map[string]interface{}{
 			"status":     status,
 			"updated_by": updatedBy,

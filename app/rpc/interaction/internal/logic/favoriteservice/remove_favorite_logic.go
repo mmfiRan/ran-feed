@@ -11,6 +11,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type RemoveFavoriteLogic struct {
@@ -29,7 +30,7 @@ func NewRemoveFavoriteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Re
 	}
 }
 
-func (l *RemoveFavoriteLogic) RemoveFavorite(in *interaction.RemoveFavoriteReq) (*interaction.RemoveFavoriteRes, error) {
+func (l *RemoveFavoriteLogic) RemoveFavorite(in *interaction.RemoveFavoriteReq) (*emptypb.Empty, error) {
 	_, err := l.favoriteRepo.DeleteByUserAndContent(in.UserId, in.ContentId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("取消收藏失败"))
@@ -40,5 +41,5 @@ func (l *RemoveFavoriteLogic) RemoveFavorite(in *interaction.RemoveFavoriteReq) 
 		l.Errorf("删除收藏列表缓存失败: %v, user_id=%d", delErr, in.UserId)
 	}
 
-	return &interaction.RemoveFavoriteRes{}, nil
+	return &emptypb.Empty{}, nil
 }

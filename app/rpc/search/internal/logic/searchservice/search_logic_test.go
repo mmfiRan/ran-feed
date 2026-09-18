@@ -82,7 +82,7 @@ func TestBuildContentQuery(t *testing.T) {
 	})
 
 	t.Run("带视频类型 多一个过滤", func(t *testing.T) {
-		q := l.buildQuery(&search.SearchContentReq{Keyword: "露营", ContentType: search.ContentType_VIDEO}, 10, nil)
+		q := l.buildQuery(&search.SearchContentReq{Keyword: "露营", ContentType: search.ContentType_CONTENT_TYPE_VIDEO}, 10, nil)
 		filters := q["query"].(map[string]any)["bool"].(map[string]any)["filter"].([]map[string]any)
 		require.Len(t, filters, 4)
 		assert.Equal(t, int32(20), filters[3]["term"].(map[string]any)["content_type"])

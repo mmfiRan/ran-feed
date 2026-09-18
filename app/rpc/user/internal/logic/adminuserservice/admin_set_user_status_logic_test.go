@@ -24,6 +24,8 @@ import (
 func TestValidateUserStatusTransition(t *testing.T) {
 	const canceled = user.UserStatus_USER_STATUS_CANCELLED // 注销
 
+	logic := &AdminSetUserStatusLogic{}
+
 	tests := []struct {
 		name     string
 		cur      user.UserStatus
@@ -43,7 +45,7 @@ func TestValidateUserStatusTransition(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			noop, err := validateUserStatusTransition(tt.cur, tt.target)
+			noop, err := logic.validateUserStatusTransition(tt.cur, tt.target)
 			if tt.wantErr {
 				assert.Error(t, err)
 				return
@@ -162,10 +164,10 @@ func TestAdminSetUserStatus(t *testing.T) {
 			wantGetCalls: 1,
 		},
 		{
-			name:         "user_id 非法 参数错误",
+			name:         "user_id 非法 无前置校验 落库查询后报用户不存在",
 			req:          &user.AdminSetUserStatusReq{UserId: 0, Status: disabled, OperatorId: 1},
-			wantErr:      "参数错误",
-			wantGetCalls: 0,
+			wantErr:      "用户不存在",
+			wantGetCalls: 1,
 		},
 	}
 

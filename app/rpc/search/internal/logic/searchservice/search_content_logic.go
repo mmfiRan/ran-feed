@@ -72,7 +72,7 @@ func (l *SearchContentLogic) buildQuery(in *search.SearchContentReq, size int, s
 		{"term": map[string]any{"visibility": int32(content.Visibility_VISIBILITY_PUBLIC)}},
 		{"term": map[string]any{"is_deleted": 0}},
 	}
-	if in.ContentType != search.ContentType_CONTENT_TYPE_UNKNOWN {
+	if in.ContentType != search.ContentType_CONTENT_TYPE_UNSPECIFIED {
 		filters = append(filters, map[string]any{"term": map[string]any{"content_type": int32(in.ContentType)}})
 	}
 

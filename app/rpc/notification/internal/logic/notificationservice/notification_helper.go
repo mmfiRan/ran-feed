@@ -5,6 +5,8 @@ import (
 
 	"ran-feed/app/rpc/notification/internal/entity/model"
 	"ran-feed/app/rpc/notification/notification"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // buildNotificationItem
@@ -22,7 +24,7 @@ func buildNotificationItem(row *model.RanFeedNotification) *notification.Notific
 		CommentId:   row.CommentID,
 		Snippet:     row.Snippet,
 		IsRead:      row.IsRead == 1,
-		UpdatedAt:   row.UpdatedAt.UnixMilli(),
+		UpdatedAt:   timestamppb.New(row.UpdatedAt),
 	}
 }
 

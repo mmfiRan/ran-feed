@@ -14,7 +14,6 @@ import (
 )
 
 func GetSessionTTL(cfg config.Config) time.Duration {
-	// 配置单位为秒；<=0 则使用默认 7 天
 	sessionTTL := time.Duration(cfg.SessionTTL) * time.Second
 	if sessionTTL <= 0 {
 		return time.Duration(rediskey.RedisUserSessionExpireSecondsDefault) * time.Second
@@ -55,7 +54,7 @@ func RemoveSession(ctx context.Context, r *redis.Redis, userID int64, token stri
 	return err
 }
 
-// RemoveByUserID 根据用户ID踢下线 读反向索引拿token后删双向key
+// RemoveByUserID 根据用户ID踢下线
 func RemoveByUserID(ctx context.Context, r *redis.Redis, userID int64) error {
 	userKey := rediskey.BuildUserSessionUserKey(userID)
 	token, err := r.GetCtx(ctx, userKey)

@@ -65,7 +65,7 @@ func (l *QueryCommentListLogic) QueryCommentList(req *types.QueryCommentListReq)
 			ParentId:      c.ParentId,
 			RootId:        c.RootId,
 			Comment:       c.Comment,
-			CreatedAt:     c.CreatedAt,
+			CreatedAt:     c.GetCreatedAt().AsTime().Unix(),
 			Status:        c.Status,
 			UserName:      c.UserName,
 			UserAvatar:    c.UserAvatar,

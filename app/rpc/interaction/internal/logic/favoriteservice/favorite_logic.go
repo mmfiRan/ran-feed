@@ -12,6 +12,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type FavoriteLogic struct {
@@ -30,7 +31,7 @@ func NewFavoriteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Favorite
 	}
 }
 
-func (l *FavoriteLogic) Favorite(in *interaction.FavoriteReq) (*interaction.FavoriteRes, error) {
+func (l *FavoriteLogic) Favorite(in *interaction.FavoriteReq) (*emptypb.Empty, error) {
 
 	_, err := l.favoriteRepo.Upsert(&do.FavoriteDO{
 		UserID:        in.UserId,
@@ -48,5 +49,5 @@ func (l *FavoriteLogic) Favorite(in *interaction.FavoriteReq) (*interaction.Favo
 		l.Errorf("删除收藏列表缓存失败: %v, user_id=%d", delErr, in.UserId)
 	}
 
-	return &interaction.FavoriteRes{}, nil
+	return &emptypb.Empty{}, nil
 }

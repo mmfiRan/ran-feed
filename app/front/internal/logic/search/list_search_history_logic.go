@@ -49,7 +49,7 @@ func (l *ListSearchHistoryLogic) ListSearchHistory() (resp *types.ListSearchHist
 		}
 		items = append(items, types.SearchHistoryItem{
 			Keyword:   it.Keyword,
-			UpdatedAt: it.UpdatedAt,
+			UpdatedAt: it.GetUpdatedAt().AsTime().UnixMilli(),
 		})
 	}
 	resp.Items = items

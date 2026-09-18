@@ -17,9 +17,9 @@ import (
 // suggestTypeName 补全项类型枚举转前端友好字符串
 func suggestTypeName(t search.SuggestType) string {
 	switch t {
-	case search.SuggestType_SUGGEST_CONTENT:
+	case search.SuggestType_SUGGEST_TYPE_CONTENT:
 		return "content"
-	case search.SuggestType_SUGGEST_USER:
+	case search.SuggestType_SUGGEST_TYPE_USER:
 		return "user"
 	default:
 		return ""

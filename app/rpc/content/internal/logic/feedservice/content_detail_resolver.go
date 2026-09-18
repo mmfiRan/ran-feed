@@ -157,9 +157,9 @@ func (r *contentDetailResolver) loadAuthorsAndLikes(details []*do.ContentDetailD
 		}
 		switch content.ContentType(d.ContentType) {
 		case content.ContentType_CONTENT_TYPE_ARTICLE:
-			likeInfos = append(likeInfos, &likeservice.LikeInfo{ContentId: d.ContentID, Scene: interaction.Scene_ARTICLE})
+			likeInfos = append(likeInfos, &likeservice.LikeInfo{ContentId: d.ContentID, Scene: interaction.Scene_SCENE_ARTICLE})
 		case content.ContentType_CONTENT_TYPE_VIDEO:
-			likeInfos = append(likeInfos, &likeservice.LikeInfo{ContentId: d.ContentID, Scene: interaction.Scene_VIDEO})
+			likeInfos = append(likeInfos, &likeservice.LikeInfo{ContentId: d.ContentID, Scene: interaction.Scene_SCENE_VIDEO})
 		}
 	}
 

@@ -2096,7 +2096,6 @@
               "type": "object",
               "properties": {
                 "status": {
-                  "description": "变更后状态",
                   "type": "object",
                   "required": [
                     "code",
@@ -2122,7 +2121,7 @@
       }
     }
   },
-  "x-date": "2026-09-17 15:02:22",
+  "x-date": "2026-09-18 10:34:58",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

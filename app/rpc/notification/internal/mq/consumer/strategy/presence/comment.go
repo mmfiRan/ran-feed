@@ -64,7 +64,7 @@ func (s *commentStrategy) ExtractEvents(ctx context.Context, op string, row, old
 	return []strategy.NotifyEvent{{
 		RecipientID: recipientID,
 		ActorID:     actorID,
-		NotifyType:  int32(notification.NotifyType_COMMENT_REPLY),
+		NotifyType:  int32(notification.NotifyType_NOTIFY_TYPE_COMMENT_REPLY),
 		AggKey:      fmt.Sprintf("CR:%d", commentID),
 		Action:      strategy.PersistInsertOne,
 		ContentID:   contentID,

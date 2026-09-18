@@ -2,8 +2,10 @@ package notification
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	contentpb "ran-feed/app/rpc/content/content"
 	notifypb "ran-feed/app/rpc/notification/notification"
@@ -115,20 +117,20 @@ func TestAssembleNotificationItems(t *testing.T) {
 	snippet := "点赞"
 	items := []*notifypb.NotificationItem{
 		{
-			Id: 1, ActorId: 100, NotifyType: notifypb.NotifyType_LIKE_FAVORITE,
-			AggCount: 3, ContentId: 500, CommentId: 0, IsRead: false, UpdatedAt: 1720000000000,
+			Id: 1, ActorId: 100, NotifyType: notifypb.NotifyType_NOTIFY_TYPE_LIKE_FAVORITE,
+			AggCount: 3, ContentId: 500, CommentId: 0, IsRead: false, UpdatedAt: timestamppb.New(time.UnixMilli(1720000000000)),
 		},
 		{
-			Id: 2, ActorId: 200, NotifyType: notifypb.NotifyType_COMMENT_REPLY,
-			AggCount: 1, ContentId: 500, CommentId: commentID, Snippet: snippet, IsRead: true, UpdatedAt: 1720000001000,
+			Id: 2, ActorId: 200, NotifyType: notifypb.NotifyType_NOTIFY_TYPE_COMMENT_REPLY,
+			AggCount: 1, ContentId: 500, CommentId: commentID, Snippet: snippet, IsRead: true, UpdatedAt: timestamppb.New(time.UnixMilli(1720000001000)),
 		},
 		{
-			Id: 3, ActorId: 300, NotifyType: notifypb.NotifyType_FOLLOW,
-			AggCount: 1, ContentId: 0, IsRead: false, UpdatedAt: 1720000002000,
+			Id: 3, ActorId: 300, NotifyType: notifypb.NotifyType_NOTIFY_TYPE_FOLLOW,
+			AggCount: 1, ContentId: 0, IsRead: false, UpdatedAt: timestamppb.New(time.UnixMilli(1720000002000)),
 		},
 		{
-			Id: 4, ActorId: 400, NotifyType: notifypb.NotifyType_LIKE_FAVORITE,
-			AggCount: 1, ContentId: 700, IsRead: false, UpdatedAt: 1720000003000, // content 已删
+			Id: 4, ActorId: 400, NotifyType: notifypb.NotifyType_NOTIFY_TYPE_LIKE_FAVORITE,
+			AggCount: 1, ContentId: 700, IsRead: false, UpdatedAt: timestamppb.New(time.UnixMilli(1720000003000)), // content 已删
 		},
 		nil,
 	}
@@ -148,7 +150,7 @@ func TestAssembleNotificationItems(t *testing.T) {
 
 	// item1 LIKE_FAVORITE 完整
 	assert.Equal(t, int64(1), out[0].Id)
-	assert.Equal(t, int32(notifypb.NotifyType_LIKE_FAVORITE), out[0].Type)
+	assert.Equal(t, int32(notifypb.NotifyType_NOTIFY_TYPE_LIKE_FAVORITE), out[0].Type)
 	assert.Equal(t, "小明", out[0].Actor.Nickname)
 	assert.NotNil(t, out[0].Content)
 	assert.Equal(t, "标题500", out[0].Content.Title)

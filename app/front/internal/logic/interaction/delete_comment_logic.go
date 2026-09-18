@@ -40,7 +40,7 @@ func (l *DeleteCommentLogic) DeleteComment(req *types.DeleteCommentReq) (resp *t
 		return nil, errorx.NewMsg("评论ID不能为空")
 	}
 
-	scene := interaction.Scene_SCENE_UNKNOWN
+	scene := interaction.Scene_SCENE_UNSPECIFIED
 	if req.Scene != nil && *req.Scene != "" {
 		parsed, parseErr := transform.ParseEnum[interaction.Scene](interaction.Scene_value, *req.Scene)
 		if parseErr != nil {

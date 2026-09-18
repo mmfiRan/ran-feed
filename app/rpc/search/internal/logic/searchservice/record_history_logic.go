@@ -9,6 +9,7 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type RecordHistoryLogic struct {
@@ -28,13 +29,13 @@ func NewRecordHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Rec
 }
 
 // RecordHistory 记录一次搜索 匿名或空词忽略 去重提到最前
-func (l *RecordHistoryLogic) RecordHistory(in *search.RecordHistoryReq) (*search.RecordHistoryRes, error) {
+func (l *RecordHistoryLogic) RecordHistory(in *search.RecordHistoryReq) (*emptypb.Empty, error) {
 	if in == nil || in.UserId <= 0 || in.Keyword == "" {
-		return &search.RecordHistoryRes{}, nil
+		return &emptypb.Empty{}, nil
 	}
 
 	if err := l.historyRepo.Upsert(in.UserId, in.Keyword); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("记录搜索历史失败"))
 	}
-	return &search.RecordHistoryRes{}, nil
+	return &emptypb.Empty{}, nil
 }

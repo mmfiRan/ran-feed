@@ -357,7 +357,7 @@ type CUserStatusReq struct {
 }
 
 type CUserStatusRes struct {
-	Status EnumValue `json:"status"` // 变更后状态
+	Status EnumValue `json:"status"`
 }
 
 type EnumValue struct {

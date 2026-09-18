@@ -42,13 +42,13 @@ type (
 	CUserDetailRes {
 		Detail CUserDetailData `json:"detail"`
 	}
-	// CUserStatusReq status 取 10 恢复 或 20 封禁
+
 	CUserStatusReq {
 		UserId int64 `json:"user_id,optional" validate:"required,gt=0"`
 		Status int32 `json:"status,optional" validate:"required,oneof=10 20"`
 	}
 	CUserStatusRes {
-		Status EnumValue `json:"status"` // 变更后状态
+		Status EnumValue `json:"status"` 
 	}
 )
 

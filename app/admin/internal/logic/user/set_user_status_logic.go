@@ -32,8 +32,8 @@ func NewSetUserStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Set
 
 func (l *SetUserStatusLogic) SetUserStatus(req *types.CUserStatusReq) (resp *types.CUserStatusRes, err error) {
 	operatorID, err := pkgutils.GetContextAdminId(l.ctx)
-	if err != nil || operatorID <= 0 {
-		return nil, errorx.NewMsg("操作者ID获取失败")
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("设置用户状态失败"))
 	}
 
 	rpcRes, err := l.svcCtx.UserAdminRpc.AdminSetUserStatus(l.ctx, &user.AdminSetUserStatusReq{

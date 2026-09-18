@@ -53,13 +53,13 @@ func (l *SuggestLogic) Suggest(in *search.SuggestReq) (*search.SuggestRes, error
 	for _, t := range contentTexts {
 		res.Items = append(res.Items, &search.SuggestItem{
 			Text: t,
-			Type: search.SuggestType_SUGGEST_CONTENT,
+			Type: search.SuggestType_SUGGEST_TYPE_CONTENT,
 		})
 	}
 	for _, t := range userTexts {
 		res.Items = append(res.Items, &search.SuggestItem{
 			Text: t,
-			Type: search.SuggestType_SUGGEST_USER,
+			Type: search.SuggestType_SUGGEST_TYPE_USER,
 		})
 	}
 	return res, nil
