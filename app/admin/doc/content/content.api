@@ -12,11 +12,11 @@ type (
 		Username    *string `form:"username,optional" validate:"omitempty,max=64"`
 	}
 	AdminContentListItem {
-		ContentId     int64     `json:"content_id"`
+		ContentId     int64     `json:"content_id,string"`
 		ContentType   EnumValue `json:"content_type"`
 		Status        EnumValue `json:"status"`
 		Visibility    EnumValue `json:"visibility"`
-		AuthorId      int64     `json:"author_id"`
+		AuthorId      int64     `json:"author_id,string"`
 		Username      string    `json:"username"`
 		Title         string    `json:"title"`
 		LikeCount     int64     `json:"like_count"`
@@ -33,11 +33,11 @@ type (
 		ContentId int64 `form:"content_id,optional" validate:"required,gt=0"`
 	}
 	AdminContentDetailData {
-		ContentId      int64     `json:"content_id"`
+		ContentId      int64     `json:"content_id,string"`
 		ContentType    EnumValue `json:"content_type"`
 		Status         EnumValue `json:"status"`
 		Visibility     EnumValue `json:"visibility"`
-		AuthorId       int64     `json:"author_id"`
+		AuthorId       int64     `json:"author_id,string"`
 		Username       string    `json:"username"`
 		Title          string    `json:"title"`
 		Description    string    `json:"description"`
@@ -57,7 +57,7 @@ type (
 	}
 	// AdminContentStatusReq
 	AdminContentStatusReq {
-		ContentId int64 `json:"content_id,optional" validate:"required,gt=0"`
+		ContentId int64 `json:"content_id,string,optional" validate:"required,gt=0"`
 		Status    int32 `json:"status,optional" validate:"required,oneof=30 50"` // 目标状态 30已发布 50已下架
 	}
 	AdminContentStatusRes {
@@ -65,7 +65,7 @@ type (
 	}
 	// AdminContentReviewReq 10通过 20拒绝
 	AdminContentReviewReq {
-		ContentId    int64  `json:"content_id,optional" validate:"required,gt=0"`
+		ContentId    int64  `json:"content_id,string,optional" validate:"required,gt=0"`
 		Decision     int32  `json:"decision,optional" validate:"required,oneof=10 20"`
 		RejectReason string `json:"reject_reason,optional"`
 	}

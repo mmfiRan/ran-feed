@@ -6,6 +6,7 @@ package role
 import (
 	"context"
 
+	"ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
@@ -44,6 +45,6 @@ func (l *GetRoleDetailLogic) GetRoleDetail(req *types.AdminRoleDetailReq) (resp 
 			Remark:    role.GetRemark(),
 			CreatedAt: role.GetCreatedAt().AsTime().UnixMilli(),
 		},
-		PermissionIds: rpcRes.GetPermissionIds(),
+		PermissionIds: utils.FormatInt64s(rpcRes.GetPermissionIds()),
 	}, nil
 }

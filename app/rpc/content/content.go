@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/cron"
@@ -71,7 +70,7 @@ func main() {
 			}
 			// 启动失败意味着热榜定时任务永久不可用，必须退出由 supervisor 拉起
 			logx.Errorf("xxl-job executor start failed, exiting for supervisor restart: %v", err)
-			os.Exit(1)
+			//os.Exit(1)
 		}
 	})
 

@@ -11,7 +11,7 @@ type (
 		Nickname *string `form:"nickname,optional" validate:"omitempty,max=64"`
 	}
 	CUserItem {
-		UserId    int64     `json:"user_id"`
+		UserId    int64     `json:"user_id,string"`
 		Username  string    `json:"username"`
 		Nickname  string    `json:"nickname"`
 		Mobile    string    `json:"mobile"`
@@ -27,7 +27,7 @@ type (
 		UserId int64 `form:"user_id,optional" validate:"required,gt=0"`
 	}
 	CUserDetailData {
-		UserId    int64     `json:"user_id"`
+		UserId    int64     `json:"user_id,string"`
 		Username  string    `json:"username"`
 		Nickname  string    `json:"nickname"`
 		Mobile    string    `json:"mobile"`
@@ -44,7 +44,7 @@ type (
 	}
 
 	CUserStatusReq {
-		UserId int64 `json:"user_id,optional" validate:"required,gt=0"`
+		UserId int64 `json:"user_id,string,optional" validate:"required,gt=0"`
 		Status int32 `json:"status,optional" validate:"required,oneof=10 20"`
 	}
 	CUserStatusRes {

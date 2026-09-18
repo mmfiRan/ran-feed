@@ -8,7 +8,7 @@ type (
 		Password string `json:"password,optional" validate:"required"`
 	}
 	AdminLoginRes {
-		AdminId     int64    `json:"admin_id"`
+		AdminId     int64    `json:"admin_id,string"`
 		Token       string   `json:"token"`
 		ExpiredAt   int64    `json:"expired_at"`
 		Nickname    string   `json:"nickname"`
@@ -16,7 +16,7 @@ type (
 	}
 	AdminLogoutRes  {}
 	AdminInfo {
-		AdminId  int64     `json:"admin_id"`
+		AdminId  int64     `json:"admin_id,string"`
 		Username string    `json:"username"`
 		Nickname string    `json:"nickname"`
 		Status   EnumValue `json:"status"`

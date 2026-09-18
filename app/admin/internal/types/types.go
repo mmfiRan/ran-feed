@@ -4,11 +4,11 @@
 package types
 
 type AdminContentDetailData struct {
-	ContentId      int64     `json:"content_id"`
+	ContentId      int64     `json:"content_id,string"`
 	ContentType    EnumValue `json:"content_type"`
 	Status         EnumValue `json:"status"`
 	Visibility     EnumValue `json:"visibility"`
-	AuthorId       int64     `json:"author_id"`
+	AuthorId       int64     `json:"author_id,string"`
 	Username       string    `json:"username"`
 	Title          string    `json:"title"`
 	Description    string    `json:"description"`
@@ -33,11 +33,11 @@ type AdminContentDetailRes struct {
 }
 
 type AdminContentListItem struct {
-	ContentId     int64     `json:"content_id"`
+	ContentId     int64     `json:"content_id,string"`
 	ContentType   EnumValue `json:"content_type"`
 	Status        EnumValue `json:"status"`
 	Visibility    EnumValue `json:"visibility"`
-	AuthorId      int64     `json:"author_id"`
+	AuthorId      int64     `json:"author_id,string"`
 	Username      string    `json:"username"`
 	Title         string    `json:"title"`
 	LikeCount     int64     `json:"like_count"`
@@ -61,7 +61,7 @@ type AdminContentListRes struct {
 }
 
 type AdminContentReviewReq struct {
-	ContentId    int64  `json:"content_id,optional" validate:"required,gt=0"`
+	ContentId    int64  `json:"content_id,string,optional" validate:"required,gt=0"`
 	Decision     int32  `json:"decision,optional" validate:"required,oneof=10 20"`
 	RejectReason string `json:"reject_reason,optional"`
 }
@@ -71,7 +71,7 @@ type AdminContentReviewRes struct {
 }
 
 type AdminContentStatusReq struct {
-	ContentId int64 `json:"content_id,optional" validate:"required,gt=0"`
+	ContentId int64 `json:"content_id,string,optional" validate:"required,gt=0"`
 	Status    int32 `json:"status,optional" validate:"required,oneof=30 50"` // 目标状态 30已发布 50已下架
 }
 
@@ -80,15 +80,15 @@ type AdminContentStatusRes struct {
 }
 
 type AdminInfo struct {
-	AdminId  int64     `json:"admin_id"`
+	AdminId  int64     `json:"admin_id,string"`
 	Username string    `json:"username"`
 	Nickname string    `json:"nickname"`
 	Status   EnumValue `json:"status"`
 }
 
 type AdminLoginLogItem struct {
-	Id        int64     `json:"id"`
-	AdminId   int64     `json:"admin_id"`
+	Id        int64     `json:"id,string"`
+	AdminId   int64     `json:"admin_id,string"`
 	Username  string    `json:"username"`
 	Ip        string    `json:"ip"`
 	UserAgent string    `json:"user_agent"`
@@ -117,7 +117,7 @@ type AdminLoginReq struct {
 }
 
 type AdminLoginRes struct {
-	AdminId     int64    `json:"admin_id"`
+	AdminId     int64    `json:"admin_id,string"`
 	Token       string   `json:"token"`
 	ExpiredAt   int64    `json:"expired_at"`
 	Nickname    string   `json:"nickname"`
@@ -133,8 +133,8 @@ type AdminMeRes struct {
 }
 
 type AdminOperationLogItem struct {
-	Id        int64     `json:"id"`
-	AdminId   int64     `json:"admin_id"`
+	Id        int64     `json:"id,string"`
+	AdminId   int64     `json:"admin_id,string"`
 	Username  string    `json:"username"`
 	Action    string    `json:"action"`
 	Title     string    `json:"title"`
@@ -162,7 +162,7 @@ type AdminOperationLogListRes struct {
 }
 
 type AdminPermissionItem struct {
-	Id     int64  `json:"id"`
+	Id     int64  `json:"id,string"`
 	Code   string `json:"code"`
 	Name   string `json:"name"`
 	Module string `json:"module"`
@@ -183,11 +183,11 @@ type AdminRoleCreateReq struct {
 }
 
 type AdminRoleCreateRes struct {
-	Id int64 `json:"id"`
+	Id int64 `json:"id,string"`
 }
 
 type AdminRoleDeleteReq struct {
-	Id int64 `json:"id,optional" validate:"required,gt=0"`
+	Id int64 `json:"id,string,optional" validate:"required,gt=0"`
 }
 
 type AdminRoleDeleteRes struct {
@@ -199,11 +199,11 @@ type AdminRoleDetailReq struct {
 
 type AdminRoleDetailRes struct {
 	Role          AdminRoleItem `json:"role"`
-	PermissionIds []int64       `json:"permission_ids"`
+	PermissionIds []string      `json:"permission_ids"`
 }
 
 type AdminRoleItem struct {
-	Id        int64  `json:"id"`
+	Id        int64  `json:"id,string"`
 	Code      string `json:"code"`
 	Name      string `json:"name"`
 	Remark    string `json:"remark"`
@@ -220,15 +220,15 @@ type AdminRoleListRes struct {
 }
 
 type AdminRoleSetPermissionsReq struct {
-	RoleId        int64   `json:"role_id,optional" validate:"required,gt=0"`
-	PermissionIds []int64 `json:"permission_ids,optional"`
+	RoleId        int64    `json:"role_id,string,optional" validate:"required,gt=0"`
+	PermissionIds []string `json:"permission_ids,optional"`
 }
 
 type AdminRoleSetPermissionsRes struct {
 }
 
 type AdminRoleUpdateReq struct {
-	Id     int64  `json:"id,optional" validate:"required,gt=0"`
+	Id     int64  `json:"id,string,optional" validate:"required,gt=0"`
 	Name   string `json:"name,optional" validate:"required"`
 	Remark string `json:"remark,optional"`
 }
@@ -237,14 +237,14 @@ type AdminRoleUpdateRes struct {
 }
 
 type AdminUserCreateReq struct {
-	Username string  `json:"username,optional" validate:"required"`
-	Password string  `json:"password,optional" validate:"required,min=6"`
-	Nickname string  `json:"nickname,optional"`
-	RoleIds  []int64 `json:"role_ids,optional"`
+	Username string   `json:"username,optional" validate:"required"`
+	Password string   `json:"password,optional" validate:"required,min=6"`
+	Nickname string   `json:"nickname,optional"`
+	RoleIds  []string `json:"role_ids,optional"`
 }
 
 type AdminUserCreateRes struct {
-	Id int64 `json:"id"`
+	Id int64 `json:"id,string"`
 }
 
 type AdminUserDetailReq struct {
@@ -253,11 +253,11 @@ type AdminUserDetailReq struct {
 
 type AdminUserDetailRes struct {
 	Admin   AdminUserItem `json:"admin"`
-	RoleIds []int64       `json:"role_ids"`
+	RoleIds []string      `json:"role_ids"`
 }
 
 type AdminUserItem struct {
-	Id        int64     `json:"id"`
+	Id        int64     `json:"id,string"`
 	Username  string    `json:"username"`
 	Nickname  string    `json:"nickname"`
 	Status    EnumValue `json:"status"`
@@ -276,7 +276,7 @@ type AdminUserListRes struct {
 }
 
 type AdminUserResetPasswordReq struct {
-	Id          int64  `json:"id,optional" validate:"required,gt=0"`
+	Id          int64  `json:"id,string,optional" validate:"required,gt=0"`
 	NewPassword string `json:"new_password,optional" validate:"required,min=6"`
 }
 
@@ -284,15 +284,15 @@ type AdminUserResetPasswordRes struct {
 }
 
 type AdminUserSetRolesReq struct {
-	AdminId int64   `json:"admin_id,optional" validate:"required,gt=0"`
-	RoleIds []int64 `json:"role_ids,optional"`
+	AdminId int64    `json:"admin_id,string,optional" validate:"required,gt=0"`
+	RoleIds []string `json:"role_ids,optional"`
 }
 
 type AdminUserSetRolesRes struct {
 }
 
 type AdminUserStatusReq struct {
-	Id     int64 `json:"id,optional" validate:"required,gt=0"`
+	Id     int64 `json:"id,string,optional" validate:"required,gt=0"`
 	Status int32 `json:"status,optional" validate:"required,oneof=10 20"`
 }
 
@@ -300,7 +300,7 @@ type AdminUserStatusRes struct {
 }
 
 type AdminUserUpdateReq struct {
-	Id       int64  `json:"id,optional" validate:"required,gt=0"`
+	Id       int64  `json:"id,string,optional" validate:"required,gt=0"`
 	Nickname string `json:"nickname,optional" validate:"required"`
 }
 
@@ -308,7 +308,7 @@ type AdminUserUpdateRes struct {
 }
 
 type CUserDetailData struct {
-	UserId    int64     `json:"user_id"`
+	UserId    int64     `json:"user_id,string"`
 	Username  string    `json:"username"`
 	Nickname  string    `json:"nickname"`
 	Mobile    string    `json:"mobile"`
@@ -330,7 +330,7 @@ type CUserDetailRes struct {
 }
 
 type CUserItem struct {
-	UserId    int64     `json:"user_id"`
+	UserId    int64     `json:"user_id,string"`
 	Username  string    `json:"username"`
 	Nickname  string    `json:"nickname"`
 	Mobile    string    `json:"mobile"`
@@ -352,7 +352,7 @@ type CUserListRes struct {
 }
 
 type CUserStatusReq struct {
-	UserId int64 `json:"user_id,optional" validate:"required,gt=0"`
+	UserId int64 `json:"user_id,string,optional" validate:"required,gt=0"`
 	Status int32 `json:"status,optional" validate:"required,oneof=10 20"`
 }
 

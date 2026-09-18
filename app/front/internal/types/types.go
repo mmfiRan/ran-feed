@@ -12,12 +12,12 @@ type BatchQueryLikeInfoRes struct {
 }
 
 type CommentItem struct {
-	CommentId     int64  `json:"comment_id"`
-	ContentId     int64  `json:"content_id"`
-	UserId        int64  `json:"user_id"`
-	ReplyToUserId int64  `json:"reply_to_user_id"`
-	ParentId      int64  `json:"parent_id"`
-	RootId        int64  `json:"root_id"`
+	CommentId     int64  `json:"comment_id,string"`
+	ContentId     int64  `json:"content_id,string"`
+	UserId        int64  `json:"user_id,string"`
+	ReplyToUserId int64  `json:"reply_to_user_id,string"`
+	ParentId      int64  `json:"parent_id,string"`
+	RootId        int64  `json:"root_id,string"`
 	Comment       string `json:"comment"`
 	CreatedAt     int64  `json:"created_at"`
 	Status        int32  `json:"status"`
@@ -183,7 +183,7 @@ type LoginReq struct {
 }
 
 type LoginRes struct {
-	UserId    int64  `json:"user_id"`
+	UserId    int64  `json:"user_id,string"`
 	Token     string `json:"token"`
 	ExpiredAt int64  `json:"expired_at"`
 	Nickname  string `json:"nickname"`
@@ -280,7 +280,7 @@ type PublishArticleReq struct {
 }
 
 type PublishArticleRes struct {
-	ContentId int64 `json:"content_id"`
+	ContentId int64 `json:"content_id,string"`
 }
 
 type PublishVideoReq struct {
@@ -293,19 +293,19 @@ type PublishVideoReq struct {
 }
 
 type PublishVideoRes struct {
-	ContentId int64 `json:"content_id"`
+	ContentId int64 `json:"content_id,string"`
 }
 
 type QueryCommentListReq struct {
 	ContentId *int64  `json:"content_id,string,optional" validate:"required"`
 	Scene     *string `json:"scene,optional" validate:"required"`
-	Cursor    *int64  `json:"cursor,optional" validate:"required,max=50"`
+	Cursor    *int64  `json:"cursor,string,optional" validate:"required"`
 	PageSize  *uint32 `json:"page_size,optional" validate:"required,max=50"`
 }
 
 type QueryCommentListRes struct {
 	Comments   []*CommentItem `json:"comments"`
-	NextCursor int64          `json:"next_cursor"`
+	NextCursor int64          `json:"next_cursor,string"`
 	HasMore    bool           `json:"has_more"`
 }
 
@@ -335,18 +335,18 @@ type QueryLikeInfoRes struct {
 
 type QueryReplyCommentListReq struct {
 	CommentId *int64  `json:"comment_id,string,optional" validate:"required"`
-	Cursor    *int64  `json:"cursor,optional" validate:"required"`
+	Cursor    *int64  `json:"cursor,string,optional" validate:"required"`
 	PageSize  *uint32 `json:"page_size,optional" validate:"required"`
 }
 
 type QueryReplyCommentListRes struct {
 	Comments   []*CommentItem `json:"comments"`
-	NextCursor int64          `json:"next_cursor"`
+	NextCursor int64          `json:"next_cursor,string"`
 	HasMore    bool           `json:"has_more"`
 }
 
 type QueryUserProfileReq struct {
-	UserId int64 `json:"user_id,optional" validate:"required"`
+	UserId int64 `json:"user_id,string,optional" validate:"required"`
 }
 
 type QueryUserProfileRes struct {
@@ -393,7 +393,7 @@ type RegisterReq struct {
 }
 
 type RegisterRes struct {
-	UserId    int64  `json:"user_id"`
+	UserId    int64  `json:"user_id,string"`
 	Token     string `json:"token"`
 	ExpiredAt int64  `json:"expired_at"`
 }
@@ -528,7 +528,7 @@ type UserFavoriteFeedRes struct {
 }
 
 type UserInfo struct {
-	UserId   int64     `json:"user_id"`
+	UserId   int64     `json:"user_id,string"`
 	Mobile   string    `json:"mobile"`
 	Nickname string    `json:"nickname"`
 	Avatar   string    `json:"avatar"`
@@ -546,7 +546,7 @@ type UserProfileCounts struct {
 }
 
 type UserProfileInfo struct {
-	UserId   int64     `json:"user_id"`
+	UserId   int64     `json:"user_id,string"`
 	Nickname string    `json:"nickname"`
 	Avatar   string    `json:"avatar"`
 	Bio      string    `json:"bio"`

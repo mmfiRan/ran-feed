@@ -7,7 +7,7 @@ type (
 		PageQueryReq
 	}
 	AdminRoleItem {
-		Id        int64  `json:"id"`
+		Id        int64  `json:"id,string"`
 		Code      string `json:"code"`
 		Name      string `json:"name"`
 		Remark    string `json:"remark"`
@@ -22,7 +22,7 @@ type (
 	}
 	AdminRoleDetailRes {
 		Role          AdminRoleItem `json:"role"`
-		PermissionIds []int64       `json:"permission_ids"`
+		PermissionIds []string      `json:"permission_ids"`
 	}
 	AdminRoleCreateReq {
 		Code   string `json:"code,optional" validate:"required"`
@@ -30,22 +30,22 @@ type (
 		Remark string `json:"remark,optional"`
 	}
 	AdminRoleCreateRes {
-		Id int64 `json:"id"`
+		Id int64 `json:"id,string"`
 	}
 	AdminRoleUpdateReq {
-		Id     int64  `json:"id,optional" validate:"required,gt=0"`
+		Id     int64  `json:"id,string,optional" validate:"required,gt=0"`
 		Name   string `json:"name,optional" validate:"required"`
 		Remark string `json:"remark,optional"`
 	}
 	AdminRoleUpdateRes  {}
 	// AdminRoleSetPermissionsReq permission_ids 空表示清空该角色权限点
 	AdminRoleSetPermissionsReq {
-		RoleId        int64   `json:"role_id,optional" validate:"required,gt=0"`
-		PermissionIds []int64 `json:"permission_ids,optional"`
+		RoleId        int64    `json:"role_id,string,optional" validate:"required,gt=0"`
+		PermissionIds []string `json:"permission_ids,optional"`
 	}
 	AdminRoleSetPermissionsRes  {}
 	AdminRoleDeleteReq {
-		Id int64 `json:"id,optional" validate:"required,gt=0"`
+		Id int64 `json:"id,string,optional" validate:"required,gt=0"`
 	}
 	AdminRoleDeleteRes  {}
 )

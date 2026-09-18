@@ -14,7 +14,7 @@ type (
 		Birthday *int64  `json:"birthday,optional" validate:"required"`
 	}
 	RegisterRes {
-		UserId    int64  `json:"user_id"`
+		UserId    int64  `json:"user_id,string"`
 		Token     string `json:"token"`
 		ExpiredAt int64  `json:"expired_at"`
 	}
@@ -23,7 +23,7 @@ type (
 		Password *string `json:"password,optional" validate:"required"`
 	}
 	LoginRes {
-		UserId    int64  `json:"user_id"`
+		UserId    int64  `json:"user_id,string"`
 		Token     string `json:"token"`
 		ExpiredAt int64  `json:"expired_at"`
 		Nickname  string `json:"nickname"`
@@ -31,7 +31,7 @@ type (
 	}
 	LogoutRes  {}
 	UserInfo {
-		UserId   int64     `json:"user_id"`
+		UserId   int64     `json:"user_id,string"`
 		Mobile   string    `json:"mobile"`
 		Nickname string    `json:"nickname"`
 		Avatar   string    `json:"avatar"`
@@ -53,7 +53,7 @@ type (
 		Size      int64  `json:"size"`
 	}
 	QueryUserProfileReq {
-		UserId int64 `json:"user_id,optional" validate:"required"`
+		UserId int64 `json:"user_id,string,optional" validate:"required"`
 	}
 	QueryUserProfileRes {
 		UserProfileInfo    UserProfileInfo    `json:"user_profile"`
@@ -61,7 +61,7 @@ type (
 		ViewerProfileState ViewerProfileState `json:"viewer"`
 	}
 	UserProfileInfo {
-		UserId   int64     `json:"user_id"`
+		UserId   int64     `json:"user_id,string"`
 		Nickname string    `json:"nickname"`
 		Avatar   string    `json:"avatar"`
 		Bio      string    `json:"bio"`

@@ -32,7 +32,7 @@ type (
 		Visibility  *int32  `json:"visibility,optional" validate:"required"`
 	}
 	PublishArticleRes {
-		ContentId int64 `json:"content_id"`
+		ContentId int64 `json:"content_id,string"`
 	}
 	PublishVideoReq {
 		Title       *string `json:"title,optional" validate:"required,min=1,max=100"`
@@ -43,7 +43,7 @@ type (
 		Visibility  *int32  `json:"visibility,optional" validate:"required"`
 	}
 	PublishVideoRes {
-		ContentId int64 `json:"content_id"`
+		ContentId int64 `json:"content_id,string"`
 	}
 	DeleteContentReq {
 		ContentId int64 `path:"content_id"`

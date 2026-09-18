@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS ran_feed_user
     bio           VARCHAR(255) NOT NULL DEFAULT '' COMMENT '个人简介',
     mobile        VARCHAR(20)           DEFAULT NULL COMMENT '手机号E.164格式',
     email         VARCHAR(128)          DEFAULT NULL COMMENT '邮箱',
-    password_hash VARCHAR(255) NOT NULL COMMENT '密码哈希 bcrypt 自带盐'
+    password_hash VARCHAR(255) NOT NULL COMMENT '密码哈希',
     gender        TINYINT      NOT NULL DEFAULT 0 COMMENT '性别 0=未知 1=男 2=女',
     birthday      DATE                  DEFAULT NULL COMMENT '生日',
     status        TINYINT      NOT NULL DEFAULT 10 COMMENT '状态 10=正常 20=禁用',

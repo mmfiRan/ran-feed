@@ -71,21 +71,21 @@ type (
 	QueryCommentListReq {
 		ContentId *int64  `json:"content_id,string,optional" validate:"required"`
 		Scene     *string `json:"scene,optional" validate:"required"`
-		Cursor    *int64  `json:"cursor,optional" validate:"required,max=50"`
+		Cursor    *int64  `json:"cursor,string,optional" validate:"required"`
 		PageSize  *uint32 `json:"page_size,optional" validate:"required,max=50"`
 	}
 	QueryCommentListRes {
 		Comments   []*CommentItem `json:"comments"`
-		NextCursor int64          `json:"next_cursor"`
+		NextCursor int64          `json:"next_cursor,string"`
 		HasMore    bool           `json:"has_more"`
 	}
 	CommentItem {
-		CommentId     int64  `json:"comment_id"`
-		ContentId     int64  `json:"content_id"`
-		UserId        int64  `json:"user_id"`
-		ReplyToUserId int64  `json:"reply_to_user_id"`
-		ParentId      int64  `json:"parent_id"`
-		RootId        int64  `json:"root_id"`
+		CommentId     int64  `json:"comment_id,string"`
+		ContentId     int64  `json:"content_id,string"`
+		UserId        int64  `json:"user_id,string"`
+		ReplyToUserId int64  `json:"reply_to_user_id,string"`
+		ParentId      int64  `json:"parent_id,string"`
+		RootId        int64  `json:"root_id,string"`
 		Comment       string `json:"comment"`
 		CreatedAt     int64  `json:"created_at"`
 		Status        int32  `json:"status"`
@@ -95,12 +95,12 @@ type (
 	}
 	QueryReplyCommentListReq {
 		CommentId *int64  `json:"comment_id,string,optional" validate:"required"`
-		Cursor    *int64  `json:"cursor,optional" validate:"required"`
+		Cursor    *int64  `json:"cursor,string,optional" validate:"required"`
 		PageSize  *uint32 `json:"page_size,optional" validate:"required"`
 	}
 	QueryReplyCommentListRes {
 		Comments   []*CommentItem `json:"comments"`
-		NextCursor int64          `json:"next_cursor"`
+		NextCursor int64          `json:"next_cursor,string"`
 		HasMore    bool           `json:"has_more"`
 	}
 	DeleteCommentReq {

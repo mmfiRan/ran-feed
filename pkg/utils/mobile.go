@@ -7,7 +7,7 @@ import (
 
 const defaultCountryCode = "86"
 
-// NormalizeMobile 把手机号归一化成E.164格式
+// NormalizeMobile 把手机号化成E.164格式
 func NormalizeMobile(raw string) (string, error) {
 	s := strings.TrimSpace(raw)
 	s = strings.NewReplacer(" ", "", "-", "", "(", "", ")", "").Replace(s)

@@ -13,8 +13,8 @@ type (
 		EndTime   *int64  `form:"end_time,optional" validate:"omitempty,gt=0"`
 	}
 	AdminOperationLogItem {
-		Id        int64     `json:"id"`
-		AdminId   int64     `json:"admin_id"`
+		Id        int64     `json:"id,string"`
+		AdminId   int64     `json:"admin_id,string"`
 		Username  string    `json:"username"`
 		Action    string    `json:"action"`
 		Title     string    `json:"title"`
@@ -38,8 +38,8 @@ type (
 		EndTime   *int64  `form:"end_time,optional" validate:"omitempty,gt=0"`
 	}
 	AdminLoginLogItem {
-		Id        int64     `json:"id"`
-		AdminId   int64     `json:"admin_id"`
+		Id        int64     `json:"id,string"`
+		AdminId   int64     `json:"admin_id,string"`
 		Username  string    `json:"username"`
 		Ip        string    `json:"ip"`
 		UserAgent string    `json:"user_agent"`

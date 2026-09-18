@@ -6,10 +6,11 @@ package adminuser
 import (
 	"context"
 
+	"ran-feed/app/admin/internal/common/utils"
 	"ran-feed/app/admin/internal/svc"
 	"ran-feed/app/admin/internal/types"
 	"ran-feed/app/rpc/admin/admin"
-	"ran-feed/pkg/utils"
+	pkgutils "ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -29,12 +30,12 @@ func NewCreateAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 }
 
 func (l *CreateAdminLogic) CreateAdmin(req *types.AdminUserCreateReq) (resp *types.AdminUserCreateRes, err error) {
-	operatorID := utils.GetContextAdminIdWithDefault(l.ctx)
+	operatorID := pkgutils.GetContextAdminIdWithDefault(l.ctx)
 	rpcRes, err := l.svcCtx.AdminUserRpc.CreateAdmin(l.ctx, &admin.CreateAdminReq{
 		Username:   req.Username,
 		Password:   req.Password,
 		Nickname:   req.Nickname,
-		RoleIds:    req.RoleIds,
+		RoleIds:    utils.ParseInt64s(req.RoleIds),
 		OperatorId: operatorID,
 	})
 	if err != nil {

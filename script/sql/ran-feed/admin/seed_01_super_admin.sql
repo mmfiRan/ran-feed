@@ -3,7 +3,6 @@ INSERT INTO ran_feed_admin_role (code, name, remark)
 VALUES ('super', '超级管理员', '拥有全部权限')
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
--- Phase A 权限点（管理自身：账号/角色/权限）
 INSERT INTO ran_feed_admin_permission (code, name, module)
 VALUES ('admin:user:list', '管理员列表', 'admin'),
        ('admin:user:detail', '管理员详情', 'admin'),
@@ -23,7 +22,6 @@ VALUES ('admin:user:list', '管理员列表', 'admin'),
        ('admin:login-log:list', '登录日志查询', 'admin')
 ON DUPLICATE KEY UPDATE name = VALUES(name);
 
--- super 绑定全部权限点
 INSERT INTO ran_feed_admin_role_permission (role_id, permission_id)
 SELECT r.id, p.id
 FROM ran_feed_admin_role r,
@@ -37,12 +35,10 @@ WHERE r.code = 'super'
                   WHERE rp.role_id = r.id
                     AND rp.permission_id = p.id);
 
--- 超管账号
 INSERT INTO ran_feed_admin_user (username, password_hash, nickname, status)
-VALUES ('admin', '$2a$10$My4IMCvnAmNuPN70wIEYu.dzPy4MmSPnHXpQtgdnjDbVhlzolG6/q', '超级管理员', 10)
+VALUES ('admin', '$2a$10$HUS8x3M9wg8XJ5I/XUaBReK3es7FHj4OacLNquQEWplMTOoPHPDA.', '超级管理员', 10)
 ON DUPLICATE KEY UPDATE nickname = VALUES(nickname);
 
--- 超管绑定 super 角色
 INSERT INTO ran_feed_admin_user_role (admin_user_id, role_id)
 SELECT u.id, r.id
 FROM ran_feed_admin_user u,
