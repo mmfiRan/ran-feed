@@ -59,47 +59,47 @@ type ranFeedCountValue struct {
 	fieldMap map[string]field.Expr
 }
 
-func (z ranFeedCountValue) Table(newTableName string) *ranFeedCountValue {
-	z.ranFeedCountValueDo.UseTable(newTableName)
-	return z.updateTableName(newTableName)
+func (r ranFeedCountValue) Table(newTableName string) *ranFeedCountValue {
+	r.ranFeedCountValueDo.UseTable(newTableName)
+	return r.updateTableName(newTableName)
 }
 
-func (z ranFeedCountValue) As(alias string) *ranFeedCountValue {
-	z.ranFeedCountValueDo.DO = *(z.ranFeedCountValueDo.As(alias).(*gen.DO))
-	return z.updateTableName(alias)
+func (r ranFeedCountValue) As(alias string) *ranFeedCountValue {
+	r.ranFeedCountValueDo.DO = *(r.ranFeedCountValueDo.As(alias).(*gen.DO))
+	return r.updateTableName(alias)
 }
 
-func (z *ranFeedCountValue) updateTableName(table string) *ranFeedCountValue {
-	z.ALL = field.NewAsterisk(table)
-	z.ID = field.NewInt64(table, "id")
-	z.BizType = field.NewInt32(table, "biz_type")
-	z.TargetType = field.NewInt32(table, "target_type")
-	z.TargetID = field.NewInt64(table, "target_id")
-	z.Value = field.NewInt64(table, "value")
-	z.Version = field.NewInt64(table, "version")
-	z.CreatedAt = field.NewTime(table, "created_at")
-	z.UpdatedAt = field.NewTime(table, "updated_at")
-	z.OwnerID = field.NewInt64(table, "owner_id")
+func (r *ranFeedCountValue) updateTableName(table string) *ranFeedCountValue {
+	r.ALL = field.NewAsterisk(table)
+	r.ID = field.NewInt64(table, "id")
+	r.BizType = field.NewInt32(table, "biz_type")
+	r.TargetType = field.NewInt32(table, "target_type")
+	r.TargetID = field.NewInt64(table, "target_id")
+	r.Value = field.NewInt64(table, "value")
+	r.Version = field.NewInt64(table, "version")
+	r.CreatedAt = field.NewTime(table, "created_at")
+	r.UpdatedAt = field.NewTime(table, "updated_at")
+	r.OwnerID = field.NewInt64(table, "owner_id")
 
-	z.fillFieldMap()
+	r.fillFieldMap()
 
-	return z
+	return r
 }
 
-func (z *ranFeedCountValue) WithContext(ctx context.Context) IRanFeedCountValueDo {
-	return z.ranFeedCountValueDo.WithContext(ctx)
+func (r *ranFeedCountValue) WithContext(ctx context.Context) IRanFeedCountValueDo {
+	return r.ranFeedCountValueDo.WithContext(ctx)
 }
 
-func (z ranFeedCountValue) TableName() string { return z.ranFeedCountValueDo.TableName() }
+func (r ranFeedCountValue) TableName() string { return r.ranFeedCountValueDo.TableName() }
 
-func (z ranFeedCountValue) Alias() string { return z.ranFeedCountValueDo.Alias() }
+func (r ranFeedCountValue) Alias() string { return r.ranFeedCountValueDo.Alias() }
 
-func (z ranFeedCountValue) Columns(cols ...field.Expr) gen.Columns {
-	return z.ranFeedCountValueDo.Columns(cols...)
+func (r ranFeedCountValue) Columns(cols ...field.Expr) gen.Columns {
+	return r.ranFeedCountValueDo.Columns(cols...)
 }
 
-func (z *ranFeedCountValue) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
-	_f, ok := z.fieldMap[fieldName]
+func (r *ranFeedCountValue) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
+	_f, ok := r.fieldMap[fieldName]
 	if !ok || _f == nil {
 		return nil, false
 	}
@@ -107,27 +107,27 @@ func (z *ranFeedCountValue) GetFieldByName(fieldName string) (field.OrderExpr, b
 	return _oe, ok
 }
 
-func (z *ranFeedCountValue) fillFieldMap() {
-	z.fieldMap = make(map[string]field.Expr, 9)
-	z.fieldMap["id"] = z.ID
-	z.fieldMap["biz_type"] = z.BizType
-	z.fieldMap["target_type"] = z.TargetType
-	z.fieldMap["target_id"] = z.TargetID
-	z.fieldMap["value"] = z.Value
-	z.fieldMap["version"] = z.Version
-	z.fieldMap["created_at"] = z.CreatedAt
-	z.fieldMap["updated_at"] = z.UpdatedAt
-	z.fieldMap["owner_id"] = z.OwnerID
+func (r *ranFeedCountValue) fillFieldMap() {
+	r.fieldMap = make(map[string]field.Expr, 9)
+	r.fieldMap["id"] = r.ID
+	r.fieldMap["biz_type"] = r.BizType
+	r.fieldMap["target_type"] = r.TargetType
+	r.fieldMap["target_id"] = r.TargetID
+	r.fieldMap["value"] = r.Value
+	r.fieldMap["version"] = r.Version
+	r.fieldMap["created_at"] = r.CreatedAt
+	r.fieldMap["updated_at"] = r.UpdatedAt
+	r.fieldMap["owner_id"] = r.OwnerID
 }
 
-func (z ranFeedCountValue) clone(db *gorm.DB) ranFeedCountValue {
-	z.ranFeedCountValueDo.ReplaceConnPool(db.Statement.ConnPool)
-	return z
+func (r ranFeedCountValue) clone(db *gorm.DB) ranFeedCountValue {
+	r.ranFeedCountValueDo.ReplaceConnPool(db.Statement.ConnPool)
+	return r
 }
 
-func (z ranFeedCountValue) replaceDB(db *gorm.DB) ranFeedCountValue {
-	z.ranFeedCountValueDo.ReplaceDB(db)
-	return z
+func (r ranFeedCountValue) replaceDB(db *gorm.DB) ranFeedCountValue {
+	r.ranFeedCountValueDo.ReplaceDB(db)
+	return r
 }
 
 type ranFeedCountValueDo struct{ gen.DO }
@@ -193,200 +193,200 @@ type IRanFeedCountValueDo interface {
 	schema.Tabler
 }
 
-func (z ranFeedCountValueDo) Debug() IRanFeedCountValueDo {
-	return z.withDO(z.DO.Debug())
+func (r ranFeedCountValueDo) Debug() IRanFeedCountValueDo {
+	return r.withDO(r.DO.Debug())
 }
 
-func (z ranFeedCountValueDo) WithContext(ctx context.Context) IRanFeedCountValueDo {
-	return z.withDO(z.DO.WithContext(ctx))
+func (r ranFeedCountValueDo) WithContext(ctx context.Context) IRanFeedCountValueDo {
+	return r.withDO(r.DO.WithContext(ctx))
 }
 
-func (z ranFeedCountValueDo) ReadDB() IRanFeedCountValueDo {
-	return z.Clauses(dbresolver.Read)
+func (r ranFeedCountValueDo) ReadDB() IRanFeedCountValueDo {
+	return r.Clauses(dbresolver.Read)
 }
 
-func (z ranFeedCountValueDo) WriteDB() IRanFeedCountValueDo {
-	return z.Clauses(dbresolver.Write)
+func (r ranFeedCountValueDo) WriteDB() IRanFeedCountValueDo {
+	return r.Clauses(dbresolver.Write)
 }
 
-func (z ranFeedCountValueDo) Session(config *gorm.Session) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Session(config))
+func (r ranFeedCountValueDo) Session(config *gorm.Session) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Session(config))
 }
 
-func (z ranFeedCountValueDo) Clauses(conds ...clause.Expression) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Clauses(conds...))
+func (r ranFeedCountValueDo) Clauses(conds ...clause.Expression) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Clauses(conds...))
 }
 
-func (z ranFeedCountValueDo) Returning(value interface{}, columns ...string) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Returning(value, columns...))
+func (r ranFeedCountValueDo) Returning(value interface{}, columns ...string) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Returning(value, columns...))
 }
 
-func (z ranFeedCountValueDo) Not(conds ...gen.Condition) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Not(conds...))
+func (r ranFeedCountValueDo) Not(conds ...gen.Condition) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Not(conds...))
 }
 
-func (z ranFeedCountValueDo) Or(conds ...gen.Condition) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Or(conds...))
+func (r ranFeedCountValueDo) Or(conds ...gen.Condition) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Or(conds...))
 }
 
-func (z ranFeedCountValueDo) Select(conds ...field.Expr) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Select(conds...))
+func (r ranFeedCountValueDo) Select(conds ...field.Expr) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Select(conds...))
 }
 
-func (z ranFeedCountValueDo) Where(conds ...gen.Condition) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Where(conds...))
+func (r ranFeedCountValueDo) Where(conds ...gen.Condition) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Where(conds...))
 }
 
-func (z ranFeedCountValueDo) Order(conds ...field.Expr) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Order(conds...))
+func (r ranFeedCountValueDo) Order(conds ...field.Expr) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Order(conds...))
 }
 
-func (z ranFeedCountValueDo) Distinct(cols ...field.Expr) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Distinct(cols...))
+func (r ranFeedCountValueDo) Distinct(cols ...field.Expr) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Distinct(cols...))
 }
 
-func (z ranFeedCountValueDo) Omit(cols ...field.Expr) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Omit(cols...))
+func (r ranFeedCountValueDo) Omit(cols ...field.Expr) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Omit(cols...))
 }
 
-func (z ranFeedCountValueDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Join(table, on...))
+func (r ranFeedCountValueDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Join(table, on...))
 }
 
-func (z ranFeedCountValueDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedCountValueDo {
-	return z.withDO(z.DO.LeftJoin(table, on...))
+func (r ranFeedCountValueDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedCountValueDo {
+	return r.withDO(r.DO.LeftJoin(table, on...))
 }
 
-func (z ranFeedCountValueDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedCountValueDo {
-	return z.withDO(z.DO.RightJoin(table, on...))
+func (r ranFeedCountValueDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedCountValueDo {
+	return r.withDO(r.DO.RightJoin(table, on...))
 }
 
-func (z ranFeedCountValueDo) Group(cols ...field.Expr) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Group(cols...))
+func (r ranFeedCountValueDo) Group(cols ...field.Expr) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Group(cols...))
 }
 
-func (z ranFeedCountValueDo) Having(conds ...gen.Condition) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Having(conds...))
+func (r ranFeedCountValueDo) Having(conds ...gen.Condition) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Having(conds...))
 }
 
-func (z ranFeedCountValueDo) Limit(limit int) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Limit(limit))
+func (r ranFeedCountValueDo) Limit(limit int) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Limit(limit))
 }
 
-func (z ranFeedCountValueDo) Offset(offset int) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Offset(offset))
+func (r ranFeedCountValueDo) Offset(offset int) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Offset(offset))
 }
 
-func (z ranFeedCountValueDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Scopes(funcs...))
+func (r ranFeedCountValueDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Scopes(funcs...))
 }
 
-func (z ranFeedCountValueDo) Unscoped() IRanFeedCountValueDo {
-	return z.withDO(z.DO.Unscoped())
+func (r ranFeedCountValueDo) Unscoped() IRanFeedCountValueDo {
+	return r.withDO(r.DO.Unscoped())
 }
 
-func (z ranFeedCountValueDo) Create(values ...*model.RanFeedCountValue) error {
+func (r ranFeedCountValueDo) Create(values ...*model.RanFeedCountValue) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Create(values)
+	return r.DO.Create(values)
 }
 
-func (z ranFeedCountValueDo) CreateInBatches(values []*model.RanFeedCountValue, batchSize int) error {
-	return z.DO.CreateInBatches(values, batchSize)
+func (r ranFeedCountValueDo) CreateInBatches(values []*model.RanFeedCountValue, batchSize int) error {
+	return r.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (z ranFeedCountValueDo) Save(values ...*model.RanFeedCountValue) error {
+func (r ranFeedCountValueDo) Save(values ...*model.RanFeedCountValue) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Save(values)
+	return r.DO.Save(values)
 }
 
-func (z ranFeedCountValueDo) First() (*model.RanFeedCountValue, error) {
-	if result, err := z.DO.First(); err != nil {
+func (r ranFeedCountValueDo) First() (*model.RanFeedCountValue, error) {
+	if result, err := r.DO.First(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedCountValue), nil
 	}
 }
 
-func (z ranFeedCountValueDo) Take() (*model.RanFeedCountValue, error) {
-	if result, err := z.DO.Take(); err != nil {
+func (r ranFeedCountValueDo) Take() (*model.RanFeedCountValue, error) {
+	if result, err := r.DO.Take(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedCountValue), nil
 	}
 }
 
-func (z ranFeedCountValueDo) Last() (*model.RanFeedCountValue, error) {
-	if result, err := z.DO.Last(); err != nil {
+func (r ranFeedCountValueDo) Last() (*model.RanFeedCountValue, error) {
+	if result, err := r.DO.Last(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedCountValue), nil
 	}
 }
 
-func (z ranFeedCountValueDo) Find() ([]*model.RanFeedCountValue, error) {
-	result, err := z.DO.Find()
+func (r ranFeedCountValueDo) Find() ([]*model.RanFeedCountValue, error) {
+	result, err := r.DO.Find()
 	return result.([]*model.RanFeedCountValue), err
 }
 
-func (z ranFeedCountValueDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedCountValue, err error) {
+func (r ranFeedCountValueDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedCountValue, err error) {
 	buf := make([]*model.RanFeedCountValue, 0, batchSize)
-	err = z.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
+	err = r.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
 	})
 	return results, err
 }
 
-func (z ranFeedCountValueDo) FindInBatches(result *[]*model.RanFeedCountValue, batchSize int, fc func(tx gen.Dao, batch int) error) error {
-	return z.DO.FindInBatches(result, batchSize, fc)
+func (r ranFeedCountValueDo) FindInBatches(result *[]*model.RanFeedCountValue, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+	return r.DO.FindInBatches(result, batchSize, fc)
 }
 
-func (z ranFeedCountValueDo) Attrs(attrs ...field.AssignExpr) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Attrs(attrs...))
+func (r ranFeedCountValueDo) Attrs(attrs ...field.AssignExpr) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Attrs(attrs...))
 }
 
-func (z ranFeedCountValueDo) Assign(attrs ...field.AssignExpr) IRanFeedCountValueDo {
-	return z.withDO(z.DO.Assign(attrs...))
+func (r ranFeedCountValueDo) Assign(attrs ...field.AssignExpr) IRanFeedCountValueDo {
+	return r.withDO(r.DO.Assign(attrs...))
 }
 
-func (z ranFeedCountValueDo) Joins(fields ...field.RelationField) IRanFeedCountValueDo {
+func (r ranFeedCountValueDo) Joins(fields ...field.RelationField) IRanFeedCountValueDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Joins(_f))
+		r = *r.withDO(r.DO.Joins(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedCountValueDo) Preload(fields ...field.RelationField) IRanFeedCountValueDo {
+func (r ranFeedCountValueDo) Preload(fields ...field.RelationField) IRanFeedCountValueDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Preload(_f))
+		r = *r.withDO(r.DO.Preload(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedCountValueDo) FirstOrInit() (*model.RanFeedCountValue, error) {
-	if result, err := z.DO.FirstOrInit(); err != nil {
+func (r ranFeedCountValueDo) FirstOrInit() (*model.RanFeedCountValue, error) {
+	if result, err := r.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedCountValue), nil
 	}
 }
 
-func (z ranFeedCountValueDo) FirstOrCreate() (*model.RanFeedCountValue, error) {
-	if result, err := z.DO.FirstOrCreate(); err != nil {
+func (r ranFeedCountValueDo) FirstOrCreate() (*model.RanFeedCountValue, error) {
+	if result, err := r.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedCountValue), nil
 	}
 }
 
-func (z ranFeedCountValueDo) FindByPage(offset int, limit int) (result []*model.RanFeedCountValue, count int64, err error) {
-	result, err = z.Offset(offset).Limit(limit).Find()
+func (r ranFeedCountValueDo) FindByPage(offset int, limit int) (result []*model.RanFeedCountValue, count int64, err error) {
+	result, err = r.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
 	}
@@ -396,29 +396,29 @@ func (z ranFeedCountValueDo) FindByPage(offset int, limit int) (result []*model.
 		return
 	}
 
-	count, err = z.Offset(-1).Limit(-1).Count()
+	count, err = r.Offset(-1).Limit(-1).Count()
 	return
 }
 
-func (z ranFeedCountValueDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
-	count, err = z.Count()
+func (r ranFeedCountValueDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
+	count, err = r.Count()
 	if err != nil {
 		return
 	}
 
-	err = z.Offset(offset).Limit(limit).Scan(result)
+	err = r.Offset(offset).Limit(limit).Scan(result)
 	return
 }
 
-func (z ranFeedCountValueDo) Scan(result interface{}) (err error) {
-	return z.DO.Scan(result)
+func (r ranFeedCountValueDo) Scan(result interface{}) (err error) {
+	return r.DO.Scan(result)
 }
 
-func (z ranFeedCountValueDo) Delete(models ...*model.RanFeedCountValue) (result gen.ResultInfo, err error) {
-	return z.DO.Delete(models)
+func (r ranFeedCountValueDo) Delete(models ...*model.RanFeedCountValue) (result gen.ResultInfo, err error) {
+	return r.DO.Delete(models)
 }
 
-func (z *ranFeedCountValueDo) withDO(do gen.Dao) *ranFeedCountValueDo {
-	z.DO = *do.(*gen.DO)
-	return z
+func (r *ranFeedCountValueDo) withDO(do gen.Dao) *ranFeedCountValueDo {
+	r.DO = *do.(*gen.DO)
+	return r
 }

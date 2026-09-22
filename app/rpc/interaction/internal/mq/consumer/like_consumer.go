@@ -5,12 +5,14 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logc"
 	"github.com/zeromicro/go-zero/core/logx"
+	"gorm.io/gorm"
 
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/entity/query"
 	"ran-feed/app/rpc/interaction/internal/mq/event"
 	"ran-feed/app/rpc/interaction/internal/repositories"
 	"ran-feed/app/rpc/interaction/internal/svc"
+	"ran-feed/pkg/event/dedup"
 )
 
 type LikeConsumer struct {
@@ -18,7 +20,6 @@ type LikeConsumer struct {
 	svcCtx *svc.ServiceContext
 	logx.Logger
 	likeRepo     repositories.LikeRepository
-	dedupRepo    repositories.MqConsumeDedupRepository
 	consumerName string
 }
 
@@ -28,7 +29,6 @@ func NewLikeConsumer(ctx context.Context, svcCtx *svc.ServiceContext) *LikeConsu
 		svcCtx:       svcCtx,
 		Logger:       logx.WithContext(ctx),
 		likeRepo:     repositories.NewLikeRepository(ctx, svcCtx.MysqlDb),
-		dedupRepo:    repositories.NewMqConsumeDedupRepository(ctx, svcCtx.MysqlDb),
 		consumerName: "interaction.like_consumer",
 	}
 }
@@ -42,14 +42,14 @@ func (c *LikeConsumer) Consume(ctx context.Context, key, val string) error {
 		return err
 	}
 
-	// 一条消息一条事务：先插入幂等记录，再更新 like 表
-	return query.Q.Transaction(func(tx *query.Query) error {
-		inserted, err := c.dedupRepo.WithTx(tx).InsertIfAbsent(c.consumerName, likeEvent.EventID)
+	// 一条消息一条事务 先插入幂等记录 再更新 like 表
+	return c.svcCtx.MysqlDb.Transaction(func(tx *gorm.DB) error {
+		inserted, err := dedup.New(tx).InsertIfAbsent(ctx, c.consumerName, likeEvent.EventID)
 		if err != nil {
 			return err
 		}
 		if !inserted {
-			logc.Infof(ctx, "事件已处理，跳过: eventId=%s", likeEvent.EventID)
+			logc.Infof(ctx, "事件已处理 跳过 eventID=%s", likeEvent.EventID)
 			return nil
 		}
 
@@ -60,7 +60,7 @@ func (c *LikeConsumer) Consume(ctx context.Context, key, val string) error {
 			CreatedBy:     likeEvent.UserID,
 			UpdatedBy:     likeEvent.UserID,
 		}
-		repo := c.likeRepo.WithTx(tx)
+		repo := c.likeRepo.WithTx(query.Use(tx))
 		if likeEvent.EventType == event.EventTypeLike {
 			return repo.ApplyLike(likeDO)
 		}

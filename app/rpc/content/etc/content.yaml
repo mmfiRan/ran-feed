@@ -79,7 +79,7 @@ Oss:
   AccessKeySecret: ${OSS_ACCESS_KEY_SECRET} # 从环境变量读取
   RoleArn: ${OSS_ROLE_ARN}                  # RAM 角色 ARN
   RoleSessionName: ran-feed-upload         # 角色会话名称
-  DurationSeconds: 3600                     # 临时凭证有效期（1小时）
+  DurationSeconds: 3600                     # 临时凭证有效期
   UploadDir: uploads                        # 上传目录前缀
 
   
@@ -87,7 +87,7 @@ Oss:
 MySQL:
   DataSource: ${MYSQL_APP_USER}:${MYSQL_APP_PASSWORD}@tcp(${MYSQL_HOST}:3306)/ran-feed?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
 
-# kafka 消费者配置 消费 content 域 outbox 事件(canal 投递) 做 feed 扇出与清理
+# kafka 消费者配置 消费 content 域 outbox 事件(canal 投递)
 KqConsumerConf:
   Name: content-outbox-consumer
   Brokers:

@@ -16,39 +16,34 @@ import (
 )
 
 var (
-	Q                     = new(Query)
-	RanFeedMqConsumeDedup *ranFeedMqConsumeDedup
-	RanFeedNotification   *ranFeedNotification
+	Q                   = new(Query)
+	RanFeedNotification *ranFeedNotification
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	RanFeedMqConsumeDedup = &Q.RanFeedMqConsumeDedup
 	RanFeedNotification = &Q.RanFeedNotification
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedMqConsumeDedup: newRanFeedMqConsumeDedup(db, opts...),
-		RanFeedNotification:   newRanFeedNotification(db, opts...),
+		db:                  db,
+		RanFeedNotification: newRanFeedNotification(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	RanFeedMqConsumeDedup ranFeedMqConsumeDedup
-	RanFeedNotification   ranFeedNotification
+	RanFeedNotification ranFeedNotification
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.clone(db),
-		RanFeedNotification:   q.RanFeedNotification.clone(db),
+		db:                  db,
+		RanFeedNotification: q.RanFeedNotification.clone(db),
 	}
 }
 
@@ -62,21 +57,18 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.replaceDB(db),
-		RanFeedNotification:   q.RanFeedNotification.replaceDB(db),
+		db:                  db,
+		RanFeedNotification: q.RanFeedNotification.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	RanFeedMqConsumeDedup IRanFeedMqConsumeDedupDo
-	RanFeedNotification   IRanFeedNotificationDo
+	RanFeedNotification IRanFeedNotificationDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.WithContext(ctx),
-		RanFeedNotification:   q.RanFeedNotification.WithContext(ctx),
+		RanFeedNotification: q.RanFeedNotification.WithContext(ctx),
 	}
 }
 

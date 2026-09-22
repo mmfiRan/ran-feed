@@ -16,44 +16,39 @@ import (
 )
 
 var (
-	Q                     = new(Query)
-	RanFeedBigV           *ranFeedBigV
-	RanFeedCountValue     *ranFeedCountValue
-	RanFeedMqConsumeDedup *ranFeedMqConsumeDedup
+	Q                 = new(Query)
+	RanFeedBigV       *ranFeedBigV
+	RanFeedCountValue *ranFeedCountValue
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
 	RanFeedBigV = &Q.RanFeedBigV
 	RanFeedCountValue = &Q.RanFeedCountValue
-	RanFeedMqConsumeDedup = &Q.RanFeedMqConsumeDedup
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedBigV:           newRanFeedBigV(db, opts...),
-		RanFeedCountValue:     newRanFeedCountValue(db, opts...),
-		RanFeedMqConsumeDedup: newRanFeedMqConsumeDedup(db, opts...),
+		db:                db,
+		RanFeedBigV:       newRanFeedBigV(db, opts...),
+		RanFeedCountValue: newRanFeedCountValue(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	RanFeedBigV           ranFeedBigV
-	RanFeedCountValue     ranFeedCountValue
-	RanFeedMqConsumeDedup ranFeedMqConsumeDedup
+	RanFeedBigV       ranFeedBigV
+	RanFeedCountValue ranFeedCountValue
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedBigV:           q.RanFeedBigV.clone(db),
-		RanFeedCountValue:     q.RanFeedCountValue.clone(db),
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.clone(db),
+		db:                db,
+		RanFeedBigV:       q.RanFeedBigV.clone(db),
+		RanFeedCountValue: q.RanFeedCountValue.clone(db),
 	}
 }
 
@@ -67,24 +62,21 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedBigV:           q.RanFeedBigV.replaceDB(db),
-		RanFeedCountValue:     q.RanFeedCountValue.replaceDB(db),
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.replaceDB(db),
+		db:                db,
+		RanFeedBigV:       q.RanFeedBigV.replaceDB(db),
+		RanFeedCountValue: q.RanFeedCountValue.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	RanFeedBigV           IRanFeedBigVDo
-	RanFeedCountValue     IRanFeedCountValueDo
-	RanFeedMqConsumeDedup IRanFeedMqConsumeDedupDo
+	RanFeedBigV       IRanFeedBigVDo
+	RanFeedCountValue IRanFeedCountValueDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		RanFeedBigV:           q.RanFeedBigV.WithContext(ctx),
-		RanFeedCountValue:     q.RanFeedCountValue.WithContext(ctx),
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.WithContext(ctx),
+		RanFeedBigV:       q.RanFeedBigV.WithContext(ctx),
+		RanFeedCountValue: q.RanFeedCountValue.WithContext(ctx),
 	}
 }
 

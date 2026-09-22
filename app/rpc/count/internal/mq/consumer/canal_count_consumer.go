@@ -2,17 +2,19 @@ package consumer
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/zeromicro/go-zero/core/logc"
 	"github.com/zeromicro/go-zero/core/logx"
+	"gorm.io/gorm"
 
 	"ran-feed/app/rpc/count/internal/entity/query"
 	counterservicelogic "ran-feed/app/rpc/count/internal/logic/counterservice"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
 	"ran-feed/app/rpc/count/internal/repositories"
 	"ran-feed/app/rpc/count/internal/svc"
+	"ran-feed/pkg/event/canal"
+	"ran-feed/pkg/event/pipeline"
 
 	// 空导入触发各表策略 init 注册
 	_ "ran-feed/app/rpc/count/internal/mq/consumer/strategy/presence"
@@ -25,7 +27,6 @@ type CanalCountConsumer struct {
 	logx.Logger
 	countRepo     repositories.CountValueRepository
 	bigVRepo      repositories.BigVRepository
-	dedupRepo     repositories.MqConsumeDedupRepository
 	deltaOperator *counterservicelogic.CountDeltaOperator
 	consumerName  string
 	strategies    *strategy.Registry
@@ -38,7 +39,6 @@ func NewCanalCountConsumer(ctx context.Context, svcContext *svc.ServiceContext) 
 		Logger:        logx.WithContext(ctx),
 		countRepo:     repositories.NewCountValueRepository(ctx, svcContext.MysqlDb),
 		bigVRepo:      repositories.NewBigVRepository(ctx, svcContext.MysqlDb),
-		dedupRepo:     repositories.NewMqConsumeDedupRepository(ctx, svcContext.MysqlDb),
 		deltaOperator: counterservicelogic.NewCountDeltaOperator(ctx, svcContext),
 		consumerName:  "count.canal_consumer",
 		strategies:    strategy.NewDefaultRegistry(),
@@ -49,44 +49,23 @@ func NewCanalCountConsumer(ctx context.Context, svcContext *svc.ServiceContext) 
 func (c *CanalCountConsumer) Consume(ctx context.Context, key, val string) error {
 	logc.Infof(ctx, "收到canal消息: key=%s, val=%s", key, val)
 
-	var msg canalMessage
-	if err := json.Unmarshal([]byte(val), &msg); err != nil {
+	msg, err := canal.Parse(val)
+	if err != nil {
 		logc.Errorf(ctx, "解析canal消息失败: %v, val=%s", err, val)
 		return err
 	}
 
-	tableStrategy, ok := c.strategies.Get(msg.table())
+	tableStrategy, ok := c.strategies.Get(msg.Table())
 	if !ok {
-		logc.Infof(ctx, "跳过未监听表消息: table=%s", msg.Table)
+		logc.Infof(ctx, "跳过未监听表消息: table=%s", msg.RawTable)
 		return nil
-	}
-
-	eventID := msg.eventID(val)
-	if eventID == "" {
-		logc.Errorf(ctx, "canal消息event_id为空: table=%s", msg.Table)
-		return nil
-	}
-
-	meta := rowMeta{
-		table:     msg.table(),
-		op:        msg.op(),
-		eventID:   eventID,
-		updatedAt: msg.updatedAt(),
-		strategy:  tableStrategy,
 	}
 
 	cs := newChangeSet()
-	err := query.Q.Transaction(func(tx *query.Query) error {
-		for i, row := range msg.Data {
-			if row == nil {
-				continue
-			}
-			if err := c.processRow(ctx, tx, meta, i, row, msg.oldRow(i), cs); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	err = pipeline.RunInTx(ctx, c.svcContext.MysqlDb.DB, c.consumerName, msg, val,
+		func(ctx context.Context, tx *gorm.DB, meta pipeline.RowMeta, row, oldRow map[string]any) error {
+			return c.processRow(ctx, query.Use(tx), meta, tableStrategy, row, oldRow, cs)
+		})
 	if err != nil {
 		return err
 	}
@@ -94,29 +73,10 @@ func (c *CanalCountConsumer) Consume(ctx context.Context, key, val string) error
 	return c.dispatch(ctx, cs)
 }
 
-// rowMeta 一条消息内逐行处理共享的元信息
-type rowMeta struct {
-	table     string
-	op        string
-	eventID   string
-	updatedAt time.Time
-	strategy  strategy.TableStrategy
-}
-
-// processRow 单行处理 去重 翻译 落库 去重命中已处理则跳过
-func (c *CanalCountConsumer) processRow(ctx context.Context, tx *query.Query, meta rowMeta, idx int, row, oldRow map[string]interface{}, cs *changeSet) error {
-	rowEventID := rowEventID(meta.eventID, meta.table, meta.op, row, idx)
-	inserted, err := c.dedupRepo.WithTx(tx).InsertIfAbsent(c.consumerName, rowEventID)
-	if err != nil {
-		return err
-	}
-	if !inserted {
-		logc.Infof(ctx, "canal消息行已处理，跳过: rowEventId=%s, table=%s", rowEventID, meta.table)
-		return nil
-	}
-
-	for _, u := range meta.strategy.ExtractUpdates(ctx, meta.op, row, oldRow) {
-		applied, ownerID, err := c.applyUpdate(tx, u, meta.updatedAt)
+// processRow 单行处理 翻译 落库 去重由管道负责
+func (c *CanalCountConsumer) processRow(ctx context.Context, tx *query.Query, meta pipeline.RowMeta, tableStrategy strategy.TableStrategy, row, oldRow map[string]any, cs *changeSet) error {
+	for _, u := range tableStrategy.ExtractUpdates(ctx, meta.Op, row, oldRow) {
+		applied, ownerID, err := c.applyUpdate(tx, u, meta.UpdatedAt)
 		if err != nil {
 			return err
 		}

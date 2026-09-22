@@ -8,6 +8,7 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logc"
 	"github.com/zeromicro/go-zero/core/logx"
+	"gorm.io/gorm"
 
 	"ran-feed/app/rpc/notification/internal/entity/model"
 	"ran-feed/app/rpc/notification/internal/entity/query"
@@ -16,11 +17,14 @@ import (
 	"ran-feed/app/rpc/notification/notification"
 	contentenums "ran-feed/pkg/enums/content"
 	"ran-feed/pkg/event"
+	"ran-feed/pkg/event/canal"
+	"ran-feed/pkg/event/pipeline"
 )
 
 const (
 	contentReviewConsumerName = "notification.content_review_consumer"
 	contentOutboxTable        = "ran_feed_content_outbox"
+	opInsert                  = "INSERT"
 	snippetMaxRunes           = 140
 )
 
@@ -31,7 +35,6 @@ type ContentReviewConsumer struct {
 	svcContext *svc.ServiceContext
 	logx.Logger
 	notifyRepo repositories.NotificationRepository
-	dedupRepo  repositories.MqConsumeDedupRepository
 }
 
 func NewContentReviewConsumer(ctx context.Context, svcContext *svc.ServiceContext) *ContentReviewConsumer {
@@ -40,54 +43,38 @@ func NewContentReviewConsumer(ctx context.Context, svcContext *svc.ServiceContex
 		svcContext: svcContext,
 		Logger:     logx.WithContext(ctx),
 		notifyRepo: repositories.NewNotificationRepository(ctx, svcContext.MysqlDb),
-		dedupRepo:  repositories.NewMqConsumeDedupRepository(ctx, svcContext.MysqlDb),
 	}
 }
 
 // Consume 解析 outbox canal 消息 逐行 dedup 与落库同事务 事务成功后 dispatch
 func (c *ContentReviewConsumer) Consume(ctx context.Context, key, val string) error {
-	var msg canalMessage
-	if err := json.Unmarshal([]byte(val), &msg); err != nil {
+	msg, err := canal.Parse(val)
+	if err != nil {
 		logc.Errorf(ctx, "解析 canal 消息失败(content-review): %v val=%s", err, val)
 		return err
 	}
-	if msg.table() != contentOutboxTable || msg.op() != "INSERT" {
+	if msg.Table() != contentOutboxTable || msg.Op() != opInsert {
 		return nil
 	}
 
-	eventID := msg.eventID(val)
-	updatedAt := msg.updatedAt()
 	recipients := make(map[int64]struct{})
-
-	err := query.Q.Transaction(func(tx *query.Query) error {
-		for i, row := range msg.Data {
-			if row == nil {
-				continue
-			}
-			eid := rowEventID(eventID, msg.table(), msg.op(), row, i)
-			inserted, err := c.dedupRepo.WithTx(tx).InsertIfAbsent(contentReviewConsumerName, eid)
-			if err != nil {
-				return err
-			}
-			if !inserted {
-				continue
-			}
-			evt, err := event.UnmarshalContentEvent(payloadOf(row))
+	err = pipeline.RunInTx(ctx, c.svcContext.MysqlDb.DB, contentReviewConsumerName, msg, val,
+		func(ctx context.Context, tx *gorm.DB, meta pipeline.RowMeta, row, oldRow map[string]any) error {
+			evt, err := event.UnmarshalContentEvent(canal.ParseString(row["payload"]))
 			if err != nil {
 				logc.Errorf(ctx, "解析 content 事件失败 跳过 err=%v", err)
-				continue
+				return nil
 			}
-			notifyRow, ok := buildReviewNotification(evt, updatedAt)
+			notifyRow, ok := buildReviewNotification(evt, meta.UpdatedAt)
 			if !ok {
-				continue
+				return nil
 			}
-			if err := c.notifyRepo.WithTx(tx).UpsertReview(notifyRow); err != nil {
+			if err := c.notifyRepo.WithTx(query.Use(tx)).UpsertReview(notifyRow); err != nil {
 				return err
 			}
 			recipients[evt.AuthorID] = struct{}{}
-		}
-		return nil
-	})
+			return nil
+		})
 	if err != nil {
 		return err
 	}
@@ -152,14 +139,6 @@ func reasonSuffix(reason string) string {
 		return ""
 	}
 	return " " + reason
-}
-
-// payloadOf 取 outbox 行 payload 字段 canal flatMessage 列值为字符串
-func payloadOf(row map[string]interface{}) string {
-	if v, ok := row["payload"].(string); ok {
-		return v
-	}
-	return ""
 }
 
 // truncateRunes 按 rune 截断防止多字节被截坏

@@ -8,12 +8,15 @@ import (
 	"github.com/zeromicro/go-zero/core/logc"
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/threading"
+	"gorm.io/gorm"
 
 	"ran-feed/app/rpc/notification/internal/entity/model"
 	"ran-feed/app/rpc/notification/internal/entity/query"
 	"ran-feed/app/rpc/notification/internal/mq/consumer/strategy"
 	"ran-feed/app/rpc/notification/internal/repositories"
 	"ran-feed/app/rpc/notification/internal/svc"
+	"ran-feed/pkg/event/canal"
+	"ran-feed/pkg/event/pipeline"
 
 	// 空导入触发各表策略 init 注册
 	_ "ran-feed/app/rpc/notification/internal/mq/consumer/strategy/presence"
@@ -37,7 +40,6 @@ type CanalNotificationConsumer struct {
 	svcContext *svc.ServiceContext
 	logx.Logger
 	notifyRepo repositories.NotificationRepository
-	dedupRepo  repositories.MqConsumeDedupRepository
 	strategies *strategy.Registry
 }
 
@@ -47,7 +49,6 @@ func NewCanalNotificationConsumer(ctx context.Context, svcContext *svc.ServiceCo
 		svcContext: svcContext,
 		Logger:     logx.WithContext(ctx),
 		notifyRepo: repositories.NewNotificationRepository(ctx, svcContext.MysqlDb),
-		dedupRepo:  repositories.NewMqConsumeDedupRepository(ctx, svcContext.MysqlDb),
 		strategies: strategy.NewDefaultRegistry(),
 	}
 }
@@ -56,49 +57,31 @@ func NewCanalNotificationConsumer(ctx context.Context, svcContext *svc.ServiceCo
 func (c *CanalNotificationConsumer) Consume(ctx context.Context, key, val string) error {
 	logc.Infof(ctx, "收到canal消息(notification): key=%s", key)
 
-	var msg canalMessage
-	if err := json.Unmarshal([]byte(val), &msg); err != nil {
+	msg, err := canal.Parse(val)
+	if err != nil {
 		logc.Errorf(ctx, "解析canal消息失败: %v val=%s", err, val)
 		return err
 	}
 
-	tableStrategy, ok := c.strategies.Get(msg.table())
+	tableStrategy, ok := c.strategies.Get(msg.Table())
 	if !ok {
-		logc.Infof(ctx, "跳过未监听表: table=%s", msg.Table)
+		logc.Infof(ctx, "跳过未监听表: table=%s", msg.RawTable)
 		return nil
-	}
-
-	eventID := msg.eventID(val)
-	if eventID == "" {
-		logc.Errorf(ctx, "canal消息event_id为空: table=%s", msg.Table)
-		return nil
-	}
-
-	meta := rowMeta{
-		table:     msg.table(),
-		op:        msg.op(),
-		eventID:   eventID,
-		updatedAt: msg.updatedAt(),
-		strategy:  tableStrategy,
 	}
 
 	// 落库结果收集 recipient 集合供事务外 dispatch 计未读
 	recipients := make(map[int64]struct{})
-	err := query.Q.Transaction(func(tx *query.Query) error {
-		for i, row := range msg.Data {
-			if row == nil {
-				continue
-			}
-			affected, err := c.processRow(ctx, tx, meta, i, row, msg.oldRow(i))
+	err = pipeline.RunInTx(ctx, c.svcContext.MysqlDb.DB, consumerName, msg, val,
+		func(ctx context.Context, tx *gorm.DB, meta pipeline.RowMeta, row, oldRow map[string]any) error {
+			affected, err := c.processRow(ctx, query.Use(tx), meta, tableStrategy, row, oldRow)
 			if err != nil {
 				return err
 			}
 			for _, r := range affected {
 				recipients[r] = struct{}{}
 			}
-		}
-		return nil
-	})
+			return nil
+		})
 	if err != nil {
 		return err
 	}
@@ -107,29 +90,10 @@ func (c *CanalNotificationConsumer) Consume(ctx context.Context, key, val string
 	return nil
 }
 
-// rowMeta 消息内逐行共享的元信息
-type rowMeta struct {
-	table     string
-	op        string
-	eventID   string
-	updatedAt time.Time
-	strategy  strategy.TableStrategy
-}
-
-// processRow 单行 dedup+落库 dedup 命中则跳过 落库失败连带事务回滚
+// processRow 单行落库 去重由管道负责 落库失败连带事务回滚
 // 返回受影响的 recipient 列表供事务外 dispatch(空表示本行未触发通知)
-func (c *CanalNotificationConsumer) processRow(ctx context.Context, tx *query.Query, meta rowMeta, idx int, row, oldRow map[string]interface{}) ([]int64, error) {
-	eid := rowEventID(meta.eventID, meta.table, meta.op, row, idx)
-	inserted, err := c.dedupRepo.WithTx(tx).InsertIfAbsent(consumerName, eid)
-	if err != nil {
-		return nil, err
-	}
-	if !inserted {
-		logc.Infof(ctx, "canal 行已处理跳过: rowEventID=%s table=%s", eid, meta.table)
-		return nil, nil
-	}
-
-	events := meta.strategy.ExtractEvents(ctx, meta.op, row, oldRow)
+func (c *CanalNotificationConsumer) processRow(ctx context.Context, tx *query.Query, meta pipeline.RowMeta, tableStrategy strategy.TableStrategy, row, oldRow map[string]any) ([]int64, error) {
+	events := tableStrategy.ExtractEvents(ctx, meta.Op, row, oldRow)
 	if len(events) == 0 {
 		return nil, nil
 	}
@@ -137,7 +101,7 @@ func (c *CanalNotificationConsumer) processRow(ctx context.Context, tx *query.Qu
 	notifyRepo := c.notifyRepo.WithTx(tx)
 	recipients := make([]int64, 0, len(events))
 	for _, e := range events {
-		if err := c.persistEvent(notifyRepo, e, meta.updatedAt); err != nil {
+		if err := c.persistEvent(notifyRepo, e, meta.UpdatedAt); err != nil {
 			return nil, err
 		}
 		recipients = append(recipients, e.RecipientID)

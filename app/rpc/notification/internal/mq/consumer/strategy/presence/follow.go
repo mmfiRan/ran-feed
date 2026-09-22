@@ -8,6 +8,7 @@ import (
 
 	"ran-feed/app/rpc/notification/internal/mq/consumer/strategy"
 	"ran-feed/app/rpc/notification/notification"
+	"ran-feed/pkg/event/canal"
 )
 
 const followTableName = "ran_feed_follow"
@@ -26,12 +27,12 @@ func (s *followStrategy) ExtractEvents(ctx context.Context, op string, row, oldR
 	if !isActivation(op, statusActiveNotDeleted, row, oldRow) {
 		return nil
 	}
-	actorID, ok := strategy.ParseInt64(row["user_id"])
+	actorID, ok := canal.ParseInt64(row["user_id"])
 	if !ok || actorID <= 0 {
 		logc.Errorf(ctx, "follow canal 缺 user_id row=%v", row)
 		return nil
 	}
-	recipientID, ok := strategy.ParseInt64(row["follow_user_id"])
+	recipientID, ok := canal.ParseInt64(row["follow_user_id"])
 	if !ok || recipientID <= 0 {
 		logc.Errorf(ctx, "follow canal 缺 follow_user_id row=%v", row)
 		return nil

@@ -72,53 +72,53 @@ type ranFeedComment struct {
 	fieldMap map[string]field.Expr
 }
 
-func (z ranFeedComment) Table(newTableName string) *ranFeedComment {
-	z.ranFeedCommentDo.UseTable(newTableName)
-	return z.updateTableName(newTableName)
+func (r ranFeedComment) Table(newTableName string) *ranFeedComment {
+	r.ranFeedCommentDo.UseTable(newTableName)
+	return r.updateTableName(newTableName)
 }
 
-func (z ranFeedComment) As(alias string) *ranFeedComment {
-	z.ranFeedCommentDo.DO = *(z.ranFeedCommentDo.As(alias).(*gen.DO))
-	return z.updateTableName(alias)
+func (r ranFeedComment) As(alias string) *ranFeedComment {
+	r.ranFeedCommentDo.DO = *(r.ranFeedCommentDo.As(alias).(*gen.DO))
+	return r.updateTableName(alias)
 }
 
-func (z *ranFeedComment) updateTableName(table string) *ranFeedComment {
-	z.ALL = field.NewAsterisk(table)
-	z.ID = field.NewInt64(table, "id")
-	z.ContentID = field.NewInt64(table, "content_id")
-	z.ContentUserID = field.NewInt64(table, "content_user_id")
-	z.UserID = field.NewInt64(table, "user_id")
-	z.ReplyToUserID = field.NewInt64(table, "reply_to_user_id")
-	z.ParentID = field.NewInt64(table, "parent_id")
-	z.RootID = field.NewInt64(table, "root_id")
-	z.Comment = field.NewString(table, "comment")
-	z.Status = field.NewInt32(table, "status")
-	z.Version = field.NewInt32(table, "version")
-	z.IsDeleted = field.NewInt32(table, "is_deleted")
-	z.CreatedBy = field.NewInt64(table, "created_by")
-	z.UpdatedBy = field.NewInt64(table, "updated_by")
-	z.CreatedAt = field.NewTime(table, "created_at")
-	z.UpdatedAt = field.NewTime(table, "updated_at")
+func (r *ranFeedComment) updateTableName(table string) *ranFeedComment {
+	r.ALL = field.NewAsterisk(table)
+	r.ID = field.NewInt64(table, "id")
+	r.ContentID = field.NewInt64(table, "content_id")
+	r.ContentUserID = field.NewInt64(table, "content_user_id")
+	r.UserID = field.NewInt64(table, "user_id")
+	r.ReplyToUserID = field.NewInt64(table, "reply_to_user_id")
+	r.ParentID = field.NewInt64(table, "parent_id")
+	r.RootID = field.NewInt64(table, "root_id")
+	r.Comment = field.NewString(table, "comment")
+	r.Status = field.NewInt32(table, "status")
+	r.Version = field.NewInt32(table, "version")
+	r.IsDeleted = field.NewInt32(table, "is_deleted")
+	r.CreatedBy = field.NewInt64(table, "created_by")
+	r.UpdatedBy = field.NewInt64(table, "updated_by")
+	r.CreatedAt = field.NewTime(table, "created_at")
+	r.UpdatedAt = field.NewTime(table, "updated_at")
 
-	z.fillFieldMap()
+	r.fillFieldMap()
 
-	return z
+	return r
 }
 
-func (z *ranFeedComment) WithContext(ctx context.Context) IRanFeedCommentDo {
-	return z.ranFeedCommentDo.WithContext(ctx)
+func (r *ranFeedComment) WithContext(ctx context.Context) IRanFeedCommentDo {
+	return r.ranFeedCommentDo.WithContext(ctx)
 }
 
-func (z ranFeedComment) TableName() string { return z.ranFeedCommentDo.TableName() }
+func (r ranFeedComment) TableName() string { return r.ranFeedCommentDo.TableName() }
 
-func (z ranFeedComment) Alias() string { return z.ranFeedCommentDo.Alias() }
+func (r ranFeedComment) Alias() string { return r.ranFeedCommentDo.Alias() }
 
-func (z ranFeedComment) Columns(cols ...field.Expr) gen.Columns {
-	return z.ranFeedCommentDo.Columns(cols...)
+func (r ranFeedComment) Columns(cols ...field.Expr) gen.Columns {
+	return r.ranFeedCommentDo.Columns(cols...)
 }
 
-func (z *ranFeedComment) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
-	_f, ok := z.fieldMap[fieldName]
+func (r *ranFeedComment) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
+	_f, ok := r.fieldMap[fieldName]
 	if !ok || _f == nil {
 		return nil, false
 	}
@@ -126,33 +126,33 @@ func (z *ranFeedComment) GetFieldByName(fieldName string) (field.OrderExpr, bool
 	return _oe, ok
 }
 
-func (z *ranFeedComment) fillFieldMap() {
-	z.fieldMap = make(map[string]field.Expr, 15)
-	z.fieldMap["id"] = z.ID
-	z.fieldMap["content_id"] = z.ContentID
-	z.fieldMap["content_user_id"] = z.ContentUserID
-	z.fieldMap["user_id"] = z.UserID
-	z.fieldMap["reply_to_user_id"] = z.ReplyToUserID
-	z.fieldMap["parent_id"] = z.ParentID
-	z.fieldMap["root_id"] = z.RootID
-	z.fieldMap["comment"] = z.Comment
-	z.fieldMap["status"] = z.Status
-	z.fieldMap["version"] = z.Version
-	z.fieldMap["is_deleted"] = z.IsDeleted
-	z.fieldMap["created_by"] = z.CreatedBy
-	z.fieldMap["updated_by"] = z.UpdatedBy
-	z.fieldMap["created_at"] = z.CreatedAt
-	z.fieldMap["updated_at"] = z.UpdatedAt
+func (r *ranFeedComment) fillFieldMap() {
+	r.fieldMap = make(map[string]field.Expr, 15)
+	r.fieldMap["id"] = r.ID
+	r.fieldMap["content_id"] = r.ContentID
+	r.fieldMap["content_user_id"] = r.ContentUserID
+	r.fieldMap["user_id"] = r.UserID
+	r.fieldMap["reply_to_user_id"] = r.ReplyToUserID
+	r.fieldMap["parent_id"] = r.ParentID
+	r.fieldMap["root_id"] = r.RootID
+	r.fieldMap["comment"] = r.Comment
+	r.fieldMap["status"] = r.Status
+	r.fieldMap["version"] = r.Version
+	r.fieldMap["is_deleted"] = r.IsDeleted
+	r.fieldMap["created_by"] = r.CreatedBy
+	r.fieldMap["updated_by"] = r.UpdatedBy
+	r.fieldMap["created_at"] = r.CreatedAt
+	r.fieldMap["updated_at"] = r.UpdatedAt
 }
 
-func (z ranFeedComment) clone(db *gorm.DB) ranFeedComment {
-	z.ranFeedCommentDo.ReplaceConnPool(db.Statement.ConnPool)
-	return z
+func (r ranFeedComment) clone(db *gorm.DB) ranFeedComment {
+	r.ranFeedCommentDo.ReplaceConnPool(db.Statement.ConnPool)
+	return r
 }
 
-func (z ranFeedComment) replaceDB(db *gorm.DB) ranFeedComment {
-	z.ranFeedCommentDo.ReplaceDB(db)
-	return z
+func (r ranFeedComment) replaceDB(db *gorm.DB) ranFeedComment {
+	r.ranFeedCommentDo.ReplaceDB(db)
+	return r
 }
 
 type ranFeedCommentDo struct{ gen.DO }
@@ -218,200 +218,200 @@ type IRanFeedCommentDo interface {
 	schema.Tabler
 }
 
-func (z ranFeedCommentDo) Debug() IRanFeedCommentDo {
-	return z.withDO(z.DO.Debug())
+func (r ranFeedCommentDo) Debug() IRanFeedCommentDo {
+	return r.withDO(r.DO.Debug())
 }
 
-func (z ranFeedCommentDo) WithContext(ctx context.Context) IRanFeedCommentDo {
-	return z.withDO(z.DO.WithContext(ctx))
+func (r ranFeedCommentDo) WithContext(ctx context.Context) IRanFeedCommentDo {
+	return r.withDO(r.DO.WithContext(ctx))
 }
 
-func (z ranFeedCommentDo) ReadDB() IRanFeedCommentDo {
-	return z.Clauses(dbresolver.Read)
+func (r ranFeedCommentDo) ReadDB() IRanFeedCommentDo {
+	return r.Clauses(dbresolver.Read)
 }
 
-func (z ranFeedCommentDo) WriteDB() IRanFeedCommentDo {
-	return z.Clauses(dbresolver.Write)
+func (r ranFeedCommentDo) WriteDB() IRanFeedCommentDo {
+	return r.Clauses(dbresolver.Write)
 }
 
-func (z ranFeedCommentDo) Session(config *gorm.Session) IRanFeedCommentDo {
-	return z.withDO(z.DO.Session(config))
+func (r ranFeedCommentDo) Session(config *gorm.Session) IRanFeedCommentDo {
+	return r.withDO(r.DO.Session(config))
 }
 
-func (z ranFeedCommentDo) Clauses(conds ...clause.Expression) IRanFeedCommentDo {
-	return z.withDO(z.DO.Clauses(conds...))
+func (r ranFeedCommentDo) Clauses(conds ...clause.Expression) IRanFeedCommentDo {
+	return r.withDO(r.DO.Clauses(conds...))
 }
 
-func (z ranFeedCommentDo) Returning(value interface{}, columns ...string) IRanFeedCommentDo {
-	return z.withDO(z.DO.Returning(value, columns...))
+func (r ranFeedCommentDo) Returning(value interface{}, columns ...string) IRanFeedCommentDo {
+	return r.withDO(r.DO.Returning(value, columns...))
 }
 
-func (z ranFeedCommentDo) Not(conds ...gen.Condition) IRanFeedCommentDo {
-	return z.withDO(z.DO.Not(conds...))
+func (r ranFeedCommentDo) Not(conds ...gen.Condition) IRanFeedCommentDo {
+	return r.withDO(r.DO.Not(conds...))
 }
 
-func (z ranFeedCommentDo) Or(conds ...gen.Condition) IRanFeedCommentDo {
-	return z.withDO(z.DO.Or(conds...))
+func (r ranFeedCommentDo) Or(conds ...gen.Condition) IRanFeedCommentDo {
+	return r.withDO(r.DO.Or(conds...))
 }
 
-func (z ranFeedCommentDo) Select(conds ...field.Expr) IRanFeedCommentDo {
-	return z.withDO(z.DO.Select(conds...))
+func (r ranFeedCommentDo) Select(conds ...field.Expr) IRanFeedCommentDo {
+	return r.withDO(r.DO.Select(conds...))
 }
 
-func (z ranFeedCommentDo) Where(conds ...gen.Condition) IRanFeedCommentDo {
-	return z.withDO(z.DO.Where(conds...))
+func (r ranFeedCommentDo) Where(conds ...gen.Condition) IRanFeedCommentDo {
+	return r.withDO(r.DO.Where(conds...))
 }
 
-func (z ranFeedCommentDo) Order(conds ...field.Expr) IRanFeedCommentDo {
-	return z.withDO(z.DO.Order(conds...))
+func (r ranFeedCommentDo) Order(conds ...field.Expr) IRanFeedCommentDo {
+	return r.withDO(r.DO.Order(conds...))
 }
 
-func (z ranFeedCommentDo) Distinct(cols ...field.Expr) IRanFeedCommentDo {
-	return z.withDO(z.DO.Distinct(cols...))
+func (r ranFeedCommentDo) Distinct(cols ...field.Expr) IRanFeedCommentDo {
+	return r.withDO(r.DO.Distinct(cols...))
 }
 
-func (z ranFeedCommentDo) Omit(cols ...field.Expr) IRanFeedCommentDo {
-	return z.withDO(z.DO.Omit(cols...))
+func (r ranFeedCommentDo) Omit(cols ...field.Expr) IRanFeedCommentDo {
+	return r.withDO(r.DO.Omit(cols...))
 }
 
-func (z ranFeedCommentDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedCommentDo {
-	return z.withDO(z.DO.Join(table, on...))
+func (r ranFeedCommentDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedCommentDo {
+	return r.withDO(r.DO.Join(table, on...))
 }
 
-func (z ranFeedCommentDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedCommentDo {
-	return z.withDO(z.DO.LeftJoin(table, on...))
+func (r ranFeedCommentDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedCommentDo {
+	return r.withDO(r.DO.LeftJoin(table, on...))
 }
 
-func (z ranFeedCommentDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedCommentDo {
-	return z.withDO(z.DO.RightJoin(table, on...))
+func (r ranFeedCommentDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedCommentDo {
+	return r.withDO(r.DO.RightJoin(table, on...))
 }
 
-func (z ranFeedCommentDo) Group(cols ...field.Expr) IRanFeedCommentDo {
-	return z.withDO(z.DO.Group(cols...))
+func (r ranFeedCommentDo) Group(cols ...field.Expr) IRanFeedCommentDo {
+	return r.withDO(r.DO.Group(cols...))
 }
 
-func (z ranFeedCommentDo) Having(conds ...gen.Condition) IRanFeedCommentDo {
-	return z.withDO(z.DO.Having(conds...))
+func (r ranFeedCommentDo) Having(conds ...gen.Condition) IRanFeedCommentDo {
+	return r.withDO(r.DO.Having(conds...))
 }
 
-func (z ranFeedCommentDo) Limit(limit int) IRanFeedCommentDo {
-	return z.withDO(z.DO.Limit(limit))
+func (r ranFeedCommentDo) Limit(limit int) IRanFeedCommentDo {
+	return r.withDO(r.DO.Limit(limit))
 }
 
-func (z ranFeedCommentDo) Offset(offset int) IRanFeedCommentDo {
-	return z.withDO(z.DO.Offset(offset))
+func (r ranFeedCommentDo) Offset(offset int) IRanFeedCommentDo {
+	return r.withDO(r.DO.Offset(offset))
 }
 
-func (z ranFeedCommentDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedCommentDo {
-	return z.withDO(z.DO.Scopes(funcs...))
+func (r ranFeedCommentDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedCommentDo {
+	return r.withDO(r.DO.Scopes(funcs...))
 }
 
-func (z ranFeedCommentDo) Unscoped() IRanFeedCommentDo {
-	return z.withDO(z.DO.Unscoped())
+func (r ranFeedCommentDo) Unscoped() IRanFeedCommentDo {
+	return r.withDO(r.DO.Unscoped())
 }
 
-func (z ranFeedCommentDo) Create(values ...*model.RanFeedComment) error {
+func (r ranFeedCommentDo) Create(values ...*model.RanFeedComment) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Create(values)
+	return r.DO.Create(values)
 }
 
-func (z ranFeedCommentDo) CreateInBatches(values []*model.RanFeedComment, batchSize int) error {
-	return z.DO.CreateInBatches(values, batchSize)
+func (r ranFeedCommentDo) CreateInBatches(values []*model.RanFeedComment, batchSize int) error {
+	return r.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (z ranFeedCommentDo) Save(values ...*model.RanFeedComment) error {
+func (r ranFeedCommentDo) Save(values ...*model.RanFeedComment) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Save(values)
+	return r.DO.Save(values)
 }
 
-func (z ranFeedCommentDo) First() (*model.RanFeedComment, error) {
-	if result, err := z.DO.First(); err != nil {
+func (r ranFeedCommentDo) First() (*model.RanFeedComment, error) {
+	if result, err := r.DO.First(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedComment), nil
 	}
 }
 
-func (z ranFeedCommentDo) Take() (*model.RanFeedComment, error) {
-	if result, err := z.DO.Take(); err != nil {
+func (r ranFeedCommentDo) Take() (*model.RanFeedComment, error) {
+	if result, err := r.DO.Take(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedComment), nil
 	}
 }
 
-func (z ranFeedCommentDo) Last() (*model.RanFeedComment, error) {
-	if result, err := z.DO.Last(); err != nil {
+func (r ranFeedCommentDo) Last() (*model.RanFeedComment, error) {
+	if result, err := r.DO.Last(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedComment), nil
 	}
 }
 
-func (z ranFeedCommentDo) Find() ([]*model.RanFeedComment, error) {
-	result, err := z.DO.Find()
+func (r ranFeedCommentDo) Find() ([]*model.RanFeedComment, error) {
+	result, err := r.DO.Find()
 	return result.([]*model.RanFeedComment), err
 }
 
-func (z ranFeedCommentDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedComment, err error) {
+func (r ranFeedCommentDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedComment, err error) {
 	buf := make([]*model.RanFeedComment, 0, batchSize)
-	err = z.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
+	err = r.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
 	})
 	return results, err
 }
 
-func (z ranFeedCommentDo) FindInBatches(result *[]*model.RanFeedComment, batchSize int, fc func(tx gen.Dao, batch int) error) error {
-	return z.DO.FindInBatches(result, batchSize, fc)
+func (r ranFeedCommentDo) FindInBatches(result *[]*model.RanFeedComment, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+	return r.DO.FindInBatches(result, batchSize, fc)
 }
 
-func (z ranFeedCommentDo) Attrs(attrs ...field.AssignExpr) IRanFeedCommentDo {
-	return z.withDO(z.DO.Attrs(attrs...))
+func (r ranFeedCommentDo) Attrs(attrs ...field.AssignExpr) IRanFeedCommentDo {
+	return r.withDO(r.DO.Attrs(attrs...))
 }
 
-func (z ranFeedCommentDo) Assign(attrs ...field.AssignExpr) IRanFeedCommentDo {
-	return z.withDO(z.DO.Assign(attrs...))
+func (r ranFeedCommentDo) Assign(attrs ...field.AssignExpr) IRanFeedCommentDo {
+	return r.withDO(r.DO.Assign(attrs...))
 }
 
-func (z ranFeedCommentDo) Joins(fields ...field.RelationField) IRanFeedCommentDo {
+func (r ranFeedCommentDo) Joins(fields ...field.RelationField) IRanFeedCommentDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Joins(_f))
+		r = *r.withDO(r.DO.Joins(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedCommentDo) Preload(fields ...field.RelationField) IRanFeedCommentDo {
+func (r ranFeedCommentDo) Preload(fields ...field.RelationField) IRanFeedCommentDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Preload(_f))
+		r = *r.withDO(r.DO.Preload(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedCommentDo) FirstOrInit() (*model.RanFeedComment, error) {
-	if result, err := z.DO.FirstOrInit(); err != nil {
+func (r ranFeedCommentDo) FirstOrInit() (*model.RanFeedComment, error) {
+	if result, err := r.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedComment), nil
 	}
 }
 
-func (z ranFeedCommentDo) FirstOrCreate() (*model.RanFeedComment, error) {
-	if result, err := z.DO.FirstOrCreate(); err != nil {
+func (r ranFeedCommentDo) FirstOrCreate() (*model.RanFeedComment, error) {
+	if result, err := r.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedComment), nil
 	}
 }
 
-func (z ranFeedCommentDo) FindByPage(offset int, limit int) (result []*model.RanFeedComment, count int64, err error) {
-	result, err = z.Offset(offset).Limit(limit).Find()
+func (r ranFeedCommentDo) FindByPage(offset int, limit int) (result []*model.RanFeedComment, count int64, err error) {
+	result, err = r.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
 	}
@@ -421,29 +421,29 @@ func (z ranFeedCommentDo) FindByPage(offset int, limit int) (result []*model.Ran
 		return
 	}
 
-	count, err = z.Offset(-1).Limit(-1).Count()
+	count, err = r.Offset(-1).Limit(-1).Count()
 	return
 }
 
-func (z ranFeedCommentDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
-	count, err = z.Count()
+func (r ranFeedCommentDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
+	count, err = r.Count()
 	if err != nil {
 		return
 	}
 
-	err = z.Offset(offset).Limit(limit).Scan(result)
+	err = r.Offset(offset).Limit(limit).Scan(result)
 	return
 }
 
-func (z ranFeedCommentDo) Scan(result interface{}) (err error) {
-	return z.DO.Scan(result)
+func (r ranFeedCommentDo) Scan(result interface{}) (err error) {
+	return r.DO.Scan(result)
 }
 
-func (z ranFeedCommentDo) Delete(models ...*model.RanFeedComment) (result gen.ResultInfo, err error) {
-	return z.DO.Delete(models)
+func (r ranFeedCommentDo) Delete(models ...*model.RanFeedComment) (result gen.ResultInfo, err error) {
+	return r.DO.Delete(models)
 }
 
-func (z *ranFeedCommentDo) withDO(do gen.Dao) *ranFeedCommentDo {
-	z.DO = *do.(*gen.DO)
-	return z
+func (r *ranFeedCommentDo) withDO(do gen.Dao) *ranFeedCommentDo {
+	r.DO = *do.(*gen.DO)
+	return r
 }

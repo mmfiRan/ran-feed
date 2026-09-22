@@ -90,14 +90,3 @@ func TestMarkAllRead_Guards(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(0), n)
 }
-
-func TestDedup_Guards(t *testing.T) {
-	r := &mqConsumeDedupRepositoryImpl{ctx: context.Background()}
-	ok, err := r.InsertIfAbsent("", "evt-1")
-	assert.NoError(t, err)
-	assert.False(t, ok)
-
-	ok, err = r.InsertIfAbsent("notification.canal_consumer", "")
-	assert.NoError(t, err)
-	assert.False(t, ok)
-}

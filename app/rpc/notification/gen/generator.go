@@ -33,7 +33,6 @@ func main() {
 
 	g.ApplyBasic(
 		g.GenerateModel("ran_feed_notification"),
-		g.GenerateModel("ran_feed_mq_consume_dedup"),
 	)
 
 	g.Execute()

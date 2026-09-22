@@ -36,7 +36,6 @@ func main() {
 		g.GenerateModel("ran_feed_favorite"),
 		g.GenerateModel("ran_feed_like"),
 		g.GenerateModel("ran_feed_follow"),
-		g.GenerateModel("ran_feed_mq_consume_dedup"),
 	)
 
 	g.Execute()

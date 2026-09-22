@@ -16,27 +16,12 @@ import (
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
 	"ran-feed/app/rpc/count/internal/repositories"
 	"ran-feed/app/rpc/count/internal/svc"
+	"ran-feed/pkg/event/pipeline"
 )
 
 func newRegistry(t *testing.T) *strategy.Registry {
 	t.Helper()
 	return strategy.NewDefaultRegistry()
-}
-
-type mockDedupRepo struct {
-	seen  map[string]bool
-	calls int
-}
-
-func (m *mockDedupRepo) WithTx(*query.Query) repositories.MqConsumeDedupRepository { return m }
-
-func (m *mockDedupRepo) InsertIfAbsent(_, eventID string) (bool, error) {
-	m.calls++
-	if m.seen[eventID] {
-		return false, nil
-	}
-	m.seen[eventID] = true
-	return true, nil
 }
 
 type mockCountRepo struct {
@@ -72,7 +57,7 @@ func (m *mockCountRepo) UpdateDeltaWithOwner(int32, int32, int64, int64, int64, 
 	return 0, nil
 }
 
-func newTestConsumer(t *testing.T, countRepo repositories.CountValueRepository, dedupRepo repositories.MqConsumeDedupRepository) *CanalCountConsumer {
+func newTestConsumer(t *testing.T, countRepo repositories.CountValueRepository) *CanalCountConsumer {
 	t.Helper()
 	ctx := context.Background()
 	return &CanalCountConsumer{
@@ -80,47 +65,45 @@ func newTestConsumer(t *testing.T, countRepo repositories.CountValueRepository, 
 		svcContext:    &svc.ServiceContext{},
 		Logger:        logx.WithContext(ctx),
 		countRepo:     countRepo,
-		dedupRepo:     dedupRepo,
 		deltaOperator: counterservicelogic.NewCountDeltaOperator(ctx, &svc.ServiceContext{}),
 		consumerName:  "test",
 		strategies:    nil,
 	}
 }
 
-func TestProcessRow_DedupSkipsSecondTime(t *testing.T) {
+// newTestMeta 行元信息 去重键由管道算 此处只需业务字段
+func newTestMeta(table, op string) pipeline.RowMeta {
+	return pipeline.RowMeta{Table: table, Op: op, EventID: "evt", UpdatedAt: time.Now()}
+}
+
+func TestProcessRow_点赞增量落库(t *testing.T) {
 	ctx := context.Background()
-	dedup := &mockDedupRepo{seen: map[string]bool{}}
 	countRepo := &mockCountRepo{}
-	c := newTestConsumer(t, countRepo, dedup)
+	c := newTestConsumer(t, countRepo)
 
 	s, ok := newRegistry(t).Get("ran_feed_like")
 	require.True(t, ok)
-	meta := rowMeta{table: "ran_feed_like", op: "INSERT", eventID: "evt", updatedAt: time.Now(), strategy: s}
-	row := map[string]interface{}{"content_id": int64(100), "content_user_id": int64(9), "status": 10}
+	row := map[string]any{"content_id": int64(100), "content_user_id": int64(9), "status": 10}
 	cs := newChangeSet()
 
-	require.NoError(t, c.processRow(ctx, nil, meta, 0, row, nil, cs))
-	require.NoError(t, c.processRow(ctx, nil, meta, 0, row, nil, cs))
+	require.NoError(t, c.processRow(ctx, nil, newTestMeta("ran_feed_like", "INSERT"), s, row, nil, cs))
 
-	assert.Equal(t, 2, dedup.calls)
 	assert.Equal(t, 1, countRepo.updateDeltaWithOwnerCalls)
 	assert.Contains(t, cs.counts, countKey{count.BizType_BIZ_TYPE_LIKE, count.TargetType_TARGET_TYPE_CONTENT, 100})
 }
 
 func TestProcessRow_ResetToZeroCascades(t *testing.T) {
 	ctx := context.Background()
-	dedup := &mockDedupRepo{seen: map[string]bool{}}
 	countRepo := &mockCountRepo{getResult: &model.RanFeedCountValue{Value: 5, OwnerID: 9}}
-	c := newTestConsumer(t, countRepo, dedup)
+	c := newTestConsumer(t, countRepo)
 
 	s, ok := newRegistry(t).Get("ran_feed_content")
 	require.True(t, ok)
-	meta := rowMeta{table: "ran_feed_content", op: "UPDATE", eventID: "evt", updatedAt: time.Now(), strategy: s}
-	row := map[string]interface{}{"id": int64(100), "user_id": int64(9), "is_deleted": 1}
-	oldRow := map[string]interface{}{"is_deleted": 0}
+	row := map[string]any{"id": int64(100), "user_id": int64(9), "is_deleted": 1}
+	oldRow := map[string]any{"is_deleted": 0}
 	cs := newChangeSet()
 
-	require.NoError(t, c.processRow(ctx, nil, meta, 0, row, oldRow, cs))
+	require.NoError(t, c.processRow(ctx, nil, newTestMeta("ran_feed_content", "UPDATE"), s, row, oldRow, cs))
 
 	assert.Equal(t, 3, countRepo.updateDeltaWithOwnerCalls)
 	assert.Contains(t, cs.contents, int64(100))
@@ -129,18 +112,16 @@ func TestProcessRow_ResetToZeroCascades(t *testing.T) {
 
 func TestProcessRow_ResetToZeroSkipsWhenAlreadyZero(t *testing.T) {
 	ctx := context.Background()
-	dedup := &mockDedupRepo{seen: map[string]bool{}}
 	countRepo := &mockCountRepo{getResult: &model.RanFeedCountValue{Value: 0}}
-	c := newTestConsumer(t, countRepo, dedup)
+	c := newTestConsumer(t, countRepo)
 
 	s, ok := newRegistry(t).Get("ran_feed_content")
 	require.True(t, ok)
-	meta := rowMeta{table: "ran_feed_content", op: "UPDATE", eventID: "evt", updatedAt: time.Now(), strategy: s}
-	row := map[string]interface{}{"id": int64(100), "user_id": int64(9), "is_deleted": 1}
-	oldRow := map[string]interface{}{"is_deleted": 0}
+	row := map[string]any{"id": int64(100), "user_id": int64(9), "is_deleted": 1}
+	oldRow := map[string]any{"is_deleted": 0}
 	cs := newChangeSet()
 
-	require.NoError(t, c.processRow(ctx, nil, meta, 0, row, oldRow, cs))
+	require.NoError(t, c.processRow(ctx, nil, newTestMeta("ran_feed_content", "UPDATE"), s, row, oldRow, cs))
 
 	assert.Equal(t, 0, countRepo.updateDeltaWithOwnerCalls)
 	assert.True(t, cs.empty())

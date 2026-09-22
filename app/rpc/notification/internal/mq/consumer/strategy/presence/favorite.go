@@ -8,6 +8,7 @@ import (
 
 	"ran-feed/app/rpc/notification/internal/mq/consumer/strategy"
 	"ran-feed/app/rpc/notification/notification"
+	"ran-feed/pkg/event/canal"
 )
 
 const favoriteTableName = "ran_feed_favorite"
@@ -28,12 +29,12 @@ func (s *favoriteStrategy) ExtractEvents(ctx context.Context, op string, row, ol
 	if !isActivation(op, alwaysActive, row, oldRow) {
 		return nil
 	}
-	actorID, ok := strategy.ParseInt64(row["user_id"])
+	actorID, ok := canal.ParseInt64(row["user_id"])
 	if !ok || actorID <= 0 {
 		logc.Errorf(ctx, "favorite canal 缺 user_id row=%v", row)
 		return nil
 	}
-	recipientID, ok := strategy.ParseInt64(row["content_user_id"])
+	recipientID, ok := canal.ParseInt64(row["content_user_id"])
 	if !ok || recipientID <= 0 {
 		logc.Errorf(ctx, "favorite canal 缺 content_user_id row=%v", row)
 		return nil
@@ -41,7 +42,7 @@ func (s *favoriteStrategy) ExtractEvents(ctx context.Context, op string, row, ol
 	if actorID == recipientID {
 		return nil
 	}
-	contentID, ok := strategy.ParseInt64(row["content_id"])
+	contentID, ok := canal.ParseInt64(row["content_id"])
 	if !ok || contentID <= 0 {
 		logc.Errorf(ctx, "favorite canal 缺 content_id row=%v", row)
 		return nil

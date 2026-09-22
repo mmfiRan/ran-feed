@@ -67,8 +67,10 @@ func NewMysql(conf *Config, plugins ...gorm.Plugin) (*DB, error) {
 	if conf.MaxLifetime == 0 {
 		conf.MaxLifetime = 3600
 	}
+	// TranslateError 把驱动错误翻译成 gorm 哨兵错误 唯一键冲突可用 errors.Is 判 ErrDuplicatedKey
 	db, err := gorm.Open(mysql.Open(conf.DSN), &gorm.Config{
-		Logger: &ormLog{},
+		Logger:         &ormLog{},
+		TranslateError: true,
 	})
 	if err != nil {
 		return nil, err

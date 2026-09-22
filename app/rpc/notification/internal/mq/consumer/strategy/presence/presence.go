@@ -5,7 +5,7 @@ package presence
 import (
 	"strings"
 
-	"ran-feed/app/rpc/notification/internal/mq/consumer/strategy"
+	"ran-feed/pkg/event/canal"
 )
 
 // isActivation 是否为「激活态生成」触发点
@@ -40,7 +40,7 @@ func beforeView(row, oldRow map[string]interface{}) map[string]interface{} {
 
 // statusActive status=10 视为活跃 复用互动表的 status 值域(10 正常)
 func statusActive(row map[string]interface{}) bool {
-	v, ok := strategy.ParseInt64(row["status"])
+	v, ok := canal.ParseInt64(row["status"])
 	if !ok {
 		return false
 	}
@@ -52,7 +52,7 @@ func statusActiveNotDeleted(row map[string]interface{}) bool {
 	if !statusActive(row) {
 		return false
 	}
-	v, ok := strategy.ParseInt64(row["is_deleted"])
+	v, ok := canal.ParseInt64(row["is_deleted"])
 	if !ok {
 		return true
 	}

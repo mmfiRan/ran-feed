@@ -10,6 +10,7 @@ import (
 	"ran-feed/app/rpc/count/count"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
 	"ran-feed/pkg/enums"
+	"ran-feed/pkg/event/canal"
 )
 
 const contentTableName = "ran_feed_content"
@@ -36,12 +37,12 @@ func (s *contentResetStrategy) ExtractUpdates(ctx context.Context, op string, ro
 		return nil
 	}
 
-	contentID, ok := strategy.ParseInt64(row["id"])
+	contentID, ok := canal.ParseInt64(row["id"])
 	if !ok || contentID <= 0 {
 		logc.Errorf(ctx, "canal消息缺少有效content id table=%s row=%v", s.tableName, row)
 		return nil
 	}
-	ownerID, _ := strategy.ParseInt64(row["user_id"])
+	ownerID, _ := canal.ParseInt64(row["user_id"])
 
 	bizTypes := []count.BizType{count.BizType_BIZ_TYPE_LIKE, count.BizType_BIZ_TYPE_FAVORITE, count.BizType_BIZ_TYPE_COMMENT}
 	updates := make([]strategy.Update, 0, len(bizTypes))
@@ -65,8 +66,8 @@ func isDeletedTransition(row, oldRow map[string]interface{}) bool {
 	if _, ok := oldRow["is_deleted"]; !ok {
 		return false
 	}
-	oldVal, okOld := strategy.ParseInt64(oldRow["is_deleted"])
-	newVal, okNew := strategy.ParseInt64(row["is_deleted"])
+	oldVal, okOld := canal.ParseInt64(oldRow["is_deleted"])
+	newVal, okNew := canal.ParseInt64(row["is_deleted"])
 	if !okOld || !okNew {
 		return false
 	}

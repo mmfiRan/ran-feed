@@ -16,12 +16,11 @@ import (
 )
 
 var (
-	Q                     = new(Query)
-	RanFeedComment        *ranFeedComment
-	RanFeedFavorite       *ranFeedFavorite
-	RanFeedFollow         *ranFeedFollow
-	RanFeedLike           *ranFeedLike
-	RanFeedMqConsumeDedup *ranFeedMqConsumeDedup
+	Q               = new(Query)
+	RanFeedComment  *ranFeedComment
+	RanFeedFavorite *ranFeedFavorite
+	RanFeedFollow   *ranFeedFollow
+	RanFeedLike     *ranFeedLike
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
@@ -30,40 +29,36 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	RanFeedFavorite = &Q.RanFeedFavorite
 	RanFeedFollow = &Q.RanFeedFollow
 	RanFeedLike = &Q.RanFeedLike
-	RanFeedMqConsumeDedup = &Q.RanFeedMqConsumeDedup
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedComment:        newRanFeedComment(db, opts...),
-		RanFeedFavorite:       newRanFeedFavorite(db, opts...),
-		RanFeedFollow:         newRanFeedFollow(db, opts...),
-		RanFeedLike:           newRanFeedLike(db, opts...),
-		RanFeedMqConsumeDedup: newRanFeedMqConsumeDedup(db, opts...),
+		db:              db,
+		RanFeedComment:  newRanFeedComment(db, opts...),
+		RanFeedFavorite: newRanFeedFavorite(db, opts...),
+		RanFeedFollow:   newRanFeedFollow(db, opts...),
+		RanFeedLike:     newRanFeedLike(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	RanFeedComment        ranFeedComment
-	RanFeedFavorite       ranFeedFavorite
-	RanFeedFollow         ranFeedFollow
-	RanFeedLike           ranFeedLike
-	RanFeedMqConsumeDedup ranFeedMqConsumeDedup
+	RanFeedComment  ranFeedComment
+	RanFeedFavorite ranFeedFavorite
+	RanFeedFollow   ranFeedFollow
+	RanFeedLike     ranFeedLike
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedComment:        q.RanFeedComment.clone(db),
-		RanFeedFavorite:       q.RanFeedFavorite.clone(db),
-		RanFeedFollow:         q.RanFeedFollow.clone(db),
-		RanFeedLike:           q.RanFeedLike.clone(db),
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.clone(db),
+		db:              db,
+		RanFeedComment:  q.RanFeedComment.clone(db),
+		RanFeedFavorite: q.RanFeedFavorite.clone(db),
+		RanFeedFollow:   q.RanFeedFollow.clone(db),
+		RanFeedLike:     q.RanFeedLike.clone(db),
 	}
 }
 
@@ -77,30 +72,27 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedComment:        q.RanFeedComment.replaceDB(db),
-		RanFeedFavorite:       q.RanFeedFavorite.replaceDB(db),
-		RanFeedFollow:         q.RanFeedFollow.replaceDB(db),
-		RanFeedLike:           q.RanFeedLike.replaceDB(db),
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.replaceDB(db),
+		db:              db,
+		RanFeedComment:  q.RanFeedComment.replaceDB(db),
+		RanFeedFavorite: q.RanFeedFavorite.replaceDB(db),
+		RanFeedFollow:   q.RanFeedFollow.replaceDB(db),
+		RanFeedLike:     q.RanFeedLike.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	RanFeedComment        IRanFeedCommentDo
-	RanFeedFavorite       IRanFeedFavoriteDo
-	RanFeedFollow         IRanFeedFollowDo
-	RanFeedLike           IRanFeedLikeDo
-	RanFeedMqConsumeDedup IRanFeedMqConsumeDedupDo
+	RanFeedComment  IRanFeedCommentDo
+	RanFeedFavorite IRanFeedFavoriteDo
+	RanFeedFollow   IRanFeedFollowDo
+	RanFeedLike     IRanFeedLikeDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		RanFeedComment:        q.RanFeedComment.WithContext(ctx),
-		RanFeedFavorite:       q.RanFeedFavorite.WithContext(ctx),
-		RanFeedFollow:         q.RanFeedFollow.WithContext(ctx),
-		RanFeedLike:           q.RanFeedLike.WithContext(ctx),
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.WithContext(ctx),
+		RanFeedComment:  q.RanFeedComment.WithContext(ctx),
+		RanFeedFavorite: q.RanFeedFavorite.WithContext(ctx),
+		RanFeedFollow:   q.RanFeedFollow.WithContext(ctx),
+		RanFeedLike:     q.RanFeedLike.WithContext(ctx),
 	}
 }
 

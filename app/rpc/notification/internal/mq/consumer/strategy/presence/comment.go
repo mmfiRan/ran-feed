@@ -8,6 +8,7 @@ import (
 
 	"ran-feed/app/rpc/notification/internal/mq/consumer/strategy"
 	"ran-feed/app/rpc/notification/notification"
+	"ran-feed/pkg/event/canal"
 )
 
 const (
@@ -30,36 +31,36 @@ func (s *commentStrategy) ExtractEvents(ctx context.Context, op string, row, old
 	if !isActivation(op, statusActiveNotDeleted, row, oldRow) {
 		return nil
 	}
-	actorID, ok := strategy.ParseInt64(row["user_id"])
+	actorID, ok := canal.ParseInt64(row["user_id"])
 	if !ok || actorID <= 0 {
 		logc.Errorf(ctx, "comment canal 缺 user_id row=%v", row)
 		return nil
 	}
-	contentID, ok := strategy.ParseInt64(row["content_id"])
+	contentID, ok := canal.ParseInt64(row["content_id"])
 	if !ok || contentID <= 0 {
 		logc.Errorf(ctx, "comment canal 缺 content_id row=%v", row)
 		return nil
 	}
-	commentID, ok := strategy.ParseInt64(row["id"])
+	commentID, ok := canal.ParseInt64(row["id"])
 	if !ok || commentID <= 0 {
 		logc.Errorf(ctx, "comment canal 缺 id row=%v", row)
 		return nil
 	}
-	parentID, _ := strategy.ParseInt64(row["parent_id"])
+	parentID, _ := canal.ParseInt64(row["parent_id"])
 
 	// 按 parent_id 分流 recipient(N5):顶评→内容作者 回复→父评论作者
 	var recipientID int64
 	if parentID == 0 {
-		recipientID, _ = strategy.ParseInt64(row["content_user_id"])
+		recipientID, _ = canal.ParseInt64(row["content_user_id"])
 	} else {
-		recipientID, _ = strategy.ParseInt64(row["reply_to_user_id"])
+		recipientID, _ = canal.ParseInt64(row["reply_to_user_id"])
 	}
 	if recipientID <= 0 || actorID == recipientID {
 		// 自我评论/回复不打扰(N10)
 		return nil
 	}
 
-	snippet := truncateRunes(strategy.ParseString(row["comment"]), snippetMaxRunes)
+	snippet := truncateRunes(canal.ParseString(row["comment"]), snippetMaxRunes)
 
 	return []strategy.NotifyEvent{{
 		RecipientID: recipientID,

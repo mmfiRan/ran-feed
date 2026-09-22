@@ -52,5 +52,8 @@ func main() {
 	if c.KqConsumerConf.Topic != "" {
 		fmt.Printf("Starting canal mq consumer for topic: %s group: %s...\n", c.KqConsumerConf.Topic, c.KqConsumerConf.Group)
 	}
+	if c.ContentEventKqConsumerConf.Topic != "" {
+		fmt.Printf("Starting content review consumer for topic: %s group: %s...\n", c.ContentEventKqConsumerConf.Topic, c.ContentEventKqConsumerConf.Group)
+	}
 	serviceGroup.Start()
 }

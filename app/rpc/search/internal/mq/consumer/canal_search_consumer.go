@@ -2,7 +2,6 @@ package consumer
 
 import (
 	"context"
-	"encoding/json"
 	"strconv"
 
 	"github.com/zeromicro/go-zero/core/logc"
@@ -12,9 +11,10 @@ import (
 	"ran-feed/app/rpc/search/internal/common/consts"
 	"ran-feed/app/rpc/search/internal/es"
 	"ran-feed/app/rpc/search/internal/logic/indexer"
-	"ran-feed/app/rpc/search/internal/repositories"
 	"ran-feed/app/rpc/search/internal/svc"
 	"ran-feed/app/rpc/user/user"
+	"ran-feed/pkg/event/canal"
+	"ran-feed/pkg/event/dedup"
 )
 
 const consumerName = "search.canal_consumer"
@@ -23,7 +23,7 @@ type CanalSearchConsumer struct {
 	ctx context.Context
 	svc *svc.ServiceContext
 	logx.Logger
-	dedupRepo repositories.MqConsumeDedupRepository
+	dedupGate *dedup.Gate
 }
 
 func NewCanalSearchConsumer(ctx context.Context, svcContext *svc.ServiceContext) *CanalSearchConsumer {
@@ -31,20 +31,20 @@ func NewCanalSearchConsumer(ctx context.Context, svcContext *svc.ServiceContext)
 		ctx:       ctx,
 		svc:       svcContext,
 		Logger:    logx.WithContext(ctx),
-		dedupRepo: repositories.NewMqConsumeDedupRepository(ctx, svcContext.MysqlDb),
+		dedupGate: dedup.New(svcContext.MysqlDb.DB),
 	}
 }
 
 // Consume 解析后按表路由 content/article/video 归内容文档 user 归用户文档 未监听表跳过
 func (c *CanalSearchConsumer) Consume(ctx context.Context, key, val string) error {
-	var msg canalMessage
-	if err := json.Unmarshal([]byte(val), &msg); err != nil {
+	msg, err := canal.Parse(val)
+	if err != nil {
 		logc.Errorf(ctx, "解析 canal 消息失败 err=%v val=%s", err, val)
 		return err
 	}
 
-	eventID := msg.eventID(val)
-	switch msg.table() {
+	eventID := msg.EventID(val)
+	switch msg.Table() {
 	case consts.SourceTableContent, consts.SourceTableArticle, consts.SourceTableVideo:
 		return c.handleContent(ctx, msg, eventID)
 	case consts.SourceTableUser:
@@ -55,14 +55,14 @@ func (c *CanalSearchConsumer) Consume(ctx context.Context, key, val string) erro
 }
 
 // handleContent 取 content_id 回源 content-rpc 索引投影 返回的 upsert 缺席的判删
-func (c *CanalSearchConsumer) handleContent(ctx context.Context, msg canalMessage, eventID string) error {
-	isContentTable := msg.table() == consts.SourceTableContent
-	ids, err := c.dedupAndCollect(msg, eventID, func(row map[string]interface{}) int64 {
+func (c *CanalSearchConsumer) handleContent(ctx context.Context, msg *canal.Message, eventID string) error {
+	isContentTable := msg.Table() == consts.SourceTableContent
+	ids, err := c.dedupAndCollect(ctx, msg, eventID, func(row map[string]any) int64 {
 		if isContentTable {
-			id, _ := parseInt64(row["id"])
+			id, _ := canal.ParseInt64(row["id"])
 			return id
 		}
-		id, _ := parseInt64(row["content_id"])
+		id, _ := canal.ParseInt64(row["content_id"])
 		return id
 	})
 	if err != nil {
@@ -85,14 +85,14 @@ func (c *CanalSearchConsumer) handleContent(ctx context.Context, msg canalMessag
 	}
 	deleteIDs := missingIDs(ids, present)
 
-	c.writeES(ctx, es.IndexContent, items, deleteIDs, msg.updatedAt().UnixMilli())
+	c.writeES(ctx, es.IndexContent, items, deleteIDs, msg.UpdatedAt().UnixMilli())
 	return nil
 }
 
 // handleUser 回源 user-rpc 索引投影 返回的 upsert 缺席的判删
-func (c *CanalSearchConsumer) handleUser(ctx context.Context, msg canalMessage, eventID string) error {
-	ids, err := c.dedupAndCollect(msg, eventID, func(row map[string]interface{}) int64 {
-		id, _ := parseInt64(row["id"])
+func (c *CanalSearchConsumer) handleUser(ctx context.Context, msg *canal.Message, eventID string) error {
+	ids, err := c.dedupAndCollect(ctx, msg, eventID, func(row map[string]any) int64 {
+		id, _ := canal.ParseInt64(row["id"])
 		return id
 	})
 	if err != nil {
@@ -115,7 +115,7 @@ func (c *CanalSearchConsumer) handleUser(ctx context.Context, msg canalMessage, 
 	}
 	deleteIDs := missingIDs(ids, present)
 
-	c.writeES(ctx, es.IndexUser, items, deleteIDs, msg.updatedAt().UnixMilli())
+	c.writeES(ctx, es.IndexUser, items, deleteIDs, msg.UpdatedAt().UnixMilli())
 	return nil
 }
 
@@ -131,15 +131,15 @@ func missingIDs(ids []int64, present map[int64]bool) []int64 {
 }
 
 // dedupAndCollect 逐行幂等去重 用 extract 取目标 id 去重收集 dedup 出错上抛触发重试
-func (c *CanalSearchConsumer) dedupAndCollect(msg canalMessage, eventID string, extract func(map[string]interface{}) int64) ([]int64, error) {
-	table, op := msg.table(), msg.op()
+func (c *CanalSearchConsumer) dedupAndCollect(ctx context.Context, msg *canal.Message, eventID string, extract func(map[string]any) int64) ([]int64, error) {
+	table, op := msg.Table(), msg.Op()
 	seen := make(map[int64]bool, len(msg.Data))
 	ids := make([]int64, 0, len(msg.Data))
 	for i, row := range msg.Data {
 		if row == nil {
 			continue
 		}
-		inserted, err := c.dedupRepo.InsertIfAbsent(consumerName, rowEventID(eventID, table, op, row, i))
+		inserted, err := c.dedupGate.InsertIfAbsent(ctx, consumerName, canal.RowEventID(eventID, table, op, row, i))
 		if err != nil {
 			return nil, err
 		}

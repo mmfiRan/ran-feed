@@ -16,39 +16,34 @@ import (
 )
 
 var (
-	Q                     = new(Query)
-	RanFeedMqConsumeDedup *ranFeedMqConsumeDedup
-	RanFeedSearchHistory  *ranFeedSearchHistory
+	Q                    = new(Query)
+	RanFeedSearchHistory *ranFeedSearchHistory
 )
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	RanFeedMqConsumeDedup = &Q.RanFeedMqConsumeDedup
 	RanFeedSearchHistory = &Q.RanFeedSearchHistory
 }
 
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedMqConsumeDedup: newRanFeedMqConsumeDedup(db, opts...),
-		RanFeedSearchHistory:  newRanFeedSearchHistory(db, opts...),
+		db:                   db,
+		RanFeedSearchHistory: newRanFeedSearchHistory(db, opts...),
 	}
 }
 
 type Query struct {
 	db *gorm.DB
 
-	RanFeedMqConsumeDedup ranFeedMqConsumeDedup
-	RanFeedSearchHistory  ranFeedSearchHistory
+	RanFeedSearchHistory ranFeedSearchHistory
 }
 
 func (q *Query) Available() bool { return q.db != nil }
 
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.clone(db),
-		RanFeedSearchHistory:  q.RanFeedSearchHistory.clone(db),
+		db:                   db,
+		RanFeedSearchHistory: q.RanFeedSearchHistory.clone(db),
 	}
 }
 
@@ -62,21 +57,18 @@ func (q *Query) WriteDB() *Query {
 
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
-		db:                    db,
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.replaceDB(db),
-		RanFeedSearchHistory:  q.RanFeedSearchHistory.replaceDB(db),
+		db:                   db,
+		RanFeedSearchHistory: q.RanFeedSearchHistory.replaceDB(db),
 	}
 }
 
 type queryCtx struct {
-	RanFeedMqConsumeDedup IRanFeedMqConsumeDedupDo
-	RanFeedSearchHistory  IRanFeedSearchHistoryDo
+	RanFeedSearchHistory IRanFeedSearchHistoryDo
 }
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		RanFeedMqConsumeDedup: q.RanFeedMqConsumeDedup.WithContext(ctx),
-		RanFeedSearchHistory:  q.RanFeedSearchHistory.WithContext(ctx),
+		RanFeedSearchHistory: q.RanFeedSearchHistory.WithContext(ctx),
 	}
 }
 

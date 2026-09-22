@@ -60,47 +60,47 @@ type ranFeedFavorite struct {
 	fieldMap map[string]field.Expr
 }
 
-func (z ranFeedFavorite) Table(newTableName string) *ranFeedFavorite {
-	z.ranFeedFavoriteDo.UseTable(newTableName)
-	return z.updateTableName(newTableName)
+func (r ranFeedFavorite) Table(newTableName string) *ranFeedFavorite {
+	r.ranFeedFavoriteDo.UseTable(newTableName)
+	return r.updateTableName(newTableName)
 }
 
-func (z ranFeedFavorite) As(alias string) *ranFeedFavorite {
-	z.ranFeedFavoriteDo.DO = *(z.ranFeedFavoriteDo.As(alias).(*gen.DO))
-	return z.updateTableName(alias)
+func (r ranFeedFavorite) As(alias string) *ranFeedFavorite {
+	r.ranFeedFavoriteDo.DO = *(r.ranFeedFavoriteDo.As(alias).(*gen.DO))
+	return r.updateTableName(alias)
 }
 
-func (z *ranFeedFavorite) updateTableName(table string) *ranFeedFavorite {
-	z.ALL = field.NewAsterisk(table)
-	z.ID = field.NewInt64(table, "id")
-	z.UserID = field.NewInt64(table, "user_id")
-	z.Status = field.NewInt32(table, "status")
-	z.ContentID = field.NewInt64(table, "content_id")
-	z.ContentUserID = field.NewInt64(table, "content_user_id")
-	z.CreatedBy = field.NewInt64(table, "created_by")
-	z.UpdatedBy = field.NewInt64(table, "updated_by")
-	z.CreatedAt = field.NewTime(table, "created_at")
-	z.UpdatedAt = field.NewTime(table, "updated_at")
+func (r *ranFeedFavorite) updateTableName(table string) *ranFeedFavorite {
+	r.ALL = field.NewAsterisk(table)
+	r.ID = field.NewInt64(table, "id")
+	r.UserID = field.NewInt64(table, "user_id")
+	r.Status = field.NewInt32(table, "status")
+	r.ContentID = field.NewInt64(table, "content_id")
+	r.ContentUserID = field.NewInt64(table, "content_user_id")
+	r.CreatedBy = field.NewInt64(table, "created_by")
+	r.UpdatedBy = field.NewInt64(table, "updated_by")
+	r.CreatedAt = field.NewTime(table, "created_at")
+	r.UpdatedAt = field.NewTime(table, "updated_at")
 
-	z.fillFieldMap()
+	r.fillFieldMap()
 
-	return z
+	return r
 }
 
-func (z *ranFeedFavorite) WithContext(ctx context.Context) IRanFeedFavoriteDo {
-	return z.ranFeedFavoriteDo.WithContext(ctx)
+func (r *ranFeedFavorite) WithContext(ctx context.Context) IRanFeedFavoriteDo {
+	return r.ranFeedFavoriteDo.WithContext(ctx)
 }
 
-func (z ranFeedFavorite) TableName() string { return z.ranFeedFavoriteDo.TableName() }
+func (r ranFeedFavorite) TableName() string { return r.ranFeedFavoriteDo.TableName() }
 
-func (z ranFeedFavorite) Alias() string { return z.ranFeedFavoriteDo.Alias() }
+func (r ranFeedFavorite) Alias() string { return r.ranFeedFavoriteDo.Alias() }
 
-func (z ranFeedFavorite) Columns(cols ...field.Expr) gen.Columns {
-	return z.ranFeedFavoriteDo.Columns(cols...)
+func (r ranFeedFavorite) Columns(cols ...field.Expr) gen.Columns {
+	return r.ranFeedFavoriteDo.Columns(cols...)
 }
 
-func (z *ranFeedFavorite) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
-	_f, ok := z.fieldMap[fieldName]
+func (r *ranFeedFavorite) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
+	_f, ok := r.fieldMap[fieldName]
 	if !ok || _f == nil {
 		return nil, false
 	}
@@ -108,27 +108,27 @@ func (z *ranFeedFavorite) GetFieldByName(fieldName string) (field.OrderExpr, boo
 	return _oe, ok
 }
 
-func (z *ranFeedFavorite) fillFieldMap() {
-	z.fieldMap = make(map[string]field.Expr, 9)
-	z.fieldMap["id"] = z.ID
-	z.fieldMap["user_id"] = z.UserID
-	z.fieldMap["status"] = z.Status
-	z.fieldMap["content_id"] = z.ContentID
-	z.fieldMap["content_user_id"] = z.ContentUserID
-	z.fieldMap["created_by"] = z.CreatedBy
-	z.fieldMap["updated_by"] = z.UpdatedBy
-	z.fieldMap["created_at"] = z.CreatedAt
-	z.fieldMap["updated_at"] = z.UpdatedAt
+func (r *ranFeedFavorite) fillFieldMap() {
+	r.fieldMap = make(map[string]field.Expr, 9)
+	r.fieldMap["id"] = r.ID
+	r.fieldMap["user_id"] = r.UserID
+	r.fieldMap["status"] = r.Status
+	r.fieldMap["content_id"] = r.ContentID
+	r.fieldMap["content_user_id"] = r.ContentUserID
+	r.fieldMap["created_by"] = r.CreatedBy
+	r.fieldMap["updated_by"] = r.UpdatedBy
+	r.fieldMap["created_at"] = r.CreatedAt
+	r.fieldMap["updated_at"] = r.UpdatedAt
 }
 
-func (z ranFeedFavorite) clone(db *gorm.DB) ranFeedFavorite {
-	z.ranFeedFavoriteDo.ReplaceConnPool(db.Statement.ConnPool)
-	return z
+func (r ranFeedFavorite) clone(db *gorm.DB) ranFeedFavorite {
+	r.ranFeedFavoriteDo.ReplaceConnPool(db.Statement.ConnPool)
+	return r
 }
 
-func (z ranFeedFavorite) replaceDB(db *gorm.DB) ranFeedFavorite {
-	z.ranFeedFavoriteDo.ReplaceDB(db)
-	return z
+func (r ranFeedFavorite) replaceDB(db *gorm.DB) ranFeedFavorite {
+	r.ranFeedFavoriteDo.ReplaceDB(db)
+	return r
 }
 
 type ranFeedFavoriteDo struct{ gen.DO }
@@ -194,200 +194,200 @@ type IRanFeedFavoriteDo interface {
 	schema.Tabler
 }
 
-func (z ranFeedFavoriteDo) Debug() IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Debug())
+func (r ranFeedFavoriteDo) Debug() IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Debug())
 }
 
-func (z ranFeedFavoriteDo) WithContext(ctx context.Context) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.WithContext(ctx))
+func (r ranFeedFavoriteDo) WithContext(ctx context.Context) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.WithContext(ctx))
 }
 
-func (z ranFeedFavoriteDo) ReadDB() IRanFeedFavoriteDo {
-	return z.Clauses(dbresolver.Read)
+func (r ranFeedFavoriteDo) ReadDB() IRanFeedFavoriteDo {
+	return r.Clauses(dbresolver.Read)
 }
 
-func (z ranFeedFavoriteDo) WriteDB() IRanFeedFavoriteDo {
-	return z.Clauses(dbresolver.Write)
+func (r ranFeedFavoriteDo) WriteDB() IRanFeedFavoriteDo {
+	return r.Clauses(dbresolver.Write)
 }
 
-func (z ranFeedFavoriteDo) Session(config *gorm.Session) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Session(config))
+func (r ranFeedFavoriteDo) Session(config *gorm.Session) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Session(config))
 }
 
-func (z ranFeedFavoriteDo) Clauses(conds ...clause.Expression) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Clauses(conds...))
+func (r ranFeedFavoriteDo) Clauses(conds ...clause.Expression) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Clauses(conds...))
 }
 
-func (z ranFeedFavoriteDo) Returning(value interface{}, columns ...string) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Returning(value, columns...))
+func (r ranFeedFavoriteDo) Returning(value interface{}, columns ...string) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Returning(value, columns...))
 }
 
-func (z ranFeedFavoriteDo) Not(conds ...gen.Condition) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Not(conds...))
+func (r ranFeedFavoriteDo) Not(conds ...gen.Condition) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Not(conds...))
 }
 
-func (z ranFeedFavoriteDo) Or(conds ...gen.Condition) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Or(conds...))
+func (r ranFeedFavoriteDo) Or(conds ...gen.Condition) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Or(conds...))
 }
 
-func (z ranFeedFavoriteDo) Select(conds ...field.Expr) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Select(conds...))
+func (r ranFeedFavoriteDo) Select(conds ...field.Expr) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Select(conds...))
 }
 
-func (z ranFeedFavoriteDo) Where(conds ...gen.Condition) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Where(conds...))
+func (r ranFeedFavoriteDo) Where(conds ...gen.Condition) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Where(conds...))
 }
 
-func (z ranFeedFavoriteDo) Order(conds ...field.Expr) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Order(conds...))
+func (r ranFeedFavoriteDo) Order(conds ...field.Expr) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Order(conds...))
 }
 
-func (z ranFeedFavoriteDo) Distinct(cols ...field.Expr) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Distinct(cols...))
+func (r ranFeedFavoriteDo) Distinct(cols ...field.Expr) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Distinct(cols...))
 }
 
-func (z ranFeedFavoriteDo) Omit(cols ...field.Expr) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Omit(cols...))
+func (r ranFeedFavoriteDo) Omit(cols ...field.Expr) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Omit(cols...))
 }
 
-func (z ranFeedFavoriteDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Join(table, on...))
+func (r ranFeedFavoriteDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Join(table, on...))
 }
 
-func (z ranFeedFavoriteDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.LeftJoin(table, on...))
+func (r ranFeedFavoriteDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.LeftJoin(table, on...))
 }
 
-func (z ranFeedFavoriteDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.RightJoin(table, on...))
+func (r ranFeedFavoriteDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.RightJoin(table, on...))
 }
 
-func (z ranFeedFavoriteDo) Group(cols ...field.Expr) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Group(cols...))
+func (r ranFeedFavoriteDo) Group(cols ...field.Expr) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Group(cols...))
 }
 
-func (z ranFeedFavoriteDo) Having(conds ...gen.Condition) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Having(conds...))
+func (r ranFeedFavoriteDo) Having(conds ...gen.Condition) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Having(conds...))
 }
 
-func (z ranFeedFavoriteDo) Limit(limit int) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Limit(limit))
+func (r ranFeedFavoriteDo) Limit(limit int) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Limit(limit))
 }
 
-func (z ranFeedFavoriteDo) Offset(offset int) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Offset(offset))
+func (r ranFeedFavoriteDo) Offset(offset int) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Offset(offset))
 }
 
-func (z ranFeedFavoriteDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Scopes(funcs...))
+func (r ranFeedFavoriteDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Scopes(funcs...))
 }
 
-func (z ranFeedFavoriteDo) Unscoped() IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Unscoped())
+func (r ranFeedFavoriteDo) Unscoped() IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Unscoped())
 }
 
-func (z ranFeedFavoriteDo) Create(values ...*model.RanFeedFavorite) error {
+func (r ranFeedFavoriteDo) Create(values ...*model.RanFeedFavorite) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Create(values)
+	return r.DO.Create(values)
 }
 
-func (z ranFeedFavoriteDo) CreateInBatches(values []*model.RanFeedFavorite, batchSize int) error {
-	return z.DO.CreateInBatches(values, batchSize)
+func (r ranFeedFavoriteDo) CreateInBatches(values []*model.RanFeedFavorite, batchSize int) error {
+	return r.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (z ranFeedFavoriteDo) Save(values ...*model.RanFeedFavorite) error {
+func (r ranFeedFavoriteDo) Save(values ...*model.RanFeedFavorite) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Save(values)
+	return r.DO.Save(values)
 }
 
-func (z ranFeedFavoriteDo) First() (*model.RanFeedFavorite, error) {
-	if result, err := z.DO.First(); err != nil {
+func (r ranFeedFavoriteDo) First() (*model.RanFeedFavorite, error) {
+	if result, err := r.DO.First(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedFavorite), nil
 	}
 }
 
-func (z ranFeedFavoriteDo) Take() (*model.RanFeedFavorite, error) {
-	if result, err := z.DO.Take(); err != nil {
+func (r ranFeedFavoriteDo) Take() (*model.RanFeedFavorite, error) {
+	if result, err := r.DO.Take(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedFavorite), nil
 	}
 }
 
-func (z ranFeedFavoriteDo) Last() (*model.RanFeedFavorite, error) {
-	if result, err := z.DO.Last(); err != nil {
+func (r ranFeedFavoriteDo) Last() (*model.RanFeedFavorite, error) {
+	if result, err := r.DO.Last(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedFavorite), nil
 	}
 }
 
-func (z ranFeedFavoriteDo) Find() ([]*model.RanFeedFavorite, error) {
-	result, err := z.DO.Find()
+func (r ranFeedFavoriteDo) Find() ([]*model.RanFeedFavorite, error) {
+	result, err := r.DO.Find()
 	return result.([]*model.RanFeedFavorite), err
 }
 
-func (z ranFeedFavoriteDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedFavorite, err error) {
+func (r ranFeedFavoriteDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedFavorite, err error) {
 	buf := make([]*model.RanFeedFavorite, 0, batchSize)
-	err = z.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
+	err = r.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
 	})
 	return results, err
 }
 
-func (z ranFeedFavoriteDo) FindInBatches(result *[]*model.RanFeedFavorite, batchSize int, fc func(tx gen.Dao, batch int) error) error {
-	return z.DO.FindInBatches(result, batchSize, fc)
+func (r ranFeedFavoriteDo) FindInBatches(result *[]*model.RanFeedFavorite, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+	return r.DO.FindInBatches(result, batchSize, fc)
 }
 
-func (z ranFeedFavoriteDo) Attrs(attrs ...field.AssignExpr) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Attrs(attrs...))
+func (r ranFeedFavoriteDo) Attrs(attrs ...field.AssignExpr) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Attrs(attrs...))
 }
 
-func (z ranFeedFavoriteDo) Assign(attrs ...field.AssignExpr) IRanFeedFavoriteDo {
-	return z.withDO(z.DO.Assign(attrs...))
+func (r ranFeedFavoriteDo) Assign(attrs ...field.AssignExpr) IRanFeedFavoriteDo {
+	return r.withDO(r.DO.Assign(attrs...))
 }
 
-func (z ranFeedFavoriteDo) Joins(fields ...field.RelationField) IRanFeedFavoriteDo {
+func (r ranFeedFavoriteDo) Joins(fields ...field.RelationField) IRanFeedFavoriteDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Joins(_f))
+		r = *r.withDO(r.DO.Joins(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedFavoriteDo) Preload(fields ...field.RelationField) IRanFeedFavoriteDo {
+func (r ranFeedFavoriteDo) Preload(fields ...field.RelationField) IRanFeedFavoriteDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Preload(_f))
+		r = *r.withDO(r.DO.Preload(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedFavoriteDo) FirstOrInit() (*model.RanFeedFavorite, error) {
-	if result, err := z.DO.FirstOrInit(); err != nil {
+func (r ranFeedFavoriteDo) FirstOrInit() (*model.RanFeedFavorite, error) {
+	if result, err := r.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedFavorite), nil
 	}
 }
 
-func (z ranFeedFavoriteDo) FirstOrCreate() (*model.RanFeedFavorite, error) {
-	if result, err := z.DO.FirstOrCreate(); err != nil {
+func (r ranFeedFavoriteDo) FirstOrCreate() (*model.RanFeedFavorite, error) {
+	if result, err := r.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedFavorite), nil
 	}
 }
 
-func (z ranFeedFavoriteDo) FindByPage(offset int, limit int) (result []*model.RanFeedFavorite, count int64, err error) {
-	result, err = z.Offset(offset).Limit(limit).Find()
+func (r ranFeedFavoriteDo) FindByPage(offset int, limit int) (result []*model.RanFeedFavorite, count int64, err error) {
+	result, err = r.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
 	}
@@ -397,29 +397,29 @@ func (z ranFeedFavoriteDo) FindByPage(offset int, limit int) (result []*model.Ra
 		return
 	}
 
-	count, err = z.Offset(-1).Limit(-1).Count()
+	count, err = r.Offset(-1).Limit(-1).Count()
 	return
 }
 
-func (z ranFeedFavoriteDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
-	count, err = z.Count()
+func (r ranFeedFavoriteDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
+	count, err = r.Count()
 	if err != nil {
 		return
 	}
 
-	err = z.Offset(offset).Limit(limit).Scan(result)
+	err = r.Offset(offset).Limit(limit).Scan(result)
 	return
 }
 
-func (z ranFeedFavoriteDo) Scan(result interface{}) (err error) {
-	return z.DO.Scan(result)
+func (r ranFeedFavoriteDo) Scan(result interface{}) (err error) {
+	return r.DO.Scan(result)
 }
 
-func (z ranFeedFavoriteDo) Delete(models ...*model.RanFeedFavorite) (result gen.ResultInfo, err error) {
-	return z.DO.Delete(models)
+func (r ranFeedFavoriteDo) Delete(models ...*model.RanFeedFavorite) (result gen.ResultInfo, err error) {
+	return r.DO.Delete(models)
 }
 
-func (z *ranFeedFavoriteDo) withDO(do gen.Dao) *ranFeedFavoriteDo {
-	z.DO = *do.(*gen.DO)
-	return z
+func (r *ranFeedFavoriteDo) withDO(do gen.Dao) *ranFeedFavoriteDo {
+	r.DO = *do.(*gen.DO)
+	return r
 }

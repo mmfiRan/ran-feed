@@ -64,49 +64,47 @@ type ranFeedLike struct {
 	fieldMap map[string]field.Expr
 }
 
-func (z ranFeedLike) Table(newTableName string) *ranFeedLike {
-	z.ranFeedLikeDo.UseTable(newTableName)
-	return z.updateTableName(newTableName)
+func (r ranFeedLike) Table(newTableName string) *ranFeedLike {
+	r.ranFeedLikeDo.UseTable(newTableName)
+	return r.updateTableName(newTableName)
 }
 
-func (z ranFeedLike) As(alias string) *ranFeedLike {
-	z.ranFeedLikeDo.DO = *(z.ranFeedLikeDo.As(alias).(*gen.DO))
-	return z.updateTableName(alias)
+func (r ranFeedLike) As(alias string) *ranFeedLike {
+	r.ranFeedLikeDo.DO = *(r.ranFeedLikeDo.As(alias).(*gen.DO))
+	return r.updateTableName(alias)
 }
 
-func (z *ranFeedLike) updateTableName(table string) *ranFeedLike {
-	z.ALL = field.NewAsterisk(table)
-	z.ID = field.NewInt64(table, "id")
-	z.UserID = field.NewInt64(table, "user_id")
-	z.ContentID = field.NewInt64(table, "content_id")
-	z.ContentUserID = field.NewInt64(table, "content_user_id")
-	z.Status = field.NewInt32(table, "status")
-	z.Version = field.NewInt32(table, "version")
-	z.IsDeleted = field.NewInt32(table, "is_deleted")
-	z.CreatedBy = field.NewInt64(table, "created_by")
-	z.UpdatedBy = field.NewInt64(table, "updated_by")
-	z.CreatedAt = field.NewTime(table, "created_at")
-	z.UpdatedAt = field.NewTime(table, "updated_at")
+func (r *ranFeedLike) updateTableName(table string) *ranFeedLike {
+	r.ALL = field.NewAsterisk(table)
+	r.ID = field.NewInt64(table, "id")
+	r.UserID = field.NewInt64(table, "user_id")
+	r.ContentID = field.NewInt64(table, "content_id")
+	r.ContentUserID = field.NewInt64(table, "content_user_id")
+	r.Status = field.NewInt32(table, "status")
+	r.Version = field.NewInt32(table, "version")
+	r.IsDeleted = field.NewInt32(table, "is_deleted")
+	r.CreatedBy = field.NewInt64(table, "created_by")
+	r.UpdatedBy = field.NewInt64(table, "updated_by")
+	r.CreatedAt = field.NewTime(table, "created_at")
+	r.UpdatedAt = field.NewTime(table, "updated_at")
 
-	z.fillFieldMap()
+	r.fillFieldMap()
 
-	return z
+	return r
 }
 
-func (z *ranFeedLike) WithContext(ctx context.Context) IRanFeedLikeDo {
-	return z.ranFeedLikeDo.WithContext(ctx)
+func (r *ranFeedLike) WithContext(ctx context.Context) IRanFeedLikeDo {
+	return r.ranFeedLikeDo.WithContext(ctx)
 }
 
-func (z ranFeedLike) TableName() string { return z.ranFeedLikeDo.TableName() }
+func (r ranFeedLike) TableName() string { return r.ranFeedLikeDo.TableName() }
 
-func (z ranFeedLike) Alias() string { return z.ranFeedLikeDo.Alias() }
+func (r ranFeedLike) Alias() string { return r.ranFeedLikeDo.Alias() }
 
-func (z ranFeedLike) Columns(cols ...field.Expr) gen.Columns {
-	return z.ranFeedLikeDo.Columns(cols...)
-}
+func (r ranFeedLike) Columns(cols ...field.Expr) gen.Columns { return r.ranFeedLikeDo.Columns(cols...) }
 
-func (z *ranFeedLike) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
-	_f, ok := z.fieldMap[fieldName]
+func (r *ranFeedLike) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
+	_f, ok := r.fieldMap[fieldName]
 	if !ok || _f == nil {
 		return nil, false
 	}
@@ -114,29 +112,29 @@ func (z *ranFeedLike) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	return _oe, ok
 }
 
-func (z *ranFeedLike) fillFieldMap() {
-	z.fieldMap = make(map[string]field.Expr, 11)
-	z.fieldMap["id"] = z.ID
-	z.fieldMap["user_id"] = z.UserID
-	z.fieldMap["content_id"] = z.ContentID
-	z.fieldMap["content_user_id"] = z.ContentUserID
-	z.fieldMap["status"] = z.Status
-	z.fieldMap["version"] = z.Version
-	z.fieldMap["is_deleted"] = z.IsDeleted
-	z.fieldMap["created_by"] = z.CreatedBy
-	z.fieldMap["updated_by"] = z.UpdatedBy
-	z.fieldMap["created_at"] = z.CreatedAt
-	z.fieldMap["updated_at"] = z.UpdatedAt
+func (r *ranFeedLike) fillFieldMap() {
+	r.fieldMap = make(map[string]field.Expr, 11)
+	r.fieldMap["id"] = r.ID
+	r.fieldMap["user_id"] = r.UserID
+	r.fieldMap["content_id"] = r.ContentID
+	r.fieldMap["content_user_id"] = r.ContentUserID
+	r.fieldMap["status"] = r.Status
+	r.fieldMap["version"] = r.Version
+	r.fieldMap["is_deleted"] = r.IsDeleted
+	r.fieldMap["created_by"] = r.CreatedBy
+	r.fieldMap["updated_by"] = r.UpdatedBy
+	r.fieldMap["created_at"] = r.CreatedAt
+	r.fieldMap["updated_at"] = r.UpdatedAt
 }
 
-func (z ranFeedLike) clone(db *gorm.DB) ranFeedLike {
-	z.ranFeedLikeDo.ReplaceConnPool(db.Statement.ConnPool)
-	return z
+func (r ranFeedLike) clone(db *gorm.DB) ranFeedLike {
+	r.ranFeedLikeDo.ReplaceConnPool(db.Statement.ConnPool)
+	return r
 }
 
-func (z ranFeedLike) replaceDB(db *gorm.DB) ranFeedLike {
-	z.ranFeedLikeDo.ReplaceDB(db)
-	return z
+func (r ranFeedLike) replaceDB(db *gorm.DB) ranFeedLike {
+	r.ranFeedLikeDo.ReplaceDB(db)
+	return r
 }
 
 type ranFeedLikeDo struct{ gen.DO }
@@ -202,200 +200,200 @@ type IRanFeedLikeDo interface {
 	schema.Tabler
 }
 
-func (z ranFeedLikeDo) Debug() IRanFeedLikeDo {
-	return z.withDO(z.DO.Debug())
+func (r ranFeedLikeDo) Debug() IRanFeedLikeDo {
+	return r.withDO(r.DO.Debug())
 }
 
-func (z ranFeedLikeDo) WithContext(ctx context.Context) IRanFeedLikeDo {
-	return z.withDO(z.DO.WithContext(ctx))
+func (r ranFeedLikeDo) WithContext(ctx context.Context) IRanFeedLikeDo {
+	return r.withDO(r.DO.WithContext(ctx))
 }
 
-func (z ranFeedLikeDo) ReadDB() IRanFeedLikeDo {
-	return z.Clauses(dbresolver.Read)
+func (r ranFeedLikeDo) ReadDB() IRanFeedLikeDo {
+	return r.Clauses(dbresolver.Read)
 }
 
-func (z ranFeedLikeDo) WriteDB() IRanFeedLikeDo {
-	return z.Clauses(dbresolver.Write)
+func (r ranFeedLikeDo) WriteDB() IRanFeedLikeDo {
+	return r.Clauses(dbresolver.Write)
 }
 
-func (z ranFeedLikeDo) Session(config *gorm.Session) IRanFeedLikeDo {
-	return z.withDO(z.DO.Session(config))
+func (r ranFeedLikeDo) Session(config *gorm.Session) IRanFeedLikeDo {
+	return r.withDO(r.DO.Session(config))
 }
 
-func (z ranFeedLikeDo) Clauses(conds ...clause.Expression) IRanFeedLikeDo {
-	return z.withDO(z.DO.Clauses(conds...))
+func (r ranFeedLikeDo) Clauses(conds ...clause.Expression) IRanFeedLikeDo {
+	return r.withDO(r.DO.Clauses(conds...))
 }
 
-func (z ranFeedLikeDo) Returning(value interface{}, columns ...string) IRanFeedLikeDo {
-	return z.withDO(z.DO.Returning(value, columns...))
+func (r ranFeedLikeDo) Returning(value interface{}, columns ...string) IRanFeedLikeDo {
+	return r.withDO(r.DO.Returning(value, columns...))
 }
 
-func (z ranFeedLikeDo) Not(conds ...gen.Condition) IRanFeedLikeDo {
-	return z.withDO(z.DO.Not(conds...))
+func (r ranFeedLikeDo) Not(conds ...gen.Condition) IRanFeedLikeDo {
+	return r.withDO(r.DO.Not(conds...))
 }
 
-func (z ranFeedLikeDo) Or(conds ...gen.Condition) IRanFeedLikeDo {
-	return z.withDO(z.DO.Or(conds...))
+func (r ranFeedLikeDo) Or(conds ...gen.Condition) IRanFeedLikeDo {
+	return r.withDO(r.DO.Or(conds...))
 }
 
-func (z ranFeedLikeDo) Select(conds ...field.Expr) IRanFeedLikeDo {
-	return z.withDO(z.DO.Select(conds...))
+func (r ranFeedLikeDo) Select(conds ...field.Expr) IRanFeedLikeDo {
+	return r.withDO(r.DO.Select(conds...))
 }
 
-func (z ranFeedLikeDo) Where(conds ...gen.Condition) IRanFeedLikeDo {
-	return z.withDO(z.DO.Where(conds...))
+func (r ranFeedLikeDo) Where(conds ...gen.Condition) IRanFeedLikeDo {
+	return r.withDO(r.DO.Where(conds...))
 }
 
-func (z ranFeedLikeDo) Order(conds ...field.Expr) IRanFeedLikeDo {
-	return z.withDO(z.DO.Order(conds...))
+func (r ranFeedLikeDo) Order(conds ...field.Expr) IRanFeedLikeDo {
+	return r.withDO(r.DO.Order(conds...))
 }
 
-func (z ranFeedLikeDo) Distinct(cols ...field.Expr) IRanFeedLikeDo {
-	return z.withDO(z.DO.Distinct(cols...))
+func (r ranFeedLikeDo) Distinct(cols ...field.Expr) IRanFeedLikeDo {
+	return r.withDO(r.DO.Distinct(cols...))
 }
 
-func (z ranFeedLikeDo) Omit(cols ...field.Expr) IRanFeedLikeDo {
-	return z.withDO(z.DO.Omit(cols...))
+func (r ranFeedLikeDo) Omit(cols ...field.Expr) IRanFeedLikeDo {
+	return r.withDO(r.DO.Omit(cols...))
 }
 
-func (z ranFeedLikeDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedLikeDo {
-	return z.withDO(z.DO.Join(table, on...))
+func (r ranFeedLikeDo) Join(table schema.Tabler, on ...field.Expr) IRanFeedLikeDo {
+	return r.withDO(r.DO.Join(table, on...))
 }
 
-func (z ranFeedLikeDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedLikeDo {
-	return z.withDO(z.DO.LeftJoin(table, on...))
+func (r ranFeedLikeDo) LeftJoin(table schema.Tabler, on ...field.Expr) IRanFeedLikeDo {
+	return r.withDO(r.DO.LeftJoin(table, on...))
 }
 
-func (z ranFeedLikeDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedLikeDo {
-	return z.withDO(z.DO.RightJoin(table, on...))
+func (r ranFeedLikeDo) RightJoin(table schema.Tabler, on ...field.Expr) IRanFeedLikeDo {
+	return r.withDO(r.DO.RightJoin(table, on...))
 }
 
-func (z ranFeedLikeDo) Group(cols ...field.Expr) IRanFeedLikeDo {
-	return z.withDO(z.DO.Group(cols...))
+func (r ranFeedLikeDo) Group(cols ...field.Expr) IRanFeedLikeDo {
+	return r.withDO(r.DO.Group(cols...))
 }
 
-func (z ranFeedLikeDo) Having(conds ...gen.Condition) IRanFeedLikeDo {
-	return z.withDO(z.DO.Having(conds...))
+func (r ranFeedLikeDo) Having(conds ...gen.Condition) IRanFeedLikeDo {
+	return r.withDO(r.DO.Having(conds...))
 }
 
-func (z ranFeedLikeDo) Limit(limit int) IRanFeedLikeDo {
-	return z.withDO(z.DO.Limit(limit))
+func (r ranFeedLikeDo) Limit(limit int) IRanFeedLikeDo {
+	return r.withDO(r.DO.Limit(limit))
 }
 
-func (z ranFeedLikeDo) Offset(offset int) IRanFeedLikeDo {
-	return z.withDO(z.DO.Offset(offset))
+func (r ranFeedLikeDo) Offset(offset int) IRanFeedLikeDo {
+	return r.withDO(r.DO.Offset(offset))
 }
 
-func (z ranFeedLikeDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedLikeDo {
-	return z.withDO(z.DO.Scopes(funcs...))
+func (r ranFeedLikeDo) Scopes(funcs ...func(gen.Dao) gen.Dao) IRanFeedLikeDo {
+	return r.withDO(r.DO.Scopes(funcs...))
 }
 
-func (z ranFeedLikeDo) Unscoped() IRanFeedLikeDo {
-	return z.withDO(z.DO.Unscoped())
+func (r ranFeedLikeDo) Unscoped() IRanFeedLikeDo {
+	return r.withDO(r.DO.Unscoped())
 }
 
-func (z ranFeedLikeDo) Create(values ...*model.RanFeedLike) error {
+func (r ranFeedLikeDo) Create(values ...*model.RanFeedLike) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Create(values)
+	return r.DO.Create(values)
 }
 
-func (z ranFeedLikeDo) CreateInBatches(values []*model.RanFeedLike, batchSize int) error {
-	return z.DO.CreateInBatches(values, batchSize)
+func (r ranFeedLikeDo) CreateInBatches(values []*model.RanFeedLike, batchSize int) error {
+	return r.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (z ranFeedLikeDo) Save(values ...*model.RanFeedLike) error {
+func (r ranFeedLikeDo) Save(values ...*model.RanFeedLike) error {
 	if len(values) == 0 {
 		return nil
 	}
-	return z.DO.Save(values)
+	return r.DO.Save(values)
 }
 
-func (z ranFeedLikeDo) First() (*model.RanFeedLike, error) {
-	if result, err := z.DO.First(); err != nil {
+func (r ranFeedLikeDo) First() (*model.RanFeedLike, error) {
+	if result, err := r.DO.First(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedLike), nil
 	}
 }
 
-func (z ranFeedLikeDo) Take() (*model.RanFeedLike, error) {
-	if result, err := z.DO.Take(); err != nil {
+func (r ranFeedLikeDo) Take() (*model.RanFeedLike, error) {
+	if result, err := r.DO.Take(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedLike), nil
 	}
 }
 
-func (z ranFeedLikeDo) Last() (*model.RanFeedLike, error) {
-	if result, err := z.DO.Last(); err != nil {
+func (r ranFeedLikeDo) Last() (*model.RanFeedLike, error) {
+	if result, err := r.DO.Last(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedLike), nil
 	}
 }
 
-func (z ranFeedLikeDo) Find() ([]*model.RanFeedLike, error) {
-	result, err := z.DO.Find()
+func (r ranFeedLikeDo) Find() ([]*model.RanFeedLike, error) {
+	result, err := r.DO.Find()
 	return result.([]*model.RanFeedLike), err
 }
 
-func (z ranFeedLikeDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedLike, err error) {
+func (r ranFeedLikeDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*model.RanFeedLike, err error) {
 	buf := make([]*model.RanFeedLike, 0, batchSize)
-	err = z.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
+	err = r.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
 	})
 	return results, err
 }
 
-func (z ranFeedLikeDo) FindInBatches(result *[]*model.RanFeedLike, batchSize int, fc func(tx gen.Dao, batch int) error) error {
-	return z.DO.FindInBatches(result, batchSize, fc)
+func (r ranFeedLikeDo) FindInBatches(result *[]*model.RanFeedLike, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+	return r.DO.FindInBatches(result, batchSize, fc)
 }
 
-func (z ranFeedLikeDo) Attrs(attrs ...field.AssignExpr) IRanFeedLikeDo {
-	return z.withDO(z.DO.Attrs(attrs...))
+func (r ranFeedLikeDo) Attrs(attrs ...field.AssignExpr) IRanFeedLikeDo {
+	return r.withDO(r.DO.Attrs(attrs...))
 }
 
-func (z ranFeedLikeDo) Assign(attrs ...field.AssignExpr) IRanFeedLikeDo {
-	return z.withDO(z.DO.Assign(attrs...))
+func (r ranFeedLikeDo) Assign(attrs ...field.AssignExpr) IRanFeedLikeDo {
+	return r.withDO(r.DO.Assign(attrs...))
 }
 
-func (z ranFeedLikeDo) Joins(fields ...field.RelationField) IRanFeedLikeDo {
+func (r ranFeedLikeDo) Joins(fields ...field.RelationField) IRanFeedLikeDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Joins(_f))
+		r = *r.withDO(r.DO.Joins(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedLikeDo) Preload(fields ...field.RelationField) IRanFeedLikeDo {
+func (r ranFeedLikeDo) Preload(fields ...field.RelationField) IRanFeedLikeDo {
 	for _, _f := range fields {
-		z = *z.withDO(z.DO.Preload(_f))
+		r = *r.withDO(r.DO.Preload(_f))
 	}
-	return &z
+	return &r
 }
 
-func (z ranFeedLikeDo) FirstOrInit() (*model.RanFeedLike, error) {
-	if result, err := z.DO.FirstOrInit(); err != nil {
+func (r ranFeedLikeDo) FirstOrInit() (*model.RanFeedLike, error) {
+	if result, err := r.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedLike), nil
 	}
 }
 
-func (z ranFeedLikeDo) FirstOrCreate() (*model.RanFeedLike, error) {
-	if result, err := z.DO.FirstOrCreate(); err != nil {
+func (r ranFeedLikeDo) FirstOrCreate() (*model.RanFeedLike, error) {
+	if result, err := r.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
 		return result.(*model.RanFeedLike), nil
 	}
 }
 
-func (z ranFeedLikeDo) FindByPage(offset int, limit int) (result []*model.RanFeedLike, count int64, err error) {
-	result, err = z.Offset(offset).Limit(limit).Find()
+func (r ranFeedLikeDo) FindByPage(offset int, limit int) (result []*model.RanFeedLike, count int64, err error) {
+	result, err = r.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
 	}
@@ -405,29 +403,29 @@ func (z ranFeedLikeDo) FindByPage(offset int, limit int) (result []*model.RanFee
 		return
 	}
 
-	count, err = z.Offset(-1).Limit(-1).Count()
+	count, err = r.Offset(-1).Limit(-1).Count()
 	return
 }
 
-func (z ranFeedLikeDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
-	count, err = z.Count()
+func (r ranFeedLikeDo) ScanByPage(result interface{}, offset int, limit int) (count int64, err error) {
+	count, err = r.Count()
 	if err != nil {
 		return
 	}
 
-	err = z.Offset(offset).Limit(limit).Scan(result)
+	err = r.Offset(offset).Limit(limit).Scan(result)
 	return
 }
 
-func (z ranFeedLikeDo) Scan(result interface{}) (err error) {
-	return z.DO.Scan(result)
+func (r ranFeedLikeDo) Scan(result interface{}) (err error) {
+	return r.DO.Scan(result)
 }
 
-func (z ranFeedLikeDo) Delete(models ...*model.RanFeedLike) (result gen.ResultInfo, err error) {
-	return z.DO.Delete(models)
+func (r ranFeedLikeDo) Delete(models ...*model.RanFeedLike) (result gen.ResultInfo, err error) {
+	return r.DO.Delete(models)
 }
 
-func (z *ranFeedLikeDo) withDO(do gen.Dao) *ranFeedLikeDo {
-	z.DO = *do.(*gen.DO)
-	return z
+func (r *ranFeedLikeDo) withDO(do gen.Dao) *ranFeedLikeDo {
+	r.DO = *do.(*gen.DO)
+	return r
 }

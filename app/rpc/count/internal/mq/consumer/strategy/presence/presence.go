@@ -12,6 +12,7 @@ import (
 	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
 	"ran-feed/pkg/enums"
+	"ran-feed/pkg/event/canal"
 )
 
 // presenceCounterStrategy 把一行互动变更映射为若干计数目标上的同一增量
@@ -102,7 +103,7 @@ func boolDelta(before, after bool) int64 {
 
 // statusActive status 为正常即有效
 func statusActive(row map[string]interface{}) bool {
-	v, ok := strategy.ParseInt64(row["status"])
+	v, ok := canal.ParseInt64(row["status"])
 	if !ok {
 		return false
 	}
@@ -114,7 +115,7 @@ func statusActiveNotDeleted(row map[string]interface{}) bool {
 	if !statusActive(row) {
 		return false
 	}
-	v, ok := strategy.ParseInt64(row["is_deleted"])
+	v, ok := canal.ParseInt64(row["is_deleted"])
 	if !ok {
 		return true
 	}
@@ -129,12 +130,12 @@ func alwaysActive(map[string]interface{}) bool {
 // contentTargets 行映射到单个内容计数 取 content_id 与作者 content_user_id
 func contentTargets(bizType count.BizType) func(ctx context.Context, row map[string]interface{}) []countTarget {
 	return func(ctx context.Context, row map[string]interface{}) []countTarget {
-		contentID, ok := strategy.ParseInt64(row["content_id"])
+		contentID, ok := canal.ParseInt64(row["content_id"])
 		if !ok || contentID <= 0 {
 			logc.Errorf(ctx, "canal消息缺少有效content_id biz=%d row=%v", bizType, row)
 			return nil
 		}
-		ownerID, ok := strategy.ParseInt64(row["content_user_id"])
+		ownerID, ok := canal.ParseInt64(row["content_user_id"])
 		if !ok || ownerID <= 0 {
 			logc.Errorf(ctx, "canal消息缺少有效content_user_id biz=%d row=%v", bizType, row)
 			ownerID = 0
@@ -150,12 +151,12 @@ func contentTargets(bizType count.BizType) func(ctx context.Context, row map[str
 
 // followTargets 一行关注同时影响关注者的关注数与被关注者的粉丝数
 func followTargets(ctx context.Context, row map[string]interface{}) []countTarget {
-	userID, ok := strategy.ParseInt64(row["user_id"])
+	userID, ok := canal.ParseInt64(row["user_id"])
 	if !ok || userID <= 0 {
 		logc.Errorf(ctx, "canal消息缺少有效user_id row=%v", row)
 		return nil
 	}
-	followUserID, ok := strategy.ParseInt64(row["follow_user_id"])
+	followUserID, ok := canal.ParseInt64(row["follow_user_id"])
 	if !ok || followUserID <= 0 {
 		logc.Errorf(ctx, "canal消息缺少有效follow_user_id row=%v", row)
 		return nil

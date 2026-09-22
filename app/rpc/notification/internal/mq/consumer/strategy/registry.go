@@ -5,10 +5,8 @@ package strategy
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"strconv"
-	"strings"
+
+	"ran-feed/pkg/event/registry"
 )
 
 // PersistAction 决定 event 如何落库
@@ -45,37 +43,7 @@ type TableStrategy interface {
 }
 
 // Registry 管理 table 到 strategy 的映射
-type Registry struct {
-	strategies map[string]TableStrategy
-}
-
-func newRegistry(strategies ...TableStrategy) *Registry {
-	r := &Registry{strategies: make(map[string]TableStrategy, len(strategies))}
-	for _, s := range strategies {
-		r.register(s)
-	}
-	return r
-}
-
-func (r *Registry) register(s TableStrategy) {
-	if s == nil {
-		return
-	}
-	table := normalizeTableName(s.TableName())
-	if table == "" {
-		return
-	}
-	r.strategies[table] = s
-}
-
-func (r *Registry) Get(table string) (TableStrategy, bool) {
-	s, ok := r.strategies[normalizeTableName(table)]
-	return s, ok
-}
-
-func normalizeTableName(table string) string {
-	return strings.ToLower(strings.TrimSpace(table))
-}
+type Registry = registry.Registry[TableStrategy]
 
 var factories []func() TableStrategy
 
@@ -98,57 +66,5 @@ func NewDefaultRegistry() *Registry {
 			strategies = append(strategies, s)
 		}
 	}
-	return newRegistry(strategies...)
-}
-
-// ParseInt64 把 canal 行字段统一解析为 int64 canal 数值列常以字符串或 json.Number 传来
-func ParseInt64(v interface{}) (int64, bool) {
-	switch n := v.(type) {
-	case nil:
-		return 0, false
-	case int:
-		return int64(n), true
-	case int32:
-		return int64(n), true
-	case int64:
-		return n, true
-	case uint:
-		return int64(n), true
-	case uint32:
-		return int64(n), true
-	case uint64:
-		return int64(n), true
-	case float64:
-		return int64(n), true
-	case json.Number:
-		val, err := n.Int64()
-		if err != nil {
-			return 0, false
-		}
-		return val, true
-	case string:
-		s := strings.TrimSpace(n)
-		if s == "" {
-			return 0, false
-		}
-		val, err := strconv.ParseInt(s, 10, 64)
-		if err != nil {
-			return 0, false
-		}
-		return val, true
-	default:
-		return 0, false
-	}
-}
-
-// ParseString 取字符串字段 缺失或空返 ""
-func ParseString(v interface{}) string {
-	switch s := v.(type) {
-	case nil:
-		return ""
-	case string:
-		return strings.TrimSpace(s)
-	default:
-		return strings.TrimSpace(fmt.Sprintf("%v", s))
-	}
+	return registry.New(strategies...)
 }
