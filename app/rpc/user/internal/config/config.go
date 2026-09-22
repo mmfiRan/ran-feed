@@ -8,7 +8,6 @@ import (
 type Config struct {
 	zrpc.RpcServerConf
 	RedisConfig              redis.RedisConf
-	Oss                      OssConfig
 	MySQL                    MySQLConfig
 	SessionTTL               int64
 	LoginRateLimit           LoginRateLimitConfig
@@ -31,17 +30,6 @@ type UserCacheConfig struct {
 	NegativeTTLSeconds       int64 `json:",default=60"`
 	JitterMaxSeconds         int64 `json:",default=600"`
 	NegativeJitterMaxSeconds int64 `json:",default=60"`
-}
-
-type OssConfig struct {
-	Provider        string `json:",env=OSS_PROVIDER"`
-	Region          string `json:",env=OSS_REGION"`
-	BucketName      string `json:",env=OSS_BUCKET_NAME"`
-	AccessKeyId     string `json:",env=OSS_ACCESS_KEY_ID"`
-	AccessKeySecret string `json:",env=OSS_ACCESS_KEY_SECRET"`
-	Endpoint        string `json:",env=OSS_ENDPOINT"`
-	UploadDir       string `json:",env=OSS_UPLOAD_DIR"`
-	PublicHost      string `json:",env=OSS_PUBLIC_HOST"`
 }
 
 type MySQLConfig struct {

@@ -67,13 +67,3 @@ UserCache:
   NegativeTTLSeconds: 60
   JitterMaxSeconds: 600
   NegativeJitterMaxSeconds: 60
-
-Oss:
-  Provider:
-  Region:
-  BucketName:
-  AccessKeyId:
-  AccessKeySecret:
-  Endpoint:
-  UploadDir:
-  PublicHost:
