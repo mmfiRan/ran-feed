@@ -20,6 +20,68 @@
   },
   "basePath": "/v1",
   "paths": {
+    "/v1/content/article/draft": {
+      "post": {
+        "description": "保存文章草稿 无 content_id 新建 有则更新",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "SaveArticleDraft",
+        "operationId": "contentSaveArticleDraft",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string"
+                },
+                "content_id": {
+                  "type": "integer"
+                },
+                "cover": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "visibility": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/content/article/publish": {
       "post": {
         "description": "发布文章",
@@ -218,6 +280,217 @@
         }
       }
     },
+    "/v1/content/mine": {
+      "get": {
+        "description": "我的内容列表",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "MyContentList",
+        "operationId": "contentMyContentList",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "status",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "content_type",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "string",
+            "name": "cursor",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "page_size",
+            "in": "query",
+            "allowEmptyValue": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "has_more": {
+                  "type": "boolean"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "content_id",
+                      "content_type",
+                      "status",
+                      "visibility",
+                      "title",
+                      "cover_url",
+                      "created_at",
+                      "published_at",
+                      "reject_reason",
+                      "like_count",
+                      "favorite_count",
+                      "comment_count"
+                    ],
+                    "properties": {
+                      "comment_count": {
+                        "type": "integer"
+                      },
+                      "content_id": {
+                        "type": "integer"
+                      },
+                      "content_type": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "cover_url": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "integer"
+                      },
+                      "favorite_count": {
+                        "type": "integer"
+                      },
+                      "like_count": {
+                        "type": "integer"
+                      },
+                      "published_at": {
+                        "type": "integer"
+                      },
+                      "reject_reason": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "visibility": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "next_cursor": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/content/publish": {
+      "post": {
+        "description": "草稿或被拒内容提交进审核",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "SubmitContent",
+        "operationId": "contentSubmitContent",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/content/upload-credentials": {
       "post": {
         "description": "获取内容上传凭证",
@@ -242,9 +515,15 @@
             "required": true,
             "schema": {
               "type": "object",
+              "required": [
+                "scene",
+                "file_ext",
+                "file_size",
+                "file_name"
+              ],
               "properties": {
                 "file_ext": {
-                  "type": "string"
+                  "type": "integer"
                 },
                 "file_name": {
                   "type": "string"
@@ -253,7 +532,7 @@
                   "type": "integer"
                 },
                 "scene": {
-                  "type": "string"
+                  "type": "integer"
                 }
               }
             }
@@ -268,47 +547,85 @@
                 "expired_at": {
                   "type": "integer"
                 },
-                "form_data": {
+                "form_fields": {
                   "type": "object",
-                  "required": [
-                    "host",
-                    "policy",
-                    "signature",
-                    "x-oss-security-token",
-                    "x-oss-signature-version",
-                    "x-oss-credential",
-                    "x-oss-date",
-                    "key"
-                  ],
-                  "properties": {
-                    "host": {
-                      "type": "string"
-                    },
-                    "key": {
-                      "type": "string"
-                    },
-                    "policy": {
-                      "type": "string"
-                    },
-                    "signature": {
-                      "type": "string"
-                    },
-                    "x-oss-credential": {
-                      "type": "string"
-                    },
-                    "x-oss-date": {
-                      "type": "string"
-                    },
-                    "x-oss-security-token": {
-                      "type": "string"
-                    },
-                    "x-oss-signature-version": {
-                      "type": "string"
-                    }
+                  "additionalProperties": {
+                    "type": "string"
                   }
+                },
+                "method": {
+                  "type": "string"
                 },
                 "object_key": {
                   "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/content/video/draft": {
+      "post": {
+        "description": "保存视频草稿 无 content_id 新建 有则更新",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "content"
+        ],
+        "summary": "SaveVideoDraft",
+        "operationId": "contentSaveVideoDraft",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
+                },
+                "cover_url": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "duration": {
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "video_url": {
+                  "type": "string"
+                },
+                "visibility": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content_id": {
+                  "type": "integer"
                 }
               }
             }
@@ -2790,7 +3107,7 @@
       }
     }
   },
-  "x-date": "2026-09-18 15:35:18",
+  "x-date": "2026-09-22 14:56:50",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

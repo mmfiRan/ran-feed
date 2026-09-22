@@ -39,7 +39,7 @@ func (l *PublishArticleLogic) PublishArticle(in *content.ArticlePublishReq) (*co
 		articleRepo := l.articleRepository.WithTx(tx)
 
 		contentId = snowflake.GenID()
-		// 先审后发 发布落待审 published_at 留空 审核通过才置位并进 feed
+
 		contentDO := &do.ContentDO{
 			ID:          contentId,
 			UserID:      in.UserId,
@@ -65,7 +65,6 @@ func (l *PublishArticleLogic) PublishArticle(in *content.ArticlePublishReq) (*co
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("发布文章失败"))
 	}
 
-	// 先审后发 发布不触发进 feed 副作用 待审核通过由 AdminReviewContent 触发 FeedPublisher.Publish
 	return &content.ArticlePublishRes{
 		ContentId: contentId,
 	}, nil

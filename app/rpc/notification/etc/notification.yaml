@@ -51,3 +51,14 @@ KqConsumerConf:
   Offset: last
   Consumers: 4
   Processors: 4
+
+# content 域 outbox 事件消费者 通知作者审核结果 与主 canal 消费者独立 group
+ContentEventKqConsumerConf:
+  Name: notification-content-review-consumer
+  Brokers:
+    - ${KAFKA_BROKERS}
+  Group: ran-feed-notification-content-review-consumer
+  Topic: ran-feed-content-outbox
+  Offset: last
+  Consumers: 4
+  Processors: 4

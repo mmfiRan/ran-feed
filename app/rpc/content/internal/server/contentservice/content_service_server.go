@@ -39,6 +39,26 @@ func (s *ContentServiceServer) PublishVideo(ctx context.Context, in *content.Vid
 	return l.PublishVideo(in)
 }
 
+func (s *ContentServiceServer) SaveArticleDraft(ctx context.Context, in *content.SaveArticleDraftReq) (*content.SaveArticleDraftRes, error) {
+	l := contentservicelogic.NewSaveArticleDraftLogic(ctx, s.svcCtx)
+	return l.SaveArticleDraft(in)
+}
+
+func (s *ContentServiceServer) SaveVideoDraft(ctx context.Context, in *content.SaveVideoDraftReq) (*content.SaveVideoDraftRes, error) {
+	l := contentservicelogic.NewSaveVideoDraftLogic(ctx, s.svcCtx)
+	return l.SaveVideoDraft(in)
+}
+
+func (s *ContentServiceServer) SubmitContent(ctx context.Context, in *content.SubmitContentReq) (*content.SubmitContentRes, error) {
+	l := contentservicelogic.NewSubmitContentLogic(ctx, s.svcCtx)
+	return l.SubmitContent(in)
+}
+
+func (s *ContentServiceServer) MyContentList(ctx context.Context, in *content.MyContentListReq) (*content.MyContentListRes, error) {
+	l := contentservicelogic.NewMyContentListLogic(ctx, s.svcCtx)
+	return l.MyContentList(in)
+}
+
 func (s *ContentServiceServer) GetUserContentCount(ctx context.Context, in *content.GetUserContentCountReq) (*content.GetUserContentCountRes, error) {
 	l := contentservicelogic.NewGetUserContentCountLogic(ctx, s.svcCtx)
 	return l.GetUserContentCount(in)

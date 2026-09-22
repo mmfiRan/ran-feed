@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS ran_feed_content_review
     created_at  DATETIME           NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     updated_at  DATETIME           NOT NULL DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    KEY idx_content (content_id)
+    KEY idx_content (content_id, created_at)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_bin

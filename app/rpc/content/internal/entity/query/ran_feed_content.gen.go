@@ -55,7 +55,7 @@ type ranFeedContent struct {
 	ID             field.Int64   // 内容ID
 	UserID         field.Int64   // 发布者（内容作者）
 	ContentType    field.Int32   // 内容类型 10=文章 20=视频
-	Status         field.Int32   // 状态 10=草稿 20=处理中 30=已发布 40=失败
+	Status         field.Int32   // 状态 10=草稿 20=处理中 30=已发布 40=失败 50=下架 60=待审核 70=拒绝
 	Visibility     field.Int32   // 可见性 10=公开 20=私密
 	HotScore       field.Float64 // 热度分
 	LastHotScoreAt field.Time    // 热度分最后更新时间

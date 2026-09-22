@@ -65,30 +65,20 @@ enum FileExt {
 
 // ContentUploadsCredentialsReq 获取 OSS 上传凭证
 message ContentUploadsCredentialsReq {
-  int64 user_id = 1;        // 上传用户 id
-  UploadScene scene = 2;    // 上传场景
-  FileExt file_ext = 3;     // 文件扩展名
-  int64 file_size = 4;      // 文件大小 字节
-  string file_name = 5;     // 文件名
+  int64 user_id = 1;
+  UploadScene scene = 2;
+  FileExt file_ext = 3;
+  int64 file_size = 4;
+  string file_name = 5;
 }
 
 // ContentUploadsCredentialsRes 上传凭证响应
 message ContentUploadsCredentialsRes {
-  string object_key = 1;                 // 对象键
-  OssFormData form_data = 2;             // 表单数据
-  google.protobuf.Timestamp expired_at = 3;  // 凭证过期时间 秒
-}
-
-// OssFormData OSS 表单数据
-message OssFormData {
-  string host = 1;                // 上传地址
-  string policy = 2;              // Base64 策略
-  string signature = 3;           // 签名
-  string security_token = 4;      // STS 临时凭证
-  string signature_version = 5;   // 签名版本
-  string credential = 6;          // 凭证字符串
-  string date = 7;                // UTC 时间
-  string key = 8;                 // 对象键
+  string url = 1;
+  string method = 2;
+  string object_key = 3;
+  map<string, string> form_fields = 4;
+  google.protobuf.Timestamp expired_at = 5;
 }
 
 // ArticlePublishReq 发布文章
@@ -103,7 +93,7 @@ message ArticlePublishReq {
 
 // ArticlePublishRes 发布文章响应
 message ArticlePublishRes {
-  int64 content_id = 1;  // 新内容 id
+  int64 content_id = 1;
 }
 
 // VideoPublishReq 发布视频
@@ -113,13 +103,13 @@ message VideoPublishReq {
   optional string description = 3;
   string video_url = 4;
   string cover_url = 5;
-  int32 duration = 6;  // 视频时长 秒
+  int32 duration = 6;
   Visibility visibility = 7;
 }
 
 // VideoPublishRes 发布视频响应
 message VideoPublishRes {
-  int64 content_id = 1;  // 新内容 id
+  int64 content_id = 1;
 }
 
 // GetUserContentCountReq 查用户内容数
@@ -169,6 +159,82 @@ message ContentDetail {
 // GetContentDetailRes 内容详情响应
 message GetContentDetailRes {
   ContentDetail detail = 1;
+}
+
+// SaveArticleDraftReq 保存文章草稿 content_id 为空新建 有值更新 校验放宽
+message SaveArticleDraftReq {
+  int64 user_id = 1;
+  optional int64 content_id = 2;
+  string title = 3;
+  optional string description = 4;
+  string cover = 5;
+  string content = 6;
+  Visibility visibility = 7;
+}
+
+// SaveArticleDraftRes 保存文章草稿响应
+message SaveArticleDraftRes {
+  int64 content_id = 1;
+}
+
+// SaveVideoDraftReq 保存视频草稿 content_id 为空新建 有值更新 校验放宽
+message SaveVideoDraftReq {
+  int64 user_id = 1;
+  optional int64 content_id = 2;
+  string title = 3;
+  optional string description = 4;
+  string video_url = 5;
+  string cover_url = 6;
+  int32 duration = 7;
+  Visibility visibility = 8;
+}
+
+// SaveVideoDraftRes 保存视频草稿响应
+message SaveVideoDraftRes {
+  int64 content_id = 1;
+}
+
+// SubmitContentReq 草稿或被拒内容提交进审核
+message SubmitContentReq {
+  int64 user_id = 1;
+  int64 content_id = 2;
+}
+
+// SubmitContentRes 提交响应
+message SubmitContentRes {
+  int64 content_id = 1;
+}
+
+// MyContentListReq 我的内容列表 全状态 cursor 为 created_at:id 复合游标
+message MyContentListReq {
+  int64 user_id = 1;
+  optional ContentStatus status = 2;
+  optional ContentType content_type = 3;
+  string cursor = 4;
+  uint32 page_size = 5;
+}
+
+// MyContentItem 我的内容列表项
+message MyContentItem {
+  int64 content_id = 1;
+  ranfeed.commonpb.EnumValue content_type = 2;  // 内容类型
+  ranfeed.commonpb.EnumValue status = 3;        // 内容状态
+  ranfeed.commonpb.EnumValue visibility = 4;    // 可见性
+  string title = 5;
+  string cover_url = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp published_at = 8;   // 未发布为空
+  string reject_reason = 9;                     // status=拒绝时取审核最新一条
+  int64 like_count = 10;
+  int64 favorite_count = 11;
+  int64 comment_count = 12;
+}
+
+// MyContentListRes 我的内容列表响应
+message MyContentListRes {
+  repeated MyContentItem items = 1;
+  string next_cursor = 2;
+  bool has_more = 3;
 }
 
 // RecommendFeedReq 推荐流请求
@@ -424,6 +490,10 @@ service ContentService {
   rpc Uploads(ContentUploadsCredentialsReq) returns (ContentUploadsCredentialsRes);
   rpc PublishArticle(ArticlePublishReq) returns (ArticlePublishRes);
   rpc PublishVideo(VideoPublishReq) returns (VideoPublishRes);
+  rpc SaveArticleDraft(SaveArticleDraftReq) returns (SaveArticleDraftRes);
+  rpc SaveVideoDraft(SaveVideoDraftReq) returns (SaveVideoDraftRes);
+  rpc SubmitContent(SubmitContentReq) returns (SubmitContentRes);
+  rpc MyContentList(MyContentListReq) returns (MyContentListRes);
   rpc GetUserContentCount(GetUserContentCountReq) returns (GetUserContentCountRes);
   rpc DeleteContent(DeleteContentReq) returns (google.protobuf.Empty);
   rpc GetContentDetail(GetContentDetailReq) returns (GetContentDetailRes);

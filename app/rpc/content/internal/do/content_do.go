@@ -29,7 +29,7 @@ type ArticleDO struct {
 type VideoDO struct {
 	ID              int64
 	ContentID       int64
-	MediaID         int64
+	Title           string
 	OriginURL       string
 	CoverURL        string
 	Duration        int32

@@ -30,18 +30,17 @@ func NewPublishArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Pu
 }
 
 func (l *PublishArticleLogic) PublishArticle(req *types.PublishArticleReq) (resp *types.PublishArticleRes, err error) {
-
 	userID, err := utils.GetContextUserId(l.ctx)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("获取用户id失败"))
 	}
 	rpcResp, err := l.svcCtx.ContentRpc.PublishArticle(l.ctx, &content.ArticlePublishReq{
 		UserId:      userID,
-		Title:       *req.Title,
+		Title:       req.Title,
 		Description: req.Description,
-		Cover:       *req.Cover,
-		Content:     *req.Content,
-		Visibility:  content.Visibility(*req.Visibility),
+		Cover:       req.Cover,
+		Content:     req.Content,
+		Visibility:  content.Visibility(req.Visibility),
 	})
 	if err != nil {
 		return nil, err

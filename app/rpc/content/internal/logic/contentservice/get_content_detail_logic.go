@@ -51,12 +51,18 @@ func (l *GetContentDetailLogic) GetContentDetail(in *content.GetContentDetailReq
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
 	}
-	if contentRow == nil || contentRow.Status != int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED) {
+	if contentRow == nil {
 		return nil, errorx.NewMsg("内容不存在")
 	}
 
 	viewerID := in.GetViewerId()
-	if contentRow.Visibility == int32(content.Visibility_VISIBILITY_PRIVATE) && viewerID != contentRow.UserID {
+	isAuthor := viewerID > 0 && viewerID == contentRow.UserID
+	// 非已发布内容仅作者本人可见 供编辑回显
+	if contentRow.Status != int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED) && !isAuthor {
+		return nil, errorx.NewMsg("内容不存在")
+	}
+	// 私密内容仅作者本人可见
+	if contentRow.Visibility == int32(content.Visibility_VISIBILITY_PRIVATE) && !isAuthor {
 		return nil, errorx.NewMsg("内容不存在")
 	}
 

@@ -40,7 +40,6 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 		videoRepo := l.videoRepository.WithTx(tx)
 
 		contentId = snowflake.GenID()
-		// 先审后发 发布落待审 published_at 留空 审核通过才置位并进 feed
 		contentDO := &do.ContentDO{
 			ID:          contentId,
 			UserID:      in.UserId,
@@ -57,7 +56,7 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 		videoDO := &do.VideoDO{
 			ID:              snowflake.GenID(),
 			ContentID:       contentId,
-			MediaID:         0,
+			Title:           in.Title,
 			OriginURL:       in.VideoUrl,
 			CoverURL:        in.CoverUrl,
 			Duration:        in.Duration,
@@ -68,7 +67,6 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("发布视频失败"))
 	}
 
-	// 先审后发 发布不触发进 feed 副作用 待审核通过由 AdminReviewContent 触发 FeedPublisher.Publish
 	return &content.VideoPublishRes{
 		ContentId: contentId,
 	}, nil

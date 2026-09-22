@@ -37,12 +37,12 @@ func (l *PublishVideoLogic) PublishVideo(req *types.PublishVideoReq) (resp *type
 	}
 	rpcResp, err := l.svcCtx.ContentRpc.PublishVideo(l.ctx, &content.VideoPublishReq{
 		UserId:      userID,
-		Title:       *req.Title,
+		Title:       req.Title,
 		Description: req.Description,
-		VideoUrl:    *req.VideoUrl,
-		CoverUrl:    *req.CoverUrl,
-		Duration:    *req.Duration,
-		Visibility:  content.Visibility(*req.Visibility),
+		VideoUrl:    req.VideoUrl,
+		CoverUrl:    req.CoverUrl,
+		Duration:    utils.Deref(req.Duration),
+		Visibility:  content.Visibility(req.Visibility),
 	})
 	if err != nil {
 		return nil, err

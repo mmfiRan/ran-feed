@@ -8,6 +8,7 @@ import (
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/cron"
+	"ran-feed/app/rpc/content/internal/mq/consumer"
 	admincontentserviceServer "ran-feed/app/rpc/content/internal/server/admincontentservice"
 	contentserviceServer "ran-feed/app/rpc/content/internal/server/contentservice"
 	feedserviceServer "ran-feed/app/rpc/content/internal/server/feedservice"
@@ -46,7 +47,6 @@ func main() {
 		}
 	})
 	s.AddUnaryInterceptors(interceptor.ServerGrpcInterceptor())
-	defer s.Stop()
 
 	xxlCtx, cancelXxl := context.WithCancel(context.Background())
 	defer cancelXxl()
@@ -74,6 +74,17 @@ func main() {
 		}
 	})
 
+	// gRPC server 与 content 域事件消费者一起纳入 service group 统一启停
+	serviceGroup := service.NewServiceGroup()
+	defer serviceGroup.Stop()
+	for _, mq := range consumer.Consumers(c, context.Background(), ctx) {
+		serviceGroup.Add(mq)
+	}
+	serviceGroup.Add(s)
+
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
-	s.Start()
+	if c.KqConsumerConf.Topic != "" {
+		fmt.Printf("Starting content outbox consumer for topic: %s group: %s...\n", c.KqConsumerConf.Topic, c.KqConsumerConf.Group)
+	}
+	serviceGroup.Start()
 }

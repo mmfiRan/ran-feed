@@ -55,6 +55,11 @@ func (m *mockNotifyRepo) Insert(row *model.RanFeedNotification) error {
 	m.lastInserted = row
 	return nil
 }
+func (m *mockNotifyRepo) UpsertReview(row *model.RanFeedNotification) error {
+	m.upsertCalls++
+	m.lastUpserted = row
+	return nil
+}
 func (m *mockNotifyRepo) ListByRecipient(int64, int32, time.Time, int64, int) ([]*model.RanFeedNotification, error) {
 	return nil, nil
 }

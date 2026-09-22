@@ -19,6 +19,8 @@ type NotificationRepository interface {
 	UpsertAggregate(row *model.RanFeedNotification) error
 	// Insert 单条 insert COMMENT_REPLY 走该路径 agg_key 天然唯一(CR:{comment_id})
 	Insert(row *model.RanFeedNotification) error
+	// UpsertReview 内容审核结果 upsert 同内容一条通知反映最新结果 命中则覆盖 type/snippet 并 re-surface 变未读 不累加 agg_count
+	UpsertReview(row *model.RanFeedNotification) error
 	// ListByRecipient 收件箱复合游标查询 按(updated_at DESC id DESC)排序 一次多取 1 条供 logic 层判 has_more
 	// cursorUpdatedAt 零值视为首页 typeFilter 为 0 视为不限
 	ListByRecipient(recipientID int64, typeFilter int32, cursorUpdatedAt time.Time, cursorID int64, limit int) ([]*model.RanFeedNotification, error)
@@ -95,6 +97,41 @@ func (r *notificationRepositoryImpl) UpsertAggregate(row *model.RanFeedNotificat
 		row.AggCount,
 		row.ContentID,
 		row.CommentID,
+		row.Snippet,
+		row.CreatedBy,
+		row.UpdatedBy,
+		row.CreatedAt,
+		row.UpdatedAt,
+	).Error
+}
+
+// UpsertReview 审核结果通知 按 uk_recipient_aggkey(RV:{content_id}) upsert
+// 命中则覆盖 notify_type/snippet/content_id 换最新触发者 re-surface 变未读 agg_count 恒为 1 不累加
+func (r *notificationRepositoryImpl) UpsertReview(row *model.RanFeedNotification) error {
+	if row == nil || row.RecipientID <= 0 || row.AggKey == "" {
+		return nil
+	}
+	q := r.getQuery()
+	db := q.RanFeedNotification.WithContext(r.ctx).UnderlyingDB()
+	return db.Exec(
+		`INSERT INTO ran_feed_notification
+			(recipient_id, actor_id, notify_type, agg_key, agg_count,
+			 content_id, comment_id, snippet, is_read, version,
+			 created_by, updated_by, created_at, updated_at)
+		VALUES (?, ?, ?, ?, 1, ?, 0, ?, 0, 1, ?, ?, ?, ?)
+		ON DUPLICATE KEY UPDATE
+			notify_type = VALUES(notify_type),
+			actor_id = VALUES(actor_id),
+			content_id = VALUES(content_id),
+			snippet = VALUES(snippet),
+			is_read = 0,
+			updated_at = VALUES(updated_at),
+			version = version + 1`,
+		row.RecipientID,
+		row.ActorID,
+		row.NotifyType,
+		row.AggKey,
+		row.ContentID,
 		row.Snippet,
 		row.CreatedBy,
 		row.UpdatedBy,

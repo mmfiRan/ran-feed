@@ -12,6 +12,7 @@ enum NotifyType {
   NOTIFY_TYPE_LIKE_FAVORITE = 10; // 赞或收藏 按内容聚合
   NOTIFY_TYPE_COMMENT_REPLY = 20; // 评论或回复 单条
   NOTIFY_TYPE_FOLLOW = 30;        // 关注 单条
+  NOTIFY_TYPE_CONTENT_REVIEW = 40; // 内容审核结果 通过或拒绝或下架 系统通知作者
 }
 
 // NotificationItem 通知原始行 富化在 front BFF 完成

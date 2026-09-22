@@ -29,13 +29,33 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				},
 				{
 					Method:  http.MethodPost,
+					Path:    "/article/draft",
+					Handler: content.SaveArticleDraftHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
 					Path:    "/article/publish",
 					Handler: content.PublishArticleHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/mine",
+					Handler: content.MyContentListHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/publish",
+					Handler: content.SubmitContentHandler(serverCtx),
 				},
 				{
 					Method:  http.MethodPost,
 					Path:    "/upload-credentials",
 					Handler: content.ContentUploadsCredentialsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/video/draft",
+					Handler: content.SaveVideoDraftHandler(serverCtx),
 				},
 				{
 					Method:  http.MethodPost,

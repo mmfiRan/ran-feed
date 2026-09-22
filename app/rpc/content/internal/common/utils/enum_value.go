@@ -1,4 +1,4 @@
-// Package utils content-rpc 各 service logic 共享的统一枚举响应组装
+// Package utils
 package utils
 
 import (

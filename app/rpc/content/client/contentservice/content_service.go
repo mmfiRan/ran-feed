@@ -28,9 +28,17 @@ type (
 	GetContentDetailRes          = content.GetContentDetailRes
 	GetUserContentCountReq       = content.GetUserContentCountReq
 	GetUserContentCountRes       = content.GetUserContentCountRes
-	OssFormData                  = content.OssFormData
+	MyContentItem                = content.MyContentItem
+	MyContentListReq             = content.MyContentListReq
+	MyContentListRes             = content.MyContentListRes
 	PurgeFolloweeFromInboxReq    = content.PurgeFolloweeFromInboxReq
 	PurgeFolloweeFromInboxRes    = content.PurgeFolloweeFromInboxRes
+	SaveArticleDraftReq          = content.SaveArticleDraftReq
+	SaveArticleDraftRes          = content.SaveArticleDraftRes
+	SaveVideoDraftReq            = content.SaveVideoDraftReq
+	SaveVideoDraftRes            = content.SaveVideoDraftRes
+	SubmitContentReq             = content.SubmitContentReq
+	SubmitContentRes             = content.SubmitContentRes
 	VideoPublishReq              = content.VideoPublishReq
 	VideoPublishRes              = content.VideoPublishRes
 
@@ -38,6 +46,10 @@ type (
 		Uploads(ctx context.Context, in *ContentUploadsCredentialsReq, opts ...grpc.CallOption) (*ContentUploadsCredentialsRes, error)
 		PublishArticle(ctx context.Context, in *ArticlePublishReq, opts ...grpc.CallOption) (*ArticlePublishRes, error)
 		PublishVideo(ctx context.Context, in *VideoPublishReq, opts ...grpc.CallOption) (*VideoPublishRes, error)
+		SaveArticleDraft(ctx context.Context, in *SaveArticleDraftReq, opts ...grpc.CallOption) (*SaveArticleDraftRes, error)
+		SaveVideoDraft(ctx context.Context, in *SaveVideoDraftReq, opts ...grpc.CallOption) (*SaveVideoDraftRes, error)
+		SubmitContent(ctx context.Context, in *SubmitContentReq, opts ...grpc.CallOption) (*SubmitContentRes, error)
+		MyContentList(ctx context.Context, in *MyContentListReq, opts ...grpc.CallOption) (*MyContentListRes, error)
 		GetUserContentCount(ctx context.Context, in *GetUserContentCountReq, opts ...grpc.CallOption) (*GetUserContentCountRes, error)
 		DeleteContent(ctx context.Context, in *DeleteContentReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 		GetContentDetail(ctx context.Context, in *GetContentDetailReq, opts ...grpc.CallOption) (*GetContentDetailRes, error)
@@ -69,6 +81,26 @@ func (m *defaultContentService) PublishArticle(ctx context.Context, in *ArticleP
 func (m *defaultContentService) PublishVideo(ctx context.Context, in *VideoPublishReq, opts ...grpc.CallOption) (*VideoPublishRes, error) {
 	client := content.NewContentServiceClient(m.cli.Conn())
 	return client.PublishVideo(ctx, in, opts...)
+}
+
+func (m *defaultContentService) SaveArticleDraft(ctx context.Context, in *SaveArticleDraftReq, opts ...grpc.CallOption) (*SaveArticleDraftRes, error) {
+	client := content.NewContentServiceClient(m.cli.Conn())
+	return client.SaveArticleDraft(ctx, in, opts...)
+}
+
+func (m *defaultContentService) SaveVideoDraft(ctx context.Context, in *SaveVideoDraftReq, opts ...grpc.CallOption) (*SaveVideoDraftRes, error) {
+	client := content.NewContentServiceClient(m.cli.Conn())
+	return client.SaveVideoDraft(ctx, in, opts...)
+}
+
+func (m *defaultContentService) SubmitContent(ctx context.Context, in *SubmitContentReq, opts ...grpc.CallOption) (*SubmitContentRes, error) {
+	client := content.NewContentServiceClient(m.cli.Conn())
+	return client.SubmitContent(ctx, in, opts...)
+}
+
+func (m *defaultContentService) MyContentList(ctx context.Context, in *MyContentListReq, opts ...grpc.CallOption) (*MyContentListRes, error) {
+	client := content.NewContentServiceClient(m.cli.Conn())
+	return client.MyContentList(ctx, in, opts...)
 }
 
 func (m *defaultContentService) GetUserContentCount(ctx context.Context, in *GetUserContentCountReq, opts ...grpc.CallOption) (*GetUserContentCountRes, error) {

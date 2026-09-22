@@ -16,6 +16,7 @@ import (
 type VideoRepository interface {
 	WithTx(tx *query.Query) VideoRepository
 	CreateVideo(videoDO *do.VideoDO) error
+	UpdateByContentID(videoDO *do.VideoDO) error
 	DeleteByContentID(contentID int64) error
 	GetByContentID(contentID int64) (*model.RanFeedVideo, error)
 	BatchGetBriefByContentIDs(contentIDs []int64) (map[int64]*model.RanFeedVideo, error)
@@ -58,7 +59,7 @@ func (r *VideoRepositoryImpl) CreateVideo(videoDO *do.VideoDO) error {
 	videoModel := &model.RanFeedVideo{
 		ID:              videoDO.ID,
 		ContentID:       videoDO.ContentID,
-		MediaID:         videoDO.MediaID,
+		Title:           videoDO.Title,
 		OriginURL:       videoDO.OriginURL,
 		CoverURL:        videoDO.CoverURL,
 		Duration:        videoDO.Duration,
@@ -68,15 +69,29 @@ func (r *VideoRepositoryImpl) CreateVideo(videoDO *do.VideoDO) error {
 	return q.RanFeedVideo.WithContext(r.ctx).Create(videoModel)
 }
 
-func (r *VideoRepositoryImpl) DeleteByContentID(contentID int64) error {
-	if contentID <= 0 {
+// UpdateByContentID 草稿编辑更新视频子表 按 content_id 定位
+func (r *VideoRepositoryImpl) UpdateByContentID(videoDO *do.VideoDO) error {
+	if videoDO.ContentID <= 0 {
 		return nil
 	}
+	q := r.getQuery()
+	_, err := q.RanFeedVideo.WithContext(r.ctx).
+		Where(q.RanFeedVideo.ContentID.Eq(videoDO.ContentID)).
+		Where(q.RanFeedVideo.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		UpdateSimple(
+			q.RanFeedVideo.Title.Value(videoDO.Title),
+			q.RanFeedVideo.OriginURL.Value(videoDO.OriginURL),
+			q.RanFeedVideo.CoverURL.Value(videoDO.CoverURL),
+			q.RanFeedVideo.Duration.Value(videoDO.Duration),
+		)
+	return err
+}
 
+func (r *VideoRepositoryImpl) DeleteByContentID(contentID int64) error {
 	q := r.getQuery()
 	_, err := q.RanFeedVideo.WithContext(r.ctx).
 		Where(q.RanFeedVideo.ContentID.Eq(contentID)).
-		UpdateSimple(q.RanFeedVideo.IsDeleted.Value(1))
+		UpdateSimple(q.RanFeedVideo.IsDeleted.Value(enums.Deleted.Int32()))
 	return err
 }
 

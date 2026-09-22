@@ -16,6 +16,7 @@ import (
 type ArticleRepository interface {
 	WithTx(tx *query.Query) ArticleRepository
 	CreateArticle(articleDO *do.ArticleDO) error
+	UpdateByContentID(articleDO *do.ArticleDO) error
 	DeleteByContentID(contentID int64) error
 	GetByContentID(contentID int64) (*model.RanFeedArticle, error)
 	BatchGetBriefByContentIDs(contentIDs []int64) (map[int64]*model.RanFeedArticle, error)
@@ -68,15 +69,33 @@ func (r *ArticleRepositoryImpl) CreateArticle(articleDO *do.ArticleDO) error {
 	return q.RanFeedArticle.WithContext(r.ctx).Create(articleModel)
 }
 
-func (r *ArticleRepositoryImpl) DeleteByContentID(contentID int64) error {
-	if contentID <= 0 {
+// UpdateByContentID 草稿编辑更新文章子表 按 content_id 定位
+func (r *ArticleRepositoryImpl) UpdateByContentID(articleDO *do.ArticleDO) error {
+	if articleDO.ContentID <= 0 {
 		return nil
 	}
+	q := r.getQuery()
+	description := ""
+	if articleDO.Description != nil {
+		description = *articleDO.Description
+	}
+	_, err := q.RanFeedArticle.WithContext(r.ctx).
+		Where(q.RanFeedArticle.ContentID.Eq(articleDO.ContentID)).
+		Where(q.RanFeedArticle.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		UpdateSimple(
+			q.RanFeedArticle.Title.Value(articleDO.Title),
+			q.RanFeedArticle.Description.Value(description),
+			q.RanFeedArticle.Cover.Value(articleDO.Cover),
+			q.RanFeedArticle.Content.Value(articleDO.Content),
+		)
+	return err
+}
 
+func (r *ArticleRepositoryImpl) DeleteByContentID(contentID int64) error {
 	q := r.getQuery()
 	_, err := q.RanFeedArticle.WithContext(r.ctx).
 		Where(q.RanFeedArticle.ContentID.Eq(contentID)).
-		UpdateSimple(q.RanFeedArticle.IsDeleted.Value(1))
+		UpdateSimple(q.RanFeedArticle.IsDeleted.Value(enums.Deleted.Int32()))
 	return err
 }
 

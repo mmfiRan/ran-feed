@@ -62,16 +62,18 @@ type ContentDetail struct {
 }
 
 type ContentUploadsCredentialsReq struct {
-	Scene    *string `json:"scene,optional" validate:"required"`
-	FileExt  *string `json:"file_ext,optional" validate:"required"`
-	FileSize *int64  `json:"file_size,optional" validate:"required,min=1,max=10737418240"`
-	FileName *string `json:"file_name,optional" validate:"required"`
+	Scene    int32  `json:"scene" validate:"required,oneof=1 2 3"`
+	FileExt  int32  `json:"file_ext" validate:"required,oneof=1 2 3 4 5 6 7 8 9"`
+	FileSize int64  `json:"file_size" validate:"required,min=1,max=10737418240"`
+	FileName string `json:"file_name" validate:"required"`
 }
 
 type ContentUploadsCredentialsRes struct {
-	ObjectKey string      `json:"object_key"`
-	FormData  OssFormData `json:"form_data"`
-	ExpiredAt int64       `json:"expired_at"`
+	Url        string            `json:"url"`
+	Method     string            `json:"method"`
+	ObjectKey  string            `json:"object_key"`
+	FormFields map[string]string `json:"form_fields"`
+	ExpiredAt  int64             `json:"expired_at"`
 }
 
 type DeleteCommentReq struct {
@@ -149,7 +151,7 @@ type FollowUserRes struct {
 }
 
 type GetContentDetailReq struct {
-	ContentId *int64 `json:"content_id,string,optional" validate:"required"`
+	ContentId int64 `json:"content_id,string,optional" validate:"required,gt=0"`
 }
 
 type GetContentDetailRes struct {
@@ -205,6 +207,34 @@ type MarkNotificationReadRes struct {
 	Affected int64 `json:"affected"`
 }
 
+type MyContentItem struct {
+	ContentId     int64     `json:"content_id,string"`
+	ContentType   EnumValue `json:"content_type"`
+	Status        EnumValue `json:"status"`
+	Visibility    EnumValue `json:"visibility"`
+	Title         string    `json:"title"`
+	CoverUrl      string    `json:"cover_url"`
+	CreatedAt     int64     `json:"created_at"`
+	PublishedAt   int64     `json:"published_at"`
+	RejectReason  string    `json:"reject_reason"`
+	LikeCount     int64     `json:"like_count"`
+	FavoriteCount int64     `json:"favorite_count"`
+	CommentCount  int64     `json:"comment_count"`
+}
+
+type MyContentListReq struct {
+	Status      *int32  `form:"status,optional" validate:"omitempty,oneof=10 20 30 40 50 60 70"`
+	ContentType *int32  `form:"content_type,optional" validate:"omitempty,oneof=10 20"`
+	Cursor      *string `form:"cursor,optional"`
+	PageSize    uint32  `form:"page_size,optional" validate:"required,min=1,max=50"`
+}
+
+type MyContentListRes struct {
+	Items      []MyContentItem `json:"items"`
+	NextCursor string          `json:"next_cursor"`
+	HasMore    bool            `json:"has_more"`
+}
+
 type NotificationActor struct {
 	UserId   int64  `json:"user_id,string"`
 	Nickname string `json:"nickname"`
@@ -249,17 +279,6 @@ type NotifyStreamRes struct {
 	Unread *int64 `json:"unread,optional"`
 }
 
-type OssFormData struct {
-	Host             string `json:"host"`
-	Policy           string `json:"policy"`
-	Signature        string `json:"signature"`
-	SecurityToken    string `json:"x-oss-security-token"`
-	SignatureVersion string `json:"x-oss-signature-version"`
-	Credential       string `json:"x-oss-credential"`
-	Date             string `json:"x-oss-date"`
-	Key              string `json:"key"`
-}
-
 type PageQueryReq struct {
 	Page     uint32 `json:"page,default=1"`
 	PageSize uint32 `json:"page_size,default=10"`
@@ -272,11 +291,11 @@ type PageQueryResp struct {
 }
 
 type PublishArticleReq struct {
-	Title       *string `json:"title,optional" validate:"required,min=1,max=100"`
-	Description *string `json:"description,optional" validate:"min=1,max=255"`
-	Cover       *string `json:"cover,optional" validate:"required,url"`
-	Content     *string `json:"content,optional" validate:"required,min=1,max=1000000"`
-	Visibility  *int32  `json:"visibility,optional" validate:"required"`
+	Title       string  `json:"title,optional" validate:"required,min=1,max=100"`
+	Description *string `json:"description,optional" validate:"omitempty,min=1,max=255"`
+	Cover       string  `json:"cover,optional" validate:"required,url"`
+	Content     string  `json:"content,optional" validate:"required,min=1,max=1000000"`
+	Visibility  int32   `json:"visibility,optional" validate:"required,oneof=10 20"`
 }
 
 type PublishArticleRes struct {
@@ -284,12 +303,12 @@ type PublishArticleRes struct {
 }
 
 type PublishVideoReq struct {
-	Title       *string `json:"title,optional" validate:"required,min=1,max=100"`
-	Description *string `json:"description,optional" validate:"min=1,max=500"`
-	VideoUrl    *string `json:"video_url,optional" validate:"required,url"`
-	CoverUrl    *string `json:"cover_url,optional" validate:"required,url"`
-	Duration    *int32  `json:"duration,optional" validate:"min=1,max=7200"`
-	Visibility  *int32  `json:"visibility,optional" validate:"required"`
+	Title       string  `json:"title,optional" validate:"required,min=1,max=100"`
+	Description *string `json:"description,optional" validate:"omitempty,min=1,max=500"`
+	VideoUrl    string  `json:"video_url,optional" validate:"required,url"`
+	CoverUrl    string  `json:"cover_url,optional" validate:"required,url"`
+	Duration    *int32  `json:"duration,optional" validate:"omitempty,min=1,max=7200"`
+	Visibility  int32   `json:"visibility,optional" validate:"required,oneof=10 20"`
 }
 
 type PublishVideoRes struct {
@@ -406,6 +425,33 @@ type RemoveFavoriteReq struct {
 type RemoveFavoriteRes struct {
 }
 
+type SaveArticleDraftReq struct {
+	ContentId   *int64  `json:"content_id,string,optional" validate:"omitempty,gt=0"`
+	Title       *string `json:"title,optional" validate:"omitempty,max=100"`
+	Description *string `json:"description,optional" validate:"omitempty,max=255"`
+	Cover       *string `json:"cover,optional" validate:"omitempty,url"`
+	Content     *string `json:"content,optional" validate:"omitempty,max=1000000"`
+	Visibility  *int32  `json:"visibility,optional" validate:"omitempty,oneof=10 20"`
+}
+
+type SaveArticleDraftRes struct {
+	ContentId int64 `json:"content_id,string"`
+}
+
+type SaveVideoDraftReq struct {
+	ContentId   *int64  `json:"content_id,string,optional" validate:"omitempty,gt=0"`
+	Title       *string `json:"title,optional" validate:"omitempty,max=100"`
+	Description *string `json:"description,optional" validate:"omitempty,max=500"`
+	VideoUrl    *string `json:"video_url,optional" validate:"omitempty,url"`
+	CoverUrl    *string `json:"cover_url,optional" validate:"omitempty,url"`
+	Duration    *int32  `json:"duration,optional" validate:"omitempty,min=1,max=7200"`
+	Visibility  *int32  `json:"visibility,optional" validate:"omitempty,oneof=10 20"`
+}
+
+type SaveVideoDraftRes struct {
+	ContentId int64 `json:"content_id,string"`
+}
+
 type SearchContentItem struct {
 	ContentId            int64  `json:"content_id,string"`
 	ContentType          int32  `json:"content_type"`
@@ -458,6 +504,14 @@ type SearchUserRes struct {
 	Items      []SearchUserItem `json:"items"`
 	Total      int64            `json:"total"`
 	NextCursor string           `json:"next_cursor"`
+}
+
+type SubmitContentReq struct {
+	ContentId int64 `json:"content_id,string,optional" validate:"required,gt=0"`
+}
+
+type SubmitContentRes struct {
+	ContentId int64 `json:"content_id,string"`
 }
 
 type SuggestItem struct {

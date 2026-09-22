@@ -5,13 +5,12 @@ package content
 
 import (
 	"context"
-	"ran-feed/app/rpc/content/content"
-	"ran-feed/pkg/errorx"
-	"ran-feed/pkg/transform"
-	"ran-feed/pkg/utils"
 
 	"ran-feed/app/front/internal/svc"
 	"ran-feed/app/front/internal/types"
+	"ran-feed/app/rpc/content/content"
+	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -31,47 +30,27 @@ func NewContentUploadsCredentialsLogic(ctx context.Context, svcCtx *svc.ServiceC
 }
 
 func (l *ContentUploadsCredentialsLogic) ContentUploadsCredentials(req *types.ContentUploadsCredentialsReq) (resp *types.ContentUploadsCredentialsRes, err error) {
-	id, err := utils.GetContextUserId(l.ctx)
+	userID, err := utils.GetContextUserId(l.ctx)
 	if err != nil {
-		return nil, errorx.NewMsg("获取用户ID失败")
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("获取用户ID失败"))
 	}
 
-	scene, err := transform.ParseEnum[content.UploadScene](content.UploadScene_value, *req.Scene)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("上传场景参数错误"))
-	}
-
-	fileExt, err := transform.ParseEnum[content.FileExt](content.FileExt_value, *req.FileExt)
-	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("文件扩展名参数错误"))
-	}
-
-	rpcReq := &content.ContentUploadsCredentialsReq{
-		UserId:   id,
-		Scene:    scene,
-		FileExt:  fileExt,
-		FileSize: *req.FileSize,
-		FileName: *req.FileName,
-	}
-
-	rpcResp, err := l.svcCtx.ContentRpc.Uploads(l.ctx, rpcReq)
+	rpcResp, err := l.svcCtx.ContentRpc.Uploads(l.ctx, &content.ContentUploadsCredentialsReq{
+		UserId:   userID,
+		Scene:    content.UploadScene(req.Scene),
+		FileExt:  content.FileExt(req.FileExt),
+		FileSize: req.FileSize,
+		FileName: req.FileName,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	return &types.ContentUploadsCredentialsRes{
-		ObjectKey: rpcResp.ObjectKey,
-		FormData: types.OssFormData{
-			Host:             rpcResp.FormData.Host,
-			Policy:           rpcResp.FormData.Policy,
-			Signature:        rpcResp.FormData.Signature,
-			SecurityToken:    rpcResp.FormData.SecurityToken,
-			SignatureVersion: rpcResp.FormData.SignatureVersion,
-			Credential:       rpcResp.FormData.Credential,
-			Date:             rpcResp.FormData.Date,
-			Key:              rpcResp.FormData.Key,
-		},
-		ExpiredAt: rpcResp.ExpiredAt.AsTime().Unix(),
+		Url:        rpcResp.Url,
+		Method:     rpcResp.Method,
+		ObjectKey:  rpcResp.ObjectKey,
+		FormFields: rpcResp.FormFields,
+		ExpiredAt:  rpcResp.ExpiredAt.AsTime().Unix(),
 	}, nil
-
 }

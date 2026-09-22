@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/zeromicro/go-queue/kq"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 	"github.com/zeromicro/go-zero/zrpc"
 )
@@ -18,6 +19,7 @@ type Config struct {
 	CountRpcClientConf       zrpc.RpcClientConf
 	FollowFanOut             FollowFanOutConfig
 	ContentCache             ContentCacheConfig
+	KqConsumerConf           kq.KqConf
 }
 
 // ContentCacheConfig feed 二级缓存内容详情配置 TTLSeconds<=0 时整体关闭缓存
@@ -43,7 +45,6 @@ type FollowFanOutConfig struct {
 }
 
 type OssConfig struct {
-	Provider        string
 	Region          string
 	BucketName      string
 	AccessKeyId     string

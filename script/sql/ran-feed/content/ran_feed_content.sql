@@ -3,8 +3,8 @@ CREATE TABLE IF NOT EXISTS ran_feed_content
     id           BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '内容ID',
     user_id      BIGINT   NOT NULL COMMENT '发布者（内容作者）',
     content_type TINYINT  NOT NULL COMMENT '内容类型 10=文章 20=视频',
-    status       TINYINT  NOT NULL COMMENT '状态 10=草稿 20=处理中 30=已发布 40=失败',
-    visibility   TINYINT  NOT NULL DEFAULT 1 COMMENT '可见性 10=公开 20=私密',
+    status       TINYINT  NOT NULL COMMENT '状态 10=草稿 20=处理中 30=已发布 40=失败 50=下架 60=待审核 70=拒绝',
+    visibility   TINYINT  NOT NULL DEFAULT 10 COMMENT '可见性 10=公开 20=私密',
     hot_score    DOUBLE  NOT NULL DEFAULT 0 COMMENT '热度分',
     last_hot_score_at DATETIME NULL COMMENT '热度分最后更新时间',
     version      INT      NOT NULL DEFAULT 1 COMMENT '版本号（乐观锁）',
@@ -49,5 +49,7 @@ CALL create_index_if_missing('ran_feed_content', 'idx_ran_feed_content_published
     'CREATE INDEX idx_ran_feed_content_published ON ran_feed_content (published_at, id)');
 CALL create_index_if_missing('ran_feed_content', 'idx_ran_feed_content_user_published',
     'CREATE INDEX idx_ran_feed_content_user_published ON ran_feed_content (user_id, published_at, id)');
+CALL create_index_if_missing('ran_feed_content', 'idx_ran_feed_content_user_status_id',
+    'CREATE INDEX idx_ran_feed_content_user_status_id ON ran_feed_content (user_id, status, id)');
 
 DROP PROCEDURE IF EXISTS create_index_if_missing;

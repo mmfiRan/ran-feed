@@ -2,18 +2,16 @@ package contentservicelogic
 
 import (
 	"context"
-	"strconv"
 
 	"ran-feed/app/rpc/content/content"
-	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	"ran-feed/app/rpc/content/internal/common/utils/contentcache"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
+	contentenums "ran-feed/pkg/enums/content"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/event"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/stores/redis"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -24,6 +22,7 @@ type DeleteContentLogic struct {
 	contentRepo repositories.ContentRepository
 	articleRepo repositories.ArticleRepository
 	videoRepo   repositories.VideoRepository
+	outboxRepo  repositories.ContentOutboxRepository
 }
 
 func NewDeleteContentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *DeleteContentLogic {
@@ -34,23 +33,20 @@ func NewDeleteContentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Del
 		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
 		articleRepo: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
 		videoRepo:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
+		outboxRepo:  repositories.NewContentOutboxRepository(ctx, svcCtx.MysqlDb),
 	}
 }
 
 func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*emptypb.Empty, error) {
-
 	row, err := l.contentRepo.GetByIDBrief(in.ContentId)
 	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除失败"))
-	}
-	if row == nil {
-		return nil, errorx.NewMsg("内容不存在")
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除内容失败"))
 	}
 	if row.UserID != in.UserId {
-		return nil, errorx.NewMsg("无权限")
+		return nil, errorx.NewMsg("不是发布内容用户无法删除该内容")
 	}
 
-	if err := query.Q.Transaction(func(tx *query.Query) error {
+	if err = query.Q.Transaction(func(tx *query.Query) error {
 		contentRepo := l.contentRepo.WithTx(tx)
 		articleRepo := l.articleRepo.WithTx(tx)
 		videoRepo := l.videoRepo.WithTx(tx)
@@ -68,24 +64,15 @@ func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*empty
 		if derr := contentRepo.DeleteByID(in.ContentId); derr != nil {
 			return derr
 		}
-		return nil
+
+		// 写发件箱,清理由消费者消费删除事件完成
+		return l.outboxRepo.WithTx(tx).CreateEvent(&event.ContentEvent{
+			EventType: contentenums.EventTypeDeleted,
+			ContentID: in.ContentId,
+			AuthorID:  in.UserId,
+		})
 	}); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除失败"))
-	}
-
-	contentIDStr := strconv.FormatInt(in.ContentId, 10)
-	pubKey := rediskey.GetRedisPrefixKey(rediskey.RedisFeedUserPublishPrefix, strconv.FormatInt(in.UserId, 10))
-	if err := l.svcCtx.Redis.PipelinedCtx(l.ctx, func(pipe redis.Pipeliner) error {
-		pipe.ZRem(l.ctx, pubKey, contentIDStr)
-		pipe.ZRem(l.ctx, rediskey.RedisFeedHotGlobalKey, contentIDStr)
-		return nil
-	}); err != nil {
-		l.Errorf("删除内容缓存失败: %v", err)
-	}
-
-	// 失效内容详情二级缓存 防止删后仍命中旧详情
-	if err := contentcache.Invalidate(l.ctx, l.svcCtx.Redis, in.ContentId); err != nil {
-		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
 	}
 
 	return &emptypb.Empty{}, nil

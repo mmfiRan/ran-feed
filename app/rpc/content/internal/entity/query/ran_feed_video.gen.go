@@ -30,7 +30,6 @@ func newRanFeedVideo(db *gorm.DB, opts ...gen.DOOption) ranFeedVideo {
 	_ranFeedVideo.ID = field.NewInt64(tableName, "id")
 	_ranFeedVideo.ContentID = field.NewInt64(tableName, "content_id")
 	_ranFeedVideo.Title = field.NewString(tableName, "title")
-	_ranFeedVideo.MediaID = field.NewInt64(tableName, "media_id")
 	_ranFeedVideo.OriginURL = field.NewString(tableName, "origin_url")
 	_ranFeedVideo.HlsURL = field.NewString(tableName, "hls_url")
 	_ranFeedVideo.CoverURL = field.NewString(tableName, "cover_url")
@@ -39,6 +38,8 @@ func newRanFeedVideo(db *gorm.DB, opts ...gen.DOOption) ranFeedVideo {
 	_ranFeedVideo.FailReason = field.NewString(tableName, "fail_reason")
 	_ranFeedVideo.Version = field.NewInt32(tableName, "version")
 	_ranFeedVideo.IsDeleted = field.NewInt32(tableName, "is_deleted")
+	_ranFeedVideo.CreatedBy = field.NewInt64(tableName, "created_by")
+	_ranFeedVideo.UpdatedBy = field.NewInt64(tableName, "updated_by")
 	_ranFeedVideo.CreatedAt = field.NewTime(tableName, "created_at")
 	_ranFeedVideo.UpdatedAt = field.NewTime(tableName, "updated_at")
 
@@ -47,7 +48,7 @@ func newRanFeedVideo(db *gorm.DB, opts ...gen.DOOption) ranFeedVideo {
 	return _ranFeedVideo
 }
 
-// ranFeedVideo 视频内容表
+// ranFeedVideo 视频内容表 转码链路暂未接入 读端回退 origin_url
 type ranFeedVideo struct {
 	ranFeedVideoDo ranFeedVideoDo
 
@@ -55,15 +56,16 @@ type ranFeedVideo struct {
 	ID              field.Int64  // 主键id
 	ContentID       field.Int64  // contentID
 	Title           field.String // 标题
-	MediaID         field.Int64  // 媒体资源ID（原始视频）
 	OriginURL       field.String // 原始视频地址
-	HlsURL          field.String // HLS 播放地址
+	HlsURL          field.String // HLS 播放地址 转码链路暂未接入 暂空
 	CoverURL        field.String // 封面图地址
 	Duration        field.Int32  // 视频时长（秒）
 	TranscodeStatus field.Int32  // 转码状态 10=未开始 20=处理中 30=成功 40=失败
 	FailReason      field.String // 失败原因
 	Version         field.Int32  // 版本号（乐观锁）
 	IsDeleted       field.Int32  // 逻辑删除 0=正常 1=删除
+	CreatedBy       field.Int64  // 创建人
+	UpdatedBy       field.Int64  // 最后修改人
 	CreatedAt       field.Time   // 创建时间
 	UpdatedAt       field.Time   // 更新时间
 
@@ -85,7 +87,6 @@ func (r *ranFeedVideo) updateTableName(table string) *ranFeedVideo {
 	r.ID = field.NewInt64(table, "id")
 	r.ContentID = field.NewInt64(table, "content_id")
 	r.Title = field.NewString(table, "title")
-	r.MediaID = field.NewInt64(table, "media_id")
 	r.OriginURL = field.NewString(table, "origin_url")
 	r.HlsURL = field.NewString(table, "hls_url")
 	r.CoverURL = field.NewString(table, "cover_url")
@@ -94,6 +95,8 @@ func (r *ranFeedVideo) updateTableName(table string) *ranFeedVideo {
 	r.FailReason = field.NewString(table, "fail_reason")
 	r.Version = field.NewInt32(table, "version")
 	r.IsDeleted = field.NewInt32(table, "is_deleted")
+	r.CreatedBy = field.NewInt64(table, "created_by")
+	r.UpdatedBy = field.NewInt64(table, "updated_by")
 	r.CreatedAt = field.NewTime(table, "created_at")
 	r.UpdatedAt = field.NewTime(table, "updated_at")
 
@@ -124,11 +127,10 @@ func (r *ranFeedVideo) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 }
 
 func (r *ranFeedVideo) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 14)
+	r.fieldMap = make(map[string]field.Expr, 15)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["content_id"] = r.ContentID
 	r.fieldMap["title"] = r.Title
-	r.fieldMap["media_id"] = r.MediaID
 	r.fieldMap["origin_url"] = r.OriginURL
 	r.fieldMap["hls_url"] = r.HlsURL
 	r.fieldMap["cover_url"] = r.CoverURL
@@ -137,6 +139,8 @@ func (r *ranFeedVideo) fillFieldMap() {
 	r.fieldMap["fail_reason"] = r.FailReason
 	r.fieldMap["version"] = r.Version
 	r.fieldMap["is_deleted"] = r.IsDeleted
+	r.fieldMap["created_by"] = r.CreatedBy
+	r.fieldMap["updated_by"] = r.UpdatedBy
 	r.fieldMap["created_at"] = r.CreatedAt
 	r.fieldMap["updated_at"] = r.UpdatedAt
 }

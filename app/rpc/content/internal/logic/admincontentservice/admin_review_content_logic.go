@@ -6,12 +6,14 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/common/utils"
-	"ran-feed/app/rpc/content/internal/common/utils/contentcache"
 	"ran-feed/app/rpc/content/internal/do"
+	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
+	contentenums "ran-feed/pkg/enums/content"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/event"
 	"ran-feed/pkg/snowflake"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -23,6 +25,7 @@ type AdminReviewContentLogic struct {
 	logx.Logger
 	contentRepo repositories.ContentRepository
 	reviewRepo  repositories.ContentReviewRepository
+	outboxRepo  repositories.ContentOutboxRepository
 }
 
 func NewAdminReviewContentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminReviewContentLogic {
@@ -32,6 +35,7 @@ func NewAdminReviewContentLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 		Logger:      logx.WithContext(ctx),
 		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
 		reviewRepo:  repositories.NewContentReviewRepository(ctx, svcCtx.MysqlDb),
+		outboxRepo:  repositories.NewContentOutboxRepository(ctx, svcCtx.MysqlDb),
 	}
 }
 
@@ -81,33 +85,46 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 			return errorx.NewMsg("内容不在待审状态")
 		}
 
-		return l.reviewRepo.WithTx(tx).Create(&do.ContentReviewDO{
+		if err := l.reviewRepo.WithTx(tx).Create(&do.ContentReviewDO{
 			ID:        snowflake.GenID(),
 			ContentID: in.ContentId,
 			Decision:  int32(in.Decision),
 			Reason:    reason,
 			CreatedBy: in.OperatorId,
 			UpdatedBy: in.OperatorId,
-		})
+		}); err != nil {
+			return err
+		}
+
+		// 事务内写发件箱 通过发 ContentPublished 拒绝发 ContentRejected
+		return l.outboxRepo.WithTx(tx).CreateEvent(buildReviewEvent(approve, row, now.UnixMilli(), reason))
 	})
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("审核失败"))
 	}
 
-	if !approve {
-		return &content.AdminReviewContentRes{
-			Status: utils.ContentStatusValue(int32(targetStatus)),
-		}, nil
-	}
-
-	// 通过内容此刻进 feed 触发发布
-	l.svcCtx.FeedPublisher.Publish(l.ctx, in.ContentId, row.UserID, now.UnixMilli(), content.Visibility(row.Visibility))
-	// 失效二级缓存
-	if err = contentcache.Invalidate(l.ctx, l.svcCtx.Redis, in.ContentId); err != nil {
-		l.Errorf("失效内容详情二级缓存失败 contentID=%d err=%v", in.ContentId, err)
-	}
-
+	// 进 feed 与失效缓存的副作用由 feed 消费者消费发布事件完成
 	return &content.AdminReviewContentRes{
 		Status: utils.ContentStatusValue(int32(targetStatus)),
 	}, nil
+}
+
+// buildReviewEvent 审核结果转 content 域事件
+func buildReviewEvent(approve bool, row *model.RanFeedContent, publishedAtMillis int64, reason string) *event.ContentEvent {
+	if approve {
+		return &event.ContentEvent{
+			EventType:   contentenums.EventTypePublished,
+			ContentID:   row.ID,
+			AuthorID:    row.UserID,
+			ContentType: row.ContentType,
+			Visibility:  row.Visibility,
+			PublishedAt: publishedAtMillis,
+		}
+	}
+	return &event.ContentEvent{
+		EventType: contentenums.EventTypeRejected,
+		ContentID: row.ID,
+		AuthorID:  row.UserID,
+		Reason:    reason,
+	}
 }

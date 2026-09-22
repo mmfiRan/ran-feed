@@ -1,9 +1,6 @@
 package svc
 
 import (
-	"ran-feed/app/rpc/content/internal/common/consts"
-	"ran-feed/app/rpc/content/internal/common/oss"
-	"ran-feed/app/rpc/content/internal/common/oss/strategy"
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/feedpub"
@@ -15,6 +12,8 @@ import (
 	"ran-feed/pkg/cache"
 	"ran-feed/pkg/interceptor"
 	"ran-feed/pkg/orm"
+	"ran-feed/pkg/oss"
+	"ran-feed/pkg/oss/aliyun"
 
 	"github.com/zeromicro/go-zero/zrpc"
 
@@ -23,7 +22,7 @@ import (
 
 type ServiceContext struct {
 	Config      config.Config
-	OssContext  *oss.Context
+	OssStrategy oss.Strategy
 	Redis       *redis.Redis
 	MysqlDb     *orm.DB
 	UserRpc     userservice.UserService
@@ -46,20 +45,17 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	mysql := orm.MustNewMysql(ormConfig)
 	query.SetDefault(mysql.DB)
 
-	// 初始化OSS
-	factory := oss.NewStrategyFactory()
-	factory.Register(consts.Aliyun, strategy.NewAliyunStrategy(&strategy.AliyunConfig{
+	// 初始化OSS 直传凭证策略
+	ossStrategy := aliyun.New(aliyun.Config{
 		Region:          c.Oss.Region,
 		BucketName:      c.Oss.BucketName,
-		AccessKeyId:     c.Oss.AccessKeyId,
+		AccessKeyID:     c.Oss.AccessKeyId,
 		AccessKeySecret: c.Oss.AccessKeySecret,
 		RoleArn:         c.Oss.RoleArn,
 		RoleSessionName: c.Oss.RoleSessionName,
 		DurationSeconds: c.Oss.DurationSeconds,
 		UploadDir:       c.Oss.UploadDir,
-	}))
-	ossStrategy := factory.MustGetStrategy(c.Oss.Provider)
-	ossContext := oss.NewContext(ossStrategy)
+	})
 
 	userRpc := userservice.NewUserService(zrpc.MustNewClient(
 		c.UserRpcClientConf,
@@ -88,7 +84,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
 		MysqlDb:                 mysql,
 		Config:                  c,
-		OssContext:              ossContext,
+		OssStrategy:             ossStrategy,
 		Redis:                   redisClient,
 		UserRpc:                 userRpc,
 		LikesRpc:                likeRpc,

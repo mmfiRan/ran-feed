@@ -35,6 +35,8 @@ func newRanFeedArticle(db *gorm.DB, opts ...gen.DOOption) ranFeedArticle {
 	_ranFeedArticle.Content = field.NewString(tableName, "content")
 	_ranFeedArticle.Version = field.NewInt32(tableName, "version")
 	_ranFeedArticle.IsDeleted = field.NewInt32(tableName, "is_deleted")
+	_ranFeedArticle.CreatedBy = field.NewInt64(tableName, "created_by")
+	_ranFeedArticle.UpdatedBy = field.NewInt64(tableName, "updated_by")
 	_ranFeedArticle.CreatedAt = field.NewTime(tableName, "created_at")
 	_ranFeedArticle.UpdatedAt = field.NewTime(tableName, "updated_at")
 
@@ -56,6 +58,8 @@ type ranFeedArticle struct {
 	Content     field.String // 文章正文内容
 	Version     field.Int32  // 版本号（乐观锁）
 	IsDeleted   field.Int32  // 逻辑删除 0=正常 1=删除
+	CreatedBy   field.Int64  // 创建人
+	UpdatedBy   field.Int64  // 最后修改人
 	CreatedAt   field.Time   // 创建时间
 	UpdatedAt   field.Time   // 更新时间
 
@@ -82,6 +86,8 @@ func (r *ranFeedArticle) updateTableName(table string) *ranFeedArticle {
 	r.Content = field.NewString(table, "content")
 	r.Version = field.NewInt32(table, "version")
 	r.IsDeleted = field.NewInt32(table, "is_deleted")
+	r.CreatedBy = field.NewInt64(table, "created_by")
+	r.UpdatedBy = field.NewInt64(table, "updated_by")
 	r.CreatedAt = field.NewTime(table, "created_at")
 	r.UpdatedAt = field.NewTime(table, "updated_at")
 
@@ -112,7 +118,7 @@ func (r *ranFeedArticle) GetFieldByName(fieldName string) (field.OrderExpr, bool
 }
 
 func (r *ranFeedArticle) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 10)
+	r.fieldMap = make(map[string]field.Expr, 12)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["content_id"] = r.ContentID
 	r.fieldMap["title"] = r.Title
@@ -121,6 +127,8 @@ func (r *ranFeedArticle) fillFieldMap() {
 	r.fieldMap["content"] = r.Content
 	r.fieldMap["version"] = r.Version
 	r.fieldMap["is_deleted"] = r.IsDeleted
+	r.fieldMap["created_by"] = r.CreatedBy
+	r.fieldMap["updated_by"] = r.UpdatedBy
 	r.fieldMap["created_at"] = r.CreatedAt
 	r.fieldMap["updated_at"] = r.UpdatedAt
 }

@@ -43,6 +43,14 @@ type ContentRepository interface {
 	AdminUpdateStatus(contentID int64, fromStatus, toStatus int32, operatorID int64) (int64, error)
 	// AdminApproveContent 审核通过 PENDING_REVIEW->PUBLISHED
 	AdminApproveContent(contentID, operatorID int64, publishedAt time.Time) (int64, error)
+	// GetOwnedByID 取本人任意状态内容 草稿编辑与提交鉴权用
+	GetOwnedByID(contentID, userID int64) (*model.RanFeedContent, error)
+	// UpdateDraftMeta 草稿编辑更新内容级字段 状态回落 DRAFT
+	UpdateDraftMeta(contentID int64, visibility int32, updatedBy int64) error
+	// SubmitOwned 本人指定状态提交进审核 条件更新返回受影响行数
+	SubmitOwned(contentID, userID int64, fromStatuses []int32, toStatus int32, updatedBy int64) (int64, error)
+	// MyContentPage 我的内容 全状态 keyset 游标按 id 倒序 id 与 created_at 同序
+	MyContentPage(userID int64, status *int32, contentType *int32, cursorID int64, limit int) ([]*model.RanFeedContent, error)
 }
 
 type ContentRepositoryImpl struct {
@@ -121,14 +129,12 @@ func (r *ContentRepositoryImpl) GetDetailByID(contentID int64) (*model.RanFeedCo
 }
 
 func (r *ContentRepositoryImpl) GetByIDBrief(contentID int64) (*model.RanFeedContent, error) {
-	if contentID <= 0 {
-		return nil, nil
-	}
 
 	q := r.getQuery()
 	row, err := q.RanFeedContent.WithContext(r.ctx).
 		Select(q.RanFeedContent.ID, q.RanFeedContent.UserID, q.RanFeedContent.ContentType).
 		Where(q.RanFeedContent.ID.Eq(contentID)).
+		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Take()
 	if err != nil {
 		return nil, err
@@ -137,14 +143,10 @@ func (r *ContentRepositoryImpl) GetByIDBrief(contentID int64) (*model.RanFeedCon
 }
 
 func (r *ContentRepositoryImpl) DeleteByID(contentID int64) error {
-	if contentID <= 0 {
-		return nil
-	}
-
 	q := r.getQuery()
 	_, err := q.RanFeedContent.WithContext(r.ctx).
 		Where(q.RanFeedContent.ID.Eq(contentID)).
-		UpdateSimple(q.RanFeedContent.IsDeleted.Value(1))
+		UpdateSimple(q.RanFeedContent.IsDeleted.Value(enums.Deleted.Int32()))
 	return err
 }
 
@@ -533,6 +535,96 @@ func (r *ContentRepositoryImpl) AdminUpdateStatus(contentID int64, fromStatus, t
 		return 0, err
 	}
 	return info.RowsAffected, nil
+}
+
+// GetOwnedByID 取本人任意状态未删内容
+func (r *ContentRepositoryImpl) GetOwnedByID(contentID, userID int64) (*model.RanFeedContent, error) {
+	if contentID <= 0 || userID <= 0 {
+		return nil, nil
+	}
+	q := r.getQuery()
+	row, err := q.RanFeedContent.WithContext(r.ctx).
+		Where(q.RanFeedContent.ID.Eq(contentID)).
+		Where(q.RanFeedContent.UserID.Eq(userID)).
+		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Take()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return row, nil
+}
+
+// UpdateDraftMeta 草稿编辑更新内容级字段 状态回落 DRAFT 被拒内容编辑后重新变草稿
+func (r *ContentRepositoryImpl) UpdateDraftMeta(contentID int64, visibility int32, updatedBy int64) error {
+	if contentID <= 0 {
+		return nil
+	}
+	q := r.getQuery()
+	_, err := q.RanFeedContent.WithContext(r.ctx).
+		Where(q.RanFeedContent.ID.Eq(contentID)).
+		UpdateSimple(
+			q.RanFeedContent.Status.Value(int32(content.ContentStatus_CONTENT_STATUS_DRAFT)),
+			q.RanFeedContent.Visibility.Value(visibility),
+			q.RanFeedContent.UpdatedBy.Value(updatedBy),
+		)
+	return err
+}
+
+// SubmitOwned 本人 fromStatuses 内内容提交进审核 条件更新防并发 返回受影响行数
+func (r *ContentRepositoryImpl) SubmitOwned(contentID, userID int64, fromStatuses []int32, toStatus int32, updatedBy int64) (int64, error) {
+	if contentID <= 0 || userID <= 0 || len(fromStatuses) == 0 {
+		return 0, nil
+	}
+	q := r.getQuery()
+	info, err := q.RanFeedContent.WithContext(r.ctx).
+		Where(q.RanFeedContent.ID.Eq(contentID)).
+		Where(q.RanFeedContent.UserID.Eq(userID)).
+		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Where(q.RanFeedContent.Status.In(fromStatuses...)).
+		UpdateSimple(
+			q.RanFeedContent.Status.Value(toStatus),
+			q.RanFeedContent.UpdatedBy.Value(updatedBy),
+		)
+	if err != nil {
+		return 0, err
+	}
+	return info.RowsAffected, nil
+}
+
+// MyContentPage 我的内容全状态列表 keyset 游标 id 倒序 cursorID 为正取更早的
+func (r *ContentRepositoryImpl) MyContentPage(userID int64, status *int32, contentType *int32, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
+	if userID <= 0 || limit <= 0 {
+		return nil, nil
+	}
+	q := r.getQuery()
+	stmt := q.RanFeedContent.WithContext(r.ctx).
+		Select(
+			q.RanFeedContent.ID,
+			q.RanFeedContent.ContentType,
+			q.RanFeedContent.Status,
+			q.RanFeedContent.Visibility,
+			q.RanFeedContent.PublishedAt,
+			q.RanFeedContent.CreatedAt,
+		).
+		Where(q.RanFeedContent.UserID.Eq(userID)).
+		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32()))
+	if status != nil {
+		stmt = stmt.Where(q.RanFeedContent.Status.Eq(*status))
+	}
+	if contentType != nil {
+		stmt = stmt.Where(q.RanFeedContent.ContentType.Eq(*contentType))
+	}
+	if cursorID > 0 {
+		stmt = stmt.Where(q.RanFeedContent.ID.Lt(cursorID))
+	}
+	// 游标即 id 排序也按 id 倒序 与游标口径一致 雪花 id 天然近似创建时间序
+	return stmt.
+		Order(q.RanFeedContent.ID.Desc()).
+		Limit(limit).
+		Find()
 }
 
 // AdminApproveContent 审核通过 仅对 PENDING_REVIEW 生效 落 published_at + updated_by 返回受影响行数

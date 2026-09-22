@@ -11,6 +11,8 @@ type Config struct {
 	RedisConfig    redis.RedisConf
 	MySQL          MySQLConfig
 	KqConsumerConf kq.KqConf
+	// ContentEventKqConsumerConf 消费 content 域 outbox 事件 通知作者审核结果
+	ContentEventKqConsumerConf kq.KqConf
 }
 
 type MySQLConfig struct {

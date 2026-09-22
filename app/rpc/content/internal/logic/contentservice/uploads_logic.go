@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
-	"ran-feed/app/rpc/content/internal/common/oss"
-	"ran-feed/pkg/errorx"
-
 	"ran-feed/app/rpc/content/content"
+	contenums "ran-feed/app/rpc/content/internal/common/enums"
+	contentutils "ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/svc"
+	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/oss"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -29,29 +30,27 @@ func NewUploadsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UploadsLo
 }
 
 func (l *UploadsLogic) Uploads(in *content.ContentUploadsCredentialsReq) (*content.ContentUploadsCredentialsRes, error) {
-	policy := &oss.UploadPolicy{
-		Scene:    in.Scene.String(),
-		FileExt:  in.FileExt.String(),
-		FileSize: in.FileSize,
-		FileName: in.FileName,
-		UserId:   in.UserId,
+	scene := contenums.UploadSceneEnum(in.Scene)
+	fileExt := contenums.FileExtEnum(in.FileExt)
+
+	req := &oss.Request{
+		UserID:      in.UserId,
+		Scene:       scene.Path(),
+		ContentType: fileExt.MIME(),
+		MaxBytes:    in.FileSize,
+		FileName:    contentutils.SanitizeFileName(in.FileName, fileExt.Suffix()),
 	}
-	credential, err := l.svcCtx.OssContext.GenerateUploadCredential(l.ctx, policy)
+
+	credential, err := l.svcCtx.OssStrategy.Generate(l.ctx, req)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("生成上传凭证失败"))
 	}
+
 	return &content.ContentUploadsCredentialsRes{
-		ObjectKey: credential.ObjectKey,
-		FormData: &content.OssFormData{
-			Host:             credential.FormData.Host,
-			Policy:           credential.FormData.Policy,
-			Signature:        credential.FormData.Signature,
-			SecurityToken:    credential.FormData.SecurityToken,
-			SignatureVersion: credential.FormData.SignatureVersion,
-			Credential:       credential.FormData.Credential,
-			Date:             credential.FormData.Date,
-			Key:              credential.FormData.Key,
-		},
-		ExpiredAt: timestamppb.New(time.Unix(credential.ExpiredAt, 0)),
+		Url:        credential.URL,
+		Method:     credential.Method,
+		ObjectKey:  credential.ObjectKey,
+		FormFields: credential.Fields,
+		ExpiredAt:  timestamppb.New(time.Unix(credential.ExpiredAt, 0)),
 	}, nil
 }

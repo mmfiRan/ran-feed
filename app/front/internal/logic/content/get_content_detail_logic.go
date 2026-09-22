@@ -36,7 +36,7 @@ func (l *GetContentDetailLogic) GetContentDetail(req *types.GetContentDetailReq)
 	}
 
 	rpcResp, err := l.svcCtx.ContentRpc.GetContentDetail(l.ctx, &content.GetContentDetailReq{
-		ContentId: *req.ContentId,
+		ContentId: req.ContentId,
 		ViewerId:  viewerID,
 	})
 	if err != nil {
