@@ -12,8 +12,6 @@ const (
 	RedisFeedHotGlobalLatestKey = "feed:hot:global:latest"
 	// RedisFeedHotGlobalSnapshotPrefix 热榜快照前缀 feed:hot:global:snap
 	RedisFeedHotGlobalSnapshotPrefix = "feed:hot:global:snap"
-	// RedisFeedHotUserSnapshotPrefix 用户热榜快照映射前缀 feed:hot:global:user
-	RedisFeedHotUserSnapshotPrefix = "feed:hot:global:user"
 	// RedisFeedHotGlobalIncPrefix 全站热榜增量前缀 feed:hot:global:inc 旧记账格式 已弃用 保留供过渡清理
 	RedisFeedHotGlobalIncPrefix = "feed:hot:global:inc"
 	// RedisFeedHotIncDefaultShards 热榜脏集合默认分片数
@@ -43,10 +41,8 @@ const (
 	RedisFeedBigVGlobalKey = "feed:bigv:global"
 	// RedisFeedUserPublishPrefix 用户发布列表前缀 feed:user:publish
 	RedisFeedUserPublishPrefix = "feed:user:publish"
-	// RedisFeedUserFavoritePrefix 用户收藏列表前缀 feed:user:favoriteBuildUserFavoriteFeedKey
+	// RedisFeedUserFavoritePrefix 用户收藏列表前缀 feed:user:favorite
 	RedisFeedUserFavoritePrefix = "feed:user:favorite"
-	// RedisFeedUserFavoriteLockPrefix 用户收藏列表锁前缀 feed:user:favorite:lock
-	RedisFeedUserFavoriteLockPrefix = "feed:user:favorite:lock"
 	// RedisUserFavoriteFeedCapacity 用户收藏列表热头部容量 须与 interaction 侧保持一致
 	RedisUserFavoriteFeedCapacity = 300
 	// RedisUserFavoriteFeedExpireSeconds 用户收藏列表头部过期时间 一天 须与 interaction 侧保持一致
@@ -68,10 +64,6 @@ func BuildContentDetailKey(contentID int64) string {
 
 func BuildHotFeedSnapshotKey(snapshotID string) string {
 	return GetRedisPrefixKey(RedisFeedHotGlobalSnapshotPrefix, snapshotID)
-}
-
-func BuildHotFeedUserSnapshotKey(userID int64) string {
-	return GetRedisPrefixKey(RedisFeedHotUserSnapshotPrefix, strconv.FormatInt(userID, 10))
 }
 
 func BuildHotFeedIncKey(shard int) string {
@@ -112,8 +104,4 @@ func BuildUserPublishFeedKey(userID int64) string {
 
 func BuildUserFavoriteFeedKey(userID int64) string {
 	return GetRedisPrefixKey(RedisFeedUserFavoritePrefix, strconv.FormatInt(userID, 10))
-}
-
-func BuildUserFavoriteFeedLockKey(userID int64) string {
-	return GetRedisPrefixKey(RedisFeedUserFavoriteLockPrefix, strconv.FormatInt(userID, 10))
 }

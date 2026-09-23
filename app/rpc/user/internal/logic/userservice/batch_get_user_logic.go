@@ -55,7 +55,7 @@ func (l *BatchGetUserLogic) BatchGetUser(in *user.BatchGetUserReq) (*user.BatchG
 		return &user.BatchGetUserRes{Users: []*user.UserInfo{}}, nil
 	}
 
-	userMap, err := usercache.BatchGet(l.ctx, l.svcCtx.Redis, l.userRepo, l.svcCtx.Config.UserCache, ids)
+	userMap, err := usercache.BatchGet(l.ctx, l.svcCtx.Redis, l.userRepo, ids)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("批量查询用户失败"))
 	}

@@ -8,7 +8,7 @@
 //   - 命中负值哨兵（"-"）：返回 (nil, nil)，不再回源 DB
 //   - miss：回源 DB，成功写正值，DB 也 miss 时写哨兵
 //
-// TTL 正负值均叠加 [0, JitterMax] 抖动抗雪崩，与 count 服务保持一致风格。
+// TTL 正负值均叠加固定抖动抗雪崩 抖动上限为工程常量 与 count 服务保持一致风格。
 package usercache
 
 import (
@@ -21,7 +21,6 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/redis"
 
 	rediskey "ran-feed/app/rpc/user/internal/common/consts/redis"
-	"ran-feed/app/rpc/user/internal/config"
 	"ran-feed/app/rpc/user/internal/do"
 	"ran-feed/app/rpc/user/internal/repositories"
 )
@@ -81,18 +80,12 @@ func Get(
 	ctx context.Context,
 	rds *redis.Redis,
 	repo repositories.UserRepository,
-	cfg config.UserCacheConfig,
 	userID int64,
 ) (*do.UserDO, error) {
 	if userID <= 0 {
 		return nil, nil
 	}
 	logger := logx.WithContext(ctx)
-
-	// 缓存关闭时直接走 DB
-	if !cacheEnabled(cfg) {
-		return repo.GetByID(userID)
-	}
 
 	cacheKey := rediskey.BuildUserInfoKey(userID)
 	if u, hit := loadFromCache(ctx, rds, cacheKey, logger); hit {
@@ -103,7 +96,7 @@ func Get(
 	if err != nil {
 		return nil, err
 	}
-	writeBack(ctx, rds, cfg, cacheKey, u, logger)
+	writeBack(ctx, rds, cacheKey, u, logger)
 	return u, nil
 }
 
@@ -114,7 +107,6 @@ func BatchGet(
 	ctx context.Context,
 	rds *redis.Redis,
 	repo repositories.UserRepository,
-	cfg config.UserCacheConfig,
 	userIDs []int64,
 ) (map[int64]*do.UserDO, error) {
 	result := make(map[int64]*do.UserDO, len(userIDs))
@@ -139,14 +131,6 @@ func BatchGet(
 	}
 
 	logger := logx.WithContext(ctx)
-
-	if !cacheEnabled(cfg) {
-		dbMap, err := repo.BatchGetByIDs(uniqIDs)
-		if err != nil {
-			return nil, err
-		}
-		return dbMap, nil
-	}
 
 	cacheKeys := make([]string, 0, len(uniqIDs))
 	for _, id := range uniqIDs {
@@ -191,7 +175,7 @@ func BatchGet(
 			result[id] = u
 		}
 	}
-	writeBackBatch(ctx, rds, cfg, missIDs, dbMap, logger)
+	writeBackBatch(ctx, rds, missIDs, dbMap, logger)
 	return result, nil
 }
 
@@ -202,10 +186,6 @@ func Invalidate(ctx context.Context, rds *redis.Redis, userID int64) error {
 	}
 	_, err := rds.DelCtx(ctx, rediskey.BuildUserInfoKey(userID))
 	return err
-}
-
-func cacheEnabled(cfg config.UserCacheConfig) bool {
-	return cfg.TTLSeconds > 0
 }
 
 func loadFromCache(ctx context.Context, rds *redis.Redis, cacheKey string, logger logx.Logger) (*do.UserDO, bool) {
@@ -231,12 +211,11 @@ func loadFromCache(ctx context.Context, rds *redis.Redis, cacheKey string, logge
 func writeBack(
 	ctx context.Context,
 	rds *redis.Redis,
-	cfg config.UserCacheConfig,
 	cacheKey string,
 	u *do.UserDO,
 	logger logx.Logger,
 ) {
-	value, ttl, err := encodeForCache(cfg, u)
+	value, ttl, err := encodeForCache(u)
 	if err != nil {
 		logger.Errorf("序列化用户缓存失败: key=%s, err=%v", cacheKey, err)
 		return
@@ -249,7 +228,6 @@ func writeBack(
 func writeBackBatch(
 	ctx context.Context,
 	rds *redis.Redis,
-	cfg config.UserCacheConfig,
 	missIDs []int64,
 	dbMap map[int64]*do.UserDO,
 	logger logx.Logger,
@@ -261,7 +239,7 @@ func writeBackBatch(
 	}
 	entries := make([]entry, 0, len(missIDs))
 	for _, id := range missIDs {
-		value, ttl, err := encodeForCache(cfg, dbMap[id])
+		value, ttl, err := encodeForCache(dbMap[id])
 		if err != nil {
 			logger.Errorf("序列化用户缓存失败: id=%d, err=%v", id, err)
 			continue
@@ -285,38 +263,30 @@ func writeBackBatch(
 	}
 }
 
-// encodeForCache 把 DO 序列化为 (value, ttl)；u==nil 时返回哨兵和 negative TTL。
-func encodeForCache(cfg config.UserCacheConfig, u *do.UserDO) (string, int, error) {
+// 用户缓存 TTL 秒 负哨兵短 TTL 防穿透 抖动上限为抗雪崩的工程参数 不暴露为配置
+const (
+	ttlSeconds               = 600
+	negativeTTLSeconds       = 60
+	jitterMaxSeconds         = 600
+	negativeJitterMaxSeconds = 60
+)
+
+// encodeForCache 把 DO 序列化为 value 与 ttl u 为 nil 时返回哨兵与 negative TTL
+func encodeForCache(u *do.UserDO) (string, int, error) {
 	if u == nil {
-		return rediskey.RedisUserInfoMissingSentinel, negativeExpireWithJitter(cfg), nil
+		return rediskey.RedisUserInfoMissingSentinel, negativeExpireWithJitter(), nil
 	}
 	b, err := json.Marshal(toCacheDO(u))
 	if err != nil {
 		return "", 0, err
 	}
-	return string(b), expireWithJitter(cfg), nil
+	return string(b), expireWithJitter(), nil
 }
 
-func expireWithJitter(cfg config.UserCacheConfig) int {
-	base := int(cfg.TTLSeconds)
-	if base <= 0 {
-		return 0
-	}
-	jmax := int(cfg.JitterMaxSeconds)
-	if jmax <= 0 {
-		return base
-	}
-	return base + rand.Intn(jmax+1)
+func expireWithJitter() int {
+	return ttlSeconds + rand.Intn(jitterMaxSeconds+1)
 }
 
-func negativeExpireWithJitter(cfg config.UserCacheConfig) int {
-	base := int(cfg.NegativeTTLSeconds)
-	if base <= 0 {
-		base = 60
-	}
-	jmax := int(cfg.NegativeJitterMaxSeconds)
-	if jmax <= 0 {
-		return base
-	}
-	return base + rand.Intn(jmax+1)
+func negativeExpireWithJitter() int {
+	return negativeTTLSeconds + rand.Intn(negativeJitterMaxSeconds+1)
 }

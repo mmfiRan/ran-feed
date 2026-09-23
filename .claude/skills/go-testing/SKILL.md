@@ -38,7 +38,7 @@ for _, tt := range tests {
 - setup 抽成 helper 并标 `t.Helper()`；资源释放用 `t.Cleanup`（如 `t.Cleanup(mr.Close)`）
 
 ```go
-func newTestEnv(t *testing.T) (*redis.Redis, *miniredis.Miniredis, config.UserCacheConfig) {
+func newTestEnv(t *testing.T) (*redis.Redis, *miniredis.Miniredis) {
     t.Helper()
     mr, err := miniredis.Run()
     require.NoError(t, err)
@@ -49,7 +49,7 @@ func newTestEnv(t *testing.T) (*redis.Redis, *miniredis.Miniredis, config.UserCa
 
 ## 确定性隔离
 
-- **关掉不确定因素再断言**：测 TTL 时把 jitter 设 0（`JitterMaxSeconds: 0`），才能断言确定值
+- **避开抖动再断言**：缓存 TTL 会叠加固定抖动，断言 TTL 时用区间校验落在 `[TTL, TTL+jitter]`（如 `assert.GreaterOrEqual` + `assert.LessOrEqual`），不要断言精确值
 - **用调用计数验证缓存行为**：mock 里累加 `getByIDCalls` 之类计数，断言"第二次查走缓存没回源 DB"
 - 不依赖真实时间 / 网络 / 随机；miniredis 可用 `mr.FastForward` 推进过期
 

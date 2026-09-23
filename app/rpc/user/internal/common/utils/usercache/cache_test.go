@@ -13,7 +13,6 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/redis"
 
 	rediskey "ran-feed/app/rpc/user/internal/common/consts/redis"
-	"ran-feed/app/rpc/user/internal/config"
 	"ran-feed/app/rpc/user/internal/do"
 	"ran-feed/app/rpc/user/internal/entity/model"
 	"ran-feed/app/rpc/user/internal/entity/query"
@@ -63,19 +62,13 @@ func (m *mockRepo) BatchGetByIDs(userIDs []int64) (map[int64]*do.UserDO, error) 
 	return res, nil
 }
 
-func newTestEnv(t *testing.T) (*redis.Redis, *miniredis.Miniredis, config.UserCacheConfig) {
+func newTestEnv(t *testing.T) (*redis.Redis, *miniredis.Miniredis) {
 	t.Helper()
 	mr, err := miniredis.Run()
 	require.NoError(t, err)
 	t.Cleanup(mr.Close)
 	r := redis.MustNewRedis(redis.RedisConf{Host: mr.Addr(), Type: redis.NodeType})
-	cfg := config.UserCacheConfig{
-		TTLSeconds:               600,
-		NegativeTTLSeconds:       60,
-		JitterMaxSeconds:         0, // 单测关 jitter，便于断言 TTL
-		NegativeJitterMaxSeconds: 0,
-	}
-	return r, mr, cfg
+	return r, mr
 }
 
 func sampleUser(id int64) *do.UserDO {
@@ -94,18 +87,18 @@ func sampleUser(id int64) *do.UserDO {
 // ---------- 单查 ----------
 
 func TestGet_HitCache(t *testing.T) {
-	rds, mr, cfg := newTestEnv(t)
+	rds, mr := newTestEnv(t)
 	repo := &mockRepo{users: map[int64]*do.UserDO{1: sampleUser(1)}}
 
 	// 预先把缓存写好
-	first, err := Get(context.Background(), rds, repo, cfg, 1)
+	first, err := Get(context.Background(), rds, repo, 1)
 	require.NoError(t, err)
 	require.NotNil(t, first)
 	assert.Equal(t, 1, repo.getByIDCalls)
 	assert.True(t, mr.Exists(rediskey.BuildUserInfoKey(1)))
 
 	// 第二次应当命中缓存，不再调 DB
-	second, err := Get(context.Background(), rds, repo, cfg, 1)
+	second, err := Get(context.Background(), rds, repo, 1)
 	require.NoError(t, err)
 	require.NotNil(t, second)
 	assert.Equal(t, 1, repo.getByIDCalls, "cache hit should not hit DB")
@@ -113,10 +106,10 @@ func TestGet_HitCache(t *testing.T) {
 }
 
 func TestGet_MissThenFill(t *testing.T) {
-	rds, mr, cfg := newTestEnv(t)
+	rds, mr := newTestEnv(t)
 	repo := &mockRepo{users: map[int64]*do.UserDO{42: sampleUser(42)}}
 
-	u, err := Get(context.Background(), rds, repo, cfg, 42)
+	u, err := Get(context.Background(), rds, repo, 42)
 	require.NoError(t, err)
 	require.NotNil(t, u)
 	assert.Equal(t, int64(42), u.ID)
@@ -129,16 +122,17 @@ func TestGet_MissThenFill(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(raw), &decoded))
 	assert.Equal(t, int64(42), decoded.ID)
 
-	// TTL 应当落在 [TTL, TTL+Jitter] 内（这里关了 jitter）
+	// TTL 落在 TTL 到 TTL 加 jitter 之间
 	ttl := mr.TTL(rediskey.BuildUserInfoKey(42))
-	assert.InDelta(t, 600.0, ttl.Seconds(), 2.0)
+	assert.GreaterOrEqual(t, ttl.Seconds(), float64(ttlSeconds)-1)
+	assert.LessOrEqual(t, ttl.Seconds(), float64(ttlSeconds+jitterMaxSeconds))
 }
 
 func TestGet_NotFoundWritesSentinel(t *testing.T) {
-	rds, mr, cfg := newTestEnv(t)
+	rds, mr := newTestEnv(t)
 	repo := &mockRepo{users: map[int64]*do.UserDO{}}
 
-	u, err := Get(context.Background(), rds, repo, cfg, 999)
+	u, err := Get(context.Background(), rds, repo, 999)
 	require.NoError(t, err)
 	assert.Nil(t, u)
 
@@ -147,22 +141,23 @@ func TestGet_NotFoundWritesSentinel(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, rediskey.RedisUserInfoMissingSentinel, raw)
 
-	// negative TTL ~60s
+	// TTL 落在 negative TTL 到 negative TTL 加抖动之间
 	ttl := mr.TTL(rediskey.BuildUserInfoKey(999))
-	assert.InDelta(t, 60.0, ttl.Seconds(), 2.0)
+	assert.GreaterOrEqual(t, ttl.Seconds(), float64(negativeTTLSeconds)-1)
+	assert.LessOrEqual(t, ttl.Seconds(), float64(negativeTTLSeconds+negativeJitterMaxSeconds))
 }
 
 func TestGet_SentinelHitSkipsDB(t *testing.T) {
-	rds, _, cfg := newTestEnv(t)
+	rds, _ := newTestEnv(t)
 	repo := &mockRepo{users: map[int64]*do.UserDO{}}
 
 	// 第一次：DB miss → 写哨兵
-	_, err := Get(context.Background(), rds, repo, cfg, 7)
+	_, err := Get(context.Background(), rds, repo, 7)
 	require.NoError(t, err)
 	require.Equal(t, 1, repo.getByIDCalls)
 
 	// 第二次：命中哨兵，不再打 DB
-	u, err := Get(context.Background(), rds, repo, cfg, 7)
+	u, err := Get(context.Background(), rds, repo, 7)
 	require.NoError(t, err)
 	assert.Nil(t, u)
 	assert.Equal(t, 1, repo.getByIDCalls, "sentinel hit should not trigger DB")
@@ -171,19 +166,19 @@ func TestGet_SentinelHitSkipsDB(t *testing.T) {
 // ---------- 批查 ----------
 
 func TestBatchGet_AllHit(t *testing.T) {
-	rds, _, cfg := newTestEnv(t)
+	rds, _ := newTestEnv(t)
 	repo := &mockRepo{users: map[int64]*do.UserDO{
 		1: sampleUser(1),
 		2: sampleUser(2),
 	}}
 
 	// 预热
-	_, err := BatchGet(context.Background(), rds, repo, cfg, []int64{1, 2})
+	_, err := BatchGet(context.Background(), rds, repo, []int64{1, 2})
 	require.NoError(t, err)
 	require.Equal(t, 1, repo.batchGetByIDsCalls)
 
 	// 二次：全命中
-	res, err := BatchGet(context.Background(), rds, repo, cfg, []int64{1, 2})
+	res, err := BatchGet(context.Background(), rds, repo, []int64{1, 2})
 	require.NoError(t, err)
 	assert.Equal(t, 1, repo.batchGetByIDsCalls)
 	assert.Len(t, res, 2)
@@ -192,18 +187,18 @@ func TestBatchGet_AllHit(t *testing.T) {
 }
 
 func TestBatchGet_PartialHit(t *testing.T) {
-	rds, _, cfg := newTestEnv(t)
+	rds, _ := newTestEnv(t)
 	repo := &mockRepo{users: map[int64]*do.UserDO{
 		1: sampleUser(1),
 		2: sampleUser(2),
 	}}
 
 	// 预热只热 user 1
-	_, err := Get(context.Background(), rds, repo, cfg, 1)
+	_, err := Get(context.Background(), rds, repo, 1)
 	require.NoError(t, err)
 	repo.getByIDCalls = 0
 
-	res, err := BatchGet(context.Background(), rds, repo, cfg, []int64{1, 2})
+	res, err := BatchGet(context.Background(), rds, repo, []int64{1, 2})
 	require.NoError(t, err)
 	// 只应当查一次 DB（针对 miss 的 user 2）
 	assert.Equal(t, 1, repo.batchGetByIDsCalls)
@@ -211,14 +206,14 @@ func TestBatchGet_PartialHit(t *testing.T) {
 }
 
 func TestBatchGet_AllMiss(t *testing.T) {
-	rds, _, cfg := newTestEnv(t)
+	rds, _ := newTestEnv(t)
 	repo := &mockRepo{users: map[int64]*do.UserDO{
 		1: sampleUser(1),
 		2: sampleUser(2),
 		3: sampleUser(3),
 	}}
 
-	res, err := BatchGet(context.Background(), rds, repo, cfg, []int64{1, 2, 3, 3, 0, -1})
+	res, err := BatchGet(context.Background(), rds, repo, []int64{1, 2, 3, 3, 0, -1})
 	require.NoError(t, err)
 	assert.Equal(t, 1, repo.batchGetByIDsCalls)
 	assert.Len(t, res, 3)
@@ -232,13 +227,13 @@ func TestBatchGet_AllMiss(t *testing.T) {
 }
 
 func TestBatchGet_WithSentinel(t *testing.T) {
-	rds, mr, cfg := newTestEnv(t)
+	rds, mr := newTestEnv(t)
 	repo := &mockRepo{users: map[int64]*do.UserDO{1: sampleUser(1)}}
 
 	// user 2 不存在，预先种入哨兵
 	require.NoError(t, mr.Set(rediskey.BuildUserInfoKey(2), rediskey.RedisUserInfoMissingSentinel))
 
-	res, err := BatchGet(context.Background(), rds, repo, cfg, []int64{1, 2})
+	res, err := BatchGet(context.Background(), rds, repo, []int64{1, 2})
 	require.NoError(t, err)
 	// user 1 走 DB 一次（首次 miss），user 2 命中哨兵不打 DB
 	assert.Equal(t, 1, repo.batchGetByIDsCalls)
@@ -249,23 +244,10 @@ func TestBatchGet_WithSentinel(t *testing.T) {
 
 // ---------- 边界 / 异常 ----------
 
-func TestGet_CacheDisabledFallsThrough(t *testing.T) {
-	rds, mr, _ := newTestEnv(t)
-	cfg := config.UserCacheConfig{TTLSeconds: 0} // 关闭
-	repo := &mockRepo{users: map[int64]*do.UserDO{1: sampleUser(1)}}
-
-	u, err := Get(context.Background(), rds, repo, cfg, 1)
-	require.NoError(t, err)
-	require.NotNil(t, u)
-	// 缓存应当为空（关闭时不写）
-	assert.False(t, mr.Exists(rediskey.BuildUserInfoKey(1)))
-	assert.Equal(t, 1, repo.getByIDCalls)
-}
-
 func TestGet_DBErrorPropagates(t *testing.T) {
-	rds, _, cfg := newTestEnv(t)
+	rds, _ := newTestEnv(t)
 	repo := &mockRepo{getErr: errors.New("db down")}
 
-	_, err := Get(context.Background(), rds, repo, cfg, 1)
+	_, err := Get(context.Background(), rds, repo, 1)
 	require.Error(t, err)
 }

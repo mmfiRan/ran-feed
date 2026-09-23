@@ -37,7 +37,7 @@ func (l *GetUserProfileLogic) GetUserProfile(in *user.GetUserProfileReq) (*user.
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	u, err := usercache.Get(l.ctx, l.svcCtx.Redis, l.userRepo, l.svcCtx.Config.UserCache, in.UserId)
+	u, err := usercache.Get(l.ctx, l.svcCtx.Redis, l.userRepo, in.UserId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询用户失败"))
 	}

@@ -1,4 +1,4 @@
-// Package contentcache 提供 feed 内容详情的 Redis 二级缓存 旁路 cache-aside
+// Package contentcache 提供 feed 内容详情的 Redis 二级缓存
 package contentcache
 
 import (
@@ -11,17 +11,22 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/redis"
 
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/do"
 )
 
+const (
+	ttlSeconds               = 600
+	negativeTTLSeconds       = 60
+	jitterMaxSeconds         = 600
+	negativeJitterMaxSeconds = 60
+)
+
 // Loader 缓存 miss 时的批量回源 只会传入未命中的 content_id
-// 查不到的 id 不放进返回 map 由缓存层写负哨兵
 type Loader func(missIDs []int64) (map[int64]*do.ContentDetailDO, error)
 
-// BatchGet 批量查内容详情 cache-aside 自动去重并跳过 id<=0 返回 map 的 key 是 content_id
+// BatchGet 批量查内容详情
 // loader 只会被传入缓存 miss 的 id Redis 任何错误均降级回源
-func BatchGet(ctx context.Context, rds *redis.Redis, cfg config.ContentCacheConfig, contentIDs []int64, loader Loader) (map[int64]*do.ContentDetailDO, error) {
+func BatchGet(ctx context.Context, rds *redis.Redis, contentIDs []int64, loader Loader) (map[int64]*do.ContentDetailDO, error) {
 	result := make(map[int64]*do.ContentDetailDO, len(contentIDs))
 	if len(contentIDs) == 0 {
 		return result, nil
@@ -44,11 +49,6 @@ func BatchGet(ctx context.Context, rds *redis.Redis, cfg config.ContentCacheConf
 	}
 
 	logger := logx.WithContext(ctx)
-
-	// 缓存关闭时直接回源
-	if !cacheEnabled(cfg) {
-		return loader(uniqIDs)
-	}
 
 	cacheKeys := make([]string, 0, len(uniqIDs))
 	for _, id := range uniqIDs {
@@ -93,7 +93,7 @@ func BatchGet(ctx context.Context, rds *redis.Redis, cfg config.ContentCacheConf
 			result[id] = d
 		}
 	}
-	writeBackBatch(ctx, rds, cfg, missIDs, detailMap, logger)
+	writeBackBatch(ctx, rds, missIDs, detailMap, logger)
 	return result, nil
 }
 
@@ -113,11 +113,7 @@ func Invalidate(ctx context.Context, rds *redis.Redis, contentIDs ...int64) erro
 	return err
 }
 
-func cacheEnabled(cfg config.ContentCacheConfig) bool {
-	return cfg.TTLSeconds > 0
-}
-
-func writeBackBatch(ctx context.Context, rds *redis.Redis, cfg config.ContentCacheConfig, missIDs []int64, detailMap map[int64]*do.ContentDetailDO, logger logx.Logger) {
+func writeBackBatch(ctx context.Context, rds *redis.Redis, missIDs []int64, detailMap map[int64]*do.ContentDetailDO, logger logx.Logger) {
 	type entry struct {
 		key   string
 		value string
@@ -125,7 +121,7 @@ func writeBackBatch(ctx context.Context, rds *redis.Redis, cfg config.ContentCac
 	}
 	entries := make([]entry, 0, len(missIDs))
 	for _, id := range missIDs {
-		value, ttl, err := encodeForCache(cfg, detailMap[id])
+		value, ttl, err := encodeForCache(detailMap[id])
 		if err != nil {
 			logger.Errorf("序列化内容详情缓存失败 id=%d err=%v", id, err)
 			continue
@@ -149,38 +145,22 @@ func writeBackBatch(ctx context.Context, rds *redis.Redis, cfg config.ContentCac
 	}
 }
 
-// encodeForCache 把详情序列化为 (value ttl) d==nil 时返回负哨兵与 negative TTL
-func encodeForCache(cfg config.ContentCacheConfig, d *do.ContentDetailDO) (string, int, error) {
+// encodeForCache 把详情序列化为 value 与 ttl d 为 nil 时返回负哨兵与 negative TTL
+func encodeForCache(d *do.ContentDetailDO) (string, int, error) {
 	if d == nil {
-		return rediskey.RedisContentDetailMissingSentinel, negativeExpireWithJitter(cfg), nil
+		return rediskey.RedisContentDetailMissingSentinel, negativeExpireWithJitter(), nil
 	}
 	b, err := json.Marshal(d)
 	if err != nil {
 		return "", 0, err
 	}
-	return string(b), expireWithJitter(cfg), nil
+	return string(b), expireWithJitter(), nil
 }
 
-func expireWithJitter(cfg config.ContentCacheConfig) int {
-	base := int(cfg.TTLSeconds)
-	if base <= 0 {
-		return 0
-	}
-	jmax := int(cfg.JitterMaxSeconds)
-	if jmax <= 0 {
-		return base
-	}
-	return base + rand.Intn(jmax+1)
+func expireWithJitter() int {
+	return ttlSeconds + rand.Intn(jitterMaxSeconds+1)
 }
 
-func negativeExpireWithJitter(cfg config.ContentCacheConfig) int {
-	base := int(cfg.NegativeTTLSeconds)
-	if base <= 0 {
-		base = 60
-	}
-	jmax := int(cfg.NegativeJitterMaxSeconds)
-	if jmax <= 0 {
-		return base
-	}
-	return base + rand.Intn(jmax+1)
+func negativeExpireWithJitter() int {
+	return negativeTTLSeconds + rand.Intn(negativeJitterMaxSeconds+1)
 }

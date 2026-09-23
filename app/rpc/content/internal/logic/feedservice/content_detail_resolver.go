@@ -45,7 +45,7 @@ func newContentDetailResolver(ctx context.Context, svcCtx *svc.ServiceContext) *
 // resolveDetails 走 L2 二级缓存按 ids 顺序拿内容详情
 // publicOnly 为真时只保留 PUBLIC 已删/未发布的 id 自动剔除
 func (r *contentDetailResolver) resolveDetails(ids []int64, publicOnly bool) ([]*do.ContentDetailDO, error) {
-	detailMap, err := contentcache.BatchGet(r.ctx, r.svcCtx.Redis, r.svcCtx.Config.ContentCache, ids, r.loadDetails)
+	detailMap, err := contentcache.BatchGet(r.ctx, r.svcCtx.Redis, ids, r.loadDetails)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (r *contentDetailResolver) assembleItems(ids []int64, viewerID int64, publi
 	return buildContentItems(details, userMap, likedMap, likeCountMap), nil
 }
 
-// loadDetails L2 miss 回源 content 行加 article/video brief 拼内容本征详情
+// loadDetails 缓存失效时回源 content
 func (r *contentDetailResolver) loadDetails(missIDs []int64) (map[int64]*do.ContentDetailDO, error) {
 	contentMap, err := r.contentRepo.BatchGetPublishedByIDs(missIDs)
 	if err != nil {
@@ -157,9 +157,15 @@ func (r *contentDetailResolver) loadAuthorsAndLikes(details []*do.ContentDetailD
 		}
 		switch content.ContentType(d.ContentType) {
 		case content.ContentType_CONTENT_TYPE_ARTICLE:
-			likeInfos = append(likeInfos, &likeservice.LikeInfo{ContentId: d.ContentID, Scene: interaction.Scene_SCENE_ARTICLE})
+			likeInfos = append(likeInfos, &likeservice.LikeInfo{
+				ContentId: d.ContentID,
+				Scene:     interaction.Scene_SCENE_ARTICLE,
+			})
 		case content.ContentType_CONTENT_TYPE_VIDEO:
-			likeInfos = append(likeInfos, &likeservice.LikeInfo{ContentId: d.ContentID, Scene: interaction.Scene_SCENE_VIDEO})
+			likeInfos = append(likeInfos, &likeservice.LikeInfo{
+				ContentId: d.ContentID,
+				Scene:     interaction.Scene_SCENE_VIDEO,
+			})
 		}
 	}
 
@@ -175,7 +181,9 @@ func (r *contentDetailResolver) loadAuthorsAndLikes(details []*do.ContentDetailD
 			if len(authorIDs) == 0 {
 				return nil
 			}
-			resp, err := r.svcCtx.UserRpc.BatchGetUser(r.ctx, &userservice.BatchGetUserReq{UserIds: authorIDs})
+			resp, err := r.svcCtx.UserRpc.BatchGetUser(r.ctx, &userservice.BatchGetUserReq{
+				UserIds: authorIDs,
+			})
 			if err != nil {
 				return err
 			}

@@ -108,8 +108,8 @@ type UserRepository interface {
 ## 缓存规范（cache-aside）
 
 读路径加缓存统一走旁路缓存（参考 `usercache/`）：正负值都缓存加负哨兵防穿透 TTL 叠 jitter 抗雪崩
-只降级不阻断 批量一次 RTT 写路径 `Invalidate` 失效。防击穿分层 per-user 用 `cache.Group` 单飞
-全局热点用 `cache.DistLocker`。详见 [references/caching.md](references/caching.md)。
+只降级不阻断 批量一次 RTT 写路径 `Invalidate` 失效。防击穿用 `cache.DistLocker`
+只对付全集群共享的热点 key。详见 [references/caching.md](references/caching.md)。
 
 ## 配置新增
 

@@ -8,5 +8,5 @@
 - **批量用一次 RTT**：批查用 `MgetCtx` / `PipelinedCtx`，回写也合并，不要循环单查
 - **缓存只存必要字段子集**：敏感字段（密码 盐 邮箱）不进缓存
 - **更新/删除要失效缓存**：写路径调用 `Invalidate` 删除对应 key
-- **防击穿分层选型**（`pkg/cache`）：per-user 类 key 用进程内单飞 `cache.Group` + `cache.Do`；
-  全集群共享的热点 key（全局热榜 全网热门详情 全局配置）用分布式锁 `cache.DistLocker` + `DoWithLock`，锁 key 统一 `cache.BuildLockKey`
+- **防击穿用分布式锁**（`pkg/cache`）：全集群共享的热点 key（全局热榜 全网热门详情 全局配置）
+  用 `cache.DistLocker` + `DoWithLock`，锁 key 统一 `cache.BuildLockKey`。per-user 类 key 各实例独立，不需要
