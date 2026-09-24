@@ -169,8 +169,10 @@ l.Errorf("RebuildHotSnapshotScript EvalCtx 执行异常, 详见: %+v", err)
 - **单服务专属** → 该服务 `internal/common/consts/xxx_consts.go`，按主题分文件（`content_consts.go`、`redis/redis_consts.go`）
 
 **枚举（DB 枚举字段）** 的创建与使用有独立规范，见 [references/enum.md](references/enum.md)。
-核心原则：DB 持久化字段不自造字面量，复用业务枚举或 pb 枚举；从 DB 行转枚举用
-`content.ContentStatus(row.Status)`，需拦非法值用 `Parse` 校验 `Valid`。
+核心原则：DB 持久化字段不自造字面量（含查询里的 `IsDeleted.Eq(0)` 这类裸值），复用业务枚举或 pb 枚举；
+从 DB 行转枚举用 `content.ContentStatus(row.Status)`，需拦非法值用 `Parse` 校验 `Valid`。
+**pb 枚举只允许出现在 RPC 边界**（server / logic 入参转换与响应组装）；repository / do / cron /
+mq consumer 与 strategy / 领域组件一律用业务枚举，取值一致性由各域 `enum_consistency_test.go` 兜底。
 
 ## 设计模式
 
