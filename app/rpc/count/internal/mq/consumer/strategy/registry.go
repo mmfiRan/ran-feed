@@ -3,14 +3,14 @@ package strategy
 import (
 	"context"
 
-	"ran-feed/app/rpc/count/count"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/pkg/event/registry"
 )
 
 // Update 表示一条计数增量更新
 type Update struct {
-	BizType    count.BizType
-	TargetType count.TargetType
+	BizType    countenum.BizTypeEnum
+	TargetType countenum.TargetTypeEnum
 	TargetID   int64
 	Delta      int64
 	OwnerID    int64
@@ -28,6 +28,12 @@ const (
 type TableStrategy interface {
 	TableName() string
 	ExtractUpdates(ctx context.Context, op string, row map[string]interface{}, oldRow map[string]interface{}) []Update
+}
+
+// RowSkipper 可选能力 策略声明哪些变更行与自己无关
+// 消费者在落去重行之前调用 避免为无关变更留下无谓的去重记录
+type RowSkipper interface {
+	SkipRow(row, oldRow map[string]interface{}) bool
 }
 
 // Registry 管理 table 到 strategy 的映射

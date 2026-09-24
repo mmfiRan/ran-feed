@@ -23,8 +23,11 @@ type RowMeta struct {
 // RowHandler 事务内单行业务处理 调用时该行已通过去重
 type RowHandler func(ctx context.Context, tx *gorm.DB, meta RowMeta, row, oldRow map[string]any) error
 
+// RowFilter 行级预过滤 返回 false 跳过该行 既不落去重行也不调用 handler
+type RowFilter func(row, oldRow map[string]any) bool
+
 // RunInTx 逐行去重与业务落库同事务 保证幂等
-func RunInTx(ctx context.Context, db *gorm.DB, consumerName string, msg *canal.Message, raw string, h RowHandler) error {
+func RunInTx(ctx context.Context, db *gorm.DB, consumerName string, msg *canal.Message, raw string, h RowHandler, filters ...RowFilter) error {
 	eventID := msg.EventID(raw)
 	if eventID == "" {
 		return nil
@@ -35,6 +38,10 @@ func RunInTx(ctx context.Context, db *gorm.DB, consumerName string, msg *canal.M
 		gate := dedup.New(tx)
 		for i, row := range msg.Data {
 			if row == nil {
+				continue
+			}
+			oldRow := msg.OldRow(i)
+			if !passFilters(filters, row, oldRow) {
 				continue
 			}
 			inserted, err := gate.InsertIfAbsent(ctx, consumerName, canal.RowEventID(eventID, table, op, row, i))
@@ -51,10 +58,23 @@ func RunInTx(ctx context.Context, db *gorm.DB, consumerName string, msg *canal.M
 				UpdatedAt: updatedAt,
 				Index:     i,
 			}
-			if err = h(ctx, tx, meta, row, msg.OldRow(i)); err != nil {
+			if err = h(ctx, tx, meta, row, oldRow); err != nil {
 				return err
 			}
 		}
 		return nil
 	})
+}
+
+// passFilters 全部过滤条件通过才处理该行 无过滤器时默认处理
+func passFilters(filters []RowFilter, row, oldRow map[string]any) bool {
+	for _, f := range filters {
+		if f == nil {
+			continue
+		}
+		if !f(row, oldRow) {
+			return false
+		}
+	}
+	return true
 }

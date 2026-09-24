@@ -6,8 +6,8 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logc"
 
+	notifyenum "ran-feed/app/rpc/notification/internal/common/enums"
 	"ran-feed/app/rpc/notification/internal/mq/consumer/strategy"
-	"ran-feed/app/rpc/notification/notification"
 	"ran-feed/pkg/event/canal"
 )
 
@@ -45,7 +45,7 @@ func (s *followStrategy) ExtractEvents(ctx context.Context, op string, row, oldR
 	return []strategy.NotifyEvent{{
 		RecipientID: recipientID,
 		ActorID:     actorID,
-		NotifyType:  int32(notification.NotifyType_NOTIFY_TYPE_FOLLOW),
+		NotifyType:  notifyenum.NotifyTypeFollow,
 		AggKey:      fmt.Sprintf("FO:%d", actorID),
 		Action:      strategy.PersistAggregate,
 	}}

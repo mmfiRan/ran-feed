@@ -9,7 +9,7 @@ type LikeDO struct {
 	ContentID     int64
 	ContentUserID int64
 	Scene         string
-	Status        enums.LikeStatus
+	Status        enums.LikeStatusEnum
 	CreatedBy     int64
 	UpdatedBy     int64
 }

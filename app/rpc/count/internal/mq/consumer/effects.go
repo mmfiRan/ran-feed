@@ -7,8 +7,11 @@ import (
 
 	"github.com/zeromicro/go-zero/core/threading"
 
-	"ran-feed/app/rpc/count/count"
 	rediskey "ran-feed/app/rpc/count/internal/common/consts/redis"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
+	"ran-feed/pkg/consts"
+
+	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 const (
@@ -17,6 +20,7 @@ const (
 )
 
 // dispatch 事务提交后批量派发副作用 失效计数与用户主页缓存并登记热榜脏 全部脱离请求 ctx
+// 脏标记写入失败不回滚已提交的计数 直接返回错误并显式记日志 丢失只造成热榜延迟 由全量模式窗口内重算兜底
 func (c *CanalCountConsumer) dispatch(ctx context.Context, cs *changeSet) error {
 	if cs.empty() {
 		return nil
@@ -24,13 +28,17 @@ func (c *CanalCountConsumer) dispatch(ctx context.Context, cs *changeSet) error 
 	c.invalidateCountCaches(cs)
 	c.invalidateUserProfileCaches(cs)
 	c.reconcileBigVSet(ctx, cs)
-	return c.markHotDirty(ctx, cs)
+	if err := c.markHotDirty(ctx, cs); err != nil {
+		c.Errorf("热榜脏标记写入失败 待全量重算兜底 contents=%d err=%v", len(cs.contents), err)
+		return err
+	}
+	return nil
 }
 
 // reconcileBigVSet 粉丝数变更后按阈值晋升大 V best-effort 失败只记日志不阻断管线
 func (c *CanalCountConsumer) reconcileBigVSet(ctx context.Context, cs *changeSet) {
 	for key := range cs.counts {
-		if key.bizType != count.BizType_BIZ_TYPE_FOLLOWED || key.targetType != count.TargetType_TARGET_TYPE_USER {
+		if key.bizType != countenum.BizTypeFollowed || key.targetType != countenum.TargetTypeUser {
 			continue
 		}
 		c.syncBigVMember(ctx, key.targetID)
@@ -43,7 +51,7 @@ func (c *CanalCountConsumer) syncBigVMember(ctx context.Context, userID int64) {
 	if userID <= 0 {
 		return
 	}
-	row, err := c.countRepo.Get(int32(count.BizType_BIZ_TYPE_FOLLOWED), int32(count.TargetType_TARGET_TYPE_USER), userID)
+	row, err := c.countRepo.Get(countenum.BizTypeFollowed.Int32(), countenum.TargetTypeUser.Int32(), userID)
 	if err != nil {
 		c.Errorf("大 V 晋升读粉丝数失败 userID=%d err=%v", userID, err)
 		return
@@ -52,7 +60,7 @@ func (c *CanalCountConsumer) syncBigVMember(ctx context.Context, userID int64) {
 	if row != nil {
 		value = row.Value
 	}
-	if value < rediskey.BigVFollowerThreshold {
+	if value < consts.BigVFollowerThreshold {
 		return
 	}
 
@@ -100,12 +108,12 @@ func (c *CanalCountConsumer) delayedDoubleDelete(cacheKey string) {
 	})
 }
 
-// markHotDirty 把发生互动的内容登记进热榜脏集合 按取模分片每片一次 SADD 只记谁脏了不算分
+// markHotDirty 把发生互动的内容登记进热榜脏集合 按取模分片分组 所有分片一次 pipeline 提交 只记谁脏了不算分
 func (c *CanalCountConsumer) markHotDirty(ctx context.Context, cs *changeSet) error {
 	if len(cs.contents) == 0 {
 		return nil
 	}
-	byShard := make(map[int][]any, rediskey.RedisFeedHotIncDefaultShards)
+	byShard := make(map[int][]any, consts.HotDirtyShards)
 	for contentID := range cs.contents {
 		if contentID <= 0 {
 			continue
@@ -113,18 +121,20 @@ func (c *CanalCountConsumer) markHotDirty(ctx context.Context, cs *changeSet) er
 		shard := hotDirtyShard(contentID)
 		byShard[shard] = append(byShard[shard], strconv.FormatInt(contentID, 10))
 	}
-	for shard, members := range byShard {
-		dirtyKey := rediskey.BuildHotFeedDirtyKey(shard)
-		if _, err := c.svcContext.Redis.SaddCtx(ctx, dirtyKey, members...); err != nil {
-			return err
-		}
+	if len(byShard) == 0 {
+		return nil
 	}
-	return nil
+	return c.svcContext.Redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
+		for shard, members := range byShard {
+			pipe.SAdd(ctx, rediskey.BuildHotFeedDirtyKey(shard), members...)
+		}
+		return nil
+	})
 }
 
 func hotDirtyShard(contentID int64) int {
 	if contentID <= 0 {
 		return 0
 	}
-	return int(contentID % int64(rediskey.RedisFeedHotIncDefaultShards))
+	return int(contentID % int64(consts.HotDirtyShards))
 }

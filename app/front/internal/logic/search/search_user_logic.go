@@ -16,8 +16,11 @@ import (
 	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/threading"
+	"github.com/zeromicro/go-zero/core/mr"
 )
+
+// followSummaryConcurrency 关注摘要并发上限 防一页命中数十用户时打爆下游
+const followSummaryConcurrency = 16
 
 type SearchUserLogic struct {
 	logx.Logger
@@ -98,34 +101,35 @@ func (l *SearchUserLogic) SearchUser(req *types.SearchUserReq) (resp *types.Sear
 	return resp, nil
 }
 
-// loadFollowSummaries 并行取每个用户的是否已关注与粉丝数 单个失败只记日志不阻断
+// loadFollowSummaries 并发取每个用户的是否已关注与粉丝数 限并发 单个失败只记日志不阻断
 func (l *SearchUserLogic) loadFollowSummaries(ids []int64, viewerID int64) map[int64]*interaction.GetFollowSummaryRes {
 	res := make(map[int64]*interaction.GetFollowSummaryRes, len(ids))
+	if len(ids) == 0 {
+		return res
+	}
 	var viewerPtr *int64
 	if viewerID > 0 {
 		viewerPtr = &viewerID
 	}
 
 	var mu sync.Mutex
-	var wg sync.WaitGroup
-	for _, id := range ids {
-		id := id
-		wg.Add(1)
-		threading.GoSafe(func() {
-			defer wg.Done()
-			summary, err := l.svcCtx.FollowRpc.GetFollowSummary(l.ctx, &interaction.GetFollowSummaryReq{
-				UserId:   id,
-				ViewerId: viewerPtr,
-			})
-			if err != nil {
-				logx.WithContext(l.ctx).Errorf("取关注摘要失败 userID=%d err=%v", id, err)
-				return
-			}
-			mu.Lock()
-			res[id] = summary
-			mu.Unlock()
+	mr.ForEach(func(source chan<- int64) {
+		for _, id := range ids {
+			source <- id
+		}
+	}, func(id int64) {
+		summary, err := l.svcCtx.FollowRpc.GetFollowSummary(l.ctx, &interaction.GetFollowSummaryReq{
+			UserId:   id,
+			ViewerId: viewerPtr,
 		})
-	}
-	wg.Wait()
+		if err != nil {
+			logx.WithContext(l.ctx).Errorf("取关注摘要失败 userID=%d err=%v", id, err)
+			return
+		}
+		mu.Lock()
+		res[id] = summary
+		mu.Unlock()
+	}, mr.WithWorkers(followSummaryConcurrency))
+
 	return res
 }

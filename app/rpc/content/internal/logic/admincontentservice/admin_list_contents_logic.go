@@ -39,7 +39,6 @@ func NewAdminListContentsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContentsReq) (*content.AdminListContentsRes, error) {
-
 	offset, limit := pkgutils.NormalizePage(in.GetPage(), in.GetPageSize())
 	rows, total, err := l.contentRepo.AdminPageContents(
 		pkgutils.CastPtr[int32](in.Status),

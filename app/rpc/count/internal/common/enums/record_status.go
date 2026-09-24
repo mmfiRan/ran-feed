@@ -3,41 +3,41 @@ package enums
 
 import "fmt"
 
-// RecordStatus 互动记录状态 like favorite comment follow 各表共用 10=正常 20=取消或删除
-type RecordStatus int32
+// RecordStatusEnum 互动记录状态 like favorite comment follow 各表共用 10=正常 20=取消或删除
+type RecordStatusEnum int32
 
 const (
-	StatusNormal    RecordStatus = 10
-	StatusCancelled RecordStatus = 20
+	RecordStatusNormal    RecordStatusEnum = 10
+	RecordStatusCancelled RecordStatusEnum = 20
 )
 
-var recordStatusNames = map[RecordStatus]string{
-	StatusNormal:    "NORMAL",
-	StatusCancelled: "CANCELLED",
+var recordStatusNames = map[RecordStatusEnum]string{
+	RecordStatusNormal:    "NORMAL",
+	RecordStatusCancelled: "CANCELLED",
 }
 
-var recordStatusMessages = map[RecordStatus]string{
-	StatusNormal:    "正常",
-	StatusCancelled: "取消",
+var recordStatusMessages = map[RecordStatusEnum]string{
+	RecordStatusNormal:    "正常",
+	RecordStatusCancelled: "取消",
 }
 
-func (s RecordStatus) Int32() int32 {
+func (s RecordStatusEnum) Int32() int32 {
 	return int32(s)
 }
 
-func (s RecordStatus) Valid() bool {
+func (s RecordStatusEnum) Valid() bool {
 	_, ok := recordStatusNames[s]
 	return ok
 }
 
-func (s RecordStatus) String() string {
+func (s RecordStatusEnum) String() string {
 	if name, ok := recordStatusNames[s]; ok {
 		return name
 	}
-	return fmt.Sprintf("RecordStatus(%d)", s)
+	return fmt.Sprintf("RecordStatusEnum(%d)", s)
 }
 
-func (s RecordStatus) Message() string {
+func (s RecordStatusEnum) Message() string {
 	if msg, ok := recordStatusMessages[s]; ok {
 		return msg
 	}
@@ -45,6 +45,6 @@ func (s RecordStatus) Message() string {
 }
 
 // IsActive 记录是否有效 正常即有效
-func (s RecordStatus) IsActive() bool {
-	return s == StatusNormal
+func (s RecordStatusEnum) IsActive() bool {
+	return s == RecordStatusNormal
 }

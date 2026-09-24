@@ -25,7 +25,7 @@ func NewUserPublishFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *U
 		svcCtx:     svcCtx,
 		Logger:     logx.WithContext(ctx),
 		resolver:   newContentDetailResolver(ctx, svcCtx),
-		publishBox: publishbox.New(ctx, svcCtx),
+		publishBox: publishbox.NewPublishBox(ctx, svcCtx),
 	}
 }
 
@@ -76,13 +76,14 @@ func (l *UserPublishFeedLogic) UserPublishFeed(in *content.UserPublishFeedReq) (
 	if err != nil {
 		return nil, err
 	}
-	if len(feedItems) == 0 {
-		return emptyUserPublishFeedRes(), nil
-	}
-
 	nextCursor := ""
 	if hasMore {
 		nextCursor = formatCursor(last.score, last.id)
+	}
+
+	if len(feedItems) == 0 {
+		// P5 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
+		return &content.UserPublishFeedRes{Items: []*content.ContentItem{}, NextCursor: nextCursor, HasMore: hasMore}, nil
 	}
 
 	return &content.UserPublishFeedRes{

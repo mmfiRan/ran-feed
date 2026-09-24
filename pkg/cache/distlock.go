@@ -69,7 +69,7 @@ func BuildLockKey(resourceKey string) string {
 }
 
 // DoWithLock
-// 抢到锁 先 checkCache 双检一次 还没就绪才 rebuild 完事释放锁
+// 抢到锁 先 checkCache 双检一次 还没就绪才 rebuild 释放锁
 // 没抢到 轮询 checkCache 等别人重建好
 func DoWithLock[T any](d *DistLocker, ctx context.Context, lockKey string,
 	checkCache func(ctx context.Context) (T, bool, error),

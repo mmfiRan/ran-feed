@@ -6,8 +6,10 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 
+	notifyenum "ran-feed/app/rpc/notification/internal/common/enums"
 	"ran-feed/app/rpc/notification/internal/entity/model"
 	"ran-feed/app/rpc/notification/internal/entity/query"
+	"ran-feed/pkg/enums"
 	"ran-feed/pkg/orm"
 )
 
@@ -160,7 +162,7 @@ func (r *notificationRepositoryImpl) ListByRecipient(recipientID int64, typeFilt
 	q := r.getQuery()
 	doQuery := q.RanFeedNotification.WithContext(r.ctx).
 		Where(q.RanFeedNotification.RecipientID.Eq(recipientID)).
-		Where(q.RanFeedNotification.IsDeleted.Eq(0))
+		Where(q.RanFeedNotification.IsDeleted.Eq(enums.NotDeleted.Int32()))
 	if typeFilter > 0 {
 		doQuery = doQuery.Where(q.RanFeedNotification.NotifyType.Eq(typeFilter))
 	}
@@ -191,8 +193,8 @@ func (r *notificationRepositoryImpl) CountUnread(recipientID int64) (int64, erro
 	q := r.getQuery()
 	return q.RanFeedNotification.WithContext(r.ctx).
 		Where(q.RanFeedNotification.RecipientID.Eq(recipientID)).
-		Where(q.RanFeedNotification.IsDeleted.Eq(0)).
-		Where(q.RanFeedNotification.IsRead.Eq(0)).
+		Where(q.RanFeedNotification.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Where(q.RanFeedNotification.IsRead.Eq(notifyenum.IsReadUnread.Int32())).
 		Count()
 }
 
@@ -206,8 +208,8 @@ func (r *notificationRepositoryImpl) MarkRead(recipientID int64, ids []int64) (i
 	info, err := q.RanFeedNotification.WithContext(r.ctx).
 		Where(q.RanFeedNotification.RecipientID.Eq(recipientID)).
 		Where(q.RanFeedNotification.ID.In(ids...)).
-		Where(q.RanFeedNotification.IsDeleted.Eq(0)).
-		Where(q.RanFeedNotification.IsRead.Eq(0)).
+		Where(q.RanFeedNotification.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Where(q.RanFeedNotification.IsRead.Eq(notifyenum.IsReadUnread.Int32())).
 		Updates(map[string]interface{}{
 			"is_read":    1,
 			"read_at":    now,
@@ -229,8 +231,8 @@ func (r *notificationRepositoryImpl) MarkAllRead(recipientID int64) (int64, erro
 	now := time.Now()
 	info, err := q.RanFeedNotification.WithContext(r.ctx).
 		Where(q.RanFeedNotification.RecipientID.Eq(recipientID)).
-		Where(q.RanFeedNotification.IsDeleted.Eq(0)).
-		Where(q.RanFeedNotification.IsRead.Eq(0)).
+		Where(q.RanFeedNotification.IsDeleted.Eq(enums.NotDeleted.Int32())).
+		Where(q.RanFeedNotification.IsRead.Eq(notifyenum.IsReadUnread.Int32())).
 		Updates(map[string]interface{}{
 			"is_read":    1,
 			"read_at":    now,

@@ -49,10 +49,9 @@ type AdminContentListItem struct {
 
 type AdminContentListReq struct {
 	PageQueryReq
-	Status      *int32  `form:"status,optional" validate:"omitempty,oneof=10 20 30 40 50 60 70"` // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
-	ContentType *int32  `form:"content_type,optional" validate:"omitempty,oneof=10 20"`          // 10文章 20视频
-	AuthorId    *int64  `form:"author_id,optional" validate:"omitempty,gt=0"`
-	Username    *string `form:"username,optional" validate:"omitempty,max=64"`
+	Status      *int32 `form:"status,optional" validate:"omitempty,oneof=10 20 30 40 50 60 70"` // 状态 10草稿 20处理中 30已发布 40失败 50已下架 60待审 70拒绝
+	ContentType *int32 `form:"content_type,optional" validate:"omitempty,oneof=10 20"`          // 10文章 20视频
+	AuthorId    *int64 `form:"author_id,optional" validate:"omitempty,gt=0"`
 }
 
 type AdminContentListRes struct {
@@ -71,8 +70,9 @@ type AdminContentReviewRes struct {
 }
 
 type AdminContentStatusReq struct {
-	ContentId int64 `json:"content_id,string,optional" validate:"required,gt=0"`
-	Status    int32 `json:"status,optional" validate:"required,oneof=30 50"` // 目标状态 30已发布 50已下架
+	ContentId int64   `json:"content_id,string,optional" validate:"required,gt=0"`
+	Status    int32   `json:"status,optional" validate:"required,oneof=30 50"` // 目标状态 30已发布 50已下架
+	Reason    *string `json:"reason,optional" validate:"omitempty,max=255"`    // 下架原因
 }
 
 type AdminContentStatusRes struct {

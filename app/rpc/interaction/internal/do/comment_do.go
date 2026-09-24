@@ -1,5 +1,9 @@
 package do
 
+import (
+	"ran-feed/app/rpc/interaction/internal/common/enums"
+)
+
 // CommentDO 评论领域对象
 //
 // 说明：该 DO 仅承载 comment 业务核心字段，用于 logic <-> repository 之间传递。
@@ -13,7 +17,7 @@ type CommentDO struct {
 	ParentID      int64
 	RootID        int64
 	Comment       string
-	Status        int32
+	Status        enums.CommentStatusEnum
 	IsDeleted     int32
 	Version       int32
 	CreatedBy     int64

@@ -7,6 +7,7 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm/clause"
 
+	"ran-feed/app/rpc/interaction/internal/common/enums"
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/entity/model"
 	"ran-feed/app/rpc/interaction/internal/entity/query"
@@ -30,12 +31,6 @@ type favoriteRepositoryImpl struct {
 	logx.Logger
 	tx *query.Query
 }
-
-const (
-	favoriteStatusLegacyActive int32 = 0  // 历史数据兼容：早期写入未设置 status
-	favoriteStatusActive       int32 = 10 // 正常
-	favoriteStatusCanceled     int32 = 20 // 取消收藏（兼容旧软删除语义）
-)
 
 func NewFavoriteRepository(ctx context.Context, db *orm.DB) FavoriteRepository {
 	return &favoriteRepositoryImpl{
@@ -67,7 +62,7 @@ func (r *favoriteRepositoryImpl) Upsert(favoriteDO *do.FavoriteDO) (bool, error)
 	favoriteModel := &model.RanFeedFavorite{
 		ID:            snowflake.GenID(),
 		UserID:        favoriteDO.UserID,
-		Status:        favoriteStatusActive,
+		Status:        enums.FavoriteStatusActive.Int32(),
 		ContentID:     favoriteDO.ContentID,
 		ContentUserID: favoriteDO.ContentUserID,
 		CreatedBy:     favoriteDO.CreatedBy,
@@ -80,7 +75,7 @@ func (r *favoriteRepositoryImpl) Upsert(favoriteDO *do.FavoriteDO) (bool, error)
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "user_id"}, {Name: "content_id"}},
 			DoUpdates: clause.Assignments(map[string]any{
-				"status":          favoriteStatusActive,
+				"status":          enums.FavoriteStatusActive.Int32(),
 				"content_user_id": favoriteModel.ContentUserID,
 				"updated_by":      favoriteModel.UpdatedBy,
 			}),
@@ -101,7 +96,7 @@ func (r *favoriteRepositoryImpl) CountByContentID(contentID int64) (int64, error
 	q := r.getQuery()
 	return q.RanFeedFavorite.WithContext(r.ctx).
 		Where(q.RanFeedFavorite.ContentID.Eq(contentID)).
-		Where(q.RanFeedFavorite.Status.In(favoriteStatusLegacyActive, favoriteStatusActive)).
+		Where(q.RanFeedFavorite.Status.In(enums.FavoriteStatusLegacy.Int32(), enums.FavoriteStatusActive.Int32())).
 		Count()
 }
 
@@ -110,7 +105,7 @@ func (r *favoriteRepositoryImpl) IsFavorited(userID int64, contentID int64) (boo
 
 	cnt, err := q.RanFeedFavorite.WithContext(r.ctx).
 		Where(q.RanFeedFavorite.UserID.Eq(userID), q.RanFeedFavorite.ContentID.Eq(contentID)).
-		Where(q.RanFeedFavorite.Status.In(favoriteStatusLegacyActive, favoriteStatusActive)).
+		Where(q.RanFeedFavorite.Status.In(enums.FavoriteStatusLegacy.Int32(), enums.FavoriteStatusActive.Int32())).
 		Count()
 	if err != nil {
 		return false, err
@@ -134,7 +129,7 @@ func (r *favoriteRepositoryImpl) GetByUserAndContent(userID int64, contentID int
 	q := r.getQuery()
 	row, err := q.RanFeedFavorite.WithContext(r.ctx).
 		Where(q.RanFeedFavorite.UserID.Eq(userID), q.RanFeedFavorite.ContentID.Eq(contentID)).
-		Where(q.RanFeedFavorite.Status.In(favoriteStatusLegacyActive, favoriteStatusActive)).
+		Where(q.RanFeedFavorite.Status.In(enums.FavoriteStatusLegacy.Int32(), enums.FavoriteStatusActive.Int32())).
 		First()
 	if err != nil {
 		return nil, err
@@ -153,7 +148,7 @@ func (r *favoriteRepositoryImpl) ListByUserCursor(userID int64, cursor int64, li
 	q := r.getQuery()
 	doQuery := q.RanFeedFavorite.WithContext(r.ctx).
 		Where(q.RanFeedFavorite.UserID.Eq(userID)).
-		Where(q.RanFeedFavorite.Status.In(favoriteStatusLegacyActive, favoriteStatusActive))
+		Where(q.RanFeedFavorite.Status.In(enums.FavoriteStatusLegacy.Int32(), enums.FavoriteStatusActive.Int32()))
 
 	if cursor > 0 {
 		doQuery = doQuery.Where(q.RanFeedFavorite.ID.Lt(cursor))

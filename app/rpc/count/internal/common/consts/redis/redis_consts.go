@@ -13,10 +13,6 @@ const (
 	RedisUserProfileCountsPrefix = "count:user:profile"
 	// RedisUserProfileCountsRebuildLockPrefix 用户主页计数重建锁前缀 lock:rebuild:count:user:profile:{user_id}
 	RedisUserProfileCountsRebuildLockPrefix = "lock:rebuild:count:user:profile"
-	// RedisFeedHotGlobalIncPrefix 热榜增量分片前缀 旧记账格式 已弃用 保留供过渡清理
-	RedisFeedHotGlobalIncPrefix = "feed:hot:global:inc"
-	// RedisFeedHotIncDefaultShards 热榜脏集合默认分片数 与 content 服务热榜任务约定一致
-	RedisFeedHotIncDefaultShards = 64
 	// RedisFeedHotDirtyPrefix 热榜脏集合活跃分片前缀 feed:hot:dirty 加 id 取模 shards
 	// 互动只记谁脏了 Set 去重 算分由 content 快更任务回查计数总量批量完成
 	RedisFeedHotDirtyPrefix = "feed:hot:dirty"
@@ -24,8 +20,6 @@ const (
 	RedisFeedBigVGlobalKey = "feed:bigv:global"
 	// RedisFeedBigVGlobalRebuildKey 大 V 集合周期重建临时 key 建好后 RENAME 原子换到正式 key
 	RedisFeedBigVGlobalRebuildKey = "feed:bigv:global:rebuild"
-	// BigVFollowerThreshold 大 V 粉丝数阈值 与 content 服务 FollowFanOut.BigVFollowerThreshold 默认值约定一致
-	BigVFollowerThreshold int64 = 50000
 )
 
 func GetRedisPrefixKey(prefix string, id string) string {
@@ -34,10 +28,6 @@ func GetRedisPrefixKey(prefix string, id string) string {
 
 func BuildCountValueKey(bizType string, targetType string, targetID string) string {
 	return GetRedisPrefixKey(GetRedisPrefixKey(GetRedisPrefixKey(RedisCountValuePrefix, bizType), targetType), targetID)
-}
-
-func BuildHotFeedIncKey(shard int) string {
-	return GetRedisPrefixKey(RedisFeedHotGlobalIncPrefix, strconv.Itoa(shard))
 }
 
 // BuildHotFeedDirtyKey 构造热榜脏集合分片 key feed:hot:dirty 加 shard

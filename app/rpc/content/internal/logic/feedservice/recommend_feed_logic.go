@@ -7,6 +7,7 @@ import (
 	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
+	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
 
@@ -23,7 +24,7 @@ const (
 
 type hotFeedResult struct {
 	ids                []int64
-	nextCursor         int64
+	nextCursor         string
 	hasMore            bool
 	resolvedSnapshotID string
 }
@@ -32,15 +33,17 @@ type RecommendFeedLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
-	resolver *contentDetailResolver
+	resolver    *contentDetailResolver
+	contentRepo repositories.ContentRepository
 }
 
 func NewRecommendFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *RecommendFeedLogic {
 	return &RecommendFeedLogic{
-		ctx:      ctx,
-		svcCtx:   svcCtx,
-		Logger:   logx.WithContext(ctx),
-		resolver: newContentDetailResolver(ctx, svcCtx),
+		ctx:         ctx,
+		svcCtx:      svcCtx,
+		Logger:      logx.WithContext(ctx),
+		resolver:    newContentDetailResolver(ctx, svcCtx),
+		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
 	}
 }
 
@@ -58,7 +61,7 @@ func (l *RecommendFeedLogic) RecommendFeed(in *content.RecommendFeedReq) (*conte
 	if len(res.ids) == 0 {
 		return &content.RecommendFeedRes{
 			Items:      []*content.ContentItem{},
-			NextCursor: 0,
+			NextCursor: "",
 			HasMore:    false,
 			SnapshotId: res.resolvedSnapshotID,
 		}, nil
@@ -74,10 +77,11 @@ func (l *RecommendFeedLogic) RecommendFeed(in *content.RecommendFeedReq) (*conte
 		return nil, err
 	}
 	if len(items) == 0 {
+		// P5 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
 		return &content.RecommendFeedRes{
 			Items:      nil,
-			NextCursor: 0,
-			HasMore:    false,
+			NextCursor: res.nextCursor,
+			HasMore:    res.hasMore,
 			SnapshotId: res.resolvedSnapshotID,
 		}, nil
 	}
@@ -102,7 +106,56 @@ func (l *RecommendFeedLogic) queryHotIDsByCursor(preferredKey, preferredSnapshot
 	if cacheResult == CacheHit {
 		return res, nil
 	}
-	return nil, errorx.NewMsg("热榜缓存不存在")
+	// Redis 丢数据或主榜快照均缺失时按 hot_score 游标查库兜底 保证推荐流不整接口失败
+	return l.queryFromDB(cursorID, pageSize)
+}
+
+// queryFromDB 兜底查询 已发布加公开加未删 按 hot_score 与 id 倒序 keyset 翻页
+func (l *RecommendFeedLogic) queryFromDB(cursor string, pageSize int) (*hotFeedResult, error) {
+	cursorID := int64(0)
+	if v, err := strconv.ParseInt(cursor, 10, 64); err == nil && v > 0 {
+		cursorID = v
+	}
+
+	cursorScore := 0.0
+	if cursorID > 0 {
+		// 取游标内容的分值定位翻页位置 取不到说明该内容已删 退化为首页
+		score, err := l.contentRepo.GetHotScoreByID(cursorID)
+		if err != nil {
+			l.Errorf("兜底查询解析游标分值失败 退化为首页 cursorID=%d err=%v", cursorID, err)
+			cursorID, cursorScore = 0, 0
+		} else {
+			cursorScore = score
+		}
+	}
+
+	rows, err := l.contentRepo.ListRecommendByHotScoreCursor(
+		int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED),
+		int32(content.Visibility_VISIBILITY_PUBLIC),
+		cursorScore,
+		cursorID,
+		pageSize+1,
+	)
+	if err != nil {
+		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询推荐流失败"))
+	}
+
+	ids := make([]int64, 0, len(rows))
+	for _, row := range rows {
+		if row == nil {
+			continue
+		}
+		ids = append(ids, row.ID)
+	}
+	hasMore := len(ids) > pageSize
+	if hasMore {
+		ids = ids[:pageSize]
+	}
+	nextCursor := ""
+	if hasMore && len(ids) > 0 {
+		nextCursor = strconv.FormatInt(ids[len(ids)-1], 10)
+	}
+	return &hotFeedResult{ids: ids, nextCursor: nextCursor, hasMore: hasMore}, nil
 }
 
 func (l *RecommendFeedLogic) queryFromRedis(preferredKey, preferredSnapshotID, cursor string, pageSize int) (*hotFeedResult, CacheResult) {
@@ -147,16 +200,9 @@ func parseHotFeedLuaResult(res any) (*hotFeedResult, bool, error) {
 	hasMoreVal, _ := luaReplyInt64(arr[1])
 	hasMore := hasMoreVal == 1
 
-	nextCursor := int64(0)
+	nextCursor := ""
 	if hasMore {
-		nextStr, _ := luaReplyString(arr[2])
-		if nextStr != "" {
-			v, parseErr := strconv.ParseInt(nextStr, 10, 64)
-			if parseErr != nil {
-				return nil, false, errorx.NewMsg("查询热榜索引失败")
-			}
-			nextCursor = v
-		}
+		nextCursor, _ = luaReplyString(arr[2])
 	}
 
 	resolvedSnapshotID, _ := luaReplyString(arr[3])

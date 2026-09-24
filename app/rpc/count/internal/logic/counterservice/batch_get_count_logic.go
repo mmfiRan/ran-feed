@@ -3,13 +3,16 @@ package counterservicelogic
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"ran-feed/app/rpc/count/count"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/repositories"
 	"ran-feed/app/rpc/count/internal/svc"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 type BatchGetCountLogic struct {
@@ -49,8 +52,8 @@ func (l *BatchGetCountLogic) BatchGetCount(in *count.BatchGetCountReq) (*count.B
 
 		info := batchCountKeyInfo{
 			key:      key,
-			cacheKey: buildCountValueCacheKey(key.BizType, key.TargetType, key.TargetId),
-			mapKey:   buildCountValueMapKey(key.BizType, key.TargetType, key.TargetId),
+			cacheKey: buildCountValueCacheKey(countenum.BizTypeEnum(key.BizType), countenum.TargetTypeEnum(key.TargetType), key.TargetId),
+			mapKey:   buildCountValueMapKey(countenum.BizTypeEnum(key.BizType), countenum.TargetTypeEnum(key.TargetType), key.TargetId),
 		}
 		infos = append(infos, info)
 
@@ -87,8 +90,8 @@ type batchCountKeyInfo struct {
 }
 
 type batchGroup struct {
-	bizType    count.BizType
-	targetType count.TargetType
+	bizType    countenum.BizTypeEnum
+	targetType countenum.TargetTypeEnum
 }
 
 func (l *BatchGetCountLogic) batchLoadFromCache(uniqueInfoByMapKey map[string]batchCountKeyInfo, uniqueKeys []string) (map[string]int64, []string) {
@@ -143,8 +146,8 @@ func (l *BatchGetCountLogic) batchLoadFromDB(
 	for _, mapKey := range missMapKeys {
 		info := uniqueInfoByMapKey[mapKey]
 		group := batchGroup{
-			bizType:    info.key.BizType,
-			targetType: info.key.TargetType,
+			bizType:    countenum.BizTypeEnum(info.key.BizType),
+			targetType: countenum.TargetTypeEnum(info.key.TargetType),
 		}
 		groupIDs[group] = append(groupIDs[group], info.key.TargetId)
 		if _, ok := groupMapKey[group]; !ok {
@@ -177,19 +180,23 @@ func (l *BatchGetCountLogic) batchLoadFromDB(
 	return valueByMapKey
 }
 
+// batchWriteCache 一次 pipeline 回填全部 miss 计数缓存 替代逐 key 一次 RTT
 func (l *BatchGetCountLogic) batchWriteCache(uniqueInfoByMapKey map[string]batchCountKeyInfo, valueByMapKey map[string]int64) {
-	for mapKey, value := range valueByMapKey {
-		info, ok := uniqueInfoByMapKey[mapKey]
-		if !ok {
-			continue
+	if len(valueByMapKey) == 0 {
+		return
+	}
+	ttl := countCacheExpireSecondsWithJitter()
+	err := l.svcCtx.Redis.PipelinedCtx(l.ctx, func(pipe redis.Pipeliner) error {
+		for mapKey, value := range valueByMapKey {
+			info, ok := uniqueInfoByMapKey[mapKey]
+			if !ok {
+				continue
+			}
+			pipe.SetEx(l.ctx, info.cacheKey, strconv.FormatInt(value, 10), time.Duration(ttl)*time.Second)
 		}
-		if err := l.svcCtx.Redis.SetexCtx(
-			l.ctx,
-			info.cacheKey,
-			strconv.FormatInt(value, 10),
-			countCacheExpireSecondsWithJitter(),
-		); err != nil {
-			l.Errorf("批量回填计数缓存失败: key=%s, value=%d, err=%v", info.cacheKey, value, err)
-		}
+		return nil
+	})
+	if err != nil {
+		l.Errorf("批量回填计数缓存失败: err=%v", err)
 	}
 }

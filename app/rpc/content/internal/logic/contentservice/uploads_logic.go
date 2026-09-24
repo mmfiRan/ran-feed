@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
-	contenums "ran-feed/app/rpc/content/internal/common/enums"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	contentutils "ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -30,8 +30,8 @@ func NewUploadsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UploadsLo
 }
 
 func (l *UploadsLogic) Uploads(in *content.ContentUploadsCredentialsReq) (*content.ContentUploadsCredentialsRes, error) {
-	scene := contenums.UploadSceneEnum(in.Scene)
-	fileExt := contenums.FileExtEnum(in.FileExt)
+	scene := contentEnum.UploadSceneEnum(in.Scene)
+	fileExt := contentEnum.FileExtEnum(in.FileExt)
 
 	req := &oss.Request{
 		UserID:      in.UserId,

@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"ran-feed/app/rpc/content/content"
+	contentconsts "ran-feed/app/rpc/content/internal/common/consts"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -13,9 +14,6 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
-
-// purgeFolloweeWindowCap 取关清理单次拉取 followee 窗口内 content_id 上限 与 inbox keepN 对齐
-const purgeFolloweeWindowCap = 5000
 
 type PurgeFolloweeFromInboxLogic struct {
 	ctx    context.Context
@@ -44,12 +42,12 @@ func (l *PurgeFolloweeFromInboxLogic) PurgeFolloweeFromInbox(in *content.PurgeFo
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	// 关注关系变更 失效 viewer 大 V 列表缓存 取关大 V 后读路径才会停止 merge
-	if _, err := l.svcCtx.Redis.DelCtx(l.ctx, rediskey.BuildFollowBigVKey(in.FollowerId)); err != nil {
-		l.Errorf("失效大 V 列表缓存失败 viewerID=%d err=%v", in.FollowerId, err)
+	// 关注关系变更 失效 viewer 拉模式集 取关后读路径才会停止拉该作者
+	if _, err := l.svcCtx.Redis.DelCtx(l.ctx, rediskey.BuildFollowPullKey(in.FollowerId)); err != nil {
+		l.Errorf("失效拉模式关注集失败 viewerID=%d err=%v", in.FollowerId, err)
 	}
 
-	// 大 V 内容从未推入 inbox 无需 ZREM 查询失败仍继续清理 ZREM 对大 V 无害对小号必要
+	// 拉模式内容从未推入 inbox 无需 ZREM 查询失败仍继续清理 ZREM 对拉模式无害对小号必要
 	if isBig, err := l.svcCtx.FeedPublisher.IsBigVAuthor(l.ctx, in.FolloweeId); err != nil {
 		l.Errorf("查询大 V 集合失败 followeeID=%d err=%v", in.FolloweeId, err)
 	} else if isBig {
@@ -58,8 +56,8 @@ func (l *PurgeFolloweeFromInboxLogic) PurgeFolloweeFromInbox(in *content.PurgeFo
 		}, nil
 	}
 
-	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
-	contents, err := loadFolloweeWindowContent(l.ctx, l.svcCtx, l.contentRepo, in.FolloweeId, followwindow.CutoffMillis(days), purgeFolloweeWindowCap)
+	days := contentconsts.WindowDays
+	contents, err := loadFolloweeWindowContent(l.ctx, l.svcCtx, l.contentRepo, in.FolloweeId, followwindow.CutoffMillis(days), int(contentconsts.TimelineKeepN))
 	if err != nil {
 		return nil, err
 	}

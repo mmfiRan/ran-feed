@@ -83,3 +83,8 @@ func (s *ContentServiceServer) PurgeFolloweeFromInbox(ctx context.Context, in *c
 	l := contentservicelogic.NewPurgeFolloweeFromInboxLogic(ctx, s.svcCtx)
 	return l.PurgeFolloweeFromInbox(in)
 }
+
+func (s *ContentServiceServer) ClearUserFavoriteCache(ctx context.Context, in *content.ClearUserFavoriteCacheReq) (*emptypb.Empty, error) {
+	l := contentservicelogic.NewClearUserFavoriteCacheLogic(ctx, s.svcCtx)
+	return l.ClearUserFavoriteCache(in)
+}

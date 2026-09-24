@@ -34,11 +34,13 @@ enum Visibility {
   VISIBILITY_PRIVATE = 20;     // 私密
 }
 
-// 审核决策枚举
+// 审核决策枚举 含管理端下架与恢复 使审核记录表可查这两类历史
 enum ReviewDecision {
   REVIEW_DECISION_UNSPECIFIED = 0;  // 未指定
   REVIEW_DECISION_APPROVE = 10;     // 通过
   REVIEW_DECISION_REJECT = 20;      // 拒绝
+  REVIEW_DECISION_TAKEN_DOWN = 30;  // 管理端下架
+  REVIEW_DECISION_RESTORED = 40;    // 管理端恢复
 }
 
 // 上传场景枚举
@@ -224,7 +226,7 @@ message MyContentItem {
   string cover_url = 6;
   google.protobuf.Timestamp created_at = 7;
   google.protobuf.Timestamp published_at = 8;   // 未发布为空
-  string reject_reason = 9;                     // status=拒绝时取审核最新一条
+  string status_reason = 9;                     // 不可见原因 拒绝取最新拒绝理由 下架取最新下架原因
   int64 like_count = 10;
   int64 favorite_count = 11;
   int64 comment_count = 12;
@@ -248,7 +250,7 @@ message RecommendFeedReq {
 // RecommendFeedRes 推荐流响应
 message RecommendFeedRes {
   repeated ContentItem items = 1;
-  int64 next_cursor = 2;
+  string next_cursor = 2;
   bool has_more = 3;
   string snapshot_id = 4;
 }
@@ -416,9 +418,8 @@ message AdminListContentsReq {
   optional ContentStatus status = 1;
   optional ContentType content_type = 2;
   optional int64 author_id = 3;
-  optional string username = 4;
-  uint32 page = 5;
-  uint32 page_size = 6;
+  uint32 page = 4;
+  uint32 page_size = 5;
 }
 
 // AdminListContentsRes 管理端内容列表响应
@@ -466,6 +467,7 @@ message AdminSetContentStatusReq {
   int64 content_id = 1;
   ContentStatus status = 2;
   int64 operator_id = 3;
+  optional string reason = 4;
 }
 
 // AdminSetContentStatusRes 状态变更响应
@@ -486,6 +488,11 @@ message AdminReviewContentRes {
   ranfeed.commonpb.EnumValue status = 1;
 }
 
+// ClearUserFavoriteCacheReq 失效用户收藏流缓存请求
+message ClearUserFavoriteCacheReq {
+  int64 user_id = 1;
+}
+
 service ContentService {
   rpc Uploads(ContentUploadsCredentialsReq) returns (ContentUploadsCredentialsRes);
   rpc PublishArticle(ArticlePublishReq) returns (ArticlePublishRes);
@@ -499,6 +506,7 @@ service ContentService {
   rpc GetContentDetail(GetContentDetailReq) returns (GetContentDetailRes);
   rpc BackfillFollowInbox(BackfillFollowInboxReq) returns (BackfillFollowInboxRes);
   rpc PurgeFolloweeFromInbox(PurgeFolloweeFromInboxReq) returns (PurgeFolloweeFromInboxRes);
+  rpc ClearUserFavoriteCache(ClearUserFavoriteCacheReq) returns (google.protobuf.Empty);
 }
 
 service FeedService {

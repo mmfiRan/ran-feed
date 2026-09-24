@@ -8,7 +8,6 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logc"
 
-	"ran-feed/app/rpc/count/count"
 	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
 	"ran-feed/pkg/enums"
@@ -24,8 +23,8 @@ type presenceCounterStrategy struct {
 
 // countTarget 一条增量要落到的计数对象
 type countTarget struct {
-	bizType    count.BizType
-	targetType count.TargetType
+	bizType    countenum.BizTypeEnum
+	targetType countenum.TargetTypeEnum
 	targetID   int64
 	ownerID    int64
 }
@@ -107,7 +106,7 @@ func statusActive(row map[string]interface{}) bool {
 	if !ok {
 		return false
 	}
-	return countenum.RecordStatus(int32(v)).IsActive()
+	return countenum.RecordStatusEnum(int32(v)).IsActive()
 }
 
 // statusActiveNotDeleted status 正常且未逻辑删除
@@ -128,7 +127,7 @@ func alwaysActive(map[string]interface{}) bool {
 }
 
 // contentTargets 行映射到单个内容计数 取 content_id 与作者 content_user_id
-func contentTargets(bizType count.BizType) func(ctx context.Context, row map[string]interface{}) []countTarget {
+func contentTargets(bizType countenum.BizTypeEnum) func(ctx context.Context, row map[string]interface{}) []countTarget {
 	return func(ctx context.Context, row map[string]interface{}) []countTarget {
 		contentID, ok := canal.ParseInt64(row["content_id"])
 		if !ok || contentID <= 0 {
@@ -142,7 +141,7 @@ func contentTargets(bizType count.BizType) func(ctx context.Context, row map[str
 		}
 		return []countTarget{{
 			bizType:    bizType,
-			targetType: count.TargetType_TARGET_TYPE_CONTENT,
+			targetType: countenum.TargetTypeContent,
 			targetID:   contentID,
 			ownerID:    ownerID,
 		}}
@@ -162,7 +161,7 @@ func followTargets(ctx context.Context, row map[string]interface{}) []countTarge
 		return nil
 	}
 	return []countTarget{
-		{bizType: count.BizType_BIZ_TYPE_FOLLOWING, targetType: count.TargetType_TARGET_TYPE_USER, targetID: userID},
-		{bizType: count.BizType_BIZ_TYPE_FOLLOWED, targetType: count.TargetType_TARGET_TYPE_USER, targetID: followUserID},
+		{bizType: countenum.BizTypeFollowing, targetType: countenum.TargetTypeUser, targetID: userID},
+		{bizType: countenum.BizTypeFollowed, targetType: countenum.TargetTypeUser, targetID: followUserID},
 	}
 }

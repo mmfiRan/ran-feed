@@ -3,6 +3,7 @@ package notificationservicelogic
 import (
 	"time"
 
+	notifyenum "ran-feed/app/rpc/notification/internal/common/enums"
 	"ran-feed/app/rpc/notification/internal/entity/model"
 	"ran-feed/app/rpc/notification/notification"
 
@@ -23,7 +24,7 @@ func buildNotificationItem(row *model.RanFeedNotification) *notification.Notific
 		ContentId:   row.ContentID,
 		CommentId:   row.CommentID,
 		Snippet:     row.Snippet,
-		IsRead:      row.IsRead == 1,
+		IsRead:      notifyenum.IsReadEnum(row.IsRead) == notifyenum.IsReadRead,
 		UpdatedAt:   timestamppb.New(row.UpdatedAt),
 	}
 }

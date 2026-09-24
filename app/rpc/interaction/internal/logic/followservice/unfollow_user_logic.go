@@ -5,6 +5,8 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/interaction/interaction"
+	"ran-feed/app/rpc/interaction/internal/common/consts"
+	"ran-feed/app/rpc/interaction/internal/common/enums"
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/repositories"
 	"ran-feed/app/rpc/interaction/internal/svc"
@@ -48,14 +50,14 @@ func (l *UnfollowUserLogic) UnfollowUser(in *interaction.UnfollowUserReq) (*inte
 	transitioned := true
 	if prior, perr := l.followRepo.GetByUserAndFollow(in.UserId, in.FollowUserId); perr != nil {
 		l.Errorf("查关注前置状态失败 默认清理 userID=%d followUserID=%d err=%v", in.UserId, in.FollowUserId, perr)
-	} else if prior == nil || prior.Status != repositories.FollowStatusFollow {
+	} else if prior == nil || !enums.FollowStatusEnum(prior.Status).IsFollowing() {
 		transitioned = false
 	}
 
 	err := l.followRepo.Upsert(&do.FollowDO{
 		UserID:       in.UserId,
 		FollowUserID: in.FollowUserId,
-		Status:       repositories.FollowStatusUnfollow,
+		Status:       enums.FollowStatusUnfollow,
 		CreatedBy:    in.UserId,
 		UpdatedBy:    in.UserId,
 	})
@@ -66,7 +68,8 @@ func (l *UnfollowUserLogic) UnfollowUser(in *interaction.UnfollowUserReq) (*inte
 	// 仅真正翻转为取关才清理 收件箱清理与大 V 缓存失效由 content 侧统一处理
 	if transitioned {
 		threading.GoSafe(func() {
-			ctx := context.WithoutCancel(l.ctx)
+			ctx, cancel := context.WithTimeout(context.WithoutCancel(l.ctx), consts.FollowMaintainTimeout)
+			defer cancel()
 			_, callErr := l.svcCtx.ContentRpc.PurgeFolloweeFromInbox(ctx, &content.PurgeFolloweeFromInboxReq{
 				FollowerId: in.UserId,
 				FolloweeId: in.FollowUserId,

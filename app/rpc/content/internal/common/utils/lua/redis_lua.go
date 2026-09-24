@@ -12,11 +12,6 @@ var QueryHotFeedZSetScript string
 //go:embed rebuild_hot_feed_zset.lua
 var RebuildHotFeedZSetScript string
 
-// MergeHotIncScript 热榜增量合并Lua脚本
-//
-//go:embed merge_hot_inc.lua
-var MergeHotIncScript string
-
 // FreezeHotDirtyScript 热榜脏集合冻结Lua脚本（活跃桶原子搬到处理中桶）
 //
 //go:embed freeze_hot_dirty.lua
@@ -41,3 +36,8 @@ var BackfillFollowInboxZSetScript string
 //
 //go:embed update_user_publish_zset.lua
 var UpdateUserPublishZSetScript string
+
+// FilterBigVMembersScript 批量判定候选是否为全局大 V 的 Lua 脚本
+//
+//go:embed filter_bigv_members.lua
+var FilterBigVMembersScript string

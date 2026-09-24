@@ -6,6 +6,7 @@ package strategy
 import (
 	"context"
 
+	notifyenum "ran-feed/app/rpc/notification/internal/common/enums"
 	"ran-feed/pkg/event/registry"
 )
 
@@ -26,7 +27,7 @@ const (
 type NotifyEvent struct {
 	RecipientID int64
 	ActorID     int64
-	NotifyType  int32
+	NotifyType  notifyenum.NotifyTypeEnum
 	AggKey      string
 	Action      PersistAction
 	ContentID   int64

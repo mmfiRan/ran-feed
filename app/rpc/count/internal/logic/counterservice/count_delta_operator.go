@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"ran-feed/app/rpc/count/count"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/repositories"
 	"ran-feed/app/rpc/count/internal/svc"
 
@@ -32,13 +32,13 @@ func NewCountDeltaOperator(ctx context.Context, svcCtx *svc.ServiceContext) *Cou
 }
 
 // UpdateDeltaOnly 仅更新DB，不处理缓存
-func (o *CountDeltaOperator) UpdateDeltaOnly(bizType count.BizType, targetType count.TargetType, targetID int64, delta int64, updatedAt time.Time) error {
+func (o *CountDeltaOperator) UpdateDeltaOnly(bizType countenum.BizTypeEnum, targetType countenum.TargetTypeEnum, targetID int64, delta int64, updatedAt time.Time) error {
 	return o.UpdateDeltaOnlyWithRepo(o.countRepo, bizType, targetType, targetID, delta, updatedAt)
 }
 
 // UpdateDeltaOnlyWithRepo 允许调用方传入带事务的repo
-func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepo(repo repositories.CountValueRepository, bizType count.BizType, targetType count.TargetType, targetID int64, delta int64, updatedAt time.Time) error {
-	if bizType == count.BizType_BIZ_TYPE_UNSPECIFIED || targetType == count.TargetType_TARGET_TYPE_UNSPECIFIED || targetID <= 0 || delta == 0 {
+func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepo(repo repositories.CountValueRepository, bizType countenum.BizTypeEnum, targetType countenum.TargetTypeEnum, targetID int64, delta int64, updatedAt time.Time) error {
+	if bizType == countenum.BizTypeUnknown || targetType == countenum.TargetTypeUnknown || targetID <= 0 || delta == 0 {
 		return nil
 	}
 	_, err := repo.UpdateDelta(int32(bizType), int32(targetType), targetID, delta, updatedAt)
@@ -47,8 +47,8 @@ func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepo(repo repositories.CountValu
 
 // UpdateDeltaOnlyWithOwner 仅更新DB（携带owner_id），不处理缓存
 func (o *CountDeltaOperator) UpdateDeltaOnlyWithOwner(
-	bizType count.BizType,
-	targetType count.TargetType,
+	bizType countenum.BizTypeEnum,
+	targetType countenum.TargetTypeEnum,
 	targetID int64,
 	ownerID int64,
 	delta int64,
@@ -60,14 +60,14 @@ func (o *CountDeltaOperator) UpdateDeltaOnlyWithOwner(
 // UpdateDeltaOnlyWithRepoAndOwner 允许调用方传入带事务的repo，并携带owner_id
 func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepoAndOwner(
 	repo repositories.CountValueRepository,
-	bizType count.BizType,
-	targetType count.TargetType,
+	bizType countenum.BizTypeEnum,
+	targetType countenum.TargetTypeEnum,
 	targetID int64,
 	ownerID int64,
 	delta int64,
 	updatedAt time.Time,
 ) error {
-	if bizType == count.BizType_BIZ_TYPE_UNSPECIFIED || targetType == count.TargetType_TARGET_TYPE_UNSPECIFIED || targetID <= 0 || delta == 0 {
+	if bizType == countenum.BizTypeUnknown || targetType == countenum.TargetTypeUnknown || targetID <= 0 || delta == 0 {
 		return nil
 	}
 	if ownerID <= 0 {
@@ -79,8 +79,8 @@ func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepoAndOwner(
 }
 
 // InvalidateCountCache 旁路缓存策略：写成功后删除缓存
-func (o *CountDeltaOperator) InvalidateCountCache(bizType count.BizType, targetType count.TargetType, targetID int64) {
-	if bizType == count.BizType_BIZ_TYPE_UNSPECIFIED || targetType == count.TargetType_TARGET_TYPE_UNSPECIFIED || targetID <= 0 {
+func (o *CountDeltaOperator) InvalidateCountCache(bizType countenum.BizTypeEnum, targetType countenum.TargetTypeEnum, targetID int64) {
+	if bizType == countenum.BizTypeUnknown || targetType == countenum.TargetTypeUnknown || targetID <= 0 {
 		return
 	}
 	cacheKey := buildCountValueCacheKey(bizType, targetType, targetID)

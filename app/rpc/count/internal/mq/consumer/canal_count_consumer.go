@@ -62,10 +62,15 @@ func (c *CanalCountConsumer) Consume(ctx context.Context, key, val string) error
 	}
 
 	cs := newChangeSet()
+	// 策略可选声明无关变更行 在落去重前跳过 例如 content 表的热榜分值更新与计数无关
+	var filters []pipeline.RowFilter
+	if skipper, ok := tableStrategy.(strategy.RowSkipper); ok {
+		filters = append(filters, skipper.SkipRow)
+	}
 	err = pipeline.RunInTx(ctx, c.svcContext.MysqlDb.DB, c.consumerName, msg, val,
 		func(ctx context.Context, tx *gorm.DB, meta pipeline.RowMeta, row, oldRow map[string]any) error {
 			return c.processRow(ctx, query.Use(tx), meta, tableStrategy, row, oldRow, cs)
-		})
+		}, filters...)
 	if err != nil {
 		return err
 	}

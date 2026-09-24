@@ -1,5 +1,9 @@
 package do
 
+import (
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
+)
+
 import "time"
 
 type ContentDO struct {
@@ -36,17 +40,17 @@ type VideoDO struct {
 	TranscodeStatus int32
 }
 
-// ContentReviewDO 内容审核记录 created_by/updated_by 落审核管理员 id
+// ContentReviewDO 内容审核记录
 type ContentReviewDO struct {
 	ID        int64
 	ContentID int64
-	Decision  int32
+	Decision  contentEnum.ReviewDecisionEnum
 	Reason    string
 	CreatedBy int64
 	UpdatedBy int64
 }
 
-// ContentDetailDO feed 二级缓存按 content_id 存的内容本征详情
+// ContentDetailDO 二级缓存按 content_id 存的内容
 type ContentDetailDO struct {
 	ContentID   int64  `json:"content_id"`
 	ContentType int32  `json:"content_type"`

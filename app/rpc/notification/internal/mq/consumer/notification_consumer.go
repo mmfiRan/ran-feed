@@ -117,7 +117,7 @@ func (c *CanalNotificationConsumer) persistEvent(notifyRepo repositories.Notific
 	row := &model.RanFeedNotification{
 		RecipientID: e.RecipientID,
 		ActorID:     e.ActorID,
-		NotifyType:  e.NotifyType,
+		NotifyType:  e.NotifyType.Int32(),
 		AggKey:      e.AggKey,
 		AggCount:    1,
 		ContentID:   e.ContentID,

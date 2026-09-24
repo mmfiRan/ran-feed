@@ -5,15 +5,15 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
-	contentenums "ran-feed/pkg/enums/content"
 	"ran-feed/pkg/errorx"
-	"ran-feed/pkg/event"
+	"ran-feed/pkg/event/contentevent"
 	"ran-feed/pkg/snowflake"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -88,7 +88,7 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 		if err := l.reviewRepo.WithTx(tx).Create(&do.ContentReviewDO{
 			ID:        snowflake.GenID(),
 			ContentID: in.ContentId,
-			Decision:  int32(in.Decision),
+			Decision:  contentEnum.ReviewDecisionEnum(in.Decision),
 			Reason:    reason,
 			CreatedBy: in.OperatorId,
 			UpdatedBy: in.OperatorId,
@@ -96,35 +96,21 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 			return err
 		}
 
-		// 事务内写发件箱 通过发 ContentPublished 拒绝发 ContentRejected
-		return l.outboxRepo.WithTx(tx).CreateEvent(buildReviewEvent(approve, row, now.UnixMilli(), reason))
+		// 写发件箱
+		return l.outboxRepo.WithTx(tx).CreateEvent(l.buildReviewEvent(approve, row, reason))
 	})
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("审核失败"))
 	}
 
-	// 进 feed 与失效缓存的副作用由 feed 消费者消费发布事件完成
 	return &content.AdminReviewContentRes{
 		Status: utils.ContentStatusValue(int32(targetStatus)),
 	}, nil
 }
 
-// buildReviewEvent 审核结果转 content 域事件
-func buildReviewEvent(approve bool, row *model.RanFeedContent, publishedAtMillis int64, reason string) *event.ContentEvent {
+func (l *AdminReviewContentLogic) buildReviewEvent(approve bool, row *model.RanFeedContent, reason string) *contentevent.ContentEvent {
 	if approve {
-		return &event.ContentEvent{
-			EventType:   contentenums.EventTypePublished,
-			ContentID:   row.ID,
-			AuthorID:    row.UserID,
-			ContentType: row.ContentType,
-			Visibility:  row.Visibility,
-			PublishedAt: publishedAtMillis,
-		}
+		return contentevent.NewContentPublishedEvent(row.ID, row.UserID)
 	}
-	return &event.ContentEvent{
-		EventType: contentenums.EventTypeRejected,
-		ContentID: row.ID,
-		AuthorID:  row.UserID,
-		Reason:    reason,
-	}
+	return contentevent.NewContentRejectedEvent(row.ID, row.UserID, reason)
 }

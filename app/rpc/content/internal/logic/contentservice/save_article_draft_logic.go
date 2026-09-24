@@ -50,21 +50,19 @@ func (l *SaveArticleDraftLogic) SaveArticleDraft(in *content.SaveArticleDraftReq
 }
 
 func (l *SaveArticleDraftLogic) createDraft(in *content.SaveArticleDraftReq) (int64, error) {
+	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, int32(content.Visibility_VISIBILITY_PUBLIC))
+	if err != nil {
+		return 0, err
+	}
+
 	var contentID int64
 	if err := query.Q.Transaction(func(tx *query.Query) error {
 		contentRepo := l.contentRepository.WithTx(tx)
 		articleRepo := l.articleRepository.WithTx(tx)
 
-		contentID = snowflake.GenID()
-		contentDO := &do.ContentDO{
-			ID:          contentID,
-			UserID:      in.UserId,
-			ContentType: int32(content.ContentType_CONTENT_TYPE_ARTICLE),
-			Status:      int32(content.ContentStatus_CONTENT_STATUS_DRAFT),
-			Visibility:  draftVisibility(in.Visibility, int32(content.Visibility_VISIBILITY_PUBLIC)),
-			CreatedBy:   in.UserId,
-			UpdatedBy:   in.UserId,
-		}
+		contentDO := buildContentDO(in.UserId, content.ContentType_CONTENT_TYPE_ARTICLE,
+			content.ContentStatus_CONTENT_STATUS_DRAFT, visibility)
+		contentID = contentDO.ID
 		if err := contentRepo.CreateContent(contentDO); err != nil {
 			return err
 		}
@@ -98,11 +96,16 @@ func (l *SaveArticleDraftLogic) updateDraft(in *content.SaveArticleDraftReq, con
 		return 0, errorx.NewMsg("该内容当前状态不可编辑")
 	}
 
+	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, row.Visibility)
+	if err != nil {
+		return 0, err
+	}
+
 	if err := query.Q.Transaction(func(tx *query.Query) error {
 		contentRepo := l.contentRepository.WithTx(tx)
 		articleRepo := l.articleRepository.WithTx(tx)
 
-		if err := contentRepo.UpdateDraftMeta(contentID, draftVisibility(in.Visibility, row.Visibility), in.UserId); err != nil {
+		if err := contentRepo.UpdateDraftMeta(contentID, visibility, in.UserId); err != nil {
 			return err
 		}
 		articleDO := &do.ArticleDO{
@@ -123,12 +126,4 @@ func (l *SaveArticleDraftLogic) updateDraft(in *content.SaveArticleDraftReq, con
 func isEditableStatus(status int32) bool {
 	return status == int32(content.ContentStatus_CONTENT_STATUS_DRAFT) ||
 		status == int32(content.ContentStatus_CONTENT_STATUS_REJECTED)
-}
-
-// draftVisibility 可见性缺省处理 未传时用 fallback 新建 fallback 传公开 编辑 fallback 传原值 防私密草稿被改公开
-func draftVisibility(reqVis content.Visibility, fallback int32) int32 {
-	if reqVis == content.Visibility_VISIBILITY_UNSPECIFIED {
-		return fallback
-	}
-	return int32(reqVis)
 }

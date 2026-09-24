@@ -30,12 +30,10 @@ func NewListContentsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *List
 }
 
 func (l *ListContentsLogic) ListContents(req *types.AdminContentListReq) (resp *types.AdminContentListRes, err error) {
-
 	in := &content.AdminListContentsReq{
 		Page:        req.Page,
 		PageSize:    req.PageSize,
 		AuthorId:    req.AuthorId,
-		Username:    req.Username,
 		Status:      pkgutils.CastPtr[content.ContentStatus](req.Status),
 		ContentType: pkgutils.CastPtr[content.ContentType](req.ContentType),
 	}

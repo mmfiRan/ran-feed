@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 
 	"ran-feed/app/rpc/interaction/interaction"
-	"ran-feed/app/rpc/interaction/internal/common/consts"
+	"ran-feed/app/rpc/interaction/internal/common/enums"
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/entity/model"
 	"ran-feed/app/rpc/interaction/internal/entity/query"
@@ -177,7 +177,7 @@ func TestQueryCommentList_Tombstone(t *testing.T) {
 	repo := &fakeCommentRepo{
 		rootRows: []*model.RanFeedComment{
 			cmtRow(30, 1, 100, 0, 0, 1, 10),
-			cmtRow(20, 1, 101, 0, 0, 0, consts.CommentStatusDeleted),
+			cmtRow(20, 1, 101, 0, 0, 0, enums.CommentStatusDeleted.Int32()),
 		},
 	}
 	logic := newCommentListLogic(repo, &fakeUserRpc{})
@@ -187,7 +187,7 @@ func TestQueryCommentList_Tombstone(t *testing.T) {
 	require.Len(t, out.Comments, 2)
 	for _, c := range out.Comments {
 		assert.Equal(t, commentDeletedText, c.Comment)
-		assert.Equal(t, consts.CommentStatusDeleted, c.Status)
+		assert.Equal(t, enums.CommentStatusDeleted.Int32(), c.Status)
 		assert.Equal(t, int64(0), c.UserId)
 	}
 }

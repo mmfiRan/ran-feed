@@ -9,6 +9,7 @@ import (
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/repositories"
 	"ran-feed/app/rpc/interaction/internal/svc"
+	pkgenums "ran-feed/pkg/enums"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -49,7 +50,7 @@ func (l *DeleteCommentLogic) DeleteComment(in *interaction.DeleteCommentReq) (*e
 	if comment.UserID != in.UserId {
 		return nil, errorx.NewMsg("无权限删除评论")
 	}
-	if comment.IsDeleted == 1 {
+	if pkgenums.IsDeleted(comment.IsDeleted).IsDel() {
 		return &emptypb.Empty{}, nil
 	}
 
@@ -98,7 +99,7 @@ func (l *DeleteCommentLogic) cleanupDeletedAncestors(parentID int64) {
 			l.Errorf("查询父评论失败: %v, comment_id=%d", err, current)
 			return
 		}
-		if parent == nil || parent.IsDeleted == 0 {
+		if parent == nil || !pkgenums.IsDeleted(parent.IsDeleted).IsDel() {
 			return
 		}
 

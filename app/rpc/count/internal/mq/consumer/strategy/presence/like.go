@@ -1,7 +1,7 @@
 package presence
 
 import (
-	"ran-feed/app/rpc/count/count"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
 )
 
@@ -12,7 +12,7 @@ func init() {
 		return &presenceCounterStrategy{
 			tableName: likeTableName,
 			isActive:  statusActive,
-			targetsOf: contentTargets(count.BizType_BIZ_TYPE_LIKE),
+			targetsOf: contentTargets(countenum.BizTypeLike),
 		}
 	})
 }

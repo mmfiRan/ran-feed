@@ -4,6 +4,7 @@ import (
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/feedpub"
+	"ran-feed/app/rpc/content/internal/mq/producer"
 	"ran-feed/app/rpc/count/client/counterservice"
 	"ran-feed/app/rpc/interaction/client/favoriteservice"
 	"ran-feed/app/rpc/interaction/client/followservice"
@@ -15,6 +16,8 @@ import (
 	"ran-feed/pkg/oss"
 	"ran-feed/pkg/oss/aliyun"
 
+	"github.com/segmentio/kafka-go"
+	"github.com/zeromicro/go-queue/kq"
 	"github.com/zeromicro/go-zero/zrpc"
 
 	"github.com/zeromicro/go-zero/core/stores/redis"
@@ -32,6 +35,10 @@ type ServiceContext struct {
 	CountRpc    counterservice.CounterService
 	// PublishBoxRebuildLocker 发件箱冷重建分布式锁 大V发件箱属跨 pod 热点 防击穿
 	PublishBoxRebuildLocker *cache.DistLocker
+	// FollowRebuildLocker 关注流两半(inbox 与拉模式集)重建分布式锁 重建成本极高 防前端重试与多标签页并发重建
+	FollowRebuildLocker *cache.DistLocker
+	// FavoriteFeedRebuildLocker 收藏流缓存重建分布式锁 与发布流同级防击穿
+	FavoriteFeedRebuildLocker *cache.DistLocker
 	// FeedPublisher 内容发布
 	FeedPublisher *feedpub.Publisher
 }
@@ -81,17 +88,25 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
 	))
 	redisClient := redis.MustNewRedis(c.RedisConfig)
+	// Kafka 扇出生产者 Hash balancer 配合 PushWithKey 保证同内容分批落同分区
+	kqPusher := kq.NewPusher(
+		c.KqFanOutProducerConf.Brokers,
+		c.KqFanOutProducerConf.Topic,
+		kq.WithBalancer(&kafka.Hash{}),
+	)
 	return &ServiceContext{
-		MysqlDb:                 mysql,
-		Config:                  c,
-		OssStrategy:             ossStrategy,
-		Redis:                   redisClient,
-		UserRpc:                 userRpc,
-		LikesRpc:                likeRpc,
-		FavoriteRpc:             favoriteRpc,
-		FollowRpc:               followRpc,
-		CountRpc:                countRpc,
-		PublishBoxRebuildLocker: cache.NewDistLocker(redisClient),
-		FeedPublisher:           feedpub.NewPublisher(redisClient, followRpc, c.FollowFanOut),
+		MysqlDb:                   mysql,
+		Config:                    c,
+		OssStrategy:               ossStrategy,
+		Redis:                     redisClient,
+		UserRpc:                   userRpc,
+		LikesRpc:                  likeRpc,
+		FavoriteRpc:               favoriteRpc,
+		FollowRpc:                 followRpc,
+		CountRpc:                  countRpc,
+		PublishBoxRebuildLocker:   cache.NewDistLocker(redisClient),
+		FollowRebuildLocker:       cache.NewDistLocker(redisClient),
+		FavoriteFeedRebuildLocker: cache.NewDistLocker(redisClient),
+		FeedPublisher:             feedpub.NewPublisher(redisClient, followRpc, producer.NewFanOutProducer(kqPusher)),
 	}
 }

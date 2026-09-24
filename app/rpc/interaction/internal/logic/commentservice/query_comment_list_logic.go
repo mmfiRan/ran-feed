@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/interaction/interaction"
-	"ran-feed/app/rpc/interaction/internal/common/consts"
+	"ran-feed/app/rpc/interaction/internal/common/enums"
 	"ran-feed/app/rpc/interaction/internal/entity/model"
 	"ran-feed/app/rpc/interaction/internal/repositories"
 	"ran-feed/app/rpc/interaction/internal/svc"
+	pkgenums "ran-feed/pkg/enums"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -106,9 +107,9 @@ func buildCommentItemFromRow(row *model.RanFeedComment) *interaction.CommentItem
 	commentText := row.Comment
 	status := row.Status
 	userID := row.UserID
-	if row.IsDeleted == 1 || row.Status == consts.CommentStatusDeleted {
+	if pkgenums.IsDeleted(row.IsDeleted).IsDel() || enums.CommentStatusEnum(row.Status).IsDeleted() {
 		commentText = commentDeletedText
-		status = consts.CommentStatusDeleted
+		status = enums.CommentStatusDeleted.Int32()
 		userID = 0
 	}
 	return &interaction.CommentItem{

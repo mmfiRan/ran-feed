@@ -4,10 +4,11 @@ import (
 	"context"
 	"strconv"
 
-	"ran-feed/app/rpc/count/count"
 	rediskey "ran-feed/app/rpc/count/internal/common/consts/redis"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/repositories"
 	"ran-feed/app/rpc/count/internal/svc"
+	"ran-feed/pkg/consts"
 	"ran-feed/pkg/xxljob"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -51,9 +52,9 @@ func (j *BigVReconcileJob) Run(ctx context.Context, _ xxljob.TriggerParam) (stri
 // promoteMissed 复查当前粉丝数 把 ≥阈值却漏晋升的补进大 V 表 单个失败只记日志不阻断
 func (j *BigVReconcileJob) promoteMissed(ctx context.Context) error {
 	candidates, err := j.countRepo.ListTargetValuesByValueGte(
-		int32(count.BizType_BIZ_TYPE_FOLLOWED),
-		int32(count.TargetType_TARGET_TYPE_USER),
-		rediskey.BigVFollowerThreshold,
+		countenum.BizTypeFollowed.Int32(),
+		countenum.TargetTypeUser.Int32(),
+		consts.BigVFollowerThreshold,
 	)
 	if err != nil {
 		return err

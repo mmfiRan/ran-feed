@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zeromicro/go-zero/core/logx"
 
-	"ran-feed/app/rpc/count/count"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/entity/model"
 	"ran-feed/app/rpc/count/internal/entity/query"
 	counterservicelogic "ran-feed/app/rpc/count/internal/logic/counterservice"
@@ -89,7 +89,7 @@ func TestProcessRow_点赞增量落库(t *testing.T) {
 	require.NoError(t, c.processRow(ctx, nil, newTestMeta("ran_feed_like", "INSERT"), s, row, nil, cs))
 
 	assert.Equal(t, 1, countRepo.updateDeltaWithOwnerCalls)
-	assert.Contains(t, cs.counts, countKey{count.BizType_BIZ_TYPE_LIKE, count.TargetType_TARGET_TYPE_CONTENT, 100})
+	assert.Contains(t, cs.counts, countKey{countenum.BizTypeLike, countenum.TargetTypeContent, 100})
 }
 
 func TestProcessRow_ResetToZeroCascades(t *testing.T) {

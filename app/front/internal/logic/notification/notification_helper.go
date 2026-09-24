@@ -89,6 +89,38 @@ func collectRefIDs(items []*notifypb.NotificationItem) (actorIDs, contentIDs []i
 	return actorIDs, contentIDs
 }
 
+// splitReviewContentIDs 把内容 id 拆成审核类与其余
+// 任一条引用该内容的通知是审核类 即归入审核类 走作者本人视角取数
+// 审核通知指向被拒/下架内容 PUBLIC 批量链路查不到且会写负哨兵
+func splitReviewContentIDs(items []*notifypb.NotificationItem) (reviewIDs, publicIDs []int64) {
+	if len(items) == 0 {
+		return nil, nil
+	}
+	reviewSet := make(map[int64]struct{})
+	seen := make(map[int64]struct{})
+	all := make([]int64, 0, len(items))
+	for _, it := range items {
+		if it == nil || it.ContentId <= 0 {
+			continue
+		}
+		if _, ok := seen[it.ContentId]; !ok {
+			seen[it.ContentId] = struct{}{}
+			all = append(all, it.ContentId)
+		}
+		if it.NotifyType == notifypb.NotifyType_NOTIFY_TYPE_CONTENT_REVIEW {
+			reviewSet[it.ContentId] = struct{}{}
+		}
+	}
+	for _, id := range all {
+		if _, ok := reviewSet[id]; ok {
+			reviewIDs = append(reviewIDs, id)
+			continue
+		}
+		publicIDs = append(publicIDs, id)
+	}
+	return reviewIDs, publicIDs
+}
+
 // nilSafeInt64 >0 转指针 nil 则返回 nil 用于 optional 字段映射
 func nilSafeInt64(v int64) *int64 {
 	if v > 0 {

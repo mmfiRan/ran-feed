@@ -2,12 +2,11 @@ package counterservicelogic
 
 import (
 	"context"
-	"math/rand"
 	"strconv"
-	"time"
 
 	"ran-feed/app/rpc/count/count"
 	rediskey "ran-feed/app/rpc/count/internal/common/consts/redis"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/repositories"
 	"ran-feed/app/rpc/count/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -41,7 +40,7 @@ func (l *GetCountLogic) GetCount(in *count.GetCountReq) (*count.GetCountRes, err
 		return nil, errorx.NewMsg("查询计数请求无效")
 	}
 
-	cacheKey := buildCountValueCacheKey(in.BizType, in.TargetType, in.TargetId)
+	cacheKey := buildCountValueCacheKey(countenum.BizTypeEnum(in.BizType), countenum.TargetTypeEnum(in.TargetType), in.TargetId)
 
 	cacheValue, cacheResult := l.queryFromCache(cacheKey)
 	if cacheResult == cacheHit {
@@ -102,25 +101,7 @@ func (l *GetCountLogic) rebuildCacheWithLock(in *count.GetCountReq, cacheKey str
 	}
 
 	if !lockAcquired {
-		const (
-			maxRetry    = 5
-			baseSleepMs = 30
-			jitterMs    = 50
-		)
-		for i := 0; i < maxRetry; i++ {
-			select {
-			case <-l.ctx.Done():
-				return 0, l.ctx.Err()
-			default:
-			}
-			time.Sleep(time.Duration(baseSleepMs+rand.Intn(jitterMs)) * time.Millisecond)
-
-			if value, cacheResult := l.queryFromCache(cacheKey); cacheResult == cacheHit {
-				return value, nil
-			}
-		}
-
-		// 重试后仍未命中，直接查库返回
+		// 别人正在重建 不阻塞请求 直接回源查库
 		return l.queryFromDB(in)
 	}
 

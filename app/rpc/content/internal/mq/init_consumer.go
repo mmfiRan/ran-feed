@@ -1,7 +1,8 @@
-package consumer
+package mq
 
 import (
 	"context"
+	"ran-feed/app/rpc/content/internal/mq/consumer"
 
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -13,7 +14,10 @@ import (
 func Consumers(c config.Config, ctx context.Context, svcContext *svc.ServiceContext) []service.Service {
 	consumers := make([]service.Service, 0)
 	if c.KqConsumerConf.Topic != "" {
-		consumers = append(consumers, kq.MustNewQueue(c.KqConsumerConf, NewContentEventConsumer(ctx, svcContext)))
+		consumers = append(consumers, kq.MustNewQueue(c.KqConsumerConf, consumer.NewContentEventConsumer(ctx, svcContext)))
+	}
+	if c.KqFanOutConsumerConf.Topic != "" {
+		consumers = append(consumers, kq.MustNewQueue(c.KqFanOutConsumerConf, consumer.NewFanOutConsumer(ctx, svcContext)))
 	}
 	return consumers
 }

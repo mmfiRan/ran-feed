@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS ran_feed_content_outbox
     payload      TEXT        NOT NULL COMMENT '事件体json',
     created_at   DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
     UNIQUE KEY uk_event_id (event_id),
-    KEY idx_aggregate (aggregate_id)
+    KEY idx_aggregate (aggregate_id),
+    KEY idx_created_at (created_at)
 )
     ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4

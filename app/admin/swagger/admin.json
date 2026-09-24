@@ -515,12 +515,6 @@
             "name": "author_id",
             "in": "query",
             "allowEmptyValue": true
-          },
-          {
-            "type": "string",
-            "name": "username",
-            "in": "query",
-            "allowEmptyValue": true
           }
         ],
         "responses": {
@@ -908,6 +902,10 @@
               "properties": {
                 "content_id": {
                   "type": "integer"
+                },
+                "reason": {
+                  "description": "下架原因",
+                  "type": "string"
                 },
                 "status": {
                   "description": "目标状态 30已发布 50已下架",
@@ -2121,7 +2119,7 @@
       }
     }
   },
-  "x-date": "2026-09-18 15:35:18",
+  "x-date": "2026-09-24 15:07:12",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

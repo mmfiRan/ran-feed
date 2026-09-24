@@ -7,9 +7,8 @@ import (
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
-	contentenums "ran-feed/pkg/enums/content"
 	"ran-feed/pkg/errorx"
-	"ran-feed/pkg/event"
+	"ran-feed/pkg/event/contentevent"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -66,11 +65,7 @@ func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*empty
 		}
 
 		// 写发件箱,清理由消费者消费删除事件完成
-		return l.outboxRepo.WithTx(tx).CreateEvent(&event.ContentEvent{
-			EventType: contentenums.EventTypeDeleted,
-			ContentID: in.ContentId,
-			AuthorID:  in.UserId,
-		})
+		return l.outboxRepo.WithTx(tx).CreateEvent(contentevent.NewContentDeletedEvent(in.ContentId, in.UserId))
 	}); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除失败"))
 	}

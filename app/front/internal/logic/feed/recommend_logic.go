@@ -5,8 +5,8 @@ package feed
 
 import (
 	"context"
+
 	"ran-feed/pkg/utils"
-	"strconv"
 
 	frontutils "ran-feed/app/front/internal/common/utils"
 	"ran-feed/app/front/internal/svc"
@@ -67,7 +67,7 @@ func (l *RecommendLogic) Recommend(req *types.RecommendFeedReq) (resp *types.Rec
 
 	nextCursor := ""
 	if rpcResp.HasMore {
-		nextCursor = strconv.FormatInt(rpcResp.NextCursor, 10)
+		nextCursor = rpcResp.NextCursor
 	}
 
 	return &types.RecommendFeedRes{

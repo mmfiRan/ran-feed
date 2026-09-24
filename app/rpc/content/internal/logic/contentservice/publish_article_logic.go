@@ -33,22 +33,22 @@ func NewPublishArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Pu
 }
 
 func (l *PublishArticleLogic) PublishArticle(in *content.ArticlePublishReq) (*content.ArticlePublishRes, error) {
+	if err := validateArticlePublish(in.Title, in.Cover, in.Content); err != nil {
+		return nil, err
+	}
+	visibility, err := resolveWriteVisibility(writeModePublish, in.Visibility, 0)
+	if err != nil {
+		return nil, err
+	}
+
 	var contentId int64
 	if err := query.Q.Transaction(func(tx *query.Query) error {
 		contentRepo := l.contentRepository.WithTx(tx)
 		articleRepo := l.articleRepository.WithTx(tx)
 
-		contentId = snowflake.GenID()
-
-		contentDO := &do.ContentDO{
-			ID:          contentId,
-			UserID:      in.UserId,
-			ContentType: int32(content.ContentType_CONTENT_TYPE_ARTICLE),
-			Status:      int32(content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW),
-			Visibility:  int32(in.Visibility),
-			CreatedBy:   in.UserId,
-			UpdatedBy:   in.UserId,
-		}
+		contentDO := buildContentDO(in.UserId, content.ContentType_CONTENT_TYPE_ARTICLE,
+			content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW, visibility)
+		contentId = contentDO.ID
 		if err := contentRepo.CreateContent(contentDO); err != nil {
 			return err
 		}

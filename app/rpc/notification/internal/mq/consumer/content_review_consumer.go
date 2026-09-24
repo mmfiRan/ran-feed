@@ -8,16 +8,17 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logc"
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/threading"
 	"gorm.io/gorm"
 
+	notifyenum "ran-feed/app/rpc/notification/internal/common/enums"
 	"ran-feed/app/rpc/notification/internal/entity/model"
 	"ran-feed/app/rpc/notification/internal/entity/query"
 	"ran-feed/app/rpc/notification/internal/repositories"
 	"ran-feed/app/rpc/notification/internal/svc"
-	"ran-feed/app/rpc/notification/notification"
 	contentenums "ran-feed/pkg/enums/content"
-	"ran-feed/pkg/event"
 	"ran-feed/pkg/event/canal"
+	"ran-feed/pkg/event/contentevent"
 	"ran-feed/pkg/event/pipeline"
 )
 
@@ -60,7 +61,7 @@ func (c *ContentReviewConsumer) Consume(ctx context.Context, key, val string) er
 	recipients := make(map[int64]struct{})
 	err = pipeline.RunInTx(ctx, c.svcContext.MysqlDb.DB, contentReviewConsumerName, msg, val,
 		func(ctx context.Context, tx *gorm.DB, meta pipeline.RowMeta, row, oldRow map[string]any) error {
-			evt, err := event.UnmarshalContentEvent(canal.ParseString(row["payload"]))
+			evt, err := contentevent.UnmarshalContentEvent(canal.ParseString(row["payload"]))
 			if err != nil {
 				logc.Errorf(ctx, "解析 content 事件失败 跳过 err=%v", err)
 				return nil
@@ -83,15 +84,23 @@ func (c *ContentReviewConsumer) Consume(ctx context.Context, key, val string) er
 	return nil
 }
 
-// dispatch 事务外推送未读数 供 SSE 实时更新 失败只记日志
+// dispatch 事务外推送未读数 供 SSE 实时更新 脱离请求 ctx 独立超时 失败只记日志
 func (c *ContentReviewConsumer) dispatch(recipients map[int64]struct{}) {
-	for recipientID := range recipients {
-		c.pushUnread(recipientID)
+	if len(recipients) == 0 {
+		return
 	}
+	threading.GoSafe(func() {
+		bg, cancel := context.WithTimeout(context.Background(), dispatchTimeout)
+		defer cancel()
+		repo := repositories.NewNotificationRepository(bg, c.svcContext.MysqlDb)
+		for recipientID := range recipients {
+			c.pushUnread(bg, repo, recipientID)
+		}
+	})
 }
 
-func (c *ContentReviewConsumer) pushUnread(recipientID int64) {
-	unread, err := c.notifyRepo.CountUnread(recipientID)
+func (c *ContentReviewConsumer) pushUnread(ctx context.Context, repo repositories.NotificationRepository, recipientID int64) {
+	unread, err := repo.CountUnread(recipientID)
 	if err != nil {
 		c.Errorf("审核通知查未读数失败 recipientID=%d err=%v", recipientID, err)
 		return
@@ -100,13 +109,13 @@ func (c *ContentReviewConsumer) pushUnread(recipientID int64) {
 	if err != nil {
 		return
 	}
-	if _, err := c.svcContext.Redis.PublishCtx(c.ctx, notifyPushChannel, string(payload)); err != nil {
+	if _, err := c.svcContext.Redis.PublishCtx(ctx, notifyPushChannel, string(payload)); err != nil {
 		c.Errorf("审核通知推送失败 recipientID=%d err=%v", recipientID, err)
 	}
 }
 
 // buildReviewNotification 事件转通知行 非审核类事件返回 false
-func buildReviewNotification(evt *event.ContentEvent, at time.Time) (*model.RanFeedNotification, bool) {
+func buildReviewNotification(evt *contentevent.ContentEvent, at time.Time) (*model.RanFeedNotification, bool) {
 	var snippet string
 	switch evt.EventType {
 	case contentenums.EventTypePublished:
@@ -123,7 +132,7 @@ func buildReviewNotification(evt *event.ContentEvent, at time.Time) (*model.RanF
 	return &model.RanFeedNotification{
 		RecipientID: evt.AuthorID,
 		ActorID:     0,
-		NotifyType:  int32(notification.NotifyType_NOTIFY_TYPE_CONTENT_REVIEW),
+		NotifyType:  notifyenum.NotifyTypeContentReview.Int32(),
 		AggKey:      fmt.Sprintf("RV:%d", evt.ContentID),
 		AggCount:    1,
 		ContentID:   evt.ContentID,

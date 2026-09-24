@@ -3,12 +3,11 @@ package counterservicelogic
 import (
 	"context"
 	"encoding/json"
-	"math/rand"
 	"strconv"
-	"time"
 
 	"ran-feed/app/rpc/count/count"
 	rediskey "ran-feed/app/rpc/count/internal/common/consts/redis"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/repositories"
 	"ran-feed/app/rpc/count/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -92,23 +91,7 @@ func (l *GetUserProfileCountsLogic) rebuildCacheWithLock(userID int64, cacheKey 
 	}
 
 	if !lockAcquired {
-		const (
-			maxRetry    = 5
-			baseSleepMs = 30
-			jitterMs    = 50
-		)
-		for i := 0; i < maxRetry; i++ {
-			select {
-			case <-l.ctx.Done():
-				return nil, l.ctx.Err()
-			default:
-			}
-			time.Sleep(time.Duration(baseSleepMs+rand.Intn(jitterMs)) * time.Millisecond)
-
-			if value, cacheResult := l.queryFromCache(cacheKey); cacheResult == cacheHit {
-				return value, nil
-			}
-		}
+		// 别人正在重建 不阻塞请求 直接回源查库
 		return l.queryFromDB(userID)
 	}
 
@@ -145,23 +128,23 @@ func (l *GetUserProfileCountsLogic) rebuildCacheWithLock(userID int64, cacheKey 
 }
 
 func (l *GetUserProfileCountsLogic) queryFromDB(userID int64) (*count.GetUserProfileCountsRes, error) {
-	likeCount, err := l.countRepo.SumByOwner(int32(count.BizType_BIZ_TYPE_LIKE), int32(count.TargetType_TARGET_TYPE_CONTENT), userID)
+	likeCount, err := l.countRepo.SumByOwner(countenum.BizTypeLike.Int32(), countenum.TargetTypeContent.Int32(), userID)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询用户点赞数失败"))
 	}
-	favoriteCount, err := l.countRepo.SumByOwner(int32(count.BizType_BIZ_TYPE_FAVORITE), int32(count.TargetType_TARGET_TYPE_CONTENT), userID)
+	favoriteCount, err := l.countRepo.SumByOwner(countenum.BizTypeFavorite.Int32(), countenum.TargetTypeContent.Int32(), userID)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询用户收藏数失败"))
 	}
 
 	followingCount := int64(0)
 	followedCount := int64(0)
-	if row, err := l.countRepo.Get(int32(count.BizType_BIZ_TYPE_FOLLOWING), int32(count.TargetType_TARGET_TYPE_USER), userID); err != nil {
+	if row, err := l.countRepo.Get(countenum.BizTypeFollowing.Int32(), countenum.TargetTypeUser.Int32(), userID); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询关注数失败"))
 	} else if row != nil {
 		followingCount = row.Value
 	}
-	if row, err := l.countRepo.Get(int32(count.BizType_BIZ_TYPE_FOLLOWED), int32(count.TargetType_TARGET_TYPE_USER), userID); err != nil {
+	if row, err := l.countRepo.Get(countenum.BizTypeFollowed.Int32(), countenum.TargetTypeUser.Int32(), userID); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询被关注数失败"))
 	} else if row != nil {
 		followedCount = row.Value

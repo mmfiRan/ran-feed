@@ -36,6 +36,7 @@ func (l *SetContentStatusLogic) SetContentStatus(req *types.AdminContentStatusRe
 		ContentId:  req.ContentId,
 		Status:     content.ContentStatus(req.Status),
 		OperatorId: operatorID,
+		Reason:     req.Reason,
 	})
 	if err != nil {
 		return nil, err

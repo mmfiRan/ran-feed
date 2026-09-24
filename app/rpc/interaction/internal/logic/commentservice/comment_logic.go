@@ -4,17 +4,18 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/interaction/interaction"
+	"ran-feed/app/rpc/interaction/internal/common/enums"
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/repositories"
 	"ran-feed/app/rpc/interaction/internal/svc"
+	pkgenums "ran-feed/pkg/enums"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
 const (
-	commentStatusNormal int32 = 10
-	commentVersion      int32 = 1
+	commentVersion int32 = 1
 )
 
 type CommentLogic struct {
@@ -51,7 +52,7 @@ func (l *CommentLogic) Comment(in *interaction.CommentReq) (*interaction.Comment
 		if parentComment == nil {
 			return nil, errorx.NewMsg("父评论不存在")
 		}
-		if parentComment.Status != commentStatusNormal || parentComment.IsDeleted == 1 {
+		if !enums.CommentStatusEnum(parentComment.Status).IsNormal() || pkgenums.IsDeleted(parentComment.IsDeleted).IsDel() {
 			return nil, errorx.NewMsg("父评论不可回复")
 		}
 		if parentComment.ContentID != in.ContentId {
@@ -80,7 +81,7 @@ func (l *CommentLogic) Comment(in *interaction.CommentReq) (*interaction.Comment
 		ParentID:      parentID,
 		RootID:        rootID,
 		Comment:       in.Comment,
-		Status:        commentStatusNormal,
+		Status:        enums.CommentStatusNormal,
 		Version:       commentVersion,
 		CreatedBy:     in.UserId,
 		UpdatedBy:     in.UserId,

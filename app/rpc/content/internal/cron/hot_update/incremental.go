@@ -1,4 +1,4 @@
-package hot_fast_update
+package hot_update
 
 import (
 	"context"
@@ -6,16 +6,15 @@ import (
 	"strconv"
 	"time"
 
-	"ran-feed/app/rpc/content/content"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
-	"ran-feed/app/rpc/count/count"
 	"ran-feed/pkg/hotrank"
 )
 
 // collectDirtyIDs 逐分片冻结脏集合并 SSCAN 收集脏 contentID
 // 冻结脚本把活跃桶原子搬到处理中桶 处理期间新互动安全堆进活跃桶 双缓冲
-func (j *HotFastUpdateJob) collectDirtyIDs(ctx context.Context, shards int) ([]int64, error) {
+func (j *Job) collectDirtyIDs(ctx context.Context, shards int) ([]int64, error) {
 	seen := make(map[int64]struct{})
 	ids := make([]int64, 0)
 	for shard := 0; shard < shards; shard++ {
@@ -25,7 +24,6 @@ func (j *HotFastUpdateJob) collectDirtyIDs(ctx context.Context, shards int) ([]i
 			return nil, err
 		}
 
-		// 防止极端场景单个大key造成redis阻塞
 		var cursor uint64
 		for {
 			members, next, err := j.svc.Redis.SscanCtx(ctx, procKey, cursor, "", defaultScanBatch)
@@ -52,16 +50,25 @@ func (j *HotFastUpdateJob) collectDirtyIDs(ctx context.Context, shards int) ([]i
 	return ids, nil
 }
 
-// recomputeAndOverwrite 对脏 ID 回查计数总量算全分 ZADD 覆盖主榜 已删或非公开的从主榜 ZREM
-// 每批 ZADD 后立即把主榜裁回 mainN 候选池大小 主榜瞬时上限 = mainN + 批大小
-// 避免脏数据量大时主榜一次性膨胀成大 key 及末尾一刀删大量成员阻塞 Redis
-// 每条脏 ID 的新分都照写 含掉分内容 故无降分赖榜问题 裁剪只删分数最低的多余成员
-func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator hotrank.AdditiveTime, dirtyIDs []int64, mainN int) error {
-	statusPublished := int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)
-	visibilityPublic := int32(content.Visibility_VISIBILITY_PUBLIC)
+// cleanupProcShards 删除本轮已处理的冻结桶
+func (j *Job) cleanupProcShards(ctx context.Context, shards int) error {
+	for shard := 0; shard < shards; shard++ {
+		if _, err := j.svc.Redis.DelCtx(ctx, rediskey.BuildHotFeedDirtyProcKey(shard)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
-	for start := 0; start < len(dirtyIDs); start += defaultBatchSize {
-		end := start + defaultBatchSize
+// recomputeAndOverwrite 对脏 ID 回查计数总量算全分 ZADD 覆盖主榜 已删或非公开的从主榜 ZREM
+// 每批 ZADD 后立即把主榜裁回 mainN 候选池 主榜瞬时上限 = mainN + 批大小
+// 每条脏 ID 的新分都照写 含掉分内容 故无降分赖榜问题 裁剪只删分数最低的多余成员
+func (j *Job) recomputeAndOverwrite(ctx context.Context, calculator hotrank.AdditiveTime, dirtyIDs []int64, mainN, batchSize int) error {
+	statusPublished := contentEnum.ContentStatusPublished.Int32()
+	visibilityPublic := contentEnum.VisibilityPublic.Int32()
+
+	for start := 0; start < len(dirtyIDs); start += batchSize {
+		end := start + batchSize
 		if end > len(dirtyIDs) {
 			end = len(dirtyIDs)
 		}
@@ -91,7 +98,6 @@ func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator
 			continue
 		}
 
-		// 回查计数总量 点赞 评论 收藏 算全分
 		countsByID, err := j.batchGetCounts(ctx, validIDs)
 		if err != nil {
 			return fmt.Errorf("回查互动计数失败 %w", err)
@@ -107,15 +113,13 @@ func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator
 				publishedAt = row.PublishedAt.UTC()
 			}
 			counts := countsByID[id]
-			weighted := calculator.Weighted(counts.GetLikeCount(), counts.GetCommentCount(), counts.GetFavoriteCount())
-			score := calculator.Score(weighted, publishedAt)
+			score := calcScore(calculator, publishedAt, counts)
 			// ZADD 覆盖非 ZINCRBY 分值是按总量重算的时点值 自愈漂移和丢事件
 			redisArgs = append(redisArgs, score, strconv.FormatInt(id, 10))
 			dbIDs = append(dbIDs, id)
 			dbScores = append(dbScores, score)
 		}
 
-		// 整批一次 ZADD 替代逐条往返 与冷更共用重建脚本口径一致
 		if len(redisArgs) > 0 {
 			if _, err = j.svc.Redis.EvalCtx(ctx, luautils.RebuildHotFeedZSetScript, []string{
 				rediskey.RedisFeedHotGlobalKey,
@@ -123,7 +127,6 @@ func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator
 				return err
 			}
 			// 分批裁剪 每批 ZADD 后立即裁回 mainN 主榜瞬时不超过 mainN+批大小
-			// ZREMRANGEBYRANK 删除升序 rank [0,-(mainN+1)] 即最低分多余成员 成员数<=mainN 时空操作
 			if mainN > 0 {
 				if _, err = j.svc.Redis.ZremrangebyrankCtx(ctx, rediskey.RedisFeedHotGlobalKey, 0, -(int64(mainN) + 1)); err != nil {
 					return err
@@ -137,26 +140,4 @@ func (j *HotFastUpdateJob) recomputeAndOverwrite(ctx context.Context, calculator
 		}
 	}
 	return nil
-}
-
-// batchGetCounts 批量回查内容的点赞 评论 收藏总量 由 count 服务提供
-func (j *HotFastUpdateJob) batchGetCounts(ctx context.Context, contentIDs []int64) (map[int64]*count.ContentCountsItem, error) {
-	countsByID := make(map[int64]*count.ContentCountsItem, len(contentIDs))
-	if len(contentIDs) == 0 {
-		return countsByID, nil
-	}
-
-	resp, err := j.svc.CountRpc.BatchGetContentCounts(ctx, &count.BatchGetContentCountsReq{
-		ContentIds: contentIDs,
-	})
-	if err != nil {
-		return nil, err
-	}
-	for _, item := range resp.GetItems() {
-		if item == nil || item.GetContentId() <= 0 {
-			continue
-		}
-		countsByID[item.GetContentId()] = item
-	}
-	return countsByID, nil
 }

@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	notifyenum "ran-feed/app/rpc/notification/internal/common/enums"
 	"ran-feed/app/rpc/notification/internal/mq/consumer/strategy"
-	"ran-feed/app/rpc/notification/notification"
 )
 
 func TestLikeStrategy_ExtractEvents(t *testing.T) {
@@ -24,7 +24,7 @@ func TestLikeStrategy_ExtractEvents(t *testing.T) {
 	e := events[0]
 	assert.Equal(t, int64(200), e.RecipientID)
 	assert.Equal(t, int64(100), e.ActorID)
-	assert.Equal(t, int32(notification.NotifyType_NOTIFY_TYPE_LIKE_FAVORITE), e.NotifyType)
+	assert.Equal(t, notifyenum.NotifyTypeLikeFavorite, e.NotifyType)
 	assert.Equal(t, "LF:500", e.AggKey)
 	assert.Equal(t, strategy.PersistAggregate, e.Action)
 	assert.Equal(t, int64(500), e.ContentID)
@@ -63,7 +63,7 @@ func TestFavoriteStrategy_ExtractEvents_共享LF聚合(t *testing.T) {
 	}, nil)
 	require.Len(t, events, 1)
 	assert.Equal(t, "LF:500", events[0].AggKey, "favorite 与 like 共 LF:{content_id}")
-	assert.Equal(t, int32(notification.NotifyType_NOTIFY_TYPE_LIKE_FAVORITE), events[0].NotifyType)
+	assert.Equal(t, notifyenum.NotifyTypeLikeFavorite, events[0].NotifyType)
 	assert.Equal(t, strategy.PersistAggregate, events[0].Action)
 
 	// 自收藏过滤
@@ -151,7 +151,7 @@ func TestFollowStrategy_ExtractEvents(t *testing.T) {
 	assert.Equal(t, int64(100), e.ActorID)
 	assert.Equal(t, "FO:100", e.AggKey, "FOLLOW 用 FO:{actor_id} 收敛取关重关")
 	assert.Equal(t, strategy.PersistAggregate, e.Action)
-	assert.Equal(t, int32(notification.NotifyType_NOTIFY_TYPE_FOLLOW), e.NotifyType)
+	assert.Equal(t, notifyenum.NotifyTypeFollow, e.NotifyType)
 
 	// UPDATE 复关(取关→再关注)应触发
 	events = s.ExtractEvents(ctx, "UPDATE", map[string]interface{}{

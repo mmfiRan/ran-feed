@@ -3,10 +3,12 @@ package followwindow
 import (
 	"strconv"
 	"time"
+
+	"ran-feed/app/rpc/content/internal/common/consts"
 )
 
 // DefaultWindowDays 关注流 deadline 默认时间窗口天数 配置为 0 时回退
-const DefaultWindowDays = 14
+const DefaultWindowDays = consts.WindowDays
 
 const millisPerDay = int64(24 * 60 * 60 * 1000)
 

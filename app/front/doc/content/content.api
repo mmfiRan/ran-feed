@@ -111,7 +111,7 @@ type (
 		CoverUrl      string    `json:"cover_url"`
 		CreatedAt     int64     `json:"created_at"`
 		PublishedAt   int64     `json:"published_at"`
-		RejectReason  string    `json:"reject_reason"`
+		StatusReason  string    `json:"status_reason"` // 不可见原因 拒绝/下架
 		LikeCount     int64     `json:"like_count"`
 		FavoriteCount int64     `json:"favorite_count"`
 		CommentCount  int64     `json:"comment_count"`

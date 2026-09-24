@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/interaction/interaction"
-	"ran-feed/app/rpc/interaction/internal/common/consts"
+	"ran-feed/app/rpc/interaction/internal/common/enums"
 	"ran-feed/app/rpc/interaction/internal/svc"
 	"ran-feed/app/rpc/user/client/userservice"
 	"ran-feed/app/rpc/user/user"
@@ -24,7 +24,7 @@ func fillCommentUsers(ctx context.Context, svcCtx *svc.ServiceContext, logger lo
 		if c == nil || c.UserId <= 0 {
 			continue
 		}
-		if c.Status == consts.CommentStatusDeleted {
+		if enums.CommentStatusEnum(c.Status).IsDeleted() {
 			continue
 		}
 		if _, ok := seen[c.UserId]; ok {

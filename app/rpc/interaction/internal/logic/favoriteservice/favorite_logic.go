@@ -2,10 +2,9 @@ package favoriteservicelogic
 
 import (
 	"context"
-	"strconv"
 
+	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/interaction/interaction"
-	rediskey "ran-feed/app/rpc/interaction/internal/common/consts/redis"
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/repositories"
 	"ran-feed/app/rpc/interaction/internal/svc"
@@ -44,9 +43,9 @@ func (l *FavoriteLogic) Favorite(in *interaction.FavoriteReq) (*emptypb.Empty, e
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("收藏失败"))
 	}
 
-	favKey := rediskey.BuildUserFavoriteFeedKey(strconv.FormatInt(in.UserId, 10))
-	if _, delErr := l.svcCtx.Redis.DelCtx(l.ctx, favKey); delErr != nil {
-		l.Errorf("删除收藏列表缓存失败: %v, user_id=%d", delErr, in.UserId)
+	// 失效收藏流缓存 跨域数据走对应 RPC 不直删 content 侧 key 失败只记日志由 TTL 兜底
+	if _, cerr := l.svcCtx.ContentRpc.ClearUserFavoriteCache(l.ctx, &content.ClearUserFavoriteCacheReq{UserId: in.UserId}); cerr != nil {
+		l.Errorf("失效收藏流缓存失败: %v, user_id=%d", cerr, in.UserId)
 	}
 
 	return &emptypb.Empty{}, nil

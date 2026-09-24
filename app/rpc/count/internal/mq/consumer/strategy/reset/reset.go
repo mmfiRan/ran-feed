@@ -7,8 +7,9 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logc"
 
-	"ran-feed/app/rpc/count/count"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
+	"ran-feed/pkg/consts"
 	"ran-feed/pkg/enums"
 	"ran-feed/pkg/event/canal"
 )
@@ -29,6 +30,11 @@ func (s *contentResetStrategy) TableName() string {
 	return s.tableName
 }
 
+// SkipRow 热榜任务分钟级落库只改 hot_score 等列 与计数无关 跳过避免落无谓去重行
+func (s *contentResetStrategy) SkipRow(row, oldRow map[string]interface{}) bool {
+	return canal.OnlyIgnoredColumnsChanged(row, oldRow, consts.HotScoreOnlyColumns...)
+}
+
 func (s *contentResetStrategy) ExtractUpdates(ctx context.Context, op string, row map[string]interface{}, oldRow map[string]interface{}) []strategy.Update {
 	if strings.ToUpper(strings.TrimSpace(op)) != "UPDATE" {
 		return nil
@@ -44,12 +50,12 @@ func (s *contentResetStrategy) ExtractUpdates(ctx context.Context, op string, ro
 	}
 	ownerID, _ := canal.ParseInt64(row["user_id"])
 
-	bizTypes := []count.BizType{count.BizType_BIZ_TYPE_LIKE, count.BizType_BIZ_TYPE_FAVORITE, count.BizType_BIZ_TYPE_COMMENT}
+	bizTypes := []countenum.BizTypeEnum{countenum.BizTypeLike, countenum.BizTypeFavorite, countenum.BizTypeComment}
 	updates := make([]strategy.Update, 0, len(bizTypes))
 	for _, biz := range bizTypes {
 		updates = append(updates, strategy.Update{
 			BizType:    biz,
-			TargetType: count.TargetType_TARGET_TYPE_CONTENT,
+			TargetType: countenum.TargetTypeContent,
 			TargetID:   contentID,
 			OwnerID:    ownerID,
 			Action:     strategy.UpdateActionResetToZero,

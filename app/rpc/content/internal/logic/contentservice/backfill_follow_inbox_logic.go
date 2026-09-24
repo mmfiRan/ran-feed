@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"ran-feed/app/rpc/content/content"
+	contentconsts "ran-feed/app/rpc/content/internal/common/consts"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
 	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
@@ -17,7 +18,6 @@ import (
 
 const (
 	backfillFollowInboxWindowCap = 200
-	backfillFollowInboxKeepN     = 5000
 )
 
 type BackfillFollowInboxLogic struct {
@@ -46,12 +46,12 @@ func (l *BackfillFollowInboxLogic) BackfillFollowInbox(in *content.BackfillFollo
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	// 关注关系变更 失效 viewer 大 V 列表缓存 读路径按新关注集合重算
-	if _, err := l.svcCtx.Redis.DelCtx(l.ctx, rediskey.BuildFollowBigVKey(in.FollowerId)); err != nil {
-		l.Errorf("失效大 V 列表缓存失败 viewerID=%d err=%v", in.FollowerId, err)
+	// 关注关系变更 失效 viewer 拉模式集 下次读按新关注集合重建两半
+	if _, err := l.svcCtx.Redis.DelCtx(l.ctx, rediskey.BuildFollowPullKey(in.FollowerId)); err != nil {
+		l.Errorf("失效拉模式关注集失败 viewerID=%d err=%v", in.FollowerId, err)
 	}
 
-	// 大 V 跳过回填 其内容由读路径 merge 大 V publish zset 覆盖 与写扩散对称 查询失败保守仍回填
+	// 拉模式作者不回填 其内容由读路径查其发件箱覆盖 与写扩散对称 查询失败保守仍回填
 	if isBig, berr := l.svcCtx.FeedPublisher.IsBigVAuthor(l.ctx, in.FolloweeId); berr != nil {
 		l.Errorf("查询大 V 集合失败 followeeID=%d err=%v", in.FolloweeId, berr)
 	} else if isBig {
@@ -64,7 +64,7 @@ func (l *BackfillFollowInboxLogic) BackfillFollowInbox(in *content.BackfillFollo
 	if limit <= 0 || limit > backfillFollowInboxWindowCap {
 		limit = backfillFollowInboxWindowCap
 	}
-	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
+	days := contentconsts.WindowDays
 	contents, err := loadFolloweeWindowContent(l.ctx, l.svcCtx, l.contentRepo, in.FolloweeId, followwindow.CutoffMillis(days), limit)
 	if err != nil {
 		return nil, err
@@ -88,10 +88,10 @@ func (l *BackfillFollowInboxLogic) updateInbox(inboxKey string, contents []follo
 	if len(contents) == 0 {
 		return 0, nil
 	}
-	days := l.svcCtx.Config.FollowFanOut.DeadlineWindowDays
+	days := contentconsts.WindowDays
 	args := make([]any, 0, 3+len(contents)*2)
 	args = append(args,
-		strconv.FormatInt(backfillFollowInboxKeepN, 10),
+		strconv.FormatInt(contentconsts.TimelineKeepN, 10),
 		strconv.FormatInt(followwindow.CutoffMillis(days), 10),
 		strconv.Itoa(followwindow.TTLSeconds(days)),
 	)

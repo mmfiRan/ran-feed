@@ -6,8 +6,8 @@ import (
 
 	"github.com/zeromicro/go-zero/core/logc"
 
+	notifyenum "ran-feed/app/rpc/notification/internal/common/enums"
 	"ran-feed/app/rpc/notification/internal/mq/consumer/strategy"
-	"ran-feed/app/rpc/notification/notification"
 	"ran-feed/pkg/event/canal"
 )
 
@@ -51,7 +51,7 @@ func (s *favoriteStrategy) ExtractEvents(ctx context.Context, op string, row, ol
 	return []strategy.NotifyEvent{{
 		RecipientID: recipientID,
 		ActorID:     actorID,
-		NotifyType:  int32(notification.NotifyType_NOTIFY_TYPE_LIKE_FAVORITE),
+		NotifyType:  notifyenum.NotifyTypeLikeFavorite,
 		AggKey:      fmt.Sprintf("LF:%d", contentID),
 		Action:      strategy.PersistAggregate,
 		ContentID:   contentID,

@@ -342,7 +342,7 @@
                       "cover_url",
                       "created_at",
                       "published_at",
-                      "reject_reason",
+                      "status_reason",
                       "like_count",
                       "favorite_count",
                       "comment_count"
@@ -388,9 +388,6 @@
                       "published_at": {
                         "type": "integer"
                       },
-                      "reject_reason": {
-                        "type": "string"
-                      },
                       "status": {
                         "type": "object",
                         "required": [
@@ -409,6 +406,10 @@
                             "type": "string"
                           }
                         }
+                      },
+                      "status_reason": {
+                        "description": "不可见原因 拒绝/下架",
+                        "type": "string"
                       },
                       "title": {
                         "type": "string"
@@ -3107,7 +3108,7 @@
       }
     }
   },
-  "x-date": "2026-09-22 14:56:50",
+  "x-date": "2026-09-24 14:23:18",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

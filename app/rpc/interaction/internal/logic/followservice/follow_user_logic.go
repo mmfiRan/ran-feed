@@ -4,6 +4,8 @@ import (
 	"context"
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/interaction/interaction"
+	"ran-feed/app/rpc/interaction/internal/common/consts"
+	"ran-feed/app/rpc/interaction/internal/common/enums"
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/repositories"
 	"ran-feed/app/rpc/interaction/internal/svc"
@@ -58,14 +60,14 @@ func (l *FollowUserLogic) FollowUser(in *interaction.FollowUserReq) (*interactio
 	transitioned := true
 	if prior, perr := l.followRepo.GetByUserAndFollow(in.UserId, in.FollowUserId); perr != nil {
 		l.Errorf("查关注前置状态失败 默认回填 userID=%d followUserID=%d err=%v", in.UserId, in.FollowUserId, perr)
-	} else if prior != nil && prior.Status == repositories.FollowStatusFollow {
+	} else if prior != nil && enums.FollowStatusEnum(prior.Status).IsFollowing() {
 		transitioned = false
 	}
 
 	err := l.followRepo.Upsert(&do.FollowDO{
 		UserID:       in.UserId,
 		FollowUserID: in.FollowUserId,
-		Status:       repositories.FollowStatusFollow,
+		Status:       enums.FollowStatusFollow,
 		CreatedBy:    in.UserId,
 		UpdatedBy:    in.UserId,
 	})
@@ -76,7 +78,8 @@ func (l *FollowUserLogic) FollowUser(in *interaction.FollowUserReq) (*interactio
 	// 仅真正翻转为关注才回填 重复关注不触发 大 V 跳过与缓存失效由 content 侧统一处理
 	if transitioned {
 		threading.GoSafe(func() {
-			ctx := context.WithoutCancel(l.ctx)
+			ctx, cancel := context.WithTimeout(context.WithoutCancel(l.ctx), consts.FollowMaintainTimeout)
+			defer cancel()
 			// Limit 留 0 由 content 侧按 deadline 窗口与上限决定回填量
 			_, callErr := l.svcCtx.ContentRpc.BackfillFollowInbox(ctx, &content.BackfillFollowInboxReq{
 				FollowerId: in.UserId,

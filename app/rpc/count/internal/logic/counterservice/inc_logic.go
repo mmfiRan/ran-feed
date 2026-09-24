@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/count/count"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/svc"
 	"ran-feed/pkg/errorx"
 
@@ -39,8 +40,8 @@ func (l *IncLogic) Inc(in *count.IncReq) (*emptypb.Empty, error) {
 	}
 
 	err := l.deltaOperator.UpdateDeltaOnly(
-		in.BizType,
-		in.TargetType,
+		countenum.BizTypeEnum(in.BizType),
+		countenum.TargetTypeEnum(in.TargetType),
 		in.TargetId,
 		1,
 		time.Now(),
@@ -49,7 +50,7 @@ func (l *IncLogic) Inc(in *count.IncReq) (*emptypb.Empty, error) {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("更新计数失败"))
 	}
 
-	l.deltaOperator.InvalidateCountCache(in.BizType, in.TargetType, in.TargetId)
+	l.deltaOperator.InvalidateCountCache(countenum.BizTypeEnum(in.BizType), countenum.TargetTypeEnum(in.TargetType), in.TargetId)
 
 	return &emptypb.Empty{}, nil
 }

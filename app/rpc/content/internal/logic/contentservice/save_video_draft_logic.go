@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/consts"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -50,21 +50,19 @@ func (l *SaveVideoDraftLogic) SaveVideoDraft(in *content.SaveVideoDraftReq) (*co
 }
 
 func (l *SaveVideoDraftLogic) createDraft(in *content.SaveVideoDraftReq) (int64, error) {
+	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, int32(content.Visibility_VISIBILITY_PUBLIC))
+	if err != nil {
+		return 0, err
+	}
+
 	var contentID int64
 	if err := query.Q.Transaction(func(tx *query.Query) error {
 		contentRepo := l.contentRepository.WithTx(tx)
 		videoRepo := l.videoRepository.WithTx(tx)
 
-		contentID = snowflake.GenID()
-		contentDO := &do.ContentDO{
-			ID:          contentID,
-			UserID:      in.UserId,
-			ContentType: int32(content.ContentType_CONTENT_TYPE_VIDEO),
-			Status:      int32(content.ContentStatus_CONTENT_STATUS_DRAFT),
-			Visibility:  draftVisibility(in.Visibility, int32(content.Visibility_VISIBILITY_PUBLIC)),
-			CreatedBy:   in.UserId,
-			UpdatedBy:   in.UserId,
-		}
+		contentDO := buildContentDO(in.UserId, content.ContentType_CONTENT_TYPE_VIDEO,
+			content.ContentStatus_CONTENT_STATUS_DRAFT, visibility)
+		contentID = contentDO.ID
 		if err := contentRepo.CreateContent(contentDO); err != nil {
 			return err
 		}
@@ -75,7 +73,7 @@ func (l *SaveVideoDraftLogic) createDraft(in *content.SaveVideoDraftReq) (int64,
 			OriginURL:       in.VideoUrl,
 			CoverURL:        in.CoverUrl,
 			Duration:        in.Duration,
-			TranscodeStatus: consts.TranscodeStatusPending,
+			TranscodeStatus: contentEnum.TranscodeStatusPending.Int32(),
 		}
 		return videoRepo.CreateVideo(videoDO)
 	}); err != nil {
@@ -99,11 +97,16 @@ func (l *SaveVideoDraftLogic) updateDraft(in *content.SaveVideoDraftReq, content
 		return 0, errorx.NewMsg("该内容当前状态不可编辑")
 	}
 
+	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, row.Visibility)
+	if err != nil {
+		return 0, err
+	}
+
 	if err := query.Q.Transaction(func(tx *query.Query) error {
 		contentRepo := l.contentRepository.WithTx(tx)
 		videoRepo := l.videoRepository.WithTx(tx)
 
-		if err := contentRepo.UpdateDraftMeta(contentID, draftVisibility(in.Visibility, row.Visibility), in.UserId); err != nil {
+		if err := contentRepo.UpdateDraftMeta(contentID, visibility, in.UserId); err != nil {
 			return err
 		}
 		videoDO := &do.VideoDO{

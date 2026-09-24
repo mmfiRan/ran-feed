@@ -9,12 +9,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/zeromicro/go-zero/core/logx"
 
+	notifyenum "ran-feed/app/rpc/notification/internal/common/enums"
 	"ran-feed/app/rpc/notification/internal/entity/model"
 	"ran-feed/app/rpc/notification/internal/entity/query"
 	"ran-feed/app/rpc/notification/internal/mq/consumer/strategy"
 	"ran-feed/app/rpc/notification/internal/repositories"
 	"ran-feed/app/rpc/notification/internal/svc"
-	"ran-feed/app/rpc/notification/notification"
 	"ran-feed/pkg/event/pipeline"
 )
 
@@ -92,7 +92,7 @@ func TestPersistEvent_Aggregate_调UpsertAggregate(t *testing.T) {
 	c := newTestConsumer(notify)
 	err := c.persistEvent(notify, strategy.NotifyEvent{
 		RecipientID: 200, ActorID: 100,
-		NotifyType: int32(notification.NotifyType_NOTIFY_TYPE_LIKE_FAVORITE),
+		NotifyType: notifyenum.NotifyTypeLikeFavorite,
 		AggKey:     "LF:500", Action: strategy.PersistAggregate, ContentID: 500,
 	}, time.Now())
 	require.NoError(t, err)
@@ -109,7 +109,7 @@ func TestPersistEvent_InsertOne_调Insert(t *testing.T) {
 	c := newTestConsumer(notify)
 	err := c.persistEvent(notify, strategy.NotifyEvent{
 		RecipientID: 200, ActorID: 100,
-		NotifyType: int32(notification.NotifyType_NOTIFY_TYPE_COMMENT_REPLY),
+		NotifyType: notifyenum.NotifyTypeCommentReply,
 		AggKey:     "CR:1000", Action: strategy.PersistInsertOne,
 		ContentID: 500, CommentID: 1000, Snippet: "hi",
 	}, time.Now())

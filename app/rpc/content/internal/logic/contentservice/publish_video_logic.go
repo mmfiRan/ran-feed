@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/consts"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -34,21 +34,22 @@ func NewPublishVideoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Publ
 }
 
 func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.VideoPublishRes, error) {
+	if err := validateVideoPublish(in.Title, in.CoverUrl, in.VideoUrl); err != nil {
+		return nil, err
+	}
+	visibility, err := resolveWriteVisibility(writeModePublish, in.Visibility, 0)
+	if err != nil {
+		return nil, err
+	}
+
 	var contentId int64
 	if err := query.Q.Transaction(func(tx *query.Query) error {
 		contentRepo := l.contentRepository.WithTx(tx)
 		videoRepo := l.videoRepository.WithTx(tx)
 
-		contentId = snowflake.GenID()
-		contentDO := &do.ContentDO{
-			ID:          contentId,
-			UserID:      in.UserId,
-			ContentType: int32(content.ContentType_CONTENT_TYPE_VIDEO),
-			Status:      int32(content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW),
-			Visibility:  int32(in.Visibility),
-			CreatedBy:   in.UserId,
-			UpdatedBy:   in.UserId,
-		}
+		contentDO := buildContentDO(in.UserId, content.ContentType_CONTENT_TYPE_VIDEO,
+			content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW, visibility)
+		contentId = contentDO.ID
 		if err := contentRepo.CreateContent(contentDO); err != nil {
 			return err
 		}
@@ -60,7 +61,7 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 			OriginURL:       in.VideoUrl,
 			CoverURL:        in.CoverUrl,
 			Duration:        in.Duration,
-			TranscodeStatus: consts.TranscodeStatusPending,
+			TranscodeStatus: contentEnum.TranscodeStatusPending.Int32(),
 		}
 		return videoRepo.CreateVideo(videoDO)
 	}); err != nil {

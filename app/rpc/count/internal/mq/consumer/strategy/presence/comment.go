@@ -1,7 +1,7 @@
 package presence
 
 import (
-	"ran-feed/app/rpc/count/count"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
 )
 
@@ -12,7 +12,7 @@ func init() {
 		return &presenceCounterStrategy{
 			tableName: commentTableName,
 			isActive:  statusActiveNotDeleted,
-			targetsOf: contentTargets(count.BizType_BIZ_TYPE_COMMENT),
+			targetsOf: contentTargets(countenum.BizTypeComment),
 		}
 	})
 }

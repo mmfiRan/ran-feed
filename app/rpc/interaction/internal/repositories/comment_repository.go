@@ -7,10 +7,11 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/gorm"
 
-	"ran-feed/app/rpc/interaction/internal/common/consts"
+	"ran-feed/app/rpc/interaction/internal/common/enums"
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/entity/model"
 	"ran-feed/app/rpc/interaction/internal/entity/query"
+	pkgenums "ran-feed/pkg/enums"
 	"ran-feed/pkg/orm"
 )
 
@@ -73,7 +74,7 @@ func (r *commentRepositoryImpl) Create(commentDO *do.CommentDO) (int64, error) {
 		ParentID:      commentDO.ParentID,
 		RootID:        commentDO.RootID,
 		Comment:       commentDO.Comment,
-		Status:        commentDO.Status,
+		Status:        commentDO.Status.Int32(),
 		Version:       commentDO.Version,
 		IsDeleted:     commentDO.IsDeleted,
 		CreatedBy:     commentDO.CreatedBy,
@@ -108,7 +109,7 @@ func (r *commentRepositoryImpl) GetByID(id int64) (*do.CommentDO, error) {
 		ParentID:      row.ParentID,
 		RootID:        row.RootID,
 		Comment:       row.Comment,
-		Status:        row.Status,
+		Status:        enums.CommentStatusEnum(row.Status),
 		Version:       row.Version,
 		IsDeleted:     row.IsDeleted,
 		CreatedBy:     row.CreatedBy,
@@ -123,7 +124,7 @@ func (r *commentRepositoryImpl) MarkDeleted(id int64, updatedBy int64) error {
 	q := r.getQuery()
 	_, err := q.RanFeedComment.WithContext(r.ctx).
 		Where(q.RanFeedComment.ID.Eq(id)).
-		UpdateSimple(q.RanFeedComment.IsDeleted.Value(1))
+		UpdateSimple(q.RanFeedComment.IsDeleted.Value(pkgenums.Deleted.Int32()))
 	return err
 }
 
@@ -145,7 +146,7 @@ func (r *commentRepositoryImpl) HasReferences(id int64) (bool, error) {
 	// 软删除过滤须覆盖整组 parent_id 或 root_id 否则 root_id 支会逃逸 is_deleted 过滤
 	q := r.getQuery()
 	rows, err := q.RanFeedComment.WithContext(r.ctx).
-		Where(q.RanFeedComment.IsDeleted.Eq(0)).
+		Where(q.RanFeedComment.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
 		Where(
 			q.RanFeedComment.WithContext(r.ctx).
 				Where(q.RanFeedComment.ParentID.Eq(id)).
@@ -240,8 +241,8 @@ func (r *commentRepositoryImpl) BatchCountByParentIDs(parentIDs []int64) (map[in
 	q := r.getQuery()
 	err := q.RanFeedComment.WithContext(r.ctx).
 		Select(q.RanFeedComment.ParentID, q.RanFeedComment.ID.Count().As("cnt")).
-		Where(q.RanFeedComment.IsDeleted.Eq(0)).
-		Where(q.RanFeedComment.Status.Neq(consts.CommentStatusDeleted)).
+		Where(q.RanFeedComment.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
+		Where(q.RanFeedComment.Status.Neq(enums.CommentStatusDeleted.Int32())).
 		Where(q.RanFeedComment.ParentID.In(parentIDs...)).
 		Group(q.RanFeedComment.ParentID).
 		Scan(&rows)
@@ -268,8 +269,8 @@ func (r *commentRepositoryImpl) BatchCountByRootIDs(rootIDs []int64) (map[int64]
 	q := r.getQuery()
 	err := q.RanFeedComment.WithContext(r.ctx).
 		Select(q.RanFeedComment.RootID, q.RanFeedComment.ID.Count().As("cnt")).
-		Where(q.RanFeedComment.IsDeleted.Eq(0)).
-		Where(q.RanFeedComment.Status.Neq(consts.CommentStatusDeleted)).
+		Where(q.RanFeedComment.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
+		Where(q.RanFeedComment.Status.Neq(enums.CommentStatusDeleted.Int32())).
 		Where(q.RanFeedComment.RootID.In(rootIDs...)).
 		Group(q.RanFeedComment.RootID).
 		Scan(&rows)

@@ -8,7 +8,7 @@ import (
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/config"
 	"ran-feed/app/rpc/content/internal/cron"
-	"ran-feed/app/rpc/content/internal/mq/consumer"
+	"ran-feed/app/rpc/content/internal/mq"
 	admincontentserviceServer "ran-feed/app/rpc/content/internal/server/admincontentservice"
 	contentserviceServer "ran-feed/app/rpc/content/internal/server/contentservice"
 	feedserviceServer "ran-feed/app/rpc/content/internal/server/feedservice"
@@ -64,20 +64,16 @@ func main() {
 	cron.Register(xxlCtx, executor, ctx)
 	threading.GoSafe(func() {
 		if err := executor.Start(xxlCtx); err != nil {
-			// xxlCtx 取消属于正常停机路径
 			if errors.Is(err, context.Canceled) {
 				return
 			}
-			// 启动失败意味着热榜定时任务永久不可用，必须退出由 supervisor 拉起
-			logx.Errorf("xxl-job executor start failed, exiting for supervisor restart: %v", err)
-			//os.Exit(1)
+			logx.Errorf("xxl-job server 启动失败,err:%v", err)
 		}
 	})
 
-	// gRPC server 与 content 域事件消费者一起纳入 service group 统一启停
 	serviceGroup := service.NewServiceGroup()
 	defer serviceGroup.Stop()
-	for _, mq := range consumer.Consumers(c, context.Background(), ctx) {
+	for _, mq := range mq.Consumers(c, context.Background(), ctx) {
 		serviceGroup.Add(mq)
 	}
 	serviceGroup.Add(s)

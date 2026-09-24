@@ -1,14 +1,14 @@
 package consumer
 
 import (
-	"ran-feed/app/rpc/count/count"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
 )
 
 // countKey 计数缓存失效用的类型化键 取代字符串拼接再解析
 type countKey struct {
-	bizType    count.BizType
-	targetType count.TargetType
+	bizType    countenum.BizTypeEnum
+	targetType countenum.TargetTypeEnum
 	targetID   int64
 }
 
@@ -35,12 +35,12 @@ func (s *changeSet) record(u strategy.Update, ownerID int64) {
 	s.counts[countKey{u.BizType, u.TargetType, u.TargetID}] = struct{}{}
 
 	switch u.TargetType {
-	case count.TargetType_TARGET_TYPE_CONTENT:
+	case countenum.TargetTypeContent:
 		if ownerID > 0 {
 			s.users[ownerID] = struct{}{}
 		}
 		s.contents[u.TargetID] = struct{}{}
-	case count.TargetType_TARGET_TYPE_USER:
+	case countenum.TargetTypeUser:
 		s.users[u.TargetID] = struct{}{}
 	}
 }

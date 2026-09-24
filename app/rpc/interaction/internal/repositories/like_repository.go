@@ -12,6 +12,7 @@ import (
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/entity/model"
 	"ran-feed/app/rpc/interaction/internal/entity/query"
+	pkgenums "ran-feed/pkg/enums"
 	"ran-feed/pkg/orm"
 	"ran-feed/pkg/snowflake"
 )
@@ -101,7 +102,7 @@ func (r *likeRepositoryImpl) CancelLike(likeDO *do.LikeDO) error {
 	sql := `
 UPDATE ran_feed_like
 SET status = ?, updated_by = ?
-WHERE user_id = ? AND content_id = ? AND status = ?
+WHERE user_id = ? AND content_id = ? AND status = ? AND is_deleted = 0
 `
 	res := db.WithContext(r.ctx).Exec(
 		sql,
@@ -120,6 +121,7 @@ func (r *likeRepositoryImpl) GetByUserAndContent(userID, contentID int64) (*do.L
 	likeModel, err := q.RanFeedLike.WithContext(r.ctx).
 		Where(q.RanFeedLike.UserID.Eq(userID)).
 		Where(q.RanFeedLike.ContentID.Eq(contentID)).
+		Where(q.RanFeedLike.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
 		First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -133,7 +135,7 @@ func (r *likeRepositoryImpl) GetByUserAndContent(userID, contentID int64) (*do.L
 		UserID:        likeModel.UserID,
 		ContentID:     likeModel.ContentID,
 		ContentUserID: likeModel.ContentUserID,
-		Status:        enums.LikeStatus(likeModel.Status),
+		Status:        enums.LikeStatusEnum(likeModel.Status),
 		CreatedBy:     likeModel.CreatedBy,
 		UpdatedBy:     likeModel.UpdatedBy,
 	}, nil
@@ -146,6 +148,7 @@ func (r *likeRepositoryImpl) IsLiked(userID, contentID int64) (bool, error) {
 		Where(q.RanFeedLike.UserID.Eq(userID)).
 		Where(q.RanFeedLike.ContentID.Eq(contentID)).
 		Where(q.RanFeedLike.Status.Eq(enums.LikeStatusLike.Int32())).
+		Where(q.RanFeedLike.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
 		Count()
 	if err != nil {
 		return false, err
@@ -183,6 +186,7 @@ func (r *likeRepositoryImpl) BatchIsLiked(userID int64, contentIDs []int64) (map
 		Where(q.RanFeedLike.UserID.Eq(userID)).
 		Where(q.RanFeedLike.ContentID.In(unique...)).
 		Where(q.RanFeedLike.Status.Eq(enums.LikeStatusLike.Int32())).
+		Where(q.RanFeedLike.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
 		Pluck(q.RanFeedLike.ContentID, &likedContentIDs)
 	if err != nil {
 		return nil, err
@@ -235,6 +239,7 @@ func (r *likeRepositoryImpl) QueryUserLikedTopN(userID int64, limit int) ([]int6
 		Select(q.RanFeedLike.ContentID).
 		Where(q.RanFeedLike.UserID.Eq(userID)).
 		Where(q.RanFeedLike.Status.Eq(enums.LikeStatusLike.Int32())).
+		Where(q.RanFeedLike.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
 		Order(q.RanFeedLike.ContentID.Desc()).
 		Limit(limit).
 		Pluck(q.RanFeedLike.ContentID, &contentIDs)
@@ -254,6 +259,7 @@ func (r *likeRepositoryImpl) GetLikedUserIDs(contentID int64) ([]int64, error) {
 		Select(q.RanFeedLike.UserID).
 		Where(q.RanFeedLike.ContentID.Eq(contentID)).
 		Where(q.RanFeedLike.Status.Eq(enums.LikeStatusLike.Int32())).
+		Where(q.RanFeedLike.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
 		Pluck(q.RanFeedLike.UserID, &userIDs)
 
 	if err != nil {

@@ -2,8 +2,8 @@ CREATE TABLE IF NOT EXISTS ran_feed_content_review
 (
     id          BIGINT PRIMARY KEY NOT NULL COMMENT '主键id',
     content_id  BIGINT             NOT NULL COMMENT '被审内容ID',
-    decision    TINYINT            NOT NULL COMMENT '审核决策 10=通过 20=拒绝',
-    reason      VARCHAR(512)       NOT NULL DEFAULT '' COMMENT '拒绝理由 通过时为空',
+    decision    TINYINT            NOT NULL COMMENT '审核决策 10=通过 20=拒绝 30=管理端下架 40=管理端恢复',
+    reason      VARCHAR(512)       NOT NULL DEFAULT '' COMMENT '原因 通过与恢复为空 拒绝为拒绝理由 下架为下架原因',
     version     INT                NOT NULL DEFAULT 1 COMMENT '版本号（乐观锁）',
     is_deleted  TINYINT            NOT NULL DEFAULT 0 COMMENT '逻辑删除 0=正常 1=删除',
     created_by  BIGINT             NOT NULL COMMENT '创建人（审核管理员 admin_user.id）',

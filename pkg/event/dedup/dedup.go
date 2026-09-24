@@ -72,7 +72,15 @@ func (g *Gate) Exists(ctx context.Context, consumer, eventID string) (bool, erro
 	return cnt > 0, nil
 }
 
-// isDuplicate 唯一键冲突判定 哨兵靠 pkg/orm 开的 TranslateError 错误串兜底未开该选项的连接
+// DeleteBefore 清理保留期外的幂等记录 防止去重表无限增长 保留期须长于对账窗口
+func (g *Gate) DeleteBefore(ctx context.Context, before time.Time) (int64, error) {
+	info := g.db.WithContext(ctx).
+		Where("created_at < ?", before).
+		Delete(&row{})
+	return info.RowsAffected, info.Error
+}
+
+// isDuplicate 唯一键冲突判定
 func isDuplicate(err error) bool {
 	if errors.Is(err, gorm.ErrDuplicatedKey) {
 		return true

@@ -8,16 +8,13 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"ran-feed/app/rpc/interaction/internal/common/enums"
 	"ran-feed/app/rpc/interaction/internal/do"
 	"ran-feed/app/rpc/interaction/internal/entity/model"
 	"ran-feed/app/rpc/interaction/internal/entity/query"
+	pkgenums "ran-feed/pkg/enums"
 	"ran-feed/pkg/orm"
 	"ran-feed/pkg/snowflake"
-)
-
-const (
-	FollowStatusFollow   int32 = 10 // 关注
-	FollowStatusUnfollow int32 = 20 // 取消关注
 )
 
 type FollowRepository interface {
@@ -68,7 +65,7 @@ func (r *followRepositoryImpl) Upsert(followDO *do.FollowDO) error {
 		ID:           snowflake.GenID(),
 		UserID:       followDO.UserID,
 		FollowUserID: followDO.FollowUserID,
-		Status:       followDO.Status,
+		Status:       followDO.Status.Int32(),
 		CreatedBy:    followDO.CreatedBy,
 		UpdatedBy:    followDO.UpdatedBy,
 	}
@@ -86,6 +83,7 @@ func (r *followRepositoryImpl) GetByUserAndFollow(userID, followUserID int64) (*
 	row, err := q.RanFeedFollow.WithContext(r.ctx).
 		Where(q.RanFeedFollow.UserID.Eq(userID)).
 		Where(q.RanFeedFollow.FollowUserID.Eq(followUserID)).
+		Where(q.RanFeedFollow.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
 		First()
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -96,7 +94,7 @@ func (r *followRepositoryImpl) GetByUserAndFollow(userID, followUserID int64) (*
 	return &do.FollowDO{
 		UserID:       row.UserID,
 		FollowUserID: row.FollowUserID,
-		Status:       row.Status,
+		Status:       enums.FollowStatusEnum(row.Status),
 		CreatedBy:    row.CreatedBy,
 		UpdatedBy:    row.UpdatedBy,
 	}, nil
@@ -113,7 +111,7 @@ func (r *followRepositoryImpl) IsFollowing(userID, followUserID int64) (bool, er
 	if row == nil {
 		return false, nil
 	}
-	return row.Status == FollowStatusFollow, nil
+	return enums.FollowStatusEnum(row.Status).IsFollowing(), nil
 }
 
 func (r *followRepositoryImpl) CountFollowees(userID int64) (int64, error) {
@@ -123,8 +121,8 @@ func (r *followRepositoryImpl) CountFollowees(userID int64) (int64, error) {
 	q := r.getQuery()
 	return q.RanFeedFollow.WithContext(r.ctx).
 		Where(q.RanFeedFollow.UserID.Eq(userID)).
-		Where(q.RanFeedFollow.Status.Eq(FollowStatusFollow)).
-		Where(q.RanFeedFollow.IsDeleted.Eq(0)).
+		Where(q.RanFeedFollow.Status.Eq(enums.FollowStatusFollow.Int32())).
+		Where(q.RanFeedFollow.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
 		Count()
 }
 
@@ -135,8 +133,8 @@ func (r *followRepositoryImpl) CountFollowers(userID int64) (int64, error) {
 	q := r.getQuery()
 	return q.RanFeedFollow.WithContext(r.ctx).
 		Where(q.RanFeedFollow.FollowUserID.Eq(userID)).
-		Where(q.RanFeedFollow.Status.Eq(FollowStatusFollow)).
-		Where(q.RanFeedFollow.IsDeleted.Eq(0)).
+		Where(q.RanFeedFollow.Status.Eq(enums.FollowStatusFollow.Int32())).
+		Where(q.RanFeedFollow.IsDeleted.Eq(pkgenums.NotDeleted.Int32())).
 		Count()
 }
 
@@ -149,8 +147,8 @@ func (r *followRepositoryImpl) ListFolloweesByCursor(userID int64, cursorFollowU
 	doQuery := q.RanFeedFollow.WithContext(r.ctx).
 		Select(q.RanFeedFollow.FollowUserID).
 		Where(q.RanFeedFollow.UserID.Eq(userID)).
-		Where(q.RanFeedFollow.Status.Eq(FollowStatusFollow)).
-		Where(q.RanFeedFollow.IsDeleted.Eq(0))
+		Where(q.RanFeedFollow.Status.Eq(enums.FollowStatusFollow.Int32())).
+		Where(q.RanFeedFollow.IsDeleted.Eq(pkgenums.NotDeleted.Int32()))
 
 	if cursorFollowUserID > 0 {
 		doQuery = doQuery.Where(q.RanFeedFollow.FollowUserID.Lt(cursorFollowUserID))
@@ -185,8 +183,8 @@ func (r *followRepositoryImpl) ListFollowersByCursor(userID int64, cursorFollowe
 	doQuery := q.RanFeedFollow.WithContext(r.ctx).
 		Select(q.RanFeedFollow.UserID).
 		Where(q.RanFeedFollow.FollowUserID.Eq(userID)).
-		Where(q.RanFeedFollow.Status.Eq(FollowStatusFollow)).
-		Where(q.RanFeedFollow.IsDeleted.Eq(0))
+		Where(q.RanFeedFollow.Status.Eq(enums.FollowStatusFollow.Int32())).
+		Where(q.RanFeedFollow.IsDeleted.Eq(pkgenums.NotDeleted.Int32()))
 
 	if cursorFollowerID > 0 {
 		doQuery = doQuery.Where(q.RanFeedFollow.UserID.Lt(cursorFollowerID))

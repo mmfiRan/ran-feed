@@ -19,7 +19,8 @@ const HandlerName = "search.reindex"
 // scanBatchSize 全量重建单页游标大小
 const scanBatchSize = 500
 
-// SearchReindexJob 全量以 content/user 域为真相源经 RPC 投影重灌 ES 初始灌入与周期兜底漂移
+// SearchReindexJob 全量以 content/user 域为真相源经 RPC 投影重建索引
+// 采用别名切换:新物理索引灌满后原子切别名再删旧索引 期间旧索引持续可读 且天然无孤儿文档
 type SearchReindexJob struct {
 	svc *svc.ServiceContext
 	logx.Logger
@@ -34,19 +35,20 @@ func Register(ctx context.Context, executor *xxljob.Executor, svcCtx *svc.Servic
 }
 
 func (j *SearchReindexJob) Run(ctx context.Context, _ xxljob.TriggerParam) (string, error) {
-	contentTotal, err := j.reindexContent(ctx)
+	contentTotal, err := es.RebuildIndex(ctx, j.svc.ES, es.IndexContent, j.loadContent)
 	if err != nil {
 		return "", err
 	}
-	userTotal, err := j.reindexUser(ctx)
+	userTotal, err := es.RebuildIndex(ctx, j.svc.ES, es.IndexUser, j.loadUser)
 	if err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("ok content=%d user=%d", contentTotal, userTotal), nil
 }
 
-// reindexContent 游标经 content-rpc 投影扫可索引内容 分批 bulk 灌入
-func (j *SearchReindexJob) reindexContent(ctx context.Context) (int, error) {
+// loadContent 游标经 content-rpc 投影扫可索引内容 分批 bulk 灌入指定物理索引
+// 出错上抛由 RebuildIndex 清理新索引并保留旧索引
+func (j *SearchReindexJob) loadContent(ctx context.Context, index string) (int, error) {
 	var cursor int64
 	var total int
 	for {
@@ -62,7 +64,7 @@ func (j *SearchReindexJob) reindexContent(ctx context.Context) (int, error) {
 		for _, it := range res.Items {
 			items = append(items, indexer.ContentIndexItemToItem(it))
 		}
-		failed, err := es.BulkUpsert(ctx, j.svc.ES, es.IndexContent, items)
+		failed, err := es.BulkUpsert(ctx, j.svc.ES, index, items)
 		if err != nil {
 			return total, err
 		}
@@ -79,8 +81,8 @@ func (j *SearchReindexJob) reindexContent(ctx context.Context) (int, error) {
 	return total, nil
 }
 
-// reindexUser 游标经 user-rpc 投影扫可索引用户 分批 bulk 灌入
-func (j *SearchReindexJob) reindexUser(ctx context.Context) (int, error) {
+// loadUser 游标经 user-rpc 投影扫可索引用户 分批 bulk 灌入指定物理索引
+func (j *SearchReindexJob) loadUser(ctx context.Context, index string) (int, error) {
 	var cursor int64
 	var total int
 	for {
@@ -96,7 +98,7 @@ func (j *SearchReindexJob) reindexUser(ctx context.Context) (int, error) {
 		for _, it := range res.Items {
 			items = append(items, indexer.UserIndexItemToItem(it))
 		}
-		failed, err := es.BulkUpsert(ctx, j.svc.ES, es.IndexUser, items)
+		failed, err := es.BulkUpsert(ctx, j.svc.ES, index, items)
 		if err != nil {
 			return total, err
 		}

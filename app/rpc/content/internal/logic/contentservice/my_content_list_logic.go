@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"ran-feed/app/rpc/content/content"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	contentutils "ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -90,6 +91,7 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 	articleIDs := make([]int64, 0, len(rows))
 	videoIDs := make([]int64, 0, len(rows))
 	rejectedIDs := make([]int64, 0)
+	takenDownIDs := make([]int64, 0)
 	allIDs := make([]int64, 0, len(rows))
 	for _, row := range rows {
 		allIDs = append(allIDs, row.ID)
@@ -99,12 +101,15 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 		case content.ContentType_CONTENT_TYPE_VIDEO:
 			videoIDs = append(videoIDs, row.ID)
 		}
-		if row.Status == int32(content.ContentStatus_CONTENT_STATUS_REJECTED) {
+		switch content.ContentStatus(row.Status) {
+		case content.ContentStatus_CONTENT_STATUS_REJECTED:
 			rejectedIDs = append(rejectedIDs, row.ID)
+		case content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN:
+			takenDownIDs = append(takenDownIDs, row.ID)
 		}
 	}
 
-	// 标题封面 拒绝理由 计数
+	// 标题封面 不可见原因 计数
 	var (
 		articleMap map[int64]*model.RanFeedArticle
 		videoMap   map[int64]*model.RanFeedVideo
@@ -129,11 +134,24 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 			return nil
 		},
 		func() error {
-			m, err := l.reviewRepository.LatestRejectReasonByContentIDs(rejectedIDs)
-			if err != nil {
+			reasonMap = make(map[int64]string, len(rejectedIDs)+len(takenDownIDs))
+			// 被拒取最新拒绝理由 下架取最新下架原因 二者按当前状态分别取 互不串
+			if m, err := l.reviewRepository.LatestReasonByContentIDs(
+				rejectedIDs, []contentEnum.ReviewDecisionEnum{contentEnum.ReviewDecisionReject}); err != nil {
 				return err
+			} else {
+				for id, r := range m {
+					reasonMap[id] = r
+				}
 			}
-			reasonMap = m
+			if m, err := l.reviewRepository.LatestReasonByContentIDs(
+				takenDownIDs, []contentEnum.ReviewDecisionEnum{contentEnum.ReviewDecisionTakenDown}); err != nil {
+				return err
+			} else {
+				for id, r := range m {
+					reasonMap[id] = r
+				}
+			}
 			return nil
 		},
 		func() error {
@@ -168,8 +186,9 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 				item.CoverUrl = v.CoverURL
 			}
 		}
-		if row.Status == int32(content.ContentStatus_CONTENT_STATUS_REJECTED) {
-			item.RejectReason = reasonMap[row.ID]
+		switch content.ContentStatus(row.Status) {
+		case content.ContentStatus_CONTENT_STATUS_REJECTED, content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN:
+			item.StatusReason = reasonMap[row.ID]
 		}
 		if c := countMap[row.ID]; c != nil {
 			item.LikeCount = c.GetLikeCount()

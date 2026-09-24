@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 
-	"ran-feed/app/rpc/content/content"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
@@ -16,8 +16,8 @@ import (
 type ContentReviewRepository interface {
 	WithTx(tx *query.Query) ContentReviewRepository
 	Create(reviewDO *do.ContentReviewDO) error
-	// LatestRejectReasonByContentIDs 批量取内容最新一条拒绝理由
-	LatestRejectReasonByContentIDs(contentIDs []int64) (map[int64]string, error)
+	// LatestReasonByContentIDs 批量取内容最新一条指定决策的理由
+	LatestReasonByContentIDs(contentIDs []int64, decisions []contentEnum.ReviewDecisionEnum) (map[int64]string, error)
 }
 
 type ContentReviewRepositoryImpl struct {
@@ -56,7 +56,7 @@ func (r *ContentReviewRepositoryImpl) Create(reviewDO *do.ContentReviewDO) error
 	reviewModel := &model.RanFeedContentReview{
 		ID:        reviewDO.ID,
 		ContentID: reviewDO.ContentID,
-		Decision:  reviewDO.Decision,
+		Decision:  reviewDO.Decision.Int32(),
 		Reason:    reviewDO.Reason,
 		CreatedBy: reviewDO.CreatedBy,
 		UpdatedBy: reviewDO.UpdatedBy,
@@ -64,17 +64,21 @@ func (r *ContentReviewRepositoryImpl) Create(reviewDO *do.ContentReviewDO) error
 	return q.RanFeedContentReview.WithContext(r.ctx).Create(reviewModel)
 }
 
-// LatestRejectReasonByContentIDs 取每条内容最新一条拒绝审核的理由
-func (r *ContentReviewRepositoryImpl) LatestRejectReasonByContentIDs(contentIDs []int64) (map[int64]string, error) {
+// LatestReasonByContentIDs 取每条内容最新一条指定决策(拒绝/下架等)的理由
+func (r *ContentReviewRepositoryImpl) LatestReasonByContentIDs(contentIDs []int64, decisions []contentEnum.ReviewDecisionEnum) (map[int64]string, error) {
 	res := make(map[int64]string)
-	if len(contentIDs) == 0 {
+	if len(contentIDs) == 0 || len(decisions) == 0 {
 		return res, nil
 	}
 	q := r.getQuery()
+	codes := make([]int32, 0, len(decisions))
+	for _, d := range decisions {
+		codes = append(codes, d.Int32())
+	}
 	rows, err := q.RanFeedContentReview.WithContext(r.ctx).
 		Select(q.RanFeedContentReview.ContentID, q.RanFeedContentReview.Reason, q.RanFeedContentReview.CreatedAt).
 		Where(q.RanFeedContentReview.ContentID.In(contentIDs...)).
-		Where(q.RanFeedContentReview.Decision.Eq(int32(content.ReviewDecision_REVIEW_DECISION_REJECT))).
+		Where(q.RanFeedContentReview.Decision.In(codes...)).
 		Where(q.RanFeedContentReview.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Order(q.RanFeedContentReview.CreatedAt.Desc()).
 		Find()

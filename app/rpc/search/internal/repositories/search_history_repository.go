@@ -6,6 +6,7 @@ import (
 
 	"ran-feed/app/rpc/search/internal/entity/model"
 	"ran-feed/app/rpc/search/internal/entity/query"
+	"ran-feed/pkg/enums"
 	"ran-feed/pkg/orm"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -79,7 +80,7 @@ func (r *searchHistoryRepositoryImpl) ListRecent(userID int64, limit int) ([]*mo
 	q := r.getQuery()
 	rows, err := q.RanFeedSearchHistory.WithContext(r.ctx).
 		Where(q.RanFeedSearchHistory.UserID.Eq(userID)).
-		Where(q.RanFeedSearchHistory.IsDeleted.Eq(0)).
+		Where(q.RanFeedSearchHistory.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Order(q.RanFeedSearchHistory.UpdatedAt.Desc()).
 		Limit(limit).
 		Find()
@@ -99,7 +100,7 @@ func (r *searchHistoryRepositoryImpl) DeleteOne(userID int64, keyword string) er
 	_, err := q.RanFeedSearchHistory.WithContext(r.ctx).
 		Where(q.RanFeedSearchHistory.UserID.Eq(userID)).
 		Where(q.RanFeedSearchHistory.Keyword.Eq(keyword)).
-		Where(q.RanFeedSearchHistory.IsDeleted.Eq(0)).
+		Where(q.RanFeedSearchHistory.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Update(q.RanFeedSearchHistory.IsDeleted, 1)
 	return err
 }
@@ -113,7 +114,7 @@ func (r *searchHistoryRepositoryImpl) Clear(userID int64) error {
 	q := r.getQuery()
 	_, err := q.RanFeedSearchHistory.WithContext(r.ctx).
 		Where(q.RanFeedSearchHistory.UserID.Eq(userID)).
-		Where(q.RanFeedSearchHistory.IsDeleted.Eq(0)).
+		Where(q.RanFeedSearchHistory.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Update(q.RanFeedSearchHistory.IsDeleted, 1)
 	return err
 }

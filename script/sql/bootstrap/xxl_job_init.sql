@@ -88,6 +88,12 @@ FROM (
            'hot.cold.update' AS `executor_handler`, '' AS `executor_param`, 'SERIAL_EXECUTION' AS `executor_block_strategy`, 60 AS `executor_timeout`,
            3 AS `executor_fail_retry_count`, 'BEAN' AS `glue_type`, '' AS `glue_source`, 'GLUE代码初始化' AS `glue_remark`, '2026-03-19 09:31:04' AS `glue_updatetime`,
            '' AS `child_jobid`, 1 AS `trigger_status`, 0 AS `trigger_last_time`, 1773936000000 AS `trigger_next_time`
+    UNION ALL
+    SELECT 4 AS `id`, 2 AS `job_group`, '事件链对账补跑' AS `job_desc`, '2026-09-24 00:00:00' AS `add_time`, '2026-09-24 00:00:00' AS `update_time`, 'admin' AS `author`, '' AS `alarm_email`,
+           'CRON' AS `schedule_type`, '0 */5 * * * ?' AS `schedule_conf`, 'DO_NOTHING' AS `misfire_strategy`, 'ROUND' AS `executor_route_strategy`,
+           'content.outbox.reconcile' AS `executor_handler`, '' AS `executor_param`, 'SERIAL_EXECUTION' AS `executor_block_strategy`, 120 AS `executor_timeout`,
+           0 AS `executor_fail_retry_count`, 'BEAN' AS `glue_type`, '' AS `glue_source`, 'GLUE代码初始化' AS `glue_remark`, '2026-09-24 00:00:00' AS `glue_updatetime`,
+           '' AS `child_jobid`, 1 AS `trigger_status`, 0 AS `trigger_last_time`, 0 AS `trigger_next_time`
 ) t
 WHERE NOT EXISTS (SELECT 1 FROM `xxl_job_info` LIMIT 1);
 

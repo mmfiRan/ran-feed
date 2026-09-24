@@ -64,7 +64,7 @@ func (r *adminUserRoleRepositoryImpl) ListRoleIDsByAdminID(adminID int64) ([]int
 	rows, err := q.WithContext(r.ctx).
 		Select(q.RoleID).
 		Where(q.AdminUserID.Eq(adminID)).
-		Where(q.IsDeleted.Eq(0)).
+		Where(q.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Find()
 	if err != nil {
 		return nil, err
@@ -87,7 +87,7 @@ func (r *adminUserRoleRepositoryImpl) ListRoleIDsByAdminIDs(adminIDs []int64) (m
 	rows, err := q.WithContext(r.ctx).
 		Select(q.AdminUserID, q.RoleID).
 		Where(q.AdminUserID.In(adminIDs...)).
-		Where(q.IsDeleted.Eq(0)).
+		Where(q.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Find()
 	if err != nil {
 		return nil, err

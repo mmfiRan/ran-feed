@@ -153,7 +153,7 @@ func (r *ArticleRepositoryImpl) BatchGetIndexByContentIDs(contentIDs []int64) (m
 	rows, err := q.RanFeedArticle.WithContext(r.ctx).
 		Select(q.RanFeedArticle.ContentID, q.RanFeedArticle.Title, q.RanFeedArticle.Description, q.RanFeedArticle.Content).
 		Where(q.RanFeedArticle.ContentID.In(contentIDs...)).
-		Where(q.RanFeedArticle.IsDeleted.Eq(0)).
+		Where(q.RanFeedArticle.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Find()
 	if err != nil {
 		return nil, err

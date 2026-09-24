@@ -61,7 +61,7 @@ func (l *MyContentListLogic) MyContentList(req *types.MyContentListReq) (resp *t
 			CoverUrl:      it.CoverUrl,
 			CreatedAt:     tsUnix(it.CreatedAt),
 			PublishedAt:   tsUnix(it.PublishedAt),
-			RejectReason:  it.RejectReason,
+			StatusReason:  it.StatusReason,
 			LikeCount:     it.LikeCount,
 			FavoriteCount: it.FavoriteCount,
 			CommentCount:  it.CommentCount,

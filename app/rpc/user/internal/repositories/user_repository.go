@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	userenums "ran-feed/app/rpc/user/internal/common/enums"
 	"ran-feed/pkg/enums"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -15,9 +16,7 @@ import (
 	"ran-feed/pkg/utils"
 )
 
-const (
-	UserStatusActive int32 = 10
-)
+const ()
 
 type UserRepository interface {
 	WithTx(tx *query.Query) UserRepository
@@ -77,7 +76,7 @@ func (r *userRepositoryImpl) GetByMobile(mobile string) (*do.UserDO, error) {
 
 	row, err := q.RanFeedUser.WithContext(r.ctx).
 		Where(q.RanFeedUser.Mobile.Eq(mobile)).
-		Where(q.RanFeedUser.IsDeleted.Eq(0)).
+		Where(q.RanFeedUser.IsDeleted.Eq(enums.NotDeleted.Int64())).
 		First()
 	if err != nil {
 		if err == gorm.ErrRecordNotFound || err == sql.ErrNoRows {
@@ -111,7 +110,7 @@ func (r *userRepositoryImpl) GetByID(userID int64) (*do.UserDO, error) {
 	q := r.getQuery()
 	row, err := q.RanFeedUser.WithContext(r.ctx).
 		Where(q.RanFeedUser.ID.Eq(userID)).
-		Where(q.RanFeedUser.IsDeleted.Eq(0)).
+		Where(q.RanFeedUser.IsDeleted.Eq(enums.NotDeleted.Int64())).
 		First()
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -148,7 +147,7 @@ func (r *userRepositoryImpl) BatchGetByIDs(userIDs []int64) (map[int64]*do.UserD
 	q := r.getQuery()
 	rows, err := q.RanFeedUser.WithContext(r.ctx).
 		Where(q.RanFeedUser.ID.In(userIDs...)).
-		Where(q.RanFeedUser.IsDeleted.Eq(0)).
+		Where(q.RanFeedUser.IsDeleted.Eq(enums.NotDeleted.Int64())).
 		Find()
 	if err != nil {
 		return nil, err
@@ -188,8 +187,8 @@ func (r *userRepositoryImpl) BatchGetActiveForIndex(userIDs []int64) (map[int64]
 	rows, err := q.RanFeedUser.WithContext(r.ctx).
 		Select(q.RanFeedUser.ID, q.RanFeedUser.Nickname, q.RanFeedUser.Bio, q.RanFeedUser.Username, q.RanFeedUser.Status, q.RanFeedUser.UpdatedAt).
 		Where(q.RanFeedUser.ID.In(userIDs...)).
-		Where(q.RanFeedUser.Status.Eq(UserStatusActive)).
-		Where(q.RanFeedUser.IsDeleted.Eq(0)).
+		Where(q.RanFeedUser.Status.Eq(userenums.UserStatusActive.Int32())).
+		Where(q.RanFeedUser.IsDeleted.Eq(enums.NotDeleted.Int64())).
 		Find()
 	if err != nil {
 		return nil, err
@@ -214,8 +213,8 @@ func (r *userRepositoryImpl) ScanActiveForIndex(cursorID int64, limit int) ([]*m
 	q := r.getQuery()
 	doQuery := q.RanFeedUser.WithContext(r.ctx).
 		Select(q.RanFeedUser.ID, q.RanFeedUser.Nickname, q.RanFeedUser.Bio, q.RanFeedUser.Username, q.RanFeedUser.Status, q.RanFeedUser.UpdatedAt).
-		Where(q.RanFeedUser.Status.Eq(UserStatusActive)).
-		Where(q.RanFeedUser.IsDeleted.Eq(0))
+		Where(q.RanFeedUser.Status.Eq(userenums.UserStatusActive.Int32())).
+		Where(q.RanFeedUser.IsDeleted.Eq(enums.NotDeleted.Int64()))
 
 	if cursorID > 0 {
 		doQuery = doQuery.Where(q.RanFeedUser.ID.Gt(cursorID))

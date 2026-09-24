@@ -5,13 +5,13 @@ import (
 	"math/rand"
 	"strconv"
 
-	"ran-feed/app/rpc/count/count"
 	rediskey "ran-feed/app/rpc/count/internal/common/consts/redis"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 )
 
 const cacheExpireJitterMaxSeconds = 600
 
-func buildCountValueCacheKey(bizType count.BizType, targetType count.TargetType, targetID int64) string {
+func buildCountValueCacheKey(bizType countenum.BizTypeEnum, targetType countenum.TargetTypeEnum, targetID int64) string {
 	return rediskey.BuildCountValueKey(
 		strconv.FormatInt(int64(bizType), 10),
 		strconv.FormatInt(int64(targetType), 10),
@@ -19,7 +19,7 @@ func buildCountValueCacheKey(bizType count.BizType, targetType count.TargetType,
 	)
 }
 
-func buildCountValueMapKey(bizType count.BizType, targetType count.TargetType, targetID int64) string {
+func buildCountValueMapKey(bizType countenum.BizTypeEnum, targetType countenum.TargetTypeEnum, targetID int64) string {
 	return fmt.Sprintf("%d:%d:%d", bizType, targetType, targetID)
 }
 

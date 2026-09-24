@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"ran-feed/app/rpc/count/count"
+	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
 )
 
@@ -28,17 +28,17 @@ func TestContentReset_SoftDeleteCascadesToZero(t *testing.T) {
 	updates := s.ExtractUpdates(ctx, "UPDATE", row, oldRow)
 
 	require.Len(t, updates, 3)
-	gotBiz := make(map[count.BizType]bool)
+	gotBiz := make(map[countenum.BizTypeEnum]bool)
 	for _, u := range updates {
 		assert.Equal(t, strategy.UpdateActionResetToZero, u.Action)
-		assert.Equal(t, count.TargetType_TARGET_TYPE_CONTENT, u.TargetType)
+		assert.Equal(t, countenum.TargetTypeContent, u.TargetType)
 		assert.Equal(t, contentID, u.TargetID)
 		assert.Equal(t, ownerID, u.OwnerID)
 		gotBiz[u.BizType] = true
 	}
-	assert.True(t, gotBiz[count.BizType_BIZ_TYPE_LIKE])
-	assert.True(t, gotBiz[count.BizType_BIZ_TYPE_FAVORITE])
-	assert.True(t, gotBiz[count.BizType_BIZ_TYPE_COMMENT])
+	assert.True(t, gotBiz[countenum.BizTypeLike])
+	assert.True(t, gotBiz[countenum.BizTypeFavorite])
+	assert.True(t, gotBiz[countenum.BizTypeComment])
 }
 
 func TestContentReset_IgnoresNonTransition(t *testing.T) {

@@ -20,6 +20,7 @@ type (
 	ArticlePublishRes            = content.ArticlePublishRes
 	BackfillFollowInboxReq       = content.BackfillFollowInboxReq
 	BackfillFollowInboxRes       = content.BackfillFollowInboxRes
+	ClearUserFavoriteCacheReq    = content.ClearUserFavoriteCacheReq
 	ContentDetail                = content.ContentDetail
 	ContentUploadsCredentialsReq = content.ContentUploadsCredentialsReq
 	ContentUploadsCredentialsRes = content.ContentUploadsCredentialsRes
@@ -55,6 +56,7 @@ type (
 		GetContentDetail(ctx context.Context, in *GetContentDetailReq, opts ...grpc.CallOption) (*GetContentDetailRes, error)
 		BackfillFollowInbox(ctx context.Context, in *BackfillFollowInboxReq, opts ...grpc.CallOption) (*BackfillFollowInboxRes, error)
 		PurgeFolloweeFromInbox(ctx context.Context, in *PurgeFolloweeFromInboxReq, opts ...grpc.CallOption) (*PurgeFolloweeFromInboxRes, error)
+		ClearUserFavoriteCache(ctx context.Context, in *ClearUserFavoriteCacheReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	}
 
 	defaultContentService struct {
@@ -126,4 +128,9 @@ func (m *defaultContentService) BackfillFollowInbox(ctx context.Context, in *Bac
 func (m *defaultContentService) PurgeFolloweeFromInbox(ctx context.Context, in *PurgeFolloweeFromInboxReq, opts ...grpc.CallOption) (*PurgeFolloweeFromInboxRes, error) {
 	client := content.NewContentServiceClient(m.cli.Conn())
 	return client.PurgeFolloweeFromInbox(ctx, in, opts...)
+}
+
+func (m *defaultContentService) ClearUserFavoriteCache(ctx context.Context, in *ClearUserFavoriteCacheReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	client := content.NewContentServiceClient(m.cli.Conn())
+	return client.ClearUserFavoriteCache(ctx, in, opts...)
 }

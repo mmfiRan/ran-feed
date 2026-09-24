@@ -3,28 +3,31 @@ package enums
 
 import "fmt"
 
-// NotifyTypeEnum 通知类型 10=赞或收藏 20=评论或回复 30=关注
+// NotifyTypeEnum 通知类型 10=赞或收藏 20=评论或回复 30=关注 40=内容审核结果
 type NotifyTypeEnum int32
 
 const (
-	NotifyTypeUnknown      NotifyTypeEnum = 0
-	NotifyTypeLikeFavorite NotifyTypeEnum = 10
-	NotifyTypeCommentReply NotifyTypeEnum = 20
-	NotifyTypeFollow       NotifyTypeEnum = 30
+	NotifyTypeUnknown       NotifyTypeEnum = 0
+	NotifyTypeLikeFavorite  NotifyTypeEnum = 10
+	NotifyTypeCommentReply  NotifyTypeEnum = 20
+	NotifyTypeFollow        NotifyTypeEnum = 30
+	NotifyTypeContentReview NotifyTypeEnum = 40
 )
 
 var notifyTypeNames = map[NotifyTypeEnum]string{
-	NotifyTypeUnknown:      "UNKNOWN",
-	NotifyTypeLikeFavorite: "LIKE_FAVORITE",
-	NotifyTypeCommentReply: "COMMENT_REPLY",
-	NotifyTypeFollow:       "FOLLOW",
+	NotifyTypeUnknown:       "UNKNOWN",
+	NotifyTypeLikeFavorite:  "LIKE_FAVORITE",
+	NotifyTypeCommentReply:  "COMMENT_REPLY",
+	NotifyTypeFollow:        "FOLLOW",
+	NotifyTypeContentReview: "CONTENT_REVIEW",
 }
 
 var notifyTypeMessages = map[NotifyTypeEnum]string{
-	NotifyTypeUnknown:      "未知",
-	NotifyTypeLikeFavorite: "赞或收藏",
-	NotifyTypeCommentReply: "评论或回复",
-	NotifyTypeFollow:       "关注",
+	NotifyTypeUnknown:       "未知",
+	NotifyTypeLikeFavorite:  "赞或收藏",
+	NotifyTypeCommentReply:  "评论或回复",
+	NotifyTypeFollow:        "关注",
+	NotifyTypeContentReview: "内容审核结果",
 }
 
 func (t NotifyTypeEnum) Int32() int32 {
