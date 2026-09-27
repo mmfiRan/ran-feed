@@ -12,16 +12,20 @@ import (
 )
 
 type BatchGetContentForIndexLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
+	contentRepo repositories.ContentRepository
+	articleRepo repositories.ArticleRepository
+	videoRepo   repositories.VideoRepository
 }
 
 func NewBatchGetContentForIndexLogic(ctx context.Context, svcCtx *svc.ServiceContext) *BatchGetContentForIndexLogic {
 	return &BatchGetContentForIndexLogic{
-		ctx:    ctx,
-		svcCtx: svcCtx,
-		Logger: logx.WithContext(ctx),
+		ctx:         ctx,
+		Logger:      logx.WithContext(ctx),
+		contentRepo: svcCtx.ContentRepository,
+		articleRepo: svcCtx.ArticleRepository,
+		videoRepo:   svcCtx.VideoRepository,
 	}
 }
 
@@ -31,8 +35,7 @@ func (l *BatchGetContentForIndexLogic) BatchGetContentForIndex(in *content.Batch
 		return &content.BatchGetContentForIndexRes{Items: []*content.ContentIndexItem{}}, nil
 	}
 
-	contentRepo := repositories.NewContentRepository(l.ctx, l.svcCtx.MysqlDb)
-	rows, err := contentRepo.BatchGetIndexableByIDs(in.ContentIds)
+	rows, err := l.contentRepo.BatchGetIndexableByIDs(l.ctx, in.ContentIds)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +47,7 @@ func (l *BatchGetContentForIndexLogic) BatchGetContentForIndex(in *content.Batch
 		}
 	}
 
-	items, err := assembleContentIndexItems(l.ctx, l.svcCtx, contents)
+	items, err := assembleContentIndexItems(l.ctx, l.articleRepo, l.videoRepo, contents)
 	if err != nil {
 		return nil, err
 	}

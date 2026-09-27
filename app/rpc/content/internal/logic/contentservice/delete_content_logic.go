@@ -15,8 +15,7 @@ import (
 )
 
 type DeleteContentLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
 	contentRepo repositories.ContentRepository
 	articleRepo repositories.ArticleRepository
@@ -27,17 +26,16 @@ type DeleteContentLogic struct {
 func NewDeleteContentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *DeleteContentLogic {
 	return &DeleteContentLogic{
 		ctx:         ctx,
-		svcCtx:      svcCtx,
 		Logger:      logx.WithContext(ctx),
-		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		articleRepo: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
-		videoRepo:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
-		outboxRepo:  repositories.NewContentOutboxRepository(ctx, svcCtx.MysqlDb),
+		contentRepo: svcCtx.ContentRepository,
+		articleRepo: svcCtx.ArticleRepository,
+		videoRepo:   svcCtx.VideoRepository,
+		outboxRepo:  svcCtx.ContentOutboxRepository,
 	}
 }
 
 func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*emptypb.Empty, error) {
-	row, err := l.contentRepo.GetByIDBrief(in.ContentId)
+	row, err := l.contentRepo.GetByIDBrief(l.ctx, in.ContentId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除内容失败"))
 	}
@@ -51,21 +49,21 @@ func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*empty
 		videoRepo := l.videoRepo.WithTx(tx)
 
 		if row.ContentType == int32(content.ContentType_CONTENT_TYPE_ARTICLE) {
-			if derr := articleRepo.DeleteByContentID(in.ContentId); derr != nil {
+			if derr := articleRepo.DeleteByContentID(l.ctx, in.ContentId); derr != nil {
 				return derr
 			}
 		}
 		if row.ContentType == int32(content.ContentType_CONTENT_TYPE_VIDEO) {
-			if derr := videoRepo.DeleteByContentID(in.ContentId); derr != nil {
+			if derr := videoRepo.DeleteByContentID(l.ctx, in.ContentId); derr != nil {
 				return derr
 			}
 		}
-		if derr := contentRepo.DeleteByID(in.ContentId); derr != nil {
+		if derr := contentRepo.DeleteByID(l.ctx, in.ContentId); derr != nil {
 			return derr
 		}
 
 		// 写发件箱,清理由消费者消费删除事件完成
-		return l.outboxRepo.WithTx(tx).CreateEvent(contentevent.NewContentDeletedEvent(in.ContentId, in.UserId))
+		return l.outboxRepo.WithTx(tx).CreateEvent(l.ctx, contentevent.NewContentDeletedEvent(in.ContentId, in.UserId))
 	}); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除失败"))
 	}

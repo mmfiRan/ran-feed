@@ -5,7 +5,7 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
-	"ran-feed/app/rpc/content/internal/do"
+	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -16,8 +16,7 @@ import (
 )
 
 type SaveVideoDraftLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
 	contentRepository repositories.ContentRepository
 	videoRepository   repositories.VideoRepository
@@ -26,10 +25,9 @@ type SaveVideoDraftLogic struct {
 func NewSaveVideoDraftLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SaveVideoDraftLogic {
 	return &SaveVideoDraftLogic{
 		ctx:               ctx,
-		svcCtx:            svcCtx,
 		Logger:            logx.WithContext(ctx),
-		contentRepository: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		videoRepository:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
+		contentRepository: svcCtx.ContentRepository,
+		videoRepository:   svcCtx.VideoRepository,
 	}
 }
 
@@ -60,13 +58,13 @@ func (l *SaveVideoDraftLogic) createDraft(in *content.SaveVideoDraftReq) (int64,
 		contentRepo := l.contentRepository.WithTx(tx)
 		videoRepo := l.videoRepository.WithTx(tx)
 
-		contentDO := buildContentDO(in.UserId, content.ContentType_CONTENT_TYPE_VIDEO,
+		contentModel := buildContentModel(in.UserId, content.ContentType_CONTENT_TYPE_VIDEO,
 			content.ContentStatus_CONTENT_STATUS_DRAFT, visibility)
-		contentID = contentDO.ID
-		if err := contentRepo.CreateContent(contentDO); err != nil {
+		contentID = contentModel.ID
+		if err := contentRepo.CreateContent(l.ctx, contentModel); err != nil {
 			return err
 		}
-		videoDO := &do.VideoDO{
+		videoModel := &model.RanFeedVideo{
 			ID:              snowflake.GenID(),
 			ContentID:       contentID,
 			Title:           in.Title,
@@ -75,7 +73,7 @@ func (l *SaveVideoDraftLogic) createDraft(in *content.SaveVideoDraftReq) (int64,
 			Duration:        in.Duration,
 			TranscodeStatus: contentEnum.TranscodeStatusPending.Int32(),
 		}
-		return videoRepo.CreateVideo(videoDO)
+		return videoRepo.CreateVideo(l.ctx, videoModel)
 	}); err != nil {
 		return 0, errorx.Wrap(l.ctx, err, errorx.NewMsg("保存草稿失败"))
 	}
@@ -83,7 +81,7 @@ func (l *SaveVideoDraftLogic) createDraft(in *content.SaveVideoDraftReq) (int64,
 }
 
 func (l *SaveVideoDraftLogic) updateDraft(in *content.SaveVideoDraftReq, contentID int64) (int64, error) {
-	row, err := l.contentRepository.GetOwnedByID(contentID, in.UserId)
+	row, err := l.contentRepository.GetOwnedByID(l.ctx, contentID, in.UserId)
 	if err != nil {
 		return 0, errorx.Wrap(l.ctx, err, errorx.NewMsg("保存草稿失败"))
 	}
@@ -106,17 +104,17 @@ func (l *SaveVideoDraftLogic) updateDraft(in *content.SaveVideoDraftReq, content
 		contentRepo := l.contentRepository.WithTx(tx)
 		videoRepo := l.videoRepository.WithTx(tx)
 
-		if err := contentRepo.UpdateDraftMeta(contentID, visibility, in.UserId); err != nil {
+		if err := contentRepo.UpdateDraftMeta(l.ctx, contentID, visibility, in.UserId); err != nil {
 			return err
 		}
-		videoDO := &do.VideoDO{
+		videoModel := &model.RanFeedVideo{
 			ContentID: contentID,
 			Title:     in.Title,
 			OriginURL: in.VideoUrl,
 			CoverURL:  in.CoverUrl,
 			Duration:  in.Duration,
 		}
-		return videoRepo.UpdateByContentID(videoDO)
+		return videoRepo.UpdateByContentID(l.ctx, videoModel)
 	}); err != nil {
 		return 0, errorx.Wrap(l.ctx, err, errorx.NewMsg("保存草稿失败"))
 	}

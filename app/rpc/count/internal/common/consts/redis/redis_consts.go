@@ -1,7 +1,5 @@
 package redis
 
-import "strconv"
-
 const (
 	// RedisCountValuePrefix 统一计数缓存前缀 count:value:{biz_type}:{target_type}:{target_id}
 	RedisCountValuePrefix = "count:value"
@@ -13,13 +11,6 @@ const (
 	RedisUserProfileCountsPrefix = "count:user:profile"
 	// RedisUserProfileCountsRebuildLockPrefix 用户主页计数重建锁前缀 lock:rebuild:count:user:profile:{user_id}
 	RedisUserProfileCountsRebuildLockPrefix = "lock:rebuild:count:user:profile"
-	// RedisFeedHotDirtyPrefix 热榜脏集合活跃分片前缀 feed:hot:dirty 加 id 取模 shards
-	// 互动只记谁脏了 Set 去重 算分由 content 快更任务回查计数总量批量完成
-	RedisFeedHotDirtyPrefix = "feed:hot:dirty"
-	// RedisFeedBigVGlobalKey 全局大 V 集合 粉丝数跨阈值由本消费者增量维护 content 读写关注流时命中判推拉
-	RedisFeedBigVGlobalKey = "feed:bigv:global"
-	// RedisFeedBigVGlobalRebuildKey 大 V 集合周期重建临时 key 建好后 RENAME 原子换到正式 key
-	RedisFeedBigVGlobalRebuildKey = "feed:bigv:global:rebuild"
 )
 
 func GetRedisPrefixKey(prefix string, id string) string {
@@ -28,9 +19,4 @@ func GetRedisPrefixKey(prefix string, id string) string {
 
 func BuildCountValueKey(bizType string, targetType string, targetID string) string {
 	return GetRedisPrefixKey(GetRedisPrefixKey(GetRedisPrefixKey(RedisCountValuePrefix, bizType), targetType), targetID)
-}
-
-// BuildHotFeedDirtyKey 构造热榜脏集合分片 key feed:hot:dirty 加 shard
-func BuildHotFeedDirtyKey(shard int) string {
-	return GetRedisPrefixKey(RedisFeedHotDirtyPrefix, strconv.Itoa(shard))
 }

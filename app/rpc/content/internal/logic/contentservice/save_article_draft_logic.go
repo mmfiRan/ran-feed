@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/do"
+	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -15,8 +15,7 @@ import (
 )
 
 type SaveArticleDraftLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
 	contentRepository repositories.ContentRepository
 	articleRepository repositories.ArticleRepository
@@ -25,10 +24,9 @@ type SaveArticleDraftLogic struct {
 func NewSaveArticleDraftLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SaveArticleDraftLogic {
 	return &SaveArticleDraftLogic{
 		ctx:               ctx,
-		svcCtx:            svcCtx,
 		Logger:            logx.WithContext(ctx),
-		contentRepository: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		articleRepository: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
+		contentRepository: svcCtx.ContentRepository,
+		articleRepository: svcCtx.ArticleRepository,
 	}
 }
 
@@ -60,13 +58,13 @@ func (l *SaveArticleDraftLogic) createDraft(in *content.SaveArticleDraftReq) (in
 		contentRepo := l.contentRepository.WithTx(tx)
 		articleRepo := l.articleRepository.WithTx(tx)
 
-		contentDO := buildContentDO(in.UserId, content.ContentType_CONTENT_TYPE_ARTICLE,
+		contentModel := buildContentModel(in.UserId, content.ContentType_CONTENT_TYPE_ARTICLE,
 			content.ContentStatus_CONTENT_STATUS_DRAFT, visibility)
-		contentID = contentDO.ID
-		if err := contentRepo.CreateContent(contentDO); err != nil {
+		contentID = contentModel.ID
+		if err := contentRepo.CreateContent(l.ctx, contentModel); err != nil {
 			return err
 		}
-		articleDO := &do.ArticleDO{
+		articleModel := &model.RanFeedArticle{
 			ID:          snowflake.GenID(),
 			ContentID:   contentID,
 			Title:       in.Title,
@@ -74,7 +72,7 @@ func (l *SaveArticleDraftLogic) createDraft(in *content.SaveArticleDraftReq) (in
 			Cover:       in.Cover,
 			Content:     in.Content,
 		}
-		return articleRepo.CreateArticle(articleDO)
+		return articleRepo.CreateArticle(l.ctx, articleModel)
 	}); err != nil {
 		return 0, errorx.Wrap(l.ctx, err, errorx.NewMsg("保存草稿失败"))
 	}
@@ -82,7 +80,7 @@ func (l *SaveArticleDraftLogic) createDraft(in *content.SaveArticleDraftReq) (in
 }
 
 func (l *SaveArticleDraftLogic) updateDraft(in *content.SaveArticleDraftReq, contentID int64) (int64, error) {
-	row, err := l.contentRepository.GetOwnedByID(contentID, in.UserId)
+	row, err := l.contentRepository.GetOwnedByID(l.ctx, contentID, in.UserId)
 	if err != nil {
 		return 0, errorx.Wrap(l.ctx, err, errorx.NewMsg("保存草稿失败"))
 	}
@@ -105,17 +103,17 @@ func (l *SaveArticleDraftLogic) updateDraft(in *content.SaveArticleDraftReq, con
 		contentRepo := l.contentRepository.WithTx(tx)
 		articleRepo := l.articleRepository.WithTx(tx)
 
-		if err := contentRepo.UpdateDraftMeta(contentID, visibility, in.UserId); err != nil {
+		if err := contentRepo.UpdateDraftMeta(l.ctx, contentID, visibility, in.UserId); err != nil {
 			return err
 		}
-		articleDO := &do.ArticleDO{
+		articleModel := &model.RanFeedArticle{
 			ContentID:   contentID,
 			Title:       in.Title,
 			Description: in.Description,
 			Cover:       in.Cover,
 			Content:     in.Content,
 		}
-		return articleRepo.UpdateByContentID(articleDO)
+		return articleRepo.UpdateByContentID(l.ctx, articleModel)
 	}); err != nil {
 		return 0, errorx.Wrap(l.ctx, err, errorx.NewMsg("保存草稿失败"))
 	}

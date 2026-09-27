@@ -10,6 +10,7 @@ import (
 	rediskey "ran-feed/app/rpc/count/internal/common/consts/redis"
 	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/pkg/consts"
+	sharedkey "ran-feed/pkg/rediskey"
 
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
@@ -69,7 +70,7 @@ func (c *CanalCountConsumer) syncBigVMember(ctx context.Context, userID int64) {
 		return
 	}
 	member := strconv.FormatInt(userID, 10)
-	if _, err := c.svcContext.Redis.SaddCtx(ctx, rediskey.RedisFeedBigVGlobalKey, member); err != nil {
+	if _, err := c.svcContext.Redis.SaddCtx(ctx, sharedkey.FeedBigVGlobal, member); err != nil {
 		c.Errorf("大 V 集合 SADD 失败 userID=%d err=%v", userID, err)
 	}
 }
@@ -126,7 +127,7 @@ func (c *CanalCountConsumer) markHotDirty(ctx context.Context, cs *changeSet) er
 	}
 	return c.svcContext.Redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
 		for shard, members := range byShard {
-			pipe.SAdd(ctx, rediskey.BuildHotFeedDirtyKey(shard), members...)
+			pipe.SAdd(ctx, sharedkey.HotFeedDirty(shard), members...)
 		}
 		return nil
 	})

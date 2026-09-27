@@ -35,6 +35,13 @@ goctl api swagger --api app/front/doc/front.api --dir app/front/swagger --filena
   是两种截然不同的业务处理，用哨兵值会把两者抹平，只有指针能把 nil 传进 logic 分支判断
 - 路由按服务分组，handler 名与 logic 一一对应
 
+### HTTP 方法遵循 RESTful 风格
+
+- 写操作（增删改）用 POST / PUT / DELETE，**GET 不产生副作用**
+- 例外：**条件查询参数很多（超过 4 个查询条件）时**，可以用 POST 表示查询
+  （避免超长 query string 与可读性差）
+- 判断依据：改数据的接口必须是非 GET；只有纯读且条件少的查询才用 GET
+
 ## 后台 admin-api RBAC 元数据（改 admin 的 .api 必跑）
 
 admin-api 的路由级权限校验不写死在代码里,而是**以 `.api` 每条路由的 `@doc` 为事实源**:

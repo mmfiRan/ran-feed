@@ -7,8 +7,9 @@ import (
 
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	"ran-feed/app/rpc/content/internal/repositories"
-	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
+
+	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 // followeeContent followee 窗口内一条内容 backfill 与 purge 共用
@@ -19,14 +20,14 @@ type followeeContent struct {
 
 // loadFolloweeWindowContent 取 followee 窗口内内容 publish zset 优先 冷则回源 DB 取 PUBLIC
 // backfill 灌入与 purge 清理共用同一取数口径 避免分叉
-func loadFolloweeWindowContent(ctx context.Context, svcCtx *svc.ServiceContext, contentRepo repositories.ContentRepository, followeeID, cutoffMillis int64, limit int) ([]followeeContent, error) {
+func loadFolloweeWindowContent(ctx context.Context, redisClient *redis.Redis, contentRepo repositories.ContentRepository, followeeID, cutoffMillis int64, limit int) ([]followeeContent, error) {
 	publishKey := rediskey.BuildUserPublishFeedKey(followeeID)
-	exists, err := svcCtx.Redis.ExistsCtx(ctx, publishKey)
+	exists, err := redisClient.ExistsCtx(ctx, publishKey)
 	if err != nil {
 		return nil, errorx.Wrap(ctx, err, errorx.NewMsg("查询关注者发布列表失败"))
 	}
 	if exists {
-		pairs, perr := svcCtx.Redis.ZrevrangebyscoreWithScoresByFloatAndLimitCtx(ctx, publishKey, float64(cutoffMillis), math.MaxFloat64, 0, limit)
+		pairs, perr := redisClient.ZrevrangebyscoreWithScoresByFloatAndLimitCtx(ctx, publishKey, float64(cutoffMillis), math.MaxFloat64, 0, limit)
 		if perr != nil {
 			return nil, errorx.Wrap(ctx, perr, errorx.NewMsg("查询关注者发布列表失败"))
 		}
@@ -44,7 +45,7 @@ func loadFolloweeWindowContent(ctx context.Context, svcCtx *svc.ServiceContext, 
 		return res, nil
 	}
 
-	rows, derr := contentRepo.ListPublishedByAuthorWithinWindow(followeeID, cutoffMillis, limit)
+	rows, derr := contentRepo.ListPublishedByAuthorWithinWindow(ctx, followeeID, cutoffMillis, limit)
 	if derr != nil {
 		return nil, errorx.Wrap(ctx, derr, errorx.NewMsg("查询关注者发布内容失败"))
 	}

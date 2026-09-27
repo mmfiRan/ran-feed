@@ -19,7 +19,6 @@ enum ContentType {
 enum ContentStatus {
   CONTENT_STATUS_UNSPECIFIED = 0;   // 未指定
   CONTENT_STATUS_DRAFT = 10;        // 草稿
-  CONTENT_STATUS_PROCESSING = 20;   // 处理中
   CONTENT_STATUS_PUBLISHED = 30;    // 已发布
   CONTENT_STATUS_FAILED = 40;       // 失败
   CONTENT_STATUS_TAKEN_DOWN = 50;   // 管理员下架

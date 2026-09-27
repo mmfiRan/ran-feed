@@ -12,8 +12,7 @@ import (
 )
 
 type SubmitContentLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
 	contentRepository repositories.ContentRepository
 	articleRepository repositories.ArticleRepository
@@ -23,16 +22,15 @@ type SubmitContentLogic struct {
 func NewSubmitContentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SubmitContentLogic {
 	return &SubmitContentLogic{
 		ctx:               ctx,
-		svcCtx:            svcCtx,
 		Logger:            logx.WithContext(ctx),
-		contentRepository: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		articleRepository: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
-		videoRepository:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
+		contentRepository: svcCtx.ContentRepository,
+		articleRepository: svcCtx.ArticleRepository,
+		videoRepository:   svcCtx.VideoRepository,
 	}
 }
 
 func (l *SubmitContentLogic) SubmitContent(in *content.SubmitContentReq) (*content.SubmitContentRes, error) {
-	row, err := l.contentRepository.GetOwnedByID(in.ContentId, in.UserId)
+	row, err := l.contentRepository.GetOwnedByID(l.ctx, in.ContentId, in.UserId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("提交失败"))
 	}
@@ -48,7 +46,7 @@ func (l *SubmitContentLogic) SubmitContent(in *content.SubmitContentReq) (*conte
 		return nil, err
 	}
 
-	affected, err := l.contentRepository.SubmitOwned(
+	affected, err := l.contentRepository.SubmitOwned(l.ctx,
 		in.ContentId,
 		in.UserId,
 		[]int32{
@@ -71,7 +69,7 @@ func (l *SubmitContentLogic) SubmitContent(in *content.SubmitContentReq) (*conte
 func (l *SubmitContentLogic) checkComplete(contentID int64, contentType content.ContentType) error {
 	switch contentType {
 	case content.ContentType_CONTENT_TYPE_ARTICLE:
-		article, err := l.articleRepository.GetByContentID(contentID)
+		article, err := l.articleRepository.GetByContentID(l.ctx, contentID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("提交失败"))
 		}
@@ -80,7 +78,7 @@ func (l *SubmitContentLogic) checkComplete(contentID int64, contentType content.
 		}
 		return nil
 	case content.ContentType_CONTENT_TYPE_VIDEO:
-		video, err := l.videoRepository.GetByContentID(contentID)
+		video, err := l.videoRepository.GetByContentID(l.ctx, contentID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("提交失败"))
 		}

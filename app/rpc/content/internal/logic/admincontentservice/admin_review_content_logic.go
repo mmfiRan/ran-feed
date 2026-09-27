@@ -5,9 +5,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
-	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
-	"ran-feed/app/rpc/content/internal/common/utils"
-	"ran-feed/app/rpc/content/internal/do"
+	"ran-feed/app/rpc/content/internal/common/convert"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -20,8 +18,7 @@ import (
 )
 
 type AdminReviewContentLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
 	contentRepo repositories.ContentRepository
 	reviewRepo  repositories.ContentReviewRepository
@@ -31,11 +28,10 @@ type AdminReviewContentLogic struct {
 func NewAdminReviewContentLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminReviewContentLogic {
 	return &AdminReviewContentLogic{
 		ctx:         ctx,
-		svcCtx:      svcCtx,
 		Logger:      logx.WithContext(ctx),
-		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		reviewRepo:  repositories.NewContentReviewRepository(ctx, svcCtx.MysqlDb),
-		outboxRepo:  repositories.NewContentOutboxRepository(ctx, svcCtx.MysqlDb),
+		contentRepo: svcCtx.ContentRepository,
+		reviewRepo:  svcCtx.ContentReviewRepository,
+		outboxRepo:  svcCtx.ContentOutboxRepository,
 	}
 }
 
@@ -45,7 +41,7 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 		return nil, errorx.NewMsg("不支持的审核决策")
 	}
 
-	row, err := l.contentRepo.AdminGetByID(in.ContentId)
+	row, err := l.contentRepo.AdminGetByID(l.ctx, in.ContentId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容失败"))
 	}
@@ -73,9 +69,9 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 			err      error
 		)
 		if approve {
-			affected, err = contentRepo.AdminApproveContent(in.ContentId, in.OperatorId, now)
+			affected, err = contentRepo.AdminApproveContent(l.ctx, in.ContentId, in.OperatorId, now)
 		} else {
-			affected, err = contentRepo.AdminUpdateStatus(in.ContentId,
+			affected, err = contentRepo.AdminUpdateStatus(l.ctx, in.ContentId,
 				int32(content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW), int32(targetStatus), in.OperatorId)
 		}
 		if err != nil {
@@ -85,10 +81,10 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 			return errorx.NewMsg("内容不在待审状态")
 		}
 
-		if err := l.reviewRepo.WithTx(tx).Create(&do.ContentReviewDO{
+		if err := l.reviewRepo.WithTx(tx).Create(l.ctx, &model.RanFeedContentReview{
 			ID:        snowflake.GenID(),
 			ContentID: in.ContentId,
-			Decision:  contentEnum.ReviewDecisionEnum(in.Decision),
+			Decision:  int32(in.Decision),
 			Reason:    reason,
 			CreatedBy: in.OperatorId,
 			UpdatedBy: in.OperatorId,
@@ -97,14 +93,14 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 		}
 
 		// 写发件箱
-		return l.outboxRepo.WithTx(tx).CreateEvent(l.buildReviewEvent(approve, row, reason))
+		return l.outboxRepo.WithTx(tx).CreateEvent(l.ctx, l.buildReviewEvent(approve, row, reason))
 	})
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("审核失败"))
 	}
 
 	return &content.AdminReviewContentRes{
-		Status: utils.ContentStatusValue(int32(targetStatus)),
+		Status: convert.ContentStatusValue(int32(targetStatus)),
 	}, nil
 }
 

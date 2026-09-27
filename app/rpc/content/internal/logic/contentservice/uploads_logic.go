@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/convert"
 	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
-	contentutils "ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
 	"ran-feed/pkg/oss"
@@ -16,16 +16,16 @@ import (
 )
 
 type UploadsLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
+	ossStrategy oss.Strategy
 }
 
 func NewUploadsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UploadsLogic {
 	return &UploadsLogic{
-		ctx:    ctx,
-		svcCtx: svcCtx,
-		Logger: logx.WithContext(ctx),
+		ctx:         ctx,
+		Logger:      logx.WithContext(ctx),
+		ossStrategy: svcCtx.OssStrategy,
 	}
 }
 
@@ -38,10 +38,10 @@ func (l *UploadsLogic) Uploads(in *content.ContentUploadsCredentialsReq) (*conte
 		Scene:       scene.Path(),
 		ContentType: fileExt.MIME(),
 		MaxBytes:    in.FileSize,
-		FileName:    contentutils.SanitizeFileName(in.FileName, fileExt.Suffix()),
+		FileName:    convert.SanitizeFileName(in.FileName, fileExt.Suffix()),
 	}
 
-	credential, err := l.svcCtx.OssStrategy.Generate(l.ctx, req)
+	credential, err := l.ossStrategy.Generate(l.ctx, req)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("生成上传凭证失败"))
 	}

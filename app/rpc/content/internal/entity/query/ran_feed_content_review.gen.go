@@ -50,8 +50,8 @@ type ranFeedContentReview struct {
 	ALL       field.Asterisk
 	ID        field.Int64  // 主键id
 	ContentID field.Int64  // 被审内容ID
-	Decision  field.Int32  // 审核决策 10=通过 20=拒绝
-	Reason    field.String // 拒绝理由 通过时为空
+	Decision  field.Int32  // 审核决策 10=通过 20=拒绝 30=管理端下架 40=管理端恢复
+	Reason    field.String // 原因 通过与恢复为空 拒绝为拒绝理由 下架为下架原因
 	Version   field.Int32  // 版本号（乐观锁）
 	IsDeleted field.Int32  // 逻辑删除 0=正常 1=删除
 	CreatedBy field.Int64  // 创建人（审核管理员 admin_user.id）

@@ -4,7 +4,8 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/logic/publishbox"
+	"ran-feed/app/rpc/content/internal/common/component/contentresolver"
+	"ran-feed/app/rpc/content/internal/common/component/publishbox"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
 
@@ -12,20 +13,18 @@ import (
 )
 
 type UserPublishFeedLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
-	resolver   *contentDetailResolver
-	publishBox *publishbox.PublishBox
+	resolver   *contentresolver.Resolver
+	publishBox *publishbox.Box
 }
 
 func NewUserPublishFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserPublishFeedLogic {
 	return &UserPublishFeedLogic{
 		ctx:        ctx,
-		svcCtx:     svcCtx,
 		Logger:     logx.WithContext(ctx),
-		resolver:   newContentDetailResolver(ctx, svcCtx),
-		publishBox: publishbox.NewPublishBox(ctx, svcCtx),
+		resolver:   svcCtx.ContentResolver,
+		publishBox: svcCtx.PublishBox,
 	}
 }
 
@@ -47,7 +46,7 @@ func (l *UserPublishFeedLogic) UserPublishFeed(in *content.UserPublishFeedReq) (
 	cursorScore, cursorID := parseCursor(in.Cursor)
 
 	// 作者发件箱全量历史 cutoff=0 复用 publishbox 命中读/未命中 PUBLIC-only 重建/空哨兵
-	items, hasMore, err := l.publishBox.QueryWindow(in.AuthorId, 0, cursorScore, pageSize)
+	items, hasMore, err := l.publishBox.QueryWindow(l.ctx, in.AuthorId, 0, cursorScore, pageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -72,17 +71,18 @@ func (l *UserPublishFeedLogic) UserPublishFeed(in *content.UserPublishFeedReq) (
 		viewerID = *in.ViewerId
 	}
 	// PUBLIC-only 与写扩散/大V merge 口径一致 杜绝作者主页把私密内容泄露给任意访问者
-	feedItems, err := l.resolver.assembleItems(ids, viewerID, true)
+	entries, err := l.resolver.Resolve(l.ctx, ids, viewerID, true)
 	if err != nil {
 		return nil, err
 	}
+	feedItems := buildContentItems(entries)
 	nextCursor := ""
 	if hasMore {
 		nextCursor = formatCursor(last.score, last.id)
 	}
 
 	if len(feedItems) == 0 {
-		// P5 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
+		// 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
 		return &content.UserPublishFeedRes{Items: []*content.ContentItem{}, NextCursor: nextCursor, HasMore: hasMore}, nil
 	}
 

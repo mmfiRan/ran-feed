@@ -12,8 +12,7 @@ import (
 )
 
 type GetUserContentCountLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
 	contentRepo repositories.ContentRepository
 }
@@ -21,9 +20,8 @@ type GetUserContentCountLogic struct {
 func NewGetUserContentCountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetUserContentCountLogic {
 	return &GetUserContentCountLogic{
 		ctx:         ctx,
-		svcCtx:      svcCtx,
 		Logger:      logx.WithContext(ctx),
-		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
+		contentRepo: svcCtx.ContentRepository,
 	}
 }
 
@@ -38,7 +36,7 @@ func (l *GetUserContentCountLogic) GetUserContentCount(in *content.GetUserConten
 	status := int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)
 	visibility := int32(content.Visibility_VISIBILITY_PUBLIC)
 
-	cnt, err := l.contentRepo.CountByAuthor(status, visibility, in.UserId)
+	cnt, err := l.contentRepo.CountByAuthor(l.ctx, status, visibility, in.UserId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询作品数失败"))
 	}

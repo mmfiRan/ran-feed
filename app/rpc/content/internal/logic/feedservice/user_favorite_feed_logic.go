@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/component/contentresolver"
+	"ran-feed/app/rpc/content/internal/common/component/followwindow"
 	contentconsts "ran-feed/app/rpc/content/internal/common/consts"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/app/rpc/interaction/client/favoriteservice"
 	"ran-feed/pkg/cache"
@@ -24,18 +25,22 @@ import (
 const favoriteEmptySentinel = "0"
 
 type UserFavoriteFeedLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
-	resolver *contentDetailResolver
+	redis                     *redis.Redis
+	favoriteFeedRebuildLocker *cache.DistLocker
+	favoriteRpc               favoriteservice.FavoriteService
+	resolver                  *contentresolver.Resolver
 }
 
 func NewUserFavoriteFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UserFavoriteFeedLogic {
 	return &UserFavoriteFeedLogic{
-		ctx:      ctx,
-		svcCtx:   svcCtx,
-		Logger:   logx.WithContext(ctx),
-		resolver: newContentDetailResolver(ctx, svcCtx),
+		ctx:                       ctx,
+		Logger:                    logx.WithContext(ctx),
+		redis:                     svcCtx.Redis,
+		favoriteFeedRebuildLocker: svcCtx.FavoriteFeedRebuildLocker,
+		favoriteRpc:               svcCtx.FavoriteRpc,
+		resolver:                  svcCtx.ContentResolver,
 	}
 }
 
@@ -71,12 +76,13 @@ func (l *UserFavoriteFeedLogic) UserFavoriteFeed(in *content.UserFavoriteFeedReq
 	}
 
 	// 列表按被访问者(owner)取 点赞态按实际访问者(viewer)算 二者不能混用
-	items, err := l.resolver.assembleItems(page.ids, favoriteViewerID(in), true)
+	entries, err := l.resolver.Resolve(l.ctx, page.ids, favoriteViewerID(in), true)
 	if err != nil {
 		return nil, err
 	}
+	items := buildContentItems(entries)
 	if len(items) == 0 {
-		// P5 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
+		// 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
 		return &content.UserFavoriteFeedRes{Items: []*content.ContentItem{}, NextCursor: page.nextCursor, HasMore: page.hasMore}, nil
 	}
 
@@ -111,7 +117,7 @@ func favoriteViewerID(in *content.UserFavoriteFeedReq) int64 {
 // queryPage 与发布流同一套机制 命中读缓存 未命中抢锁回源重建 等锁超时降级单页回源
 func (l *UserFavoriteFeedLogic) queryPage(feedKey string, ownerID int64, cursor string, pageSize int) (favoritePage, error) {
 	cursorScore := parseFavoriteCursor(cursor)
-	page, err := cache.DoWithLock(l.svcCtx.FavoriteFeedRebuildLocker, l.ctx, cache.BuildLockKey(feedKey),
+	page, err := cache.DoWithLock(l.favoriteFeedRebuildLocker, l.ctx, cache.BuildLockKey(feedKey),
 		func(ctx context.Context) (favoritePage, bool, error) {
 			ids, next, hasMore, exists, qerr := l.queryOnce(ctx, feedKey, cursorScore, pageSize)
 			if qerr != nil {
@@ -141,18 +147,18 @@ func (l *UserFavoriteFeedLogic) queryOnce(ctx context.Context, feedKey string, c
 	if cursorScore > 0 {
 		start = cursorScore - 1
 	}
-	pairs, err := l.svcCtx.Redis.ZrevrangebyscoreWithScoresAndLimitCtx(ctx, feedKey, start, 0, 0, pageSize+1)
+	pairs, err := l.redis.ZrevrangebyscoreWithScoresAndLimitCtx(ctx, feedKey, start, 0, 0, pageSize+1)
 	if err != nil {
 		return nil, "", false, false, errorx.Wrap(ctx, err, errorx.NewMsg("查询收藏列表失败"))
 	}
 	if len(pairs) == 0 {
-		exists, eerr := l.svcCtx.Redis.ExistsCtx(ctx, feedKey)
+		exists, eerr := l.redis.ExistsCtx(ctx, feedKey)
 		if eerr != nil {
 			return nil, "", false, false, errorx.Wrap(ctx, eerr, errorx.NewMsg("查询收藏列表失败"))
 		}
 		return nil, "", false, exists, nil
 	}
-	if eerr := l.svcCtx.Redis.ExpireCtx(ctx, feedKey, l.cacheTTLSeconds()); eerr != nil {
+	if eerr := l.redis.ExpireCtx(ctx, feedKey, l.cacheTTLSeconds()); eerr != nil {
 		l.Errorf("续期收藏缓存 TTL 失败 feedKey=%s: %v", feedKey, eerr)
 	}
 
@@ -171,7 +177,7 @@ func (l *UserFavoriteFeedLogic) queryOnce(ctx context.Context, feedKey string, c
 // 用脱离请求取消的 ctx 保证重建写入不被请求结束打断
 func (l *UserFavoriteFeedLogic) rebuild(ctx context.Context, feedKey string, ownerID, cursorScore int64, pageSize int) (favoritePage, error) {
 	bgCtx := context.WithoutCancel(ctx)
-	resp, err := l.svcCtx.FavoriteRpc.QueryFavoriteList(bgCtx, &favoriteservice.QueryFavoriteListReq{
+	resp, err := l.favoriteRpc.QueryFavoriteList(bgCtx, &favoriteservice.QueryFavoriteListReq{
 		UserId:   ownerID,
 		Cursor:   0,
 		PageSize: uint32(contentconsts.TimelineKeepN),
@@ -196,7 +202,7 @@ func (l *UserFavoriteFeedLogic) rebuild(ctx context.Context, feedKey string, own
 
 // pageFromSource 等锁超时的降级路径 直接回源单页 不写缓存
 func (l *UserFavoriteFeedLogic) pageFromSource(ownerID, cursorScore int64, pageSize int) (favoritePage, error) {
-	resp, err := l.svcCtx.FavoriteRpc.QueryFavoriteList(l.ctx, &favoriteservice.QueryFavoriteListReq{
+	resp, err := l.favoriteRpc.QueryFavoriteList(l.ctx, &favoriteservice.QueryFavoriteListReq{
 		UserId:   ownerID,
 		Cursor:   cursorScore,
 		PageSize: uint32(pageSize),
@@ -233,7 +239,7 @@ func (l *UserFavoriteFeedLogic) writeCache(ctx context.Context, feedKey string, 
 	if len(members) == 0 {
 		return nil
 	}
-	return l.svcCtx.Redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
+	return l.redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
 		pipe.ZAdd(ctx, feedKey, members...)
 		pipe.ZRemRangeByRank(ctx, feedKey, 0, -contentconsts.TimelineKeepN-1)
 		pipe.Expire(ctx, feedKey, l.cacheTTL())
@@ -243,7 +249,7 @@ func (l *UserFavoriteFeedLogic) writeCache(ctx context.Context, feedKey string, 
 
 // writeEmptySentinel 写不可见哨兵做空收藏负缓存 避免空用户每次读都回源
 func (l *UserFavoriteFeedLogic) writeEmptySentinel(ctx context.Context, feedKey string) {
-	err := l.svcCtx.Redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
+	err := l.redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
 		pipe.ZAdd(ctx, feedKey, redis.Z{Score: 0, Member: favoriteEmptySentinel})
 		pipe.Expire(ctx, feedKey, l.cacheTTL())
 		return nil
@@ -255,8 +261,7 @@ func (l *UserFavoriteFeedLogic) writeEmptySentinel(ctx context.Context, feedKey 
 
 // cacheTTLSeconds 收藏缓存 TTL 秒 与发布流共用窗口推导 TTL
 func (l *UserFavoriteFeedLogic) cacheTTLSeconds() int {
-	days := contentconsts.WindowDays
-	return followwindow.TTLSeconds(days)
+	return followwindow.TTLSeconds()
 }
 
 func (l *UserFavoriteFeedLogic) cacheTTL() time.Duration {

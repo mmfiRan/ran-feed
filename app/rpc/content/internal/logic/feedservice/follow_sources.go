@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	contentconsts "ran-feed/app/rpc/content/internal/common/consts"
+	"ran-feed/app/rpc/content/internal/common/component/followwindow"
+	"ran-feed/app/rpc/content/internal/common/component/publishbox"
+	"ran-feed/app/rpc/content/internal/common/component/redislock"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
-	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
-	"ran-feed/app/rpc/content/internal/logic/publishbox"
 	"ran-feed/app/rpc/interaction/client/followservice"
+	sharedkey "ran-feed/pkg/rediskey"
 
 	"github.com/zeromicro/go-zero/core/mr"
 	"github.com/zeromicro/go-zero/core/stores/redis"
@@ -39,7 +39,7 @@ func (l *FollowFeedLogic) pickBigVFollowees(ctx context.Context, candidates []in
 		return nil, nil
 	}
 
-	res, err := l.svcCtx.Redis.EvalCtx(ctx, luautils.FilterBigVMembersScript, []string{rediskey.RedisFeedBigVGlobalKey}, args...)
+	res, err := l.redis.EvalCtx(ctx, redislock.FilterBigVMembersScript, []string{sharedkey.FeedBigVGlobal}, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (l *FollowFeedLogic) pickBigVFollowees(ctx context.Context, candidates []in
 
 	bigVs := make([]int64, 0, len(arr))
 	for _, v := range arr {
-		s, ok := luaReplyString(v)
+		s, ok := redislock.ReplyString(v)
 		if !ok {
 			continue
 		}
@@ -86,7 +86,7 @@ func excludeFollowees(all, excluded []int64) []int64 {
 
 // readPullAuthors 读拉模式关注集 已剔除哨兵
 func (l *FollowFeedLogic) readPullAuthors(ctx context.Context, pullKey string) []int64 {
-	members, err := l.svcCtx.Redis.SmembersCtx(ctx, pullKey)
+	members, err := l.redis.SmembersCtx(ctx, pullKey)
 	if err != nil {
 		l.Errorf("读拉模式关注集失败 pullKey=%s: %v", pullKey, err)
 		return nil
@@ -104,7 +104,7 @@ func (l *FollowFeedLogic) writePullAuthors(ctx context.Context, pullKey string, 
 			members = append(members, strconv.FormatInt(id, 10))
 		}
 	}
-	return l.svcCtx.Redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
+	return l.redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
 		pipe.Del(ctx, pullKey)
 		pipe.SAdd(ctx, pullKey, members...)
 		pipe.Expire(ctx, pullKey, time.Duration(ttlSeconds)*time.Second)
@@ -137,7 +137,7 @@ func (l *FollowFeedLogic) listFolloweesCapped(ctx context.Context, viewerID int6
 		if remain := limit - len(followees); remain < int(pageSize) {
 			pageSize = uint32(remain)
 		}
-		resp, err := l.svcCtx.FollowRpc.ListFollowees(ctx, &followservice.ListFolloweesReq{
+		resp, err := l.followRpc.ListFollowees(ctx, &followservice.ListFolloweesReq{
 			UserId:   viewerID,
 			Cursor:   cursor,
 			PageSize: pageSize,
@@ -161,7 +161,7 @@ func (l *FollowFeedLogic) listFolloweesCapped(ctx context.Context, viewerID int6
 }
 
 // fetchPullContentIDs 并发查拉侧作者发件箱当前窗口 走 publishbox 命中读未命中回源重建
-// 返回所有命中的 (contentID published_at) 并集（含重复 由 mergeScored 去重）与任意源是否还有更多
+// 返回所有命中的 contentID published_at 并集 重复项交给 mergeScored 去重 以及任意源是否还有更多
 func (l *FollowFeedLogic) fetchPullContentIDs(pullAuthors []int64, cursorScore int64, pageSize int) ([]scoredID, bool) {
 	if len(pullAuthors) == 0 {
 		return nil, false
@@ -174,14 +174,14 @@ func (l *FollowFeedLogic) fetchPullContentIDs(pullAuthors []int64, cursorScore i
 		logger     = l.Logger
 	)
 
-	cutoff := followwindow.CutoffMillis(contentconsts.WindowDays)
+	cutoff := followwindow.CutoffMillis()
 
 	mr.ForEach(func(source chan<- int64) {
 		for _, uid := range pullAuthors {
 			source <- uid
 		}
 	}, func(uid int64) {
-		items, hasMore, err := l.publishBox.QueryWindow(uid, cutoff, cursorScore, pageSize)
+		items, hasMore, err := l.publishBox.QueryWindow(l.ctx, uid, cutoff, cursorScore, pageSize)
 		if err != nil {
 			logger.Errorf("查询拉侧发件箱失败 uid=%d: %v", uid, err)
 			return

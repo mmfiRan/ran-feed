@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/utils"
+	"ran-feed/app/rpc/content/internal/common/convert"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
+	"ran-feed/app/rpc/count/client/counterservice"
 	"ran-feed/app/rpc/count/count"
 	"ran-feed/app/rpc/user/client/userservice"
 	"ran-feed/pkg/errorx"
@@ -19,9 +20,10 @@ import (
 )
 
 type AdminListContentsLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
+	userRpc     userservice.UserService
+	countRpc    counterservice.CounterService
 	contentRepo repositories.ContentRepository
 	articleRepo repositories.ArticleRepository
 	videoRepo   repositories.VideoRepository
@@ -30,17 +32,18 @@ type AdminListContentsLogic struct {
 func NewAdminListContentsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminListContentsLogic {
 	return &AdminListContentsLogic{
 		ctx:         ctx,
-		svcCtx:      svcCtx,
 		Logger:      logx.WithContext(ctx),
-		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		articleRepo: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
-		videoRepo:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
+		userRpc:     svcCtx.UserRpc,
+		countRpc:    svcCtx.CountRpc,
+		contentRepo: svcCtx.ContentRepository,
+		articleRepo: svcCtx.ArticleRepository,
+		videoRepo:   svcCtx.VideoRepository,
 	}
 }
 
 func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContentsReq) (*content.AdminListContentsRes, error) {
 	offset, limit := pkgutils.NormalizePage(in.GetPage(), in.GetPageSize())
-	rows, total, err := l.contentRepo.AdminPageContents(
+	rows, total, err := l.contentRepo.AdminPageContents(l.ctx,
 		pkgutils.CastPtr[int32](in.Status),
 		pkgutils.CastPtr[int32](in.ContentType),
 		in.AuthorId,
@@ -108,7 +111,7 @@ func (l *AdminListContentsLogic) loadCounts(rows []*model.RanFeedContent) (map[i
 		contentIDs = append(contentIDs, row.ID)
 	}
 
-	resp, err := l.svcCtx.CountRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
+	resp, err := l.countRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
 		ContentIds: contentIDs,
 	})
 	if err != nil {
@@ -132,7 +135,7 @@ func (l *AdminListContentsLogic) loadUsernames(rows []*model.RanFeedContent) (ma
 		authorIDs = append(authorIDs, row.UserID)
 	}
 
-	resp, err := l.svcCtx.UserRpc.BatchGetUser(l.ctx, &userservice.BatchGetUserReq{
+	resp, err := l.userRpc.BatchGetUser(l.ctx, &userservice.BatchGetUserReq{
 		UserIds: authorIDs,
 	})
 	if err != nil {
@@ -171,7 +174,7 @@ func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[i
 			if len(articleIDs) == 0 {
 				return nil
 			}
-			articleMap, err := l.articleRepo.BatchGetBriefByContentIDs(articleIDs)
+			articleMap, err := l.articleRepo.BatchGetBriefByContentIDs(l.ctx, articleIDs)
 			if err != nil {
 				return err
 			}
@@ -182,7 +185,7 @@ func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[i
 			if len(videoIDs) == 0 {
 				return nil
 			}
-			videoMap, err := l.videoRepo.BatchGetBriefByContentIDs(videoIDs)
+			videoMap, err := l.videoRepo.BatchGetBriefByContentIDs(l.ctx, videoIDs)
 			if err != nil {
 				return err
 			}
@@ -207,9 +210,9 @@ func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[i
 func (l *AdminListContentsLogic) buildAdminContentItem(row *model.RanFeedContent, title, username string, counts *count.ContentCountsItem) *content.AdminContentItem {
 	item := &content.AdminContentItem{
 		ContentId:     row.ID,
-		ContentType:   utils.ContentTypeValue(row.ContentType),
-		Status:        utils.ContentStatusValue(row.Status),
-		Visibility:    utils.VisibilityValue(row.Visibility),
+		ContentType:   convert.ContentTypeValue(row.ContentType),
+		Status:        convert.ContentStatusValue(row.Status),
+		Visibility:    convert.VisibilityValue(row.Visibility),
 		AuthorId:      row.UserID,
 		Username:      username,
 		Title:         title,

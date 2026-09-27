@@ -10,19 +10,20 @@ import (
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 type ClearUserFavoriteCacheLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
+	redis *redis.Redis
 }
 
 func NewClearUserFavoriteCacheLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ClearUserFavoriteCacheLogic {
 	return &ClearUserFavoriteCacheLogic{
 		ctx:    ctx,
-		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
+		redis:  svcCtx.Redis,
 	}
 }
 
@@ -32,7 +33,7 @@ func (l *ClearUserFavoriteCacheLogic) ClearUserFavoriteCache(in *content.ClearUs
 	if in == nil || in.UserId <= 0 {
 		return nil, errorx.NewMsg("用户id不能<=0")
 	}
-	if _, err := l.svcCtx.Redis.DelCtx(l.ctx, rediskey.BuildUserFavoriteFeedKey(in.UserId)); err != nil {
+	if _, err := l.redis.DelCtx(l.ctx, rediskey.BuildUserFavoriteFeedKey(in.UserId)); err != nil {
 		l.Errorf("失效收藏流缓存失败 userID=%d err=%v", in.UserId, err)
 	}
 	return &emptypb.Empty{}, nil

@@ -1,12 +1,32 @@
 ---
 name: go-coding
-description: 编写或修改本项目 Go 代码时遵循的编码规范 — 命名 错误处理 三层架构 新增接口(goctl 生成 API/RPC) proto 编写规范 枚举创建与使用 并发与 context 缓存 cache-aside 配置新增 注释与日志风格 文件组织 设计模式选择。在动手写 logic repository handler proto api、创建或修改枚举、加缓存/配置、引入新抽象前应用；只要碰 Go 生产代码就应先看本规范。
+description: 编写或修改本项目 Go 代码时遵循的编码规范 — 命名 错误处理 分层与依赖方向 并发与 context 注释与日志 文件组织与常量分级，并按情境索引到新增接口 proto 枚举 缓存 配置 结构规范 设计模式的专题文档。在动手写 logic repository handler proto api、创建或修改枚举、加缓存或配置、新增目录或组件、引入新抽象前应用。
 ---
 
 # ran-feed Go 编码规范
 
-编写本项目 Go 代码时遵循。先看本文；要判断"是否该引入某个设计模式"时再读
-[references/design-patterns.md](references/design-patterns.md)。
+本文只放**每次改 Go 代码都适用**的规矩。专题规范按需读，别一次全读。
+
+## 按情境找规范
+
+| 情境 | 读什么 |
+|---|---|
+| 新增/改 HTTP 接口、RPC、生成 ORM | [references/new-interface.md](references/new-interface.md)（生成命令的唯一来源） |
+| 新增/改 `.proto` | [references/proto-style.md](references/proto-style.md) |
+| 建枚举、用 DB 枚举字段、写查询条件 | [references/enum.md](references/enum.md) |
+| 新增目录 / 组件 / 跨服务常量、拆文件 | [references/structure.md](references/structure.md) |
+| 给读路径加缓存 | [references/caching.md](references/caching.md) |
+| 加配置项 | [references/config.md](references/config.md) |
+| 判断该不该引入某个设计模式 | [references/design-patterns.md](references/design-patterns.md) |
+
+结构那几条（依赖方向 入口点隔离 跨服务契约 包名禁令）有机器检查，写完或提交前跑一次：
+
+```bash
+bash .claude/skills/go-coding/scripts/check_structure.sh
+```
+
+`.harness/init.sh` 的第 5 步会调它。**新增目录、新增组件、新增跨服务常量之后必跑**——
+这几处最容易越线，且编译器看不出来。
 
 ## 命名
 
@@ -34,37 +54,20 @@ return nil, errorx.Wrap(ctx, err, errorx.NewMsg("查询用户失败"))
 - 错误信息用中文面向用户，英文面向开发者日志
 - gRPC handler 内不直接 `panic`，由 `ServerGrpcInterceptor` 统一恢复
 
-## 项目分层模式
+## 分层
 
-严格遵循三层结构，**不可越层调用**：
+`Handler / Server → Logic → Repository`，依赖只能向下。一句话各自管什么：
 
-```
-Handler / Server  →  Logic  →  Repository
-                  ↘          ↗
-                   svc.ServiceContext（依赖容器）
-```
+- **Logic**：业务编排，调 Repository 与外部 RPC，不直接写 SQL
+- **Repository**：只做数据读写，不含业务判断，返回 `*model.Xxx` 或原始错误
+- **Handler / Server**：只做参数绑定与响应序列化，有 `if` 判断业务就该下沉
 
-- **Logic 层**：业务编排，调用 Repository 和外部 RPC，不直接写 SQL
-- **Repository 层**：只做数据读写，不含业务判断，返回 `*model.Xxx` 或原始错误
-- **Handler/Server 层**：只做参数绑定与响应序列化，不含业务逻辑
+依赖经 `svc.ServiceContext` 注入：新增外部依赖在 `ServiceContext` 里初始化，不在 Logic 内部自行创建；
+Logic 依赖接口而非具体实现类型，便于测试替换。被两个以上入口点（Handler / Consumer / Cron）需要的能力
+落 `internal/common/component/`。
 
-## 新增接口（API / RPC）
-
-新增/修改对外接口**先改定义文件再用 goctl 生成，绝不手改生成产物**；API 与 RPC 生成都带 `--style=go_zero`，
-改了 `.api` 还要重生成 swagger。命令 格式约束（`XxxReq`/`XxxRes` 字段风格 swagger 步骤）见
-[references/new-interface.md](references/new-interface.md)。改 `.proto` 属升级处理，先与用户确认。
-
-**HTTP 接口遵循 RESTful 风格**：
-
-- 写操作（增删改）用 POST / PUT / DELETE，**GET 不产生副作用**
-- 例外：**条件查询参数很多（超过 4 个查询条件）时**，可以用 POST 表示查询（避免超长 query string 与可读性差）
-- 判断依据：改数据的接口必须是非 GET；只有纯读且条件少的查询才用 GET
-
-## proto 编写规范
-
-新增或修改 `.proto`（`app/rpc/**/proto/*.proto`、`pkg/commonpb/common.proto`）时先读
-[references/proto-style.md](references/proto-style.md)：package/go_package 前缀 枚举命名与 UNSPECIFIED
-Timestamp 时间字段 Empty 空响应 定义顺序 reserved total 注释 以及 Go 侧常量命名联动。
+完整的依赖方向、入口点隔离与 Component 契约见
+[references/structure.md](references/structure.md)。
 
 ## 并发与 context
 
@@ -91,32 +94,7 @@ threading.GoSafe(func() {
 })
 ```
 
-## 接口与依赖注入
-
-```go
-// 依赖接口 便于测试和替换
-type UserRepository interface {
-    GetByID(ctx context.Context, id int64) (*model.RanFeedUser, error)
-}
-
-// 不要依赖具体实现类型
-```
-
-- `svc.ServiceContext` 是唯一依赖容器，所有外部依赖（DB、Redis、RPC client）通过它传递
-- 新增依赖在 `ServiceContext` 中初始化，不在 Logic 内部自行创建
-
-## 缓存规范（cache-aside）
-
-读路径加缓存统一走旁路缓存（参考 `usercache/`）：正负值都缓存加负哨兵防穿透 TTL 叠 jitter 抗雪崩
-只降级不阻断 批量一次 RTT 写路径 `Invalidate` 失效。防击穿用 `cache.DistLocker`
-只对付全集群共享的热点 key。详见 [references/caching.md](references/caching.md)。
-
-## 配置新增
-
-新增配置在 `internal/config` 加字段 用 `json:",default=..."` 给安全默认值 etc yaml 写值
-零值能安全关功能 凭据走 env。详见 [references/config.md](references/config.md)。
-
-## 注释
+## 注释与日志
 
 只在**业务流程的关键流转节点**加中文注释。**一条注释精简成一句话说清意图**：
 
@@ -156,27 +134,28 @@ l.Errorf("热榜快照切换失败 snapshotID=%s err=%v", id, err)
 l.Errorf("RebuildHotSnapshotScript EvalCtx 执行异常, 详见: %+v", err)
 ```
 
-## 文件组织
+## 文件组织与常量分级
 
-- 单文件不超过 **400 行**；超出说明职责不单一，考虑拆分
-- 魔法值不在代码里内联，提取为具名常量（放置分级见下节「常量与枚举」）
+- 单文件尽量不超过 **400 行**；超出说明职责不单一，考虑拆分
+- 魔法值不在代码里内联，提取为具名常量
+- **常量按作用域分级放置，不在 logic / handler / repository 里内联散落 `const`**：
+  - **全局通用** → `pkg/consts/`。判定：被 ≥2 服务共用，或属项目级通用约定（超时、软删标记）
+  - **单服务专属** → 该服务 `internal/common/consts/xxx_consts.go`，按主题分文件
+  - 判不准就别急着上提：只有一处用、或提上去会让公共库混入「某家的家务事」的，留在原地。
+    跨服务契约的判据见 [references/structure.md](references/structure.md)
 
-## 常量与枚举
+## 枚举
 
-**常量按作用域分级放置，不在 logic / handler / repository 里内联散落 `const`**：
+DB 枚举字段的创建与使用见 [references/enum.md](references/enum.md)，核心两条：
 
-- **全局通用** → `pkg/consts/`（普通常量）。判定：被 ≥2 服务共用，或属项目级通用约定（超时、软删标记）
-- **单服务专属** → 该服务 `internal/common/consts/xxx_consts.go`，按主题分文件（`content_consts.go`、`redis/redis_consts.go`）
-
-**枚举（DB 枚举字段）** 的创建与使用有独立规范，见 [references/enum.md](references/enum.md)。
-核心原则：DB 持久化字段不自造字面量（含查询里的 `IsDeleted.Eq(0)` 这类裸值），复用业务枚举或 pb 枚举；
-从 DB 行转枚举用 `content.ContentStatus(row.Status)`，需拦非法值用 `Parse` 校验 `Valid`。
-**pb 枚举只允许出现在 RPC 边界**（server / logic 入参转换与响应组装）；repository / do / cron /
-mq consumer 与 strategy / 领域组件一律用业务枚举，取值一致性由各域 `enum_consistency_test.go` 兜底。
+- DB 持久化字段不自造字面量（含查询里的 `IsDeleted.Eq(0)` 这类裸值），复用业务枚举或 pb 枚举；
+  从 DB 行转枚举用 `content.ContentStatus(row.Status)`，需拦非法值用 `Parse` 校验 `Valid`
+- **pb 枚举只允许出现在 RPC 边界**（server / logic 入参转换与响应组装）；repository / do / cron /
+  mq consumer 与领域组件一律用业务枚举，取值一致性由各域 `enum_consistency_test.go` 兜底
 
 ## 设计模式
 
-总原则：**先有清晰需求再选模式，不为"优雅"而过度设计**。三个相似实现是抽象的起点，
-一个或两个不是。本项目常用 8 种模式（策略 / 工厂 / 仓储 / 中间件 / 函数式选项 /
-发布订阅 / 适配器 / 模板方法）的触发场景、写法、项目示例与反例，见
-[references/design-patterns.md](references/design-patterns.md)。**只在有明确需求时引入新模式，先复用再新增。**
+总原则：**先有清晰需求再选模式，不为"优雅"而过度设计**。三个相似实现是抽象的起点，一个或两个不是。
+本项目常用 8 种模式（策略 / 工厂 / 仓储 / 中间件 / 函数式选项 / 发布订阅 / 适配器 / 模板方法）
+的触发场景、写法、项目示例与反例，见 [references/design-patterns.md](references/design-patterns.md)。
+**只在有明确需求时引入新模式，先复用再新增。**

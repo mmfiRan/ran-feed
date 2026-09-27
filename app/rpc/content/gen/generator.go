@@ -37,6 +37,7 @@ func main() {
 		g.GenerateModel("ran_feed_video"),
 		g.GenerateModel("ran_feed_content_review"),
 		g.GenerateModel("ran_feed_content_outbox"),
+		g.GenerateModel("ran_feed_mq_consume_dedup"),
 	)
 
 	g.Execute()

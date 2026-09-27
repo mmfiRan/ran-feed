@@ -14,16 +14,20 @@ import (
 const maxIndexPageSize = 500
 
 type ListContentForIndexLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
+	contentRepo repositories.ContentRepository
+	articleRepo repositories.ArticleRepository
+	videoRepo   repositories.VideoRepository
 }
 
 func NewListContentForIndexLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListContentForIndexLogic {
 	return &ListContentForIndexLogic{
-		ctx:    ctx,
-		svcCtx: svcCtx,
-		Logger: logx.WithContext(ctx),
+		ctx:         ctx,
+		Logger:      logx.WithContext(ctx),
+		contentRepo: svcCtx.ContentRepository,
+		articleRepo: svcCtx.ArticleRepository,
+		videoRepo:   svcCtx.VideoRepository,
 	}
 }
 
@@ -38,13 +42,12 @@ func (l *ListContentForIndexLogic) ListContentForIndex(in *content.ListContentFo
 		limit = maxIndexPageSize
 	}
 
-	contentRepo := repositories.NewContentRepository(l.ctx, l.svcCtx.MysqlDb)
-	rows, err := contentRepo.ScanIndexableByIDCursor(in.Cursor, limit)
+	rows, err := l.contentRepo.ScanIndexableByIDCursor(l.ctx, in.Cursor, limit)
 	if err != nil {
 		return nil, err
 	}
 
-	items, err := assembleContentIndexItems(l.ctx, l.svcCtx, rows)
+	items, err := assembleContentIndexItems(l.ctx, l.articleRepo, l.videoRepo, rows)
 	if err != nil {
 		return nil, err
 	}

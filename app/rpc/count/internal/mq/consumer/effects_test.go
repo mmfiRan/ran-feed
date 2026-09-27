@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"testing"
 
-	rediskey "ran-feed/app/rpc/count/internal/common/consts/redis"
 	"ran-feed/app/rpc/count/internal/svc"
 	"ran-feed/pkg/consts"
+	sharedkey "ran-feed/pkg/rediskey"
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/stretchr/testify/assert"
@@ -42,7 +42,7 @@ func TestMarkHotDirty_ShardedByMod(t *testing.T) {
 
 	for id := range cs.contents {
 		shard := int(id % int64(consts.HotDirtyShards))
-		member, err := r.SismemberCtx(context.Background(), rediskey.BuildHotFeedDirtyKey(shard), strconv.FormatInt(id, 10))
+		member, err := r.SismemberCtx(context.Background(), sharedkey.HotFeedDirty(shard), strconv.FormatInt(id, 10))
 		require.NoError(t, err)
 		assert.True(t, member, "contentID=%d 应落在分片 %d", id, shard)
 	}

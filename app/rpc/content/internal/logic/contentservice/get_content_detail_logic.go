@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/utils"
+	"ran-feed/app/rpc/content/internal/common/convert"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
+	"ran-feed/app/rpc/count/client/counterservice"
 	"ran-feed/app/rpc/count/count"
 	"ran-feed/app/rpc/interaction/client/favoriteservice"
 	"ran-feed/app/rpc/interaction/client/followservice"
@@ -23,9 +24,13 @@ import (
 )
 
 type GetContentDetailLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
+	userRpc     userservice.UserService
+	likesRpc    likeservice.LikeService
+	favoriteRpc favoriteservice.FavoriteService
+	followRpc   followservice.FollowService
+	countRpc    counterservice.CounterService
 	contentRepo repositories.ContentRepository
 	articleRepo repositories.ArticleRepository
 	videoRepo   repositories.VideoRepository
@@ -34,11 +39,15 @@ type GetContentDetailLogic struct {
 func NewGetContentDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetContentDetailLogic {
 	return &GetContentDetailLogic{
 		ctx:         ctx,
-		svcCtx:      svcCtx,
 		Logger:      logx.WithContext(ctx),
-		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		articleRepo: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
-		videoRepo:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
+		userRpc:     svcCtx.UserRpc,
+		likesRpc:    svcCtx.LikesRpc,
+		favoriteRpc: svcCtx.FavoriteRpc,
+		followRpc:   svcCtx.FollowRpc,
+		countRpc:    svcCtx.CountRpc,
+		contentRepo: svcCtx.ContentRepository,
+		articleRepo: svcCtx.ArticleRepository,
+		videoRepo:   svcCtx.VideoRepository,
 	}
 }
 
@@ -47,7 +56,7 @@ func (l *GetContentDetailLogic) GetContentDetail(in *content.GetContentDetailReq
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	contentRow, err := l.contentRepo.GetDetailByID(in.ContentId)
+	contentRow, err := l.contentRepo.GetDetailByID(l.ctx, in.ContentId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
 	}
@@ -80,7 +89,7 @@ func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, vi
 	contentType := content.ContentType(contentRow.ContentType)
 	detail := &content.ContentDetail{
 		ContentId:   contentRow.ID,
-		ContentType: utils.ContentTypeValue(contentRow.ContentType),
+		ContentType: convert.ContentTypeValue(contentRow.ContentType),
 		AuthorId:    contentRow.UserID,
 	}
 	if contentRow.PublishedAt != nil {
@@ -129,7 +138,7 @@ func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, vi
 func (l *GetContentDetailLogic) fillContentFields(detail *content.ContentDetail, contentID int64, contentType content.ContentType) error {
 	switch contentType {
 	case content.ContentType_CONTENT_TYPE_ARTICLE:
-		articleRow, err := l.articleRepo.GetByContentID(contentID)
+		articleRow, err := l.articleRepo.GetByContentID(l.ctx, contentID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
 		}
@@ -145,7 +154,7 @@ func (l *GetContentDetailLogic) fillContentFields(detail *content.ContentDetail,
 		detail.ArticleContent = articleRow.Content
 		return nil
 	case content.ContentType_CONTENT_TYPE_VIDEO:
-		videoRow, err := l.videoRepo.GetByContentID(contentID)
+		videoRow, err := l.videoRepo.GetByContentID(l.ctx, contentID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
 		}
@@ -174,7 +183,7 @@ func (l *GetContentDetailLogic) loadExtraInfo(authorID, contentID, viewerID int6
 
 	err := mr.Finish(
 		func() error {
-			resp, err := l.svcCtx.UserRpc.BatchGetUser(l.ctx, &userservice.BatchGetUserReq{
+			resp, err := l.userRpc.BatchGetUser(l.ctx, &userservice.BatchGetUserReq{
 				UserIds: []int64{authorID},
 			})
 			if err != nil {
@@ -186,7 +195,7 @@ func (l *GetContentDetailLogic) loadExtraInfo(authorID, contentID, viewerID int6
 			return nil
 		},
 		func() error {
-			resp, err := l.svcCtx.LikesRpc.BatchQueryLikeInfo(l.ctx, &likeservice.BatchQueryLikeInfoReq{
+			resp, err := l.likesRpc.BatchQueryLikeInfo(l.ctx, &likeservice.BatchQueryLikeInfoReq{
 				UserId: viewerID,
 				LikeInfos: []*likeservice.LikeInfo{
 					{
@@ -204,7 +213,7 @@ func (l *GetContentDetailLogic) loadExtraInfo(authorID, contentID, viewerID int6
 			return nil
 		},
 		func() error {
-			resp, err := l.svcCtx.FavoriteRpc.QueryFavoriteInfo(l.ctx, &favoriteservice.QueryFavoriteInfoReq{
+			resp, err := l.favoriteRpc.QueryFavoriteInfo(l.ctx, &favoriteservice.QueryFavoriteInfoReq{
 				UserId:    viewerID,
 				ContentId: contentID,
 				Scene:     scene,
@@ -217,7 +226,7 @@ func (l *GetContentDetailLogic) loadExtraInfo(authorID, contentID, viewerID int6
 		},
 		func() error {
 			viewerID := viewerID
-			resp, err := l.svcCtx.FollowRpc.GetFollowSummary(l.ctx, &followservice.GetFollowSummaryReq{
+			resp, err := l.followRpc.GetFollowSummary(l.ctx, &followservice.GetFollowSummaryReq{
 				UserId:   authorID,
 				ViewerId: &viewerID,
 			})
@@ -228,7 +237,7 @@ func (l *GetContentDetailLogic) loadExtraInfo(authorID, contentID, viewerID int6
 			return nil
 		},
 		func() error {
-			resp, err := l.svcCtx.CountRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
+			resp, err := l.countRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
 				ContentIds: []int64{contentID},
 			})
 			if err != nil {

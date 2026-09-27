@@ -4,11 +4,11 @@ import (
 	"context"
 	"strconv"
 
-	rediskey "ran-feed/app/rpc/count/internal/common/consts/redis"
 	countenum "ran-feed/app/rpc/count/internal/common/enums"
 	"ran-feed/app/rpc/count/internal/repositories"
 	"ran-feed/app/rpc/count/internal/svc"
 	"ran-feed/pkg/consts"
+	sharedkey "ran-feed/pkg/rediskey"
 	"ran-feed/pkg/xxljob"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -77,8 +77,8 @@ func (j *BigVReconcileJob) syncRedisFromTable(ctx context.Context) error {
 		return err
 	}
 
-	globalKey := rediskey.RedisFeedBigVGlobalKey
-	tmpKey := rediskey.RedisFeedBigVGlobalRebuildKey
+	globalKey := sharedkey.FeedBigVGlobal
+	tmpKey := sharedkey.FeedBigVGlobalRebuild
 
 	if len(ids) == 0 {
 		_, derr := j.svc.Redis.DelCtx(ctx, globalKey)

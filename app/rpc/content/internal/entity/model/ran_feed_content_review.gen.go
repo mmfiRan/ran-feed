@@ -14,8 +14,8 @@ const TableNameRanFeedContentReview = "ran_feed_content_review"
 type RanFeedContentReview struct {
 	ID        int64     `gorm:"column:id;primaryKey;comment:主键id" json:"id"`                                         // 主键id
 	ContentID int64     `gorm:"column:content_id;not null;comment:被审内容ID" json:"content_id"`                         // 被审内容ID
-	Decision  int32     `gorm:"column:decision;not null;comment:审核决策 10=通过 20=拒绝" json:"decision"`                   // 审核决策 10=通过 20=拒绝
-	Reason    string    `gorm:"column:reason;not null;comment:拒绝理由 通过时为空" json:"reason"`                             // 拒绝理由 通过时为空
+	Decision  int32     `gorm:"column:decision;not null;comment:审核决策 10=通过 20=拒绝 30=管理端下架 40=管理端恢复" json:"decision"` // 审核决策 10=通过 20=拒绝 30=管理端下架 40=管理端恢复
+	Reason    string    `gorm:"column:reason;not null;comment:原因 通过与恢复为空 拒绝为拒绝理由 下架为下架原因" json:"reason"`             // 原因 通过与恢复为空 拒绝为拒绝理由 下架为下架原因
 	Version   int32     `gorm:"column:version;not null;default:1;comment:版本号（乐观锁）" json:"version"`                   // 版本号（乐观锁）
 	IsDeleted int32     `gorm:"column:is_deleted;not null;comment:逻辑删除 0=正常 1=删除" json:"is_deleted"`                 // 逻辑删除 0=正常 1=删除
 	CreatedBy int64     `gorm:"column:created_by;not null;comment:创建人（审核管理员 admin_user.id）" json:"created_by"`       // 创建人（审核管理员 admin_user.id）

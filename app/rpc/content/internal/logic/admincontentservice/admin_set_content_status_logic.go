@@ -6,9 +6,8 @@ import (
 	"strings"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/convert"
 	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
-	"ran-feed/app/rpc/content/internal/common/utils"
-	"ran-feed/app/rpc/content/internal/do"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -21,8 +20,7 @@ import (
 )
 
 type AdminSetContentStatusLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
 	contentRepo repositories.ContentRepository
 	reviewRepo  repositories.ContentReviewRepository
@@ -32,11 +30,10 @@ type AdminSetContentStatusLogic struct {
 func NewAdminSetContentStatusLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminSetContentStatusLogic {
 	return &AdminSetContentStatusLogic{
 		ctx:         ctx,
-		svcCtx:      svcCtx,
 		Logger:      logx.WithContext(ctx),
-		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		reviewRepo:  repositories.NewContentReviewRepository(ctx, svcCtx.MysqlDb),
-		outboxRepo:  repositories.NewContentOutboxRepository(ctx, svcCtx.MysqlDb),
+		contentRepo: svcCtx.ContentRepository,
+		reviewRepo:  svcCtx.ContentReviewRepository,
+		outboxRepo:  svcCtx.ContentOutboxRepository,
 	}
 }
 
@@ -56,7 +53,7 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 		reason = strings.TrimSpace(in.GetReason())
 	}
 
-	row, err := l.contentRepo.AdminGetByID(in.ContentId)
+	row, err := l.contentRepo.AdminGetByID(l.ctx, in.ContentId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容失败"))
 	}
@@ -65,7 +62,7 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 	}
 
 	err = query.Q.Transaction(func(tx *query.Query) error {
-		affected, uerr := l.contentRepo.WithTx(tx).AdminUpdateStatus(in.ContentId, int32(from), int32(target), in.GetOperatorId())
+		affected, uerr := l.contentRepo.WithTx(tx).AdminUpdateStatus(l.ctx, in.ContentId, int32(from), int32(target), in.GetOperatorId())
 		if uerr != nil {
 			return uerr
 		}
@@ -73,17 +70,17 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 			return errorx.NewMsg("内容不存在或状态已变更 请刷新后重试")
 		}
 
-		if rerr := l.reviewRepo.WithTx(tx).Create(&do.ContentReviewDO{
+		if rerr := l.reviewRepo.WithTx(tx).Create(l.ctx, &model.RanFeedContentReview{
 			ID:        snowflake.GenID(),
 			ContentID: in.ContentId,
-			Decision:  reviewDecisionFor(target),
+			Decision:  reviewDecisionFor(target).Int32(),
 			Reason:    reason,
 			CreatedBy: in.GetOperatorId(),
 			UpdatedBy: in.GetOperatorId(),
 		}); rerr != nil {
 			return rerr
 		}
-		return l.outboxRepo.WithTx(tx).CreateEvent(buildStatusEvent(target, row, reason))
+		return l.outboxRepo.WithTx(tx).CreateEvent(l.ctx, buildStatusEvent(target, row, reason))
 	})
 	if err != nil {
 		var bizErr *errorx.BizError
@@ -94,7 +91,7 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 	}
 
 	return &content.AdminSetContentStatusRes{
-		Status: utils.ContentStatusValue(int32(target)),
+		Status: convert.ContentStatusValue(int32(target)),
 	}, nil
 }
 

@@ -72,5 +72,45 @@ OSS 策略通过 `internal/common/oss/factory.go` 可插拔，当前仅实现 `A
 - **Logic 层**：`internal/logic/<service>/`，每个 RPC 方法一个文件，内嵌 `logx.Logger`，持有 `svcCtx *svc.ServiceContext`
 - **Repository 层**：`internal/repositories/` 封装 GORM Gen 查询；软删除过滤统一用枚举（`IsDeleted.Eq(enums.NotDeleted.Int32())`，非 0 判别列用 `Int64()`）
 - **错误处理**：`pkg/errorx.BizError`（code+message）→ gRPC 服务端拦截器转为 status detail → `pkg/grpcx/converter.go` 在客户端还原
-- **Redis Lua 脚本**：Feed 翻页、Session 续期、热榜快照重建、大 V 成员批量判定、收件箱与发件箱写入等原子操作，通过 `go:embed` 加载于各域 `internal/common/utils/lua/redis_lua.go`
+- **Redis Lua 脚本**：Feed 翻页、Session 续期、热榜快照重建、大 V 成员批量判定、收件箱与发件箱写入等原子操作，通过 `go:embed` 加载于各域 `internal/common/component/<能力>/scripts/`，嵌入变量与被嵌脚本同包、脚本目录内不放 `.go` 文件
 - **配置注入**：`*.yaml` 使用 `${ENV_VAR}` 占位符，go-zero 启动时从进程环境变量解析
+
+## 结构规范
+
+机检入口是 `./.harness/init.sh` 的第 5 步「结构静态检查」。下面能机检的约束都已进脚本，不必靠人记。
+
+### 分层与依赖方向
+
+```
+Handler / Server → Logic → Repository 接口
+                      ↘         ↘
+                    Component    Entity / Query / Model
+```
+
+- 依赖只能向下：Handler 不碰 Repository，Repository 不引 Logic 或 Component
+- Logic 只引 `internal/repositories`（接口包），不引 `internal/repositories/<impl>` 实现子包
+- `pkg/*` 不反向引 `app/*`；一个服务不 import 另一个服务的 `internal`（后者 `go build` 已强制）
+
+### 三个入口点互不调用
+
+RPC Handler、MQ Consumer、Cron Job 是同一服务的三个入口点，互相禁止调用。被两个以上入口点需要的能力必须有合法落点——放进 `internal/common/component/`：
+
+- Consumer 与 Cron 的 import 列表里不出现 `logic/`，也不互相引用
+- Consumer 不引业务 Repository，只做协议解析、幂等、重试与调用具名 Component
+- Cron 与 Consumer 不保存 `ctx` 字段；Job 接显式依赖，不接 `svcCtx`
+- Logic 只保显式依赖，不存完整 `ServiceContext`
+- Component 只接自己的 Config 子结构，不保存请求 ctx，不偷偷起 goroutine，不拥有事务边界，返回 Model DO 或自身结果类型，不直接返回 protobuf
+- 一个 Component 内部按**能力内角色**切文件（`feed.go` / `score.go` / `lua.go` / `scripts/`），不按技术切
+
+### 跨服务契约只有一个来源
+
+判据是**两个服务读到不同的值会静默出错吗**。会，它就不是某个服务的实现细节，而是契约，必须只有一处定义：
+
+- 跨服务 Redis Key → `pkg/rediskey`。Key 与它的 Builder 必须同包；Builder 函数名要能说出业务对象，禁止「万能 Prefix 拼接函数」
+- 跨服务事件 → `pkg/event/*`
+- 判据不成立的留服务内 `internal/common/consts/redis`，不因为「看起来通用」就上提
+
+### 包名与目录
+
+- 新增代码不得引入 `utils` `helper` `misc` `base` `shared` 兜底包（目录名同禁），能力放进 `internal/common/component/<能力>/`
+- `internal/common` 根目录不放 Go 文件，只放有明确归属的子目录（`component` / `consts` / `convert` / `enums`）

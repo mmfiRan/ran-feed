@@ -5,7 +5,7 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
-	"ran-feed/app/rpc/content/internal/do"
+	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -16,8 +16,7 @@ import (
 )
 
 type PublishVideoLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
 	contentRepository repositories.ContentRepository
 	videoRepository   repositories.VideoRepository
@@ -26,10 +25,9 @@ type PublishVideoLogic struct {
 func NewPublishVideoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PublishVideoLogic {
 	return &PublishVideoLogic{
 		ctx:               ctx,
-		svcCtx:            svcCtx,
 		Logger:            logx.WithContext(ctx),
-		contentRepository: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		videoRepository:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
+		contentRepository: svcCtx.ContentRepository,
+		videoRepository:   svcCtx.VideoRepository,
 	}
 }
 
@@ -47,14 +45,14 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 		contentRepo := l.contentRepository.WithTx(tx)
 		videoRepo := l.videoRepository.WithTx(tx)
 
-		contentDO := buildContentDO(in.UserId, content.ContentType_CONTENT_TYPE_VIDEO,
+		contentModel := buildContentModel(in.UserId, content.ContentType_CONTENT_TYPE_VIDEO,
 			content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW, visibility)
-		contentId = contentDO.ID
-		if err := contentRepo.CreateContent(contentDO); err != nil {
+		contentId = contentModel.ID
+		if err := contentRepo.CreateContent(l.ctx, contentModel); err != nil {
 			return err
 		}
 
-		videoDO := &do.VideoDO{
+		videoModel := &model.RanFeedVideo{
 			ID:              snowflake.GenID(),
 			ContentID:       contentId,
 			Title:           in.Title,
@@ -63,7 +61,7 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 			Duration:        in.Duration,
 			TranscodeStatus: contentEnum.TranscodeStatusPending.Int32(),
 		}
-		return videoRepo.CreateVideo(videoDO)
+		return videoRepo.CreateVideo(l.ctx, videoModel)
 	}); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("发布视频失败"))
 	}

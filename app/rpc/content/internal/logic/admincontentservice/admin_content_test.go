@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/utils"
+	"ran-feed/app/rpc/content/internal/common/convert"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/count/count"
 
@@ -59,8 +59,8 @@ func TestBuildAdminContentItem(t *testing.T) {
 		item := l.buildAdminContentItem(row, "标题A", "user99", counts)
 		assert.Equal(t, int64(10), item.ContentId)
 		assert.Equal(t, "user99", item.Username)
-		assert.Equal(t, utils.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_ARTICLE)), item.ContentType)
-		assert.Equal(t, utils.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)), item.Status)
+		assert.Equal(t, convert.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_ARTICLE)), item.ContentType)
+		assert.Equal(t, convert.ContentStatusValue(int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)), item.Status)
 		assert.Equal(t, "标题A", item.Title)
 		assert.Equal(t, int64(3), item.LikeCount)
 		assert.Equal(t, int64(2), item.FavoriteCount)
@@ -89,6 +89,6 @@ func TestBuildAdminContentItem(t *testing.T) {
 		}
 		item := l.buildAdminContentItem(row, "", "", nil)
 		assert.Equal(t, int64(0), item.PublishedAt.AsTime().UnixMilli())
-		assert.Equal(t, utils.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_VIDEO)), item.ContentType)
+		assert.Equal(t, convert.ContentTypeValue(int32(content.ContentType_CONTENT_TYPE_VIDEO)), item.ContentType)
 	})
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/do"
+	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -15,8 +15,7 @@ import (
 )
 
 type PublishArticleLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
 	contentRepository repositories.ContentRepository
 	articleRepository repositories.ArticleRepository
@@ -25,10 +24,9 @@ type PublishArticleLogic struct {
 func NewPublishArticleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PublishArticleLogic {
 	return &PublishArticleLogic{
 		ctx:               ctx,
-		svcCtx:            svcCtx,
 		Logger:            logx.WithContext(ctx),
-		contentRepository: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		articleRepository: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
+		contentRepository: svcCtx.ContentRepository,
+		articleRepository: svcCtx.ArticleRepository,
 	}
 }
 
@@ -46,13 +44,13 @@ func (l *PublishArticleLogic) PublishArticle(in *content.ArticlePublishReq) (*co
 		contentRepo := l.contentRepository.WithTx(tx)
 		articleRepo := l.articleRepository.WithTx(tx)
 
-		contentDO := buildContentDO(in.UserId, content.ContentType_CONTENT_TYPE_ARTICLE,
+		contentModel := buildContentModel(in.UserId, content.ContentType_CONTENT_TYPE_ARTICLE,
 			content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW, visibility)
-		contentId = contentDO.ID
-		if err := contentRepo.CreateContent(contentDO); err != nil {
+		contentId = contentModel.ID
+		if err := contentRepo.CreateContent(l.ctx, contentModel); err != nil {
 			return err
 		}
-		articleDO := &do.ArticleDO{
+		articleModel := &model.RanFeedArticle{
 			ID:          snowflake.GenID(),
 			ContentID:   contentId,
 			Title:       in.Title,
@@ -60,7 +58,7 @@ func (l *PublishArticleLogic) PublishArticle(in *content.ArticlePublishReq) (*co
 			Cover:       in.Cover,
 			Content:     in.Content,
 		}
-		return articleRepo.CreateArticle(articleDO)
+		return articleRepo.CreateArticle(l.ctx, articleModel)
 	}); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("发布文章失败"))
 	}

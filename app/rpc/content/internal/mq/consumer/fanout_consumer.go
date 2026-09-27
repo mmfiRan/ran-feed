@@ -3,10 +3,10 @@ package consumer
 import (
 	"context"
 
+	"ran-feed/app/rpc/content/internal/common/component/followwindow"
+	"ran-feed/app/rpc/content/internal/common/component/redislock"
 	contentconsts "ran-feed/app/rpc/content/internal/common/consts"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	"ran-feed/app/rpc/content/internal/common/utils/followwindow"
-	luautils "ran-feed/app/rpc/content/internal/common/utils/lua"
 	"ran-feed/app/rpc/content/internal/mq/event"
 	"ran-feed/app/rpc/content/internal/svc"
 
@@ -16,16 +16,14 @@ import (
 
 // FanOutConsumer 消费扇出分批消息 逐批把粉丝写进各自收件箱 独立 group 与在线读隔离
 type FanOutConsumer struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
 	logx.Logger
+	redis *redis.Redis
 }
 
 func NewFanOutConsumer(ctx context.Context, svcCtx *svc.ServiceContext) *FanOutConsumer {
 	return &FanOutConsumer{
-		ctx:    ctx,
-		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
+		redis:  svcCtx.Redis,
 	}
 }
 
@@ -41,15 +39,14 @@ func (c *FanOutConsumer) Consume(ctx context.Context, key, val string) error {
 		return nil
 	}
 
-	days := contentconsts.WindowDays
-	inboxArgs := followwindow.WriteArgs(contentconsts.TimelineKeepN, followwindow.CutoffMillis(days), followwindow.TTLSeconds(days), batch.PublishedAt, batch.ContentID)
+	inboxArgs := followwindow.WriteArgs(contentconsts.TimelineKeepN, followwindow.CutoffMillis(), followwindow.TTLSeconds(), batch.PublishedAt, batch.ContentID)
 
-	return c.svcCtx.Redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
+	return c.redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
 		for _, followerID := range batch.FollowerIDs {
 			if followerID <= 0 {
 				continue
 			}
-			pipe.Eval(ctx, luautils.UpdateFollowInboxZSetScript, []string{rediskey.BuildFollowInboxKey(followerID)}, inboxArgs...)
+			pipe.Eval(ctx, redislock.UpdateFollowInboxZSetScript, []string{rediskey.BuildFollowInboxKey(followerID)}, inboxArgs...)
 		}
 		return nil
 	})

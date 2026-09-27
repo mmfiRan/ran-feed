@@ -5,11 +5,12 @@ import (
 	"strconv"
 
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/convert"
 	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
-	contentutils "ran-feed/app/rpc/content/internal/common/utils"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
+	"ran-feed/app/rpc/count/client/counterservice"
 	"ran-feed/app/rpc/count/count"
 	"ran-feed/pkg/errorx"
 	"ran-feed/pkg/utils"
@@ -20,9 +21,9 @@ import (
 )
 
 type MyContentListLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
+	countRpc          counterservice.CounterService
 	contentRepository repositories.ContentRepository
 	articleRepository repositories.ArticleRepository
 	videoRepository   repositories.VideoRepository
@@ -32,12 +33,12 @@ type MyContentListLogic struct {
 func NewMyContentListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *MyContentListLogic {
 	return &MyContentListLogic{
 		ctx:               ctx,
-		svcCtx:            svcCtx,
 		Logger:            logx.WithContext(ctx),
-		contentRepository: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		articleRepository: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
-		videoRepository:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
-		reviewRepository:  repositories.NewContentReviewRepository(ctx, svcCtx.MysqlDb),
+		countRpc:          svcCtx.CountRpc,
+		contentRepository: svcCtx.ContentRepository,
+		articleRepository: svcCtx.ArticleRepository,
+		videoRepository:   svcCtx.VideoRepository,
+		reviewRepository:  svcCtx.ContentReviewRepository,
 	}
 }
 
@@ -49,7 +50,7 @@ func (l *MyContentListLogic) MyContentList(in *content.MyContentListReq) (*conte
 		cursorID, _ = strconv.ParseInt(in.Cursor, 10, 64)
 	}
 
-	rows, err := l.contentRepository.MyContentPage(
+	rows, err := l.contentRepository.MyContentPage(l.ctx,
 		in.UserId,
 		utils.CastPtr[int32](in.Status),
 		utils.CastPtr[int32](in.ContentType),
@@ -118,7 +119,7 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 	)
 	if err := mr.Finish(
 		func() error {
-			m, err := l.articleRepository.BatchGetBriefByContentIDs(articleIDs)
+			m, err := l.articleRepository.BatchGetBriefByContentIDs(l.ctx, articleIDs)
 			if err != nil {
 				return err
 			}
@@ -126,7 +127,7 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 			return nil
 		},
 		func() error {
-			m, err := l.videoRepository.BatchGetBriefByContentIDs(videoIDs)
+			m, err := l.videoRepository.BatchGetBriefByContentIDs(l.ctx, videoIDs)
 			if err != nil {
 				return err
 			}
@@ -136,7 +137,7 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 		func() error {
 			reasonMap = make(map[int64]string, len(rejectedIDs)+len(takenDownIDs))
 			// 被拒取最新拒绝理由 下架取最新下架原因 二者按当前状态分别取 互不串
-			if m, err := l.reviewRepository.LatestReasonByContentIDs(
+			if m, err := l.reviewRepository.LatestReasonByContentIDs(l.ctx,
 				rejectedIDs, []contentEnum.ReviewDecisionEnum{contentEnum.ReviewDecisionReject}); err != nil {
 				return err
 			} else {
@@ -144,7 +145,7 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 					reasonMap[id] = r
 				}
 			}
-			if m, err := l.reviewRepository.LatestReasonByContentIDs(
+			if m, err := l.reviewRepository.LatestReasonByContentIDs(l.ctx,
 				takenDownIDs, []contentEnum.ReviewDecisionEnum{contentEnum.ReviewDecisionTakenDown}); err != nil {
 				return err
 			} else {
@@ -166,9 +167,9 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 	for _, row := range rows {
 		item := &content.MyContentItem{
 			ContentId:   row.ID,
-			ContentType: contentutils.ContentTypeValue(row.ContentType),
-			Status:      contentutils.ContentStatusValue(row.Status),
-			Visibility:  contentutils.VisibilityValue(row.Visibility),
+			ContentType: convert.ContentTypeValue(row.ContentType),
+			Status:      convert.ContentStatusValue(row.Status),
+			Visibility:  convert.VisibilityValue(row.Visibility),
 			CreatedAt:   timestamppb.New(row.CreatedAt),
 		}
 		if row.PublishedAt != nil {
@@ -206,7 +207,7 @@ func (l *MyContentListLogic) loadCounts(contentIDs []int64) map[int64]*count.Con
 	if len(contentIDs) == 0 {
 		return res
 	}
-	resp, err := l.svcCtx.CountRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
+	resp, err := l.countRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
 		ContentIds: contentIDs,
 	})
 	if err != nil {

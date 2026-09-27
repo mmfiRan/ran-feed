@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/utils"
+	"ran-feed/app/rpc/content/internal/common/convert"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
+	"ran-feed/app/rpc/count/client/counterservice"
 	"ran-feed/app/rpc/count/count"
 	"ran-feed/app/rpc/user/client/userservice"
 	"ran-feed/pkg/errorx"
@@ -18,9 +19,10 @@ import (
 )
 
 type AdminGetContentDetailLogic struct {
-	ctx    context.Context
-	svcCtx *svc.ServiceContext
+	ctx context.Context
 	logx.Logger
+	userRpc     userservice.UserService
+	countRpc    counterservice.CounterService
 	contentRepo repositories.ContentRepository
 	articleRepo repositories.ArticleRepository
 	videoRepo   repositories.VideoRepository
@@ -29,17 +31,18 @@ type AdminGetContentDetailLogic struct {
 func NewAdminGetContentDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminGetContentDetailLogic {
 	return &AdminGetContentDetailLogic{
 		ctx:         ctx,
-		svcCtx:      svcCtx,
 		Logger:      logx.WithContext(ctx),
-		contentRepo: repositories.NewContentRepository(ctx, svcCtx.MysqlDb),
-		articleRepo: repositories.NewArticleRepository(ctx, svcCtx.MysqlDb),
-		videoRepo:   repositories.NewVideoRepository(ctx, svcCtx.MysqlDb),
+		userRpc:     svcCtx.UserRpc,
+		countRpc:    svcCtx.CountRpc,
+		contentRepo: svcCtx.ContentRepository,
+		articleRepo: svcCtx.ArticleRepository,
+		videoRepo:   svcCtx.VideoRepository,
 	}
 }
 
 func (l *AdminGetContentDetailLogic) AdminGetContentDetail(in *content.AdminGetContentDetailReq) (*content.AdminGetContentDetailRes, error) {
 	// 查询内容详情
-	row, err := l.contentRepo.AdminGetByID(in.ContentId)
+	row, err := l.contentRepo.AdminGetByID(l.ctx, in.ContentId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
 	}
@@ -53,7 +56,7 @@ func (l *AdminGetContentDetailLogic) AdminGetContentDetail(in *content.AdminGetC
 	)
 	err = mr.Finish(
 		func() error {
-			countResp, err := l.svcCtx.CountRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
+			countResp, err := l.countRpc.BatchGetContentCounts(l.ctx, &count.BatchGetContentCountsReq{
 				ContentIds: []int64{
 					row.ID,
 				},
@@ -67,7 +70,7 @@ func (l *AdminGetContentDetailLogic) AdminGetContentDetail(in *content.AdminGetC
 			return nil
 		},
 		func() error {
-			userResp, err := l.svcCtx.UserRpc.BatchGetUser(l.ctx, &userservice.BatchGetUserReq{
+			userResp, err := l.userRpc.BatchGetUser(l.ctx, &userservice.BatchGetUserReq{
 				UserIds: []int64{
 					row.UserID,
 				},
@@ -87,9 +90,9 @@ func (l *AdminGetContentDetailLogic) AdminGetContentDetail(in *content.AdminGetC
 
 	detail := &content.AdminContentDetail{
 		ContentId:     row.ID,
-		ContentType:   utils.ContentTypeValue(row.ContentType),
-		Status:        utils.ContentStatusValue(row.Status),
-		Visibility:    utils.VisibilityValue(row.Visibility),
+		ContentType:   convert.ContentTypeValue(row.ContentType),
+		Status:        convert.ContentStatusValue(row.Status),
+		Visibility:    convert.VisibilityValue(row.Visibility),
 		AuthorId:      row.UserID,
 		Username:      username,
 		LikeCount:     counts.GetLikeCount(),
@@ -115,7 +118,7 @@ func (l *AdminGetContentDetailLogic) AdminGetContentDetail(in *content.AdminGetC
 func (l *AdminGetContentDetailLogic) fillContentFields(detail *content.AdminContentDetail, row *model.RanFeedContent) error {
 	switch content.ContentType(row.ContentType) {
 	case content.ContentType_CONTENT_TYPE_ARTICLE:
-		articleRow, err := l.articleRepo.GetByContentID(row.ID)
+		articleRow, err := l.articleRepo.GetByContentID(l.ctx, row.ID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
 		}
@@ -130,7 +133,7 @@ func (l *AdminGetContentDetailLogic) fillContentFields(detail *content.AdminCont
 		detail.ArticleContent = articleRow.Content
 		return nil
 	case content.ContentType_CONTENT_TYPE_VIDEO:
-		videoRow, err := l.videoRepo.GetByContentID(row.ID)
+		videoRow, err := l.videoRepo.GetByContentID(l.ctx, row.ID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
 		}

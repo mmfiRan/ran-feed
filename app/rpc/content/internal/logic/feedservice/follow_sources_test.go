@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	"ran-feed/app/rpc/content/internal/svc"
+	sharedkey "ran-feed/pkg/rediskey"
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +23,7 @@ func newTestFollowLogic(t *testing.T) (*miniredis.Miniredis, *redis.Redis, *Foll
 	r := redis.MustNewRedis(redis.RedisConf{Host: mr.Addr(), Type: redis.NodeType})
 	return mr, r, &FollowFeedLogic{
 		ctx:    context.Background(),
-		svcCtx: &svc.ServiceContext{Redis: r},
+		redis:  r,
 		Logger: logx.WithContext(context.Background()),
 	}
 }
@@ -33,7 +33,7 @@ func TestPickBigVFollowees_OnlyGlobalMembers(t *testing.T) {
 	_, r, l := newTestFollowLogic(t)
 	ctx := context.Background()
 
-	_, err := r.SaddCtx(ctx, rediskey.RedisFeedBigVGlobalKey, "100", "200")
+	_, err := r.SaddCtx(ctx, sharedkey.FeedBigVGlobal, "100", "200")
 	require.NoError(t, err)
 
 	got, err := l.pickBigVFollowees(ctx, []int64{100, 300, 200, -1, 0})

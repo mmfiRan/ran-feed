@@ -9,9 +9,6 @@ const (
 	RedisFeedHotGlobalLatestKey = "feed:hot:global:latest"
 	// RedisFeedHotGlobalSnapshotPrefix 热榜快照前缀 feed:hot:global:snap
 	RedisFeedHotGlobalSnapshotPrefix = "feed:hot:global:snap"
-	// RedisFeedHotDirtyPrefix 热榜脏集合活跃分片前缀 feed:hot:dirty 加 id 取模 shards
-	// 互动只记谁脏了 Set 去重 快更回查计数总量算分
-	RedisFeedHotDirtyPrefix = "feed:hot:dirty"
 	// RedisFeedHotDirtyProcPrefix 热榜脏集合冻结处理前缀 feed:hot:dirty:proc 加 shard
 	// 快更开始时把活跃桶 RENAME 到冻结桶 处理期间新互动安全堆进活跃桶 根治边读边写丢事件
 	RedisFeedHotDirtyProcPrefix = "feed:hot:dirty:proc"
@@ -24,8 +21,6 @@ const (
 	RedisFeedFollowPullPrefix = "feed:follow:pull"
 	// FollowPullEmptySentinel 已计算且为空的占位成员 避免 miss 时反复 rebuild
 	FollowPullEmptySentinel = "0"
-	// RedisFeedBigVGlobalKey 全局大 V 集合 由 count 服务跨阈值维护 本服务读写关注流时命中判推拉
-	RedisFeedBigVGlobalKey = "feed:bigv:global"
 	// RedisFeedUserPublishPrefix 用户发布列表前缀 feed:user:publish
 	RedisFeedUserPublishPrefix = "feed:user:publish"
 	// RedisFeedUserFavoritePrefix 用户收藏列表前缀 feed:user:favorite
@@ -47,11 +42,6 @@ func BuildContentDetailKey(contentID int64) string {
 
 func BuildHotFeedSnapshotKey(snapshotID string) string {
 	return GetRedisPrefixKey(RedisFeedHotGlobalSnapshotPrefix, snapshotID)
-}
-
-// BuildHotFeedDirtyKey 构造热榜脏集合活跃分片 key feed:hot:dirty 加 shard
-func BuildHotFeedDirtyKey(shard int) string {
-	return GetRedisPrefixKey(RedisFeedHotDirtyPrefix, strconv.Itoa(shard))
 }
 
 // BuildHotFeedDirtyProcKey 构造热榜脏集合冻结处理分片 key feed:hot:dirty:proc 加 shard
