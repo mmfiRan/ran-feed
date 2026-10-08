@@ -41,12 +41,12 @@ type Job struct {
 }
 
 // Register 注册增量与全量两个 handler
-func Register(ctx context.Context, executor *xxljob.Executor, svcCtx *svc.ServiceContext) {
-	register(ctx, executor, svcCtx, HandlerNameIncrement, ModeIncrement)
-	register(ctx, executor, svcCtx, HandlerNameFull, ModeFull)
+func Register(executor *xxljob.Executor, svcCtx *svc.ServiceContext) {
+	register(executor, svcCtx, HandlerNameIncrement, ModeIncrement)
+	register(executor, svcCtx, HandlerNameFull, ModeFull)
 }
 
-func register(ctx context.Context, executor *xxljob.Executor, svcCtx *svc.ServiceContext, name string, mode Mode) {
+func register(executor *xxljob.Executor, svcCtx *svc.ServiceContext, name string, mode Mode) {
 	job := &Job{
 		redis: svcCtx.Redis,
 		feed:  svcCtx.HotFeed,

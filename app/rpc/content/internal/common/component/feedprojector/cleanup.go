@@ -2,21 +2,16 @@ package feedprojector
 
 import (
 	"context"
-	"strconv"
-
-	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 )
 
-// cleanup 删除或下架清理热榜主榜 加 作者发件箱 加 失效 L2 follower inbox
+// cleanup 删除或下架的清理 摘热榜 加 摘作者发件箱 加 失效内容详情二级缓存
+// follower 收件箱不主动清 读路径按已发布加公开回源过滤 死内容自然不可见
 func (p *Projector) cleanup(ctx context.Context, contentID, authorID int64) error {
-	contentIDStr := strconv.FormatInt(contentID, 10)
-	if _, err := p.redis.ZremCtx(ctx, rediskey.RedisFeedHotGlobalKey, contentIDStr); err != nil {
+	if err := p.hotFeed.Remove(ctx, contentID); err != nil {
 		return err
 	}
-	if authorID > 0 {
-		if _, err := p.redis.ZremCtx(ctx, rediskey.BuildUserPublishFeedKey(authorID), contentIDStr); err != nil {
-			return err
-		}
+	if err := p.publishBox.Remove(ctx, authorID, contentID); err != nil {
+		return err
 	}
 	return p.contentCache.Invalidate(ctx, contentID)
 }

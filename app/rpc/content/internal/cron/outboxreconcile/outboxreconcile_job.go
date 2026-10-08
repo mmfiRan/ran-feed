@@ -35,15 +35,13 @@ const (
 // OutboxReconcileJob 对账作业 整条事件链唯一的可靠性保证 丢失最多延迟一个调度周期被补回
 // 与消息消费共用 feedprojector 的同一份投影语义 只是幂等领取的时机不同
 type OutboxReconcileJob struct {
-	logx.Logger
 	outboxRepo repositories.ContentOutboxRepository
 	projector  *feedprojector.Projector
 	dedupGate  *dedup.Gate
 }
 
-func Register(ctx context.Context, executor *xxljob.Executor, svcCtx *svc.ServiceContext) {
+func Register(executor *xxljob.Executor, svcCtx *svc.ServiceContext) {
 	job := &OutboxReconcileJob{
-		Logger:     logx.WithContext(ctx),
 		outboxRepo: svcCtx.ContentOutboxRepository,
 		projector:  svcCtx.FeedProjector,
 		dedupGate:  dedup.New(svcCtx.MysqlDb.DB),
@@ -68,7 +66,7 @@ func (j *OutboxReconcileJob) Run(ctx context.Context, _ xxljob.TriggerParam) (st
 		return "", fmt.Errorf("清理发件箱失败 %w", err)
 	}
 
-	j.Infof("事件对账完成 replayed=%d", replayed)
+	logx.WithContext(ctx).Infof("事件对账完成 replayed=%d", replayed)
 	return fmt.Sprintf("ok replayed=%d", replayed), nil
 }
 
@@ -96,12 +94,12 @@ func (j *OutboxReconcileJob) replayMissed(ctx context.Context, from, to time.Tim
 			afterID = row.ID
 			evt, uerr := contentevent.UnmarshalContentEvent(row.Payload)
 			if uerr != nil {
-				j.Errorf("对账解析事件失败跳过 eid=%s err=%v", row.EventID, uerr)
+				logx.WithContext(ctx).Errorf("对账解析事件失败跳过 eid=%s err=%v", row.EventID, uerr)
 				continue
 			}
 			claimed, cerr := j.dedupGate.InsertIfAbsent(ctx, contentconsts.ContentEventConsumerName, row.EventID)
 			if cerr != nil {
-				j.Errorf("对账领取事件失败 eid=%s err=%v", row.EventID, cerr)
+				logx.WithContext(ctx).Errorf("对账领取事件失败 eid=%s err=%v", row.EventID, cerr)
 				continue
 			}
 			if !claimed {
@@ -109,7 +107,7 @@ func (j *OutboxReconcileJob) replayMissed(ctx context.Context, from, to time.Tim
 			}
 			if aerr := j.projector.Apply(ctx, evt); aerr != nil {
 				j.rollbackClaim(ctx, row.EventID)
-				j.Errorf("对账补跑失败 eid=%s err=%v", row.EventID, aerr)
+				logx.WithContext(ctx).Errorf("对账补跑失败 eid=%s err=%v", row.EventID, aerr)
 				continue
 			}
 			total++
@@ -123,6 +121,6 @@ func (j *OutboxReconcileJob) replayMissed(ctx context.Context, from, to time.Tim
 // rollbackClaim 撤回领取 让这条事件下一轮还能被补跑 撤回失败只记日志
 func (j *OutboxReconcileJob) rollbackClaim(ctx context.Context, eventID string) {
 	if err := j.dedupGate.Delete(ctx, contentconsts.ContentEventConsumerName, eventID); err != nil {
-		j.Errorf("对账撤回领取失败 eid=%s 该事件本轮不会重试 err=%v", eventID, err)
+		logx.WithContext(ctx).Errorf("对账撤回领取失败 eid=%s 该事件本轮不会重试 err=%v", eventID, err)
 	}
 }

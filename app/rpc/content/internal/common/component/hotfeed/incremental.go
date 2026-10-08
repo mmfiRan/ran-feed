@@ -20,7 +20,7 @@ func (f *Feed) collectDirtyIDs(ctx context.Context, shards int) ([]int64, error)
 	for shard := 0; shard < shards; shard++ {
 		activeKey := sharedkey.HotFeedDirty(shard)
 		procKey := rediskey.BuildHotFeedDirtyProcKey(shard)
-		if _, err := f.redis.EvalCtx(ctx, FreezeDirtyScript, []string{activeKey, procKey}); err != nil {
+		if _, err := f.redis.EvalCtx(ctx, freezeDirtyScript, []string{activeKey, procKey}); err != nil {
 			return nil, err
 		}
 
@@ -127,7 +127,7 @@ func (f *Feed) recomputeAndOverwrite(ctx context.Context, calculator hotrank.Add
 		}
 
 		if len(redisArgs) > 0 {
-			if _, err = f.redis.EvalCtx(ctx, RebuildZSetScript, []string{
+			if _, err = f.redis.EvalCtx(ctx, rebuildZSetScript, []string{
 				rediskey.RedisFeedHotGlobalKey,
 			}, redisArgs...); err != nil {
 				return err

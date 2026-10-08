@@ -14,10 +14,10 @@ import (
 func Consumers(c config.Config, ctx context.Context, svcContext *svc.ServiceContext) []service.Service {
 	consumers := make([]service.Service, 0)
 	if c.KqConsumerConf.Topic != "" {
-		consumers = append(consumers, kq.MustNewQueue(c.KqConsumerConf, consumer.NewContentEventConsumer(ctx, svcContext)))
+		consumers = append(consumers, kq.MustNewQueue(c.KqConsumerConf, consumer.NewContentEventConsumer(svcContext)))
 	}
 	if c.KqFanOutConsumerConf.Topic != "" {
-		consumers = append(consumers, kq.MustNewQueue(c.KqFanOutConsumerConf, consumer.NewFanOutConsumer(ctx, svcContext)))
+		consumers = append(consumers, kq.MustNewQueue(c.KqFanOutConsumerConf, consumer.NewFanOutConsumer(svcContext)))
 	}
 	return consumers
 }

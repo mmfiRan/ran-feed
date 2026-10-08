@@ -60,6 +60,7 @@ go test ./...
 - 有 `is_deleted` 字段的表，Repository 查询过滤未删除（`IsDeleted.Eq(0)`）
 - 事务内不调 RPC / Redis，缓存失效、消息发送等副作用放事务提交后
 - 跨域数据走对应 RPC 或 Canal 同步链路，不直读别域的表
+- 一份状态（Redis key / 表 / 索引）只由一个 Component 读写，Logic 与 Consumer 里不出现 redis 原语
 - 结构约束见 [`docs/architecture.md`](docs/architecture.md)「结构规范」；机检入口是 `./.harness/init.sh` 的结构静态检查
 
 ## 编码辅助

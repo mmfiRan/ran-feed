@@ -8,22 +8,22 @@ package hotfeed
 
 import _ "embed"
 
-// QueryZSetScript 热榜 zset 查询 Lua 脚本
+// queryZSetScript 热榜 zset 查询 唯一调用方是 Feed.Query
 //
 //go:embed scripts/query_hot_feed_zset.lua
-var QueryZSetScript string
+var queryZSetScript string
 
-// RebuildZSetScript 热榜 zset 重建 Lua 脚本
+// rebuildZSetScript 热榜 zset 重建 全量与增量共用
 //
 //go:embed scripts/rebuild_hot_feed_zset.lua
-var RebuildZSetScript string
+var rebuildZSetScript string
 
-// FreezeDirtyScript 热榜脏集合冻结 Lua 脚本 活跃桶原子搬到处理中桶
+// freezeDirtyScript 热榜脏集合冻结 活跃桶原子搬到处理中桶
 //
 //go:embed scripts/freeze_hot_dirty.lua
-var FreezeDirtyScript string
+var freezeDirtyScript string
 
-// RebuildSnapshotScript 热榜快照重建 Lua 脚本
+// rebuildSnapshotScript 热榜快照重建
 //
 //go:embed scripts/rebuild_hot_snapshot.lua
-var RebuildSnapshotScript string
+var rebuildSnapshotScript string

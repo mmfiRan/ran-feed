@@ -64,7 +64,7 @@ func (f *Feed) rebuildFromDB(ctx context.Context, calculator hotrank.AdditiveTim
 			if err = f.batchUpdateHotScore(ctx, ids, scores, opts.BatchSize); err != nil {
 				return fmt.Errorf("批量落库 hot_score 失败 %w", err)
 			}
-			if _, err = f.redis.EvalCtx(ctx, RebuildZSetScript, []string{
+			if _, err = f.redis.EvalCtx(ctx, rebuildZSetScript, []string{
 				rediskey.RedisFeedHotGlobalKey,
 			}, redisArgs...); err != nil {
 				return fmt.Errorf("写主榜失败 %w", err)

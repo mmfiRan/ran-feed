@@ -1,6 +1,6 @@
 ---@diagnostic disable: undefined-global
--- Redis关注收件箱回填/更新Lua脚本
--- KEYS[1] = inbox zset key
+-- 作者发件箱 zset 回填与裁剪
+-- KEYS[1] = publish zset key
 -- ARGV[1] = keep_latest_n
 -- ARGV[2] = cutoff_millis 早于此 score 的成员裁剪 <=0 跳过
 -- ARGV[3] = ttl_seconds 整 key 续期 <=0 跳过
@@ -33,7 +33,7 @@ if keepN ~= nil and keepN > 0 then
     end
 end
 
--- 整 key 续期 活跃读写存活 冷用户整 key 过期回收
+-- 整 key 续期 活跃读写存活 冷数据整 key 过期回收
 if ttl ~= nil and ttl > 0 then
     redis.call('EXPIRE', key, ttl)
 end

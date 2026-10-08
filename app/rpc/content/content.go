@@ -61,7 +61,7 @@ func main() {
 		RegistryInterval: c.XxlJob.RegistryInterval,
 		HTTPTimeout:      c.XxlJob.HTTPTimeout,
 	})
-	cron.Register(xxlCtx, executor, ctx)
+	cron.Register(executor, ctx)
 	threading.GoSafe(func() {
 		if err := executor.Start(xxlCtx); err != nil {
 			if errors.Is(err, context.Canceled) {

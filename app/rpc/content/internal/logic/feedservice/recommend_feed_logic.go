@@ -7,35 +7,19 @@ import (
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/common/component/contentresolver"
 	"ran-feed/app/rpc/content/internal/common/component/hotfeed"
-	"ran-feed/app/rpc/content/internal/common/component/redislock"
-	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/stores/redis"
 )
-
-type CacheResult int
-
-const (
-	CacheHit CacheResult = iota
-	CacheMiss
-	CacheError
-)
-
-type hotFeedResult struct {
-	ids                []int64
-	nextCursor         string
-	hasMore            bool
-	resolvedSnapshotID string
-}
 
 type RecommendFeedLogic struct {
 	ctx context.Context
 	logx.Logger
-	redis       *redis.Redis
+	hotFeed     *hotfeed.Feed
 	resolver    *contentresolver.Resolver
 	contentRepo repositories.ContentRepository
 }
@@ -44,29 +28,25 @@ func NewRecommendFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Rec
 	return &RecommendFeedLogic{
 		ctx:         ctx,
 		Logger:      logx.WithContext(ctx),
-		redis:       svcCtx.Redis,
+		hotFeed:     svcCtx.HotFeed,
 		resolver:    svcCtx.ContentResolver,
 		contentRepo: svcCtx.ContentRepository,
 	}
 }
 
 func (l *RecommendFeedLogic) RecommendFeed(in *content.RecommendFeedReq) (*content.RecommendFeedRes, error) {
-	pageSize := int(in.PageSize)
+	pageSize := utils.ClampPageSize(in.PageSize)
 
-	// 解析快照id和快照key
-	preferredKey, preferredSnapshotID := l.resolveSnapshotKey(in.SnapshotId)
-
-	// 从 Redis取id
-	res, err := l.queryHotIDsByCursor(preferredKey, preferredSnapshotID, in.Cursor, pageSize)
+	page, err := l.queryPage(in.GetSnapshotId(), in.Cursor, pageSize)
 	if err != nil {
 		return nil, err
 	}
-	if len(res.ids) == 0 {
+	if len(page.ContentIDs) == 0 {
 		return &content.RecommendFeedRes{
 			Items:      []*content.ContentItem{},
 			NextCursor: "",
 			HasMore:    false,
-			SnapshotId: res.resolvedSnapshotID,
+			SnapshotId: page.ResolvedSnapshotID,
 		}, nil
 	}
 
@@ -75,7 +55,7 @@ func (l *RecommendFeedLogic) RecommendFeed(in *content.RecommendFeedReq) (*conte
 		userID = *in.UserId
 	}
 	// 热榜只读 PUBLIC 走统一二级缓存
-	entries, err := l.resolver.Resolve(l.ctx, res.ids, userID, true)
+	entries, err := l.resolver.Resolve(l.ctx, page.ContentIDs, userID, true)
 	if err != nil {
 		return nil, err
 	}
@@ -84,38 +64,36 @@ func (l *RecommendFeedLogic) RecommendFeed(in *content.RecommendFeedReq) (*conte
 		// 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
 		return &content.RecommendFeedRes{
 			Items:      nil,
-			NextCursor: res.nextCursor,
-			HasMore:    res.hasMore,
-			SnapshotId: res.resolvedSnapshotID,
+			NextCursor: page.NextCursor,
+			HasMore:    page.HasMore,
+			SnapshotId: page.ResolvedSnapshotID,
 		}, nil
 	}
 
 	return &content.RecommendFeedRes{
 		Items:      items,
-		NextCursor: res.nextCursor,
-		HasMore:    res.hasMore,
-		SnapshotId: res.resolvedSnapshotID,
+		NextCursor: page.NextCursor,
+		HasMore:    page.HasMore,
+		SnapshotId: page.ResolvedSnapshotID,
 	}, nil
 }
 
-func (l *RecommendFeedLogic) resolveSnapshotKey(reqSnapshotID *string) (string, string) {
-	if reqSnapshotID == nil || *reqSnapshotID == "" {
-		return "", ""
+// queryPage 先读热榜 读不到按 hot_score 游标查库兜底 保证推荐流不整接口失败
+func (l *RecommendFeedLogic) queryPage(snapshotID, cursor string, pageSize int) (hotfeed.Page, error) {
+	page, hit, err := l.hotFeed.Query(l.ctx, snapshotID, cursor, pageSize)
+	if err != nil {
+		l.Errorf("查询热榜失败 转查库兜底 err=%v", err)
+		return l.pageFromDB(cursor, pageSize)
 	}
-	return rediskey.BuildHotFeedSnapshotKey(*reqSnapshotID), *reqSnapshotID
+	if !hit {
+		// Redis 丢数据或主榜快照均缺失
+		return l.pageFromDB(cursor, pageSize)
+	}
+	return page, nil
 }
 
-func (l *RecommendFeedLogic) queryHotIDsByCursor(preferredKey, preferredSnapshotID string, cursorID string, pageSize int) (*hotFeedResult, error) {
-	res, cacheResult := l.queryFromRedis(preferredKey, preferredSnapshotID, cursorID, pageSize)
-	if cacheResult == CacheHit {
-		return res, nil
-	}
-	// Redis 丢数据或主榜快照均缺失时按 hot_score 游标查库兜底 保证推荐流不整接口失败
-	return l.queryFromDB(cursorID, pageSize)
-}
-
-// queryFromDB 兜底查询 已发布加公开加未删 按 hot_score 与 id 倒序 keyset 翻页
-func (l *RecommendFeedLogic) queryFromDB(cursor string, pageSize int) (*hotFeedResult, error) {
+// pageFromDB 兜底查询 已发布加公开加未删 按 hot_score 与 id 倒序 keyset 翻页
+func (l *RecommendFeedLogic) pageFromDB(cursor string, pageSize int) (hotfeed.Page, error) {
 	cursorID := int64(0)
 	if v, err := strconv.ParseInt(cursor, 10, 64); err == nil && v > 0 {
 		cursorID = v
@@ -134,14 +112,14 @@ func (l *RecommendFeedLogic) queryFromDB(cursor string, pageSize int) (*hotFeedR
 	}
 
 	rows, err := l.contentRepo.ListRecommendByHotScoreCursor(l.ctx,
-		int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED),
-		int32(content.Visibility_VISIBILITY_PUBLIC),
+		contentEnum.ContentStatusPublished.Int32(),
+		contentEnum.VisibilityPublic.Int32(),
 		cursorScore,
 		cursorID,
 		pageSize+1,
 	)
 	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询推荐流失败"))
+		return hotfeed.Page{}, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询推荐流失败"))
 	}
 
 	ids := make([]int64, 0, len(rows))
@@ -159,75 +137,5 @@ func (l *RecommendFeedLogic) queryFromDB(cursor string, pageSize int) (*hotFeedR
 	if hasMore && len(ids) > 0 {
 		nextCursor = strconv.FormatInt(ids[len(ids)-1], 10)
 	}
-	return &hotFeedResult{ids: ids, nextCursor: nextCursor, hasMore: hasMore}, nil
-}
-
-func (l *RecommendFeedLogic) queryFromRedis(preferredKey, preferredSnapshotID, cursor string, pageSize int) (*hotFeedResult, CacheResult) {
-	res, err := l.redis.EvalCtx(
-		l.ctx,
-		hotfeed.QueryZSetScript,
-		[]string{
-			preferredKey,
-			rediskey.RedisFeedHotGlobalLatestKey,
-			rediskey.RedisFeedHotGlobalSnapshotPrefix,
-			rediskey.RedisFeedHotGlobalKey,
-		},
-		cursor,
-		strconv.FormatInt(int64(pageSize), 10),
-		preferredSnapshotID,
-	)
-	if err != nil {
-		l.Errorf("Lua脚本执行失败: %v", err)
-		return nil, CacheError
-	}
-
-	parsed, exists, parseErr := parseHotFeedLuaResult(res)
-	if parseErr != nil {
-		l.Errorf("解析Lua返回值失败: %v", parseErr)
-		return nil, CacheError
-	}
-	if !exists {
-		return nil, CacheMiss
-	}
-	return parsed, CacheHit
-}
-
-func parseHotFeedLuaResult(res any) (*hotFeedResult, bool, error) {
-	arr, ok := res.([]interface{})
-	if !ok || len(arr) < 4 {
-		return nil, false, errorx.NewMsg("查询热榜索引失败")
-	}
-
-	existsVal, _ := redislock.ReplyInt64(arr[0])
-	exists := existsVal == 1
-
-	hasMoreVal, _ := redislock.ReplyInt64(arr[1])
-	hasMore := hasMoreVal == 1
-
-	nextCursor := ""
-	if hasMore {
-		nextCursor, _ = redislock.ReplyString(arr[2])
-	}
-
-	resolvedSnapshotID, _ := redislock.ReplyString(arr[3])
-
-	ids := make([]int64, 0, len(arr)-4)
-	for i := 4; i < len(arr); i++ {
-		s, _ := redislock.ReplyString(arr[i])
-		if s == "" {
-			continue
-		}
-		id, parseErr := strconv.ParseInt(s, 10, 64)
-		if parseErr != nil || id <= 0 {
-			continue
-		}
-		ids = append(ids, id)
-	}
-
-	return &hotFeedResult{
-		ids:                ids,
-		nextCursor:         nextCursor,
-		hasMore:            hasMore,
-		resolvedSnapshotID: resolvedSnapshotID,
-	}, exists, nil
+	return hotfeed.Page{ContentIDs: ids, NextCursor: nextCursor, HasMore: hasMore}, nil
 }

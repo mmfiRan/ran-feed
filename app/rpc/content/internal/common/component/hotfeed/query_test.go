@@ -34,7 +34,7 @@ func TestQueryHotFeedZSet_TiedScoreCrossDigitPagination(t *testing.T) {
 	// 第一页
 	res1, err := r.EvalCtx(
 		context.Background(),
-		QueryZSetScript,
+		queryZSetScript,
 		keys,
 		"",
 		strconv.Itoa(pageSize),
@@ -50,7 +50,7 @@ func TestQueryHotFeedZSet_TiedScoreCrossDigitPagination(t *testing.T) {
 	// 第二页
 	res2, err := r.EvalCtx(
 		context.Background(),
-		QueryZSetScript,
+		queryZSetScript,
 		keys,
 		page1.nextCursor,
 		strconv.Itoa(pageSize),
@@ -79,7 +79,7 @@ func TestQueryHotFeedZSet_LatestMissedFallsThroughToGlobal(t *testing.T) {
 	// 旧版本会在 line 33 concat 崩溃 新版本应识别 false 后 fall through 到 globalKey
 	res, err := r.EvalCtx(
 		context.Background(),
-		QueryZSetScript,
+		queryZSetScript,
 		[]string{"", "feed:hot:global:latest:nonexistent", "feed:hot:global:snap", globalKey},
 		"",
 		"10",

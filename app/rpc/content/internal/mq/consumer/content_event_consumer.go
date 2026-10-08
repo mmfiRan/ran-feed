@@ -24,14 +24,12 @@ const (
 
 // ContentEventConsumer 消费 content 域 outbox 事件 只做协议解析 幂等与重试 业务投影下沉 feedprojector
 type ContentEventConsumer struct {
-	logx.Logger
 	dedupGate *dedup.Gate
 	projector *feedprojector.Projector
 }
 
-func NewContentEventConsumer(ctx context.Context, svcCtx *svc.ServiceContext) *ContentEventConsumer {
+func NewContentEventConsumer(svcCtx *svc.ServiceContext) *ContentEventConsumer {
 	return &ContentEventConsumer{
-		Logger:    logx.WithContext(ctx),
 		dedupGate: dedup.New(svcCtx.MysqlDb.DB),
 		projector: svcCtx.FeedProjector,
 	}
@@ -41,7 +39,7 @@ func NewContentEventConsumer(ctx context.Context, svcCtx *svc.ServiceContext) *C
 func (c *ContentEventConsumer) Consume(ctx context.Context, key, val string) error {
 	msg, err := canal.Parse(val)
 	if err != nil {
-		c.Errorf("解析 canal 消息失败 err=%v val=%s", err, val)
+		logx.WithContext(ctx).Errorf("解析 canal 消息失败 err=%v val=%s", err, val)
 		return err
 	}
 	if msg.Table() != outboxTable || msg.Op() != opInsert {
@@ -74,7 +72,7 @@ func (c *ContentEventConsumer) processRow(ctx context.Context, eventID, table, o
 	payload := canal.ParseString(row["payload"])
 	evt, err := contentevent.UnmarshalContentEvent(payload)
 	if err != nil {
-		c.Errorf("解析 content 事件失败 跳过 payload=%s err=%v", payload, err)
+		logx.WithContext(ctx).Errorf("解析 content 事件失败 跳过 payload=%s err=%v", payload, err)
 		return nil
 	}
 
@@ -83,7 +81,7 @@ func (c *ContentEventConsumer) processRow(ctx context.Context, eventID, table, o
 	}
 
 	if _, err := c.dedupGate.InsertIfAbsent(ctx, contentconsts.ContentEventConsumerName, eid); err != nil {
-		c.Errorf("插入去重表失败 eid=%s err=%v", eid, err)
+		logx.WithContext(ctx).Errorf("插入去重表失败 eid=%s err=%v", eid, err)
 	}
 	return nil
 }

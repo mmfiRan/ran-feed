@@ -1,4 +1,4 @@
-// 本文件负责关注流读接口的编排 取数在 follow_feed_source 缓存维护在 follow_feed_cache
+// 本文件负责关注流读接口的编排 两侧取数在 follow_feed_source 合并在 follow_feed_mapper
 package feedservicelogic
 
 import (
@@ -6,37 +6,29 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/common/component/contentresolver"
+	"ran-feed/app/rpc/content/internal/common/component/followfeed"
 	"ran-feed/app/rpc/content/internal/common/component/publishbox"
-	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
-	"ran-feed/app/rpc/interaction/client/followservice"
-	"ran-feed/pkg/cache"
+	"ran-feed/pkg/utils"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 type FollowFeedLogic struct {
 	ctx context.Context
 	logx.Logger
-	redis               *redis.Redis
-	followRebuildLocker *cache.DistLocker
-	followRpc           followservice.FollowService
-	contentRepo         repositories.ContentRepository
-	resolver            *contentresolver.Resolver
-	publishBox          *publishbox.Box
+	followFeed *followfeed.Feed
+	publishBox *publishbox.Box
+	resolver   *contentresolver.Resolver
 }
 
 func NewFollowFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *FollowFeedLogic {
 	return &FollowFeedLogic{
-		ctx:                 ctx,
-		Logger:              logx.WithContext(ctx),
-		redis:               svcCtx.Redis,
-		followRebuildLocker: svcCtx.FollowRebuildLocker,
-		followRpc:           svcCtx.FollowRpc,
-		contentRepo:         svcCtx.ContentRepository,
-		resolver:            svcCtx.ContentResolver,
-		publishBox:          svcCtx.PublishBox,
+		ctx:        ctx,
+		Logger:     logx.WithContext(ctx),
+		followFeed: svcCtx.FollowFeed,
+		publishBox: svcCtx.PublishBox,
+		resolver:   svcCtx.ContentResolver,
 	}
 }
 
@@ -45,32 +37,23 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 	if in == nil {
 		return emptyFollowFeedRes(), nil
 	}
-	userID := in.UserId
-	pageSize := int(in.PageSize)
-	if pageSize <= 0 {
-		pageSize = 10
-	}
-	if pageSize > 50 {
-		pageSize = 50
-	}
-
+	pageSize := utils.ClampPageSize(in.PageSize)
 	cursorScore, cursorID := parseCursor(in.Cursor)
 
-	pushItems, pushHasMore, pullAuthors := l.loadFollowSources(userID, cursorScore, cursorID, pageSize)
+	sources := l.followFeed.Sources(l.ctx, in.UserId, cursorScore, pageSize)
+	pullItems, pullHasMore := l.fetchPullItems(sources.PullAuthors, cursorScore, pageSize)
 
-	var pool []scoredID
-	var poolHasMore bool
-	if len(pullAuthors) > 0 {
-		pool, poolHasMore = l.fetchPullContentIDs(pullAuthors, cursorScore, pageSize)
-	}
-	ids, hasMore, nextCursor := mergeScored(pushItems, pushHasMore, pool, poolHasMore, cursorScore, cursorID, pageSize)
-
+	ids, hasMore, nextCursor := mergeScored(
+		followFeedScored(sources.PushItems), sources.PushHasMore,
+		pullItems, pullHasMore,
+		cursorScore, cursorID, pageSize,
+	)
 	if len(ids) == 0 {
 		return emptyFollowFeedRes(), nil
 	}
 
 	// 走统一二级缓存取详情 关注流只读 PUBLIC 再旁挂作者与点赞
-	entries, err := l.resolver.Resolve(l.ctx, ids, userID, true)
+	entries, err := l.resolver.Resolve(l.ctx, ids, in.UserId, true)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,6 @@
 ---
 name: go-coding
-description: 编写或修改本项目 Go 代码时遵循的编码规范 — 命名 错误处理 分层与依赖方向 并发与 context 注释与日志 文件组织与常量分级，并按情境索引到新增接口 proto 枚举 缓存 配置 结构规范 设计模式的专题文档。在动手写 logic repository handler proto api、创建或修改枚举、加缓存或配置、新增目录或组件、引入新抽象前应用。
+description: 编写或修改本项目 Go 代码时遵循的编码规范 — 命名 错误处理 分层与依赖方向 状态所有权 并发与 context 注释与日志 文件组织与常量分级，并按情境索引到新增接口 proto 枚举 缓存 配置 结构规范 设计模式的专题文档。在动手写 logic repository handler proto api、创建或修改枚举、加缓存或配置、读写 Redis key、新增目录或组件、引入新抽象前应用。
 ---
 
 # ran-feed Go 编码规范
@@ -66,7 +66,10 @@ return nil, errorx.Wrap(ctx, err, errorx.NewMsg("查询用户失败"))
 Logic 依赖接口而非具体实现类型，便于测试替换。被两个以上入口点（Handler / Consumer / Cron）需要的能力
 落 `internal/common/component/`。
 
-完整的依赖方向、入口点隔离与 Component 契约见
+**一份状态（Redis key / 表 / 索引）只由一个 Component 读写**，Logic 与 Consumer 里不出现 redis 原语——
+分层合规不等于所有权清晰，一份状态被多处读写时，改一条规则要翻多个文件且漏一个不报错。
+
+完整的依赖方向、入口点隔离、状态所有权与 Component 契约见
 [references/structure.md](references/structure.md)。
 
 ## 并发与 context

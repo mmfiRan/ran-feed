@@ -1,3 +1,5 @@
+// Package publishbox 负责作者发件箱 feed:user:publish 的全部读写
+// 读命中直读 未命中抢锁回源重建 写由发布副作用与事件投影调用
 package publishbox
 
 import (
@@ -6,8 +8,6 @@ import (
 	"math"
 	"strconv"
 
-	"ran-feed/app/rpc/content/internal/common/component/followwindow"
-	"ran-feed/app/rpc/content/internal/common/component/redislock"
 	contentconsts "ran-feed/app/rpc/content/internal/common/consts"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	"ran-feed/app/rpc/content/internal/entity/model"
@@ -19,10 +19,8 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
-const (
-	// emptySentinelID 空发件箱的负缓存哨兵 读时按 id<=0 过滤掉
-	emptySentinelID int64 = 0
-)
+// emptySentinelID 空发件箱的负缓存哨兵 读时按 id<=0 过滤掉
+const emptySentinelID int64 = 0
 
 // ScoredID 发件箱 zset 的成员 ID 是 content_id Score 是发布时间毫秒
 type ScoredID struct {
@@ -36,7 +34,7 @@ type windowPage struct {
 	hasMore bool
 }
 
-// Box 作者发件箱 按发布时间倒序存作者已发布的内容 读命中直读 未命中抢锁回源重建
+// Box 作者发件箱 按发布时间倒序存作者已发布的内容
 type Box struct {
 	redis       *redis.Redis
 	locker      *cache.DistLocker
@@ -90,6 +88,52 @@ func (b *Box) QueryWindow(ctx context.Context, authorID, cutoffMillis, cursorSco
 	return page.items, page.hasMore, nil
 }
 
+// ListWindow 取作者窗口内全部内容 命中缓存直读 未命中回源 关注关系变更时的回填与清理共用同一口径
+func (b *Box) ListWindow(ctx context.Context, authorID, cutoffMillis int64, limit int) ([]ScoredID, error) {
+	if authorID <= 0 || limit <= 0 {
+		return nil, nil
+	}
+	feedKey := rediskey.BuildUserPublishFeedKey(authorID)
+
+	exists, err := b.redis.ExistsCtx(ctx, feedKey)
+	if err != nil {
+		return nil, errorx.Wrap(ctx, err, errorx.NewMsg("查询作者发件箱失败"))
+	}
+	if exists {
+		pairs, perr := b.redis.ZrevrangebyscoreWithScoresByFloatAndLimitCtx(
+			ctx, feedKey, float64(cutoffMillis), math.MaxFloat64, 0, limit)
+		if perr != nil {
+			return nil, errorx.Wrap(ctx, perr, errorx.NewMsg("查询作者发件箱失败"))
+		}
+		items, _ := pairsToScored(pairs, limit)
+		return items, nil
+	}
+
+	rows, derr := b.contentRepo.ListPublishedByAuthorWithinWindow(ctx, authorID, cutoffMillis, limit)
+	if derr != nil {
+		return nil, errorx.Wrap(ctx, derr, errorx.NewMsg("查询作者发布内容失败"))
+	}
+	return rowsToScored(rows), nil
+}
+
+// Write 单条内容进发件箱 score 取发布时间
+// 发件箱承载作者全量发布历史 不按时间裁剪 cutoff 传 0 仅靠 keepN 与 TTL 控量
+func (b *Box) Write(ctx context.Context, authorID, contentID, publishedAtMillis int64) error {
+	if authorID <= 0 || contentID <= 0 {
+		return nil
+	}
+	return b.write(ctx, rediskey.BuildUserPublishFeedKey(authorID), publishedAtMillis, contentID)
+}
+
+// Remove 从发件箱摘掉一条 内容删除或下架时调用
+func (b *Box) Remove(ctx context.Context, authorID, contentID int64) error {
+	if authorID <= 0 || contentID <= 0 {
+		return nil
+	}
+	_, err := b.redis.ZremCtx(ctx, rediskey.BuildUserPublishFeedKey(authorID), strconv.FormatInt(contentID, 10))
+	return err
+}
+
 // queryOnce 只读缓存不重建 第三个返回值表示缓存 key 在不在 不在就让 DoWithLock 走重建
 func (b *Box) queryOnce(ctx context.Context, feedKey string, cutoffMillis, cursorScore int64, pageSize int) ([]ScoredID, bool, bool, error) {
 	maxScore := math.MaxFloat64
@@ -108,7 +152,7 @@ func (b *Box) queryOnce(ctx context.Context, feedKey string, cutoffMillis, curso
 		}
 		return nil, false, exists, nil
 	}
-	if eerr := b.redis.ExpireCtx(ctx, feedKey, followwindow.TTLSeconds()); eerr != nil {
+	if eerr := b.redis.ExpireCtx(ctx, feedKey, contentconsts.TimelineTTLSeconds()); eerr != nil {
 		logx.WithContext(ctx).Errorf("续期发件箱 TTL 失败 feedKey=%s: %v", feedKey, eerr)
 	}
 	items, hasMore := pairsToScored(pairs, pageSize)
@@ -126,7 +170,7 @@ func (b *Box) rebuild(ctx context.Context, feedKey string, authorID, cutoffMilli
 		b.writeEmptySentinel(bgCtx, feedKey)
 		return windowPage{}, nil
 	}
-	if werr := b.writeCache(bgCtx, feedKey, rows); werr != nil {
+	if werr := b.writeRows(bgCtx, feedKey, rows); werr != nil {
 		logx.WithContext(ctx).Errorf("回填发件箱缓存失败 feedKey=%s: %v", feedKey, werr)
 	}
 	items, hasMore, _, qerr := b.queryOnce(bgCtx, feedKey, cutoffMillis, cursorScore, pageSize)
@@ -138,14 +182,13 @@ func (b *Box) rebuild(ctx context.Context, feedKey string, authorID, cutoffMilli
 
 // writeEmptySentinel 空作者写个哨兵占位做负缓存 免得每次读都回源查库
 func (b *Box) writeEmptySentinel(ctx context.Context, feedKey string) {
-	args := followwindow.WriteArgs(contentconsts.TimelineKeepN, 0, followwindow.TTLSeconds(), followwindow.NowMillis(), emptySentinelID)
-	if _, err := b.redis.EvalCtx(ctx, redislock.UpdateUserPublishZSetScript, []string{feedKey}, args...); err != nil {
+	if err := b.write(ctx, feedKey, contentconsts.NowMillis(), emptySentinelID); err != nil {
 		logx.WithContext(ctx).Errorf("写空发件箱哨兵失败 feedKey=%s: %v", feedKey, err)
 	}
 }
 
-// writeCache 全量回填发件箱 不按时间裁剪 只留最近 keepN 条 其余交给 TTL 过期
-func (b *Box) writeCache(ctx context.Context, feedKey string, rows []*model.RanFeedContent) error {
+// writeRows 全量回填发件箱 不按时间裁剪 只留最近 keepN 条 其余交给 TTL 过期
+func (b *Box) writeRows(ctx context.Context, feedKey string, rows []*model.RanFeedContent) error {
 	pairs := make([]int64, 0, len(rows)*2)
 	for _, r := range rows {
 		if r == nil || r.PublishedAt == nil {
@@ -156,8 +199,22 @@ func (b *Box) writeCache(ctx context.Context, feedKey string, rows []*model.RanF
 	if len(pairs) == 0 {
 		return nil
 	}
-	args := followwindow.WriteArgs(contentconsts.TimelineKeepN, 0, followwindow.TTLSeconds(), pairs...)
-	_, err := b.redis.EvalCtx(ctx, redislock.UpdateUserPublishZSetScript, []string{feedKey}, args...)
+	return b.write(ctx, feedKey, pairs...)
+}
+
+// write 调发件箱写 lua ARGV 为 keepN cutoff ttl 后跟 score member 对
+// 发件箱不按时间裁剪 cutoff 恒为 0
+func (b *Box) write(ctx context.Context, feedKey string, pairs ...int64) error {
+	args := make([]any, 0, 3+len(pairs))
+	args = append(args,
+		strconv.FormatInt(contentconsts.TimelineKeepN, 10),
+		"0",
+		strconv.Itoa(contentconsts.TimelineTTLSeconds()),
+	)
+	for _, v := range pairs {
+		args = append(args, strconv.FormatInt(v, 10))
+	}
+	_, err := b.redis.EvalCtx(ctx, updateZSetScript, []string{feedKey}, args...)
 	return err
 }
 
@@ -173,4 +230,16 @@ func pairsToScored(pairs []redis.FloatPair, pageSize int) ([]ScoredID, bool) {
 		items = append(items, ScoredID{ID: id, Score: int64(p.Score)})
 	}
 	return items, hasMore
+}
+
+// rowsToScored 回源行转发件箱成员
+func rowsToScored(rows []*model.RanFeedContent) []ScoredID {
+	items := make([]ScoredID, 0, len(rows))
+	for _, r := range rows {
+		if r == nil || r.PublishedAt == nil {
+			continue
+		}
+		items = append(items, ScoredID{ID: r.ID, Score: r.PublishedAt.UnixMilli()})
+	}
+	return items
 }

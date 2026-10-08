@@ -1,22 +1,24 @@
 ---@diagnostic disable: undefined-global
--- Redis用户发布列表回填/更新Lua脚本
--- KEYS[1] = publish zset key
+-- 关注收件箱 zset 回填与裁剪 返回实际新增数量
+-- KEYS[1] = inbox zset key
 -- ARGV[1] = keep_latest_n
 -- ARGV[2] = cutoff_millis 早于此 score 的成员裁剪 <=0 跳过
 -- ARGV[3] = ttl_seconds 整 key 续期 <=0 跳过
 -- ARGV[4...] = score1, member1, score2, member2, ...
--- 返回: 1
+-- 返回: 实际新增数量
 
 local key = KEYS[1]
 local keepN = tonumber(ARGV[1])
 local cutoff = tonumber(ARGV[2])
 local ttl = tonumber(ARGV[3])
 
+-- ZADD 返回新增成员数 累加即实际新增 省去末尾 N 次 ZSCORE 回查
+local added = 0
 for i = 4, #ARGV, 2 do
     local score = ARGV[i]
     local member = ARGV[i + 1]
     if score ~= nil and member ~= nil and member ~= '' then
-        redis.call('ZADD', key, score, member)
+        added = added + redis.call('ZADD', key, score, member)
     end
 end
 
@@ -33,9 +35,9 @@ if keepN ~= nil and keepN > 0 then
     end
 end
 
--- 整 key 续期 活跃读写存活 冷数据整 key 过期回收
+-- 整 key 续期 活跃读写存活 冷用户整 key 过期回收
 if ttl ~= nil and ttl > 0 then
     redis.call('EXPIRE', key, ttl)
 end
 
-return 1
+return added

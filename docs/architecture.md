@@ -69,7 +69,7 @@ OSS 策略通过 `internal/common/oss/factory.go` 可插拔，当前仅实现 `A
 
 ## 关键代码模式
 
-- **Logic 层**：`internal/logic/<service>/`，每个 RPC 方法一个文件，内嵌 `logx.Logger`，持有 `svcCtx *svc.ServiceContext`
+- **Logic 层**：`internal/logic/<service>/`，每个 RPC 方法一个文件，内嵌 `logx.Logger`，构造函数接 `svcCtx` 做组装但结构体只保存真正用到的显式依赖
 - **Repository 层**：`internal/repositories/` 封装 GORM Gen 查询；软删除过滤统一用枚举（`IsDeleted.Eq(enums.NotDeleted.Int32())`，非 0 判别列用 `Int64()`）
 - **错误处理**：`pkg/errorx.BizError`（code+message）→ gRPC 服务端拦截器转为 status detail → `pkg/grpcx/converter.go` 在客户端还原
 - **Redis Lua 脚本**：Feed 翻页、Session 续期、热榜快照重建、大 V 成员批量判定、收件箱与发件箱写入等原子操作，通过 `go:embed` 加载于各域 `internal/common/component/<能力>/scripts/`，嵌入变量与被嵌脚本同包、脚本目录内不放 `.go` 文件
@@ -101,6 +101,18 @@ RPC Handler、MQ Consumer、Cron Job 是同一服务的三个入口点，互相�
 - Logic 只保显式依赖，不存完整 `ServiceContext`
 - Component 只接自己的 Config 子结构，不保存请求 ctx，不偷偷起 goroutine，不拥有事务边界，返回 Model DO 或自身结果类型，不直接返回 protobuf
 - 一个 Component 内部按**能力内角色**切文件（`feed.go` / `score.go` / `lua.go` / `scripts/`），不按技术切
+
+### 状态所有权
+
+**一份状态（一个 Redis key、一张表、一个索引）只能由一个 Component 读写**，Logic 与 Consumer 里不出现 redis 原语。分层合规不等于所有权清晰：一份状态被 4 处读写，每处都可能符合上面的分层规则，但「这份状态的规则是什么」没有唯一答案，改一条规则要翻 4 个文件且漏一个不报错。
+
+- 几个 key 共享同一个不变量时归同一个 owner（判据是不变量，不是 key 个数）
+- key builder、Lua、参数拼装、哨兵、TTL、抢锁重建全在 owner 包内；对外方法用业务语义（`Page` / `Add` / `Invalidate`），不用存储语义（`ZAdd` / `Eval`）
+- 编解码跟着脚本走，不同脚本各自一份——改 A 脚本的 ARGV 不该被迫动 B 的
+- 任务级分布式锁属 Cron Job（允许），业务缓存重建锁属 owner 组件
+- 没有 owner 的症状：同一个 key builder 在 ≥2 个包被调用 · 同一套 ARGV 拼装有 ≥2 份 · 出现名字说不出业务对象的「脚本抽屉」包 · cache-aside 骨架被抄 ≥2 遍
+
+与「跨服务契约只有一个来源」是两个问题：key 定义统一了，仍可能有 4 个包各自调用这个 builder 去读写。
 
 ### 跨服务契约只有一个来源
 

@@ -3,27 +3,26 @@ package contentservicelogic
 import (
 	"context"
 
-	"google.golang.org/protobuf/types/known/emptypb"
 	"ran-feed/app/rpc/content/content"
-	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
+	"ran-feed/app/rpc/content/internal/common/component/favoritebox"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/stores/redis"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type ClearUserFavoriteCacheLogic struct {
 	ctx context.Context
 	logx.Logger
-	redis *redis.Redis
+	favoriteBox *favoritebox.Box
 }
 
 func NewClearUserFavoriteCacheLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ClearUserFavoriteCacheLogic {
 	return &ClearUserFavoriteCacheLogic{
-		ctx:    ctx,
-		Logger: logx.WithContext(ctx),
-		redis:  svcCtx.Redis,
+		ctx:         ctx,
+		Logger:      logx.WithContext(ctx),
+		favoriteBox: svcCtx.FavoriteBox,
 	}
 }
 
@@ -33,7 +32,7 @@ func (l *ClearUserFavoriteCacheLogic) ClearUserFavoriteCache(in *content.ClearUs
 	if in == nil || in.UserId <= 0 {
 		return nil, errorx.NewMsg("用户id不能<=0")
 	}
-	if _, err := l.redis.DelCtx(l.ctx, rediskey.BuildUserFavoriteFeedKey(in.UserId)); err != nil {
+	if err := l.favoriteBox.Invalidate(l.ctx, in.UserId); err != nil {
 		l.Errorf("失效收藏流缓存失败 userID=%d err=%v", in.UserId, err)
 	}
 	return &emptypb.Empty{}, nil

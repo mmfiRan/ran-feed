@@ -29,7 +29,7 @@ func (f *Feed) refreshSnapshot(ctx context.Context, mainN, topN int) error {
 	}
 	snapshotID := newSnapshotID()
 	snapshotKey := rediskey.BuildHotFeedSnapshotKey(snapshotID)
-	if _, err = f.redis.EvalCtx(ctx, RebuildSnapshotScript, []string{
+	if _, err = f.redis.EvalCtx(ctx, rebuildSnapshotScript, []string{
 		rediskey.RedisFeedHotGlobalKey,
 		snapshotKey,
 		rediskey.RedisFeedHotGlobalLatestKey,

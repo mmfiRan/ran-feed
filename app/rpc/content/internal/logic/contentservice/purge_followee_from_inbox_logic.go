@@ -2,85 +2,72 @@ package contentservicelogic
 
 import (
 	"context"
-	"strconv"
 
 	"ran-feed/app/rpc/content/content"
-	"ran-feed/app/rpc/content/internal/common/component/feedpub"
-	"ran-feed/app/rpc/content/internal/common/component/followwindow"
+	"ran-feed/app/rpc/content/internal/common/component/bigv"
+	"ran-feed/app/rpc/content/internal/common/component/followfeed"
+	"ran-feed/app/rpc/content/internal/common/component/publishbox"
 	contentconsts "ran-feed/app/rpc/content/internal/common/consts"
-	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
-	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
 
 	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 type PurgeFolloweeFromInboxLogic struct {
 	ctx context.Context
 	logx.Logger
-	redis         *redis.Redis
-	feedPublisher *feedpub.Publisher
-	contentRepo   repositories.ContentRepository
+	followFeed *followfeed.Feed
+	publishBox *publishbox.Box
+	bigv       *bigv.Set
 }
 
 func NewPurgeFolloweeFromInboxLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PurgeFolloweeFromInboxLogic {
 	return &PurgeFolloweeFromInboxLogic{
-		ctx:           ctx,
-		Logger:        logx.WithContext(ctx),
-		redis:         svcCtx.Redis,
-		feedPublisher: svcCtx.FeedPublisher,
-		contentRepo:   svcCtx.ContentRepository,
+		ctx:        ctx,
+		Logger:     logx.WithContext(ctx),
+		followFeed: svcCtx.FollowFeed,
+		publishBox: svcCtx.PublishBox,
+		bigv:       svcCtx.BigV,
 	}
 }
 
 // PurgeFolloweeFromInbox 取关后从 follower 收件箱清理 followee 窗口内已扩散内容 对称于 BackfillFollowInbox
 func (l *PurgeFolloweeFromInboxLogic) PurgeFolloweeFromInbox(in *content.PurgeFolloweeFromInboxReq) (*content.PurgeFolloweeFromInboxRes, error) {
 	if in == nil {
-		return &content.PurgeFolloweeFromInboxRes{
-			RemovedCount: 0,
-		}, nil
+		return &content.PurgeFolloweeFromInboxRes{RemovedCount: 0}, nil
 	}
 	if in.FollowerId <= 0 || in.FolloweeId <= 0 {
 		return nil, errorx.NewMsg("参数错误")
 	}
 
 	// 关注关系变更 失效 viewer 拉模式集 取关后读路径才会停止拉该作者
-	if _, err := l.redis.DelCtx(l.ctx, rediskey.BuildFollowPullKey(in.FollowerId)); err != nil {
+	if err := l.followFeed.InvalidatePull(l.ctx, in.FollowerId); err != nil {
 		l.Errorf("失效拉模式关注集失败 viewerID=%d err=%v", in.FollowerId, err)
 	}
 
-	// 拉模式内容从未推入 inbox 无需 ZREM 查询失败仍继续清理 ZREM 对拉模式无害对小号必要
-	if isBig, err := l.feedPublisher.IsBigVAuthor(l.ctx, in.FolloweeId); err != nil {
+	// 拉模式内容从未推入收件箱 无需清理 查询失败仍继续清理 对拉模式无害对小号必要
+	if isBig, err := l.bigv.IsBigV(l.ctx, in.FolloweeId); err != nil {
 		l.Errorf("查询大 V 集合失败 followeeID=%d err=%v", in.FolloweeId, err)
 	} else if isBig {
-		return &content.PurgeFolloweeFromInboxRes{
-			RemovedCount: 0,
-		}, nil
+		return &content.PurgeFolloweeFromInboxRes{RemovedCount: 0}, nil
 	}
 
-	contents, err := loadFolloweeWindowContent(l.ctx, l.redis, l.contentRepo, in.FolloweeId, followwindow.CutoffMillis(), int(contentconsts.TimelineKeepN))
+	items, err := l.publishBox.ListWindow(l.ctx, in.FolloweeId, contentconsts.WindowCutoffMillis(), int(contentconsts.TimelineKeepN))
 	if err != nil {
 		return nil, err
 	}
-	if len(contents) == 0 {
-		return &content.PurgeFolloweeFromInboxRes{
-			RemovedCount: 0,
-		}, nil
+	if len(items) == 0 {
+		return &content.PurgeFolloweeFromInboxRes{RemovedCount: 0}, nil
 	}
 
-	members := make([]any, 0, len(contents))
-	for _, c := range contents {
-		members = append(members, strconv.FormatInt(c.id, 10))
+	contentIDs := make([]int64, 0, len(items))
+	for _, it := range items {
+		contentIDs = append(contentIDs, it.ID)
 	}
-
-	inboxKey := rediskey.BuildFollowInboxKey(in.FollowerId)
-	removed, err := l.redis.ZremCtx(l.ctx, inboxKey, members...)
+	removed, err := l.followFeed.RemoveContents(l.ctx, in.FollowerId, contentIDs)
 	if err != nil {
-		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("清理关注收件箱失败"))
+		return nil, err
 	}
-	return &content.PurgeFolloweeFromInboxRes{
-		RemovedCount: int32(removed),
-	}, nil
+	return &content.PurgeFolloweeFromInboxRes{RemovedCount: int32(removed)}, nil
 }

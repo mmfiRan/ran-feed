@@ -1,14 +1,14 @@
-// Package feedpub 内容进入 feed 的发布副作用 由 ServiceContext 注入
+// Package feedpub 负责内容进入 feed 的发布副作用汇总 由 ServiceContext 注入
+// 它只做编排 各份状态的写入都委托给对应的 owner 组件
 package feedpub
 
 import (
 	"context"
 	"strconv"
 
-	"ran-feed/app/rpc/content/internal/common/component/followwindow"
-	"ran-feed/app/rpc/content/internal/common/component/redislock"
+	"ran-feed/app/rpc/content/internal/common/component/bigv"
+	"ran-feed/app/rpc/content/internal/common/component/publishbox"
 	contentconsts "ran-feed/app/rpc/content/internal/common/consts"
-	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/mq/event"
 	"ran-feed/app/rpc/interaction/client/followservice"
@@ -19,54 +19,50 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
-// FanOutPublisher 扇出分批消息生产者 抽象便于替换与测试
+// FanOutPublisher 扇出分批消息生产者
 type FanOutPublisher interface {
 	PublishBatch(ctx context.Context, batch *event.FanOutBatch) error
 }
 
 type Publisher struct {
-	redis     *redis.Redis
-	followRpc followservice.FollowService
-	producer  FanOutPublisher
+	redis      *redis.Redis
+	followRpc  followservice.FollowService
+	bigv       *bigv.Set
+	publishBox *publishbox.Box
+	producer   FanOutPublisher
 }
 
-func NewPublisher(rds *redis.Redis, followRpc followservice.FollowService, producer FanOutPublisher) *Publisher {
+func NewPublisher(
+	rds *redis.Redis,
+	followRpc followservice.FollowService,
+	bigvSet *bigv.Set,
+	publishBox *publishbox.Box,
+	producer FanOutPublisher,
+) *Publisher {
 	return &Publisher{
-		redis:     rds,
-		followRpc: followRpc,
-		producer:  producer,
+		redis:      rds,
+		followRpc:  followRpc,
+		bigv:       bigvSet,
+		publishBox: publishBox,
+		producer:   producer,
 	}
 }
 
 // Publish 内容进入 feed 时的副作用汇总 由 feed 消费者消费发布事件触发
-// 写作者 publish zset + 登记热榜脏集合 + 投递分批扇出消息
+// 写作者发件箱 加 登记热榜脏集合 加 投递分批扇出消息
 // 消费者已在后台 同步执行并返回错误 失败由 kafka 重投重放(内部均幂等)
 func (p *Publisher) Publish(ctx context.Context, contentID, authorID, publishedAtMillis int64, visibility contentEnum.VisibilityEnum) error {
 	// 发件箱只装公开内容 与扇出 热榜种子 大 V merge 口径一致 私密内容不进任何 feed
 	if visibility != contentEnum.VisibilityPublic {
 		return nil
 	}
-	feedKey := rediskey.BuildUserPublishFeedKey(authorID)
-	if err := p.writeUserPublishZSet(ctx, feedKey, contentID, publishedAtMillis); err != nil {
+	if err := p.publishBox.Write(ctx, authorID, contentID, publishedAtMillis); err != nil {
 		return err
 	}
 	if err := p.writePublishHotSeed(ctx, contentID); err != nil {
 		return err
 	}
-	return p.fanOutToFollowers(ctx, authorID, contentID, publishedAtMillis, visibility)
-}
-
-// IsBigVAuthor 命中全局大 V 集合即算大 V 查询失败时保守当成非大 V backfill purge fanout 共用
-func (p *Publisher) IsBigVAuthor(ctx context.Context, authorID int64) (bool, error) {
-	return p.redis.SismemberCtx(ctx, sharedkey.FeedBigVGlobal, strconv.FormatInt(authorID, 10))
-}
-
-// writeUserPublishZSet 写单条内容到作者 publish zset score=published_at
-// publish zset 承载作者全量发布历史 不按时间裁剪 cutoff=0 仅 keepN 与 TTL 控量
-func (p *Publisher) writeUserPublishZSet(ctx context.Context, feedKey string, contentID, publishedAtMillis int64) error {
-	args := followwindow.WriteArgs(contentconsts.TimelineKeepN, 0, followwindow.TTLSeconds(), publishedAtMillis, contentID)
-	_, err := p.redis.EvalCtx(ctx, redislock.UpdateUserPublishZSetScript, []string{feedKey}, args...)
-	return err
+	return p.fanOutToFollowers(ctx, authorID, contentID, publishedAtMillis)
 }
 
 // writePublishHotSeed 发布即登记脏 把新内容放进热榜脏集合 让下一轮增量算分
@@ -75,22 +71,18 @@ func (p *Publisher) writePublishHotSeed(ctx context.Context, contentID int64) er
 		return nil
 	}
 	shard := int(contentID % consts.HotDirtyShards)
-	dirtyKey := sharedkey.HotFeedDirty(shard)
-	_, err := p.redis.SaddCtx(ctx, dirtyKey, strconv.FormatInt(contentID, 10))
+	_, err := p.redis.SaddCtx(ctx, sharedkey.HotFeedDirty(shard), strconv.FormatInt(contentID, 10))
 	return err
 }
 
 // fanOutToFollowers 按粉丝游标分页 每页投一条扇出消息 由独立消费者逐批写收件箱
 // 大 V 跳过由读路径 merge 大 V 判定失败宁可报错重试 误判成非大 V 会造成扩散风暴
-func (p *Publisher) fanOutToFollowers(ctx context.Context, authorID, contentID, publishedAtMillis int64, visibility contentEnum.VisibilityEnum) error {
-	if visibility != contentEnum.VisibilityPublic {
-		return nil
-	}
+func (p *Publisher) fanOutToFollowers(ctx context.Context, authorID, contentID, publishedAtMillis int64) error {
 	if authorID <= 0 || contentID <= 0 {
 		return nil
 	}
 
-	isBig, err := p.IsBigVAuthor(ctx, authorID)
+	isBig, err := p.bigv.IsBigV(ctx, authorID)
 	if err != nil {
 		return err
 	}
@@ -99,7 +91,6 @@ func (p *Publisher) fanOutToFollowers(ctx context.Context, authorID, contentID, 
 	}
 
 	batchSize := contentconsts.FollowFanOutBatchSize
-
 	cursor := int64(0)
 	total := 0
 	for {

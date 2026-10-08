@@ -5,11 +5,14 @@ import (
 	"sync"
 	"testing"
 
-	"ran-feed/app/rpc/content/internal/common/component/followwindow"
+	"ran-feed/app/rpc/content/internal/common/component/bigv"
+	"ran-feed/app/rpc/content/internal/common/component/publishbox"
+	contentconsts "ran-feed/app/rpc/content/internal/common/consts"
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/mq/event"
 	"ran-feed/app/rpc/interaction/client/followservice"
+	"ran-feed/pkg/cache"
 	"ran-feed/pkg/consts"
 	sharedkey "ran-feed/pkg/rediskey"
 
@@ -73,7 +76,8 @@ func newTestPublisher(t *testing.T, followRpc followservice.FollowService, produ
 	t.Cleanup(mr.Close)
 
 	r := redis.MustNewRedis(redis.RedisConf{Host: mr.Addr(), Type: redis.NodeType})
-	return mr, r, NewPublisher(r, followRpc, producer)
+	box := publishbox.New(r, cache.NewDistLocker(r), nil)
+	return mr, r, NewPublisher(r, followRpc, bigv.New(r), box, producer)
 }
 
 // TestPublish_NonPublicSkipsFeedWrites 私密与未指定可见性都不应写任何 feed 结构 也不投扇出
@@ -90,7 +94,7 @@ func TestPublish_NonPublicSkipsFeedWrites(t *testing.T) {
 			producer := &mockFanOutProducer{}
 			mr, _, p := newTestPublisher(t, &mockFollowService{}, producer)
 
-			err := p.Publish(context.Background(), 1001, 2002, followwindow.NowMillis(), tt.vis)
+			err := p.Publish(context.Background(), 1001, 2002, contentconsts.NowMillis(), tt.vis)
 			require.NoError(t, err)
 			assert.Empty(t, mr.Keys(), "非公开内容不应写任何 feed 结构")
 			assert.Empty(t, producer.sent(), "非公开内容不应投递扇出")
@@ -105,7 +109,7 @@ func TestPublish_PublicWritesBoxAndHotSeed(t *testing.T) {
 	ctx := context.Background()
 
 	const contentID, authorID = 1001, 2002
-	require.NoError(t, p.Publish(ctx, contentID, authorID, followwindow.NowMillis(), contentEnum.VisibilityPublic))
+	require.NoError(t, p.Publish(ctx, contentID, authorID, contentconsts.NowMillis(), contentEnum.VisibilityPublic))
 
 	members, err := r.ZrangeCtx(ctx, rediskey.BuildUserPublishFeedKey(authorID), 0, -1)
 	require.NoError(t, err)
@@ -128,7 +132,7 @@ func TestPublish_PublicPublishesFanOutBatch(t *testing.T) {
 	follow := &mockFollowService{followers: []int64{11, 22}}
 	mr, _, p := newTestPublisher(t, follow, producer)
 
-	require.NoError(t, p.Publish(context.Background(), 1001, 2002, followwindow.NowMillis(), contentEnum.VisibilityPublic))
+	require.NoError(t, p.Publish(context.Background(), 1001, 2002, contentconsts.NowMillis(), contentEnum.VisibilityPublic))
 
 	batches := producer.sent()
 	require.Len(t, batches, 1)

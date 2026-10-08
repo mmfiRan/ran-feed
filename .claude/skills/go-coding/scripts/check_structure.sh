@@ -10,6 +10,8 @@ cd "$REPO_ROOT"
 # 全仓规则（下面 1~7 条）各域都已达标，不分域。
 STRUCT_SCOPES="app/rpc/content"
 
+OWNERSHIP_SCOPES="app/rpc/content"
+
 VIOLATIONS=0
 
 # 打印一条违规 参数：说明、命中行
@@ -103,9 +105,35 @@ for svc in $STRUCT_SCOPES; do
   fi
 done
 
+# ── 状态所有权规则 ──────────────────────────────────────────────
+for svc in $OWNERSHIP_SCOPES; do
+  # 8 Logic 与 Consumer 不许操作 Redis 状态由 owner 组件读写
+  #   cron 不在扫描范围 任务级分布式锁属 Job 是规范允许的 由人工核
+  hit=$(grep -rln --include='*.go' 'go-zero/core/stores/redis' \
+    "${svc}/internal/logic" "${svc}/internal/mq/consumer" 2>/dev/null | grep -v '_test.go' || true)
+  if [ -n "$hit" ]; then
+    report "${svc} 在 Logic 或 Consumer 里操作 Redis（状态应由 owner 组件读写）：" "$hit"
+  fi
+
+  # 9 component 子包必须有构造函数 没有就不是组件
+  for dir in "${svc}"/internal/common/component/*/; do
+    [ -d "$dir" ] || continue
+    if ! grep -qs '^func New' "$dir"*.go; then
+      report "${svc} 的 component 子包没有构造函数（它不是组件 应归 consts 或 convert）：" "$dir"
+    fi
+  done
+
+  # 10 Consumer 与 Cron 不存 ctx 或 Logger 字段 存了等于复用启动期 ctx
+  hit=$(grep -rn --include='*.go' -E '^[[:space:]]+(logx\.Logger|ctx[[:space:]]+context\.Context)$' \
+    "${svc}/internal/mq/consumer" "${svc}/internal/cron" 2>/dev/null | grep -v '_test.go' || true)
+  if [ -n "$hit" ]; then
+    report "${svc} 的 Consumer 或 Cron 保存了 ctx 或 Logger 字段：" "$hit"
+  fi
+done
+
 # ── 结论 ────────────────────────────────────────────────────────
 if [ "$VIOLATIONS" -eq 0 ]; then
-  echo "    结构静态检查通过 ✓（全仓规则 + 按域：${STRUCT_SCOPES}）"
+  echo "    结构静态检查通过 ✓（全仓规则 + 按域：${STRUCT_SCOPES} + 所有权：${OWNERSHIP_SCOPES:-无})"
   exit 0
 fi
 
