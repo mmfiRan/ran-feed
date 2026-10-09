@@ -6,7 +6,6 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/common/convert"
-	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
 	"ran-feed/pkg/oss"
@@ -30,8 +29,14 @@ func NewUploadsLogic(ctx context.Context, svcCtx *svc.ServiceContext) *UploadsLo
 }
 
 func (l *UploadsLogic) Uploads(in *content.ContentUploadsCredentialsReq) (*content.ContentUploadsCredentialsRes, error) {
-	scene := contentEnum.UploadSceneEnum(in.Scene)
-	fileExt := contentEnum.FileExtEnum(in.FileExt)
+	scene, ok := convert.UploadSceneFromPB(in.Scene)
+	if !ok {
+		return nil, errorx.NewMsg("上传场景取值非法")
+	}
+	fileExt, ok := convert.FileExtFromPB(in.FileExt)
+	if !ok {
+		return nil, errorx.NewMsg("文件扩展名取值非法")
+	}
 
 	req := &oss.Request{
 		UserID:      in.UserId,

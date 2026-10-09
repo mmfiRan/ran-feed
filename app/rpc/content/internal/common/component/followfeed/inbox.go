@@ -122,8 +122,8 @@ func (f *Feed) rebuildInbox(ctx context.Context, inboxKey string, viewerID int64
 
 	rows, err := f.contentRepo.ListFollowByAuthorsCursor(
 		bgCtx,
-		contentEnum.ContentStatusPublished.Int32(),
-		contentEnum.VisibilityPublic.Int32(),
+		contentEnum.ContentStatusPublished,
+		contentEnum.VisibilityPublic,
 		small, 0, int(contentconsts.TimelineKeepN),
 	)
 	if err != nil {

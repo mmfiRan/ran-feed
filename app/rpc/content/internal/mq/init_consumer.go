@@ -11,7 +11,7 @@ import (
 	"github.com/zeromicro/go-zero/core/service"
 )
 
-func Consumers(c config.Config, ctx context.Context, svcContext *svc.ServiceContext) []service.Service {
+func Consumers(ctx context.Context, c config.Config, svcContext *svc.ServiceContext) []service.Service {
 	consumers := make([]service.Service, 0)
 	if c.KqConsumerConf.Topic != "" {
 		consumers = append(consumers, kq.MustNewQueue(c.KqConsumerConf, consumer.NewContentEventConsumer(svcContext)))

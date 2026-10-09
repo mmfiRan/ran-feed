@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -37,23 +38,23 @@ func (l *SubmitContentLogic) SubmitContent(in *content.SubmitContentReq) (*conte
 	if row == nil {
 		return nil, errorx.NewMsg("内容不存在或无权限")
 	}
-	if !isEditableStatus(row.Status) {
+	if !isEditableStatus(contentEnum.ContentStatusEnum(row.Status)) {
 		return nil, errorx.NewMsg("该内容当前状态不可提交")
 	}
 
 	// 发布前完整性校验 草稿放宽 提交才强制
-	if err := l.checkComplete(in.ContentId, content.ContentType(row.ContentType)); err != nil {
+	if err := l.checkComplete(in.ContentId, contentEnum.ContentTypeEnum(row.ContentType)); err != nil {
 		return nil, err
 	}
 
 	affected, err := l.contentRepository.SubmitOwned(l.ctx,
 		in.ContentId,
 		in.UserId,
-		[]int32{
-			int32(content.ContentStatus_CONTENT_STATUS_DRAFT),
-			int32(content.ContentStatus_CONTENT_STATUS_REJECTED),
+		[]contentEnum.ContentStatusEnum{
+			contentEnum.ContentStatusDraft,
+			contentEnum.ContentStatusRejected,
 		},
-		int32(content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW),
+		contentEnum.ContentStatusPendingReview,
 		in.UserId,
 	)
 	if err != nil {
@@ -66,9 +67,9 @@ func (l *SubmitContentLogic) SubmitContent(in *content.SubmitContentReq) (*conte
 	return &content.SubmitContentRes{ContentId: in.ContentId}, nil
 }
 
-func (l *SubmitContentLogic) checkComplete(contentID int64, contentType content.ContentType) error {
+func (l *SubmitContentLogic) checkComplete(contentID int64, contentType contentEnum.ContentTypeEnum) error {
 	switch contentType {
-	case content.ContentType_CONTENT_TYPE_ARTICLE:
+	case contentEnum.ContentTypeArticle:
 		article, err := l.articleRepository.GetByContentID(l.ctx, contentID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("提交失败"))
@@ -77,7 +78,7 @@ func (l *SubmitContentLogic) checkComplete(contentID int64, contentType content.
 			return errorx.NewMsg("标题 封面 正文不能为空")
 		}
 		return nil
-	case content.ContentType_CONTENT_TYPE_VIDEO:
+	case contentEnum.ContentTypeVideo:
 		video, err := l.videoRepository.GetByContentID(l.ctx, contentID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("提交失败"))

@@ -5,6 +5,7 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/common/convert"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -116,8 +117,8 @@ func (l *AdminGetContentDetailLogic) AdminGetContentDetail(in *content.AdminGetC
 
 // fillContentFields 填充内容详情字段
 func (l *AdminGetContentDetailLogic) fillContentFields(detail *content.AdminContentDetail, row *model.RanFeedContent) error {
-	switch content.ContentType(row.ContentType) {
-	case content.ContentType_CONTENT_TYPE_ARTICLE:
+	switch contentEnum.ContentTypeEnum(row.ContentType) {
+	case contentEnum.ContentTypeArticle:
 		articleRow, err := l.articleRepo.GetByContentID(l.ctx, row.ID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
@@ -132,7 +133,7 @@ func (l *AdminGetContentDetailLogic) fillContentFields(detail *content.AdminCont
 		detail.CoverUrl = articleRow.Cover
 		detail.ArticleContent = articleRow.Content
 		return nil
-	case content.ContentType_CONTENT_TYPE_VIDEO:
+	case contentEnum.ContentTypeVideo:
 		videoRow, err := l.videoRepo.GetByContentID(l.ctx, row.ID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))

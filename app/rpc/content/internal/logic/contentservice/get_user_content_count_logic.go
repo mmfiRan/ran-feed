@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
 	"ran-feed/pkg/errorx"
@@ -33,10 +34,8 @@ func (l *GetUserContentCountLogic) GetUserContentCount(in *content.GetUserConten
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	status := int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)
-	visibility := int32(content.Visibility_VISIBILITY_PUBLIC)
-
-	cnt, err := l.contentRepo.CountByAuthor(l.ctx, status, visibility, in.UserId)
+	cnt, err := l.contentRepo.CountByAuthor(l.ctx,
+		contentEnum.ContentStatusPublished, contentEnum.VisibilityPublic, in.UserId)
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询作品数失败"))
 	}

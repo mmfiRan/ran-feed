@@ -105,21 +105,21 @@ func (r *Repository) GetHotScoreByID(ctx context.Context, contentID int64) (floa
 	return row.HotScore, nil
 }
 
-func (r *Repository) CountByAuthor(ctx context.Context, status int32, visibility int32, authorID int64) (int64, error) {
+func (r *Repository) CountByAuthor(ctx context.Context, status contentEnum.ContentStatusEnum, visibility contentEnum.VisibilityEnum, authorID int64) (int64, error) {
 	if authorID <= 0 {
 		return 0, nil
 	}
 	q := r.getQuery()
 	return q.RanFeedContent.WithContext(ctx).
 		Where(q.RanFeedContent.UserID.Eq(authorID)).
-		Where(q.RanFeedContent.Status.Eq(status)).
-		Where(q.RanFeedContent.Visibility.Eq(visibility)).
+		Where(q.RanFeedContent.Status.Eq(status.Int32())).
+		Where(q.RanFeedContent.Visibility.Eq(visibility.Int32())).
 		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
 		Count()
 }
 
-func (r *Repository) ListRecommendByHotScoreCursor(ctx context.Context, status int32, visibility int32, cursorScore float64, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
+func (r *Repository) ListRecommendByHotScoreCursor(ctx context.Context, status contentEnum.ContentStatusEnum, visibility contentEnum.VisibilityEnum, cursorScore float64, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
 	if limit <= 0 {
 		return nil, nil
 	}
@@ -127,8 +127,8 @@ func (r *Repository) ListRecommendByHotScoreCursor(ctx context.Context, status i
 	q := r.getQuery()
 	doQuery := q.RanFeedContent.WithContext(ctx).
 		Select(q.RanFeedContent.ID, q.RanFeedContent.ContentType, q.RanFeedContent.UserID, q.RanFeedContent.PublishedAt, q.RanFeedContent.HotScore).
-		Where(q.RanFeedContent.Status.Eq(status)).
-		Where(q.RanFeedContent.Visibility.Eq(visibility)).
+		Where(q.RanFeedContent.Status.Eq(status.Int32())).
+		Where(q.RanFeedContent.Visibility.Eq(visibility.Int32())).
 		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull())
 
@@ -150,7 +150,7 @@ func (r *Repository) ListRecommendByHotScoreCursor(ctx context.Context, status i
 	return rows, nil
 }
 
-func (r *Repository) ListFollowByAuthorsCursor(ctx context.Context, status int32, visibility int32, authorIDs []int64, cursorMillis int64, limit int) ([]*model.RanFeedContent, error) {
+func (r *Repository) ListFollowByAuthorsCursor(ctx context.Context, status contentEnum.ContentStatusEnum, visibility contentEnum.VisibilityEnum, authorIDs []int64, cursorMillis int64, limit int) ([]*model.RanFeedContent, error) {
 	if limit <= 0 {
 		return nil, nil
 	}
@@ -161,8 +161,8 @@ func (r *Repository) ListFollowByAuthorsCursor(ctx context.Context, status int32
 	q := r.getQuery()
 	doQuery := q.RanFeedContent.WithContext(ctx).
 		Select(q.RanFeedContent.ID, q.RanFeedContent.ContentType, q.RanFeedContent.UserID, q.RanFeedContent.PublishedAt).
-		Where(q.RanFeedContent.Status.Eq(status)).
-		Where(q.RanFeedContent.Visibility.Eq(visibility)).
+		Where(q.RanFeedContent.Status.Eq(status.Int32())).
+		Where(q.RanFeedContent.Visibility.Eq(visibility.Int32())).
 		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
 		Where(q.RanFeedContent.UserID.In(authorIDs...))
@@ -205,7 +205,7 @@ func (r *Repository) ListPublishedByAuthorWithinWindow(ctx context.Context, auth
 		Find()
 }
 
-func (r *Repository) ListColdUpdateContents(ctx context.Context, status int32, visibility int32, start time.Time, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
+func (r *Repository) ListColdUpdateContents(ctx context.Context, status contentEnum.ContentStatusEnum, visibility contentEnum.VisibilityEnum, start time.Time, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
 	if limit <= 0 {
 		return nil, nil
 	}
@@ -217,8 +217,8 @@ func (r *Repository) ListColdUpdateContents(ctx context.Context, status int32, v
 			q.RanFeedContent.ID,
 			q.RanFeedContent.PublishedAt,
 		).
-		Where(q.RanFeedContent.Status.Eq(status)).
-		Where(q.RanFeedContent.Visibility.Eq(visibility)).
+		Where(q.RanFeedContent.Status.Eq(status.Int32())).
+		Where(q.RanFeedContent.Visibility.Eq(visibility.Int32())).
 		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
 		Where(q.RanFeedContent.PublishedAt.Gte(start))
@@ -278,7 +278,7 @@ func (r *Repository) GetOwnedByID(ctx context.Context, contentID, userID int64) 
 	return row, nil
 }
 
-func (r *Repository) MyContentPage(ctx context.Context, userID int64, status *int32, contentType *int32, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
+func (r *Repository) MyContentPage(ctx context.Context, userID int64, status *contentEnum.ContentStatusEnum, contentType *contentEnum.ContentTypeEnum, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
 	if userID <= 0 || limit <= 0 {
 		return nil, nil
 	}
@@ -295,10 +295,10 @@ func (r *Repository) MyContentPage(ctx context.Context, userID int64, status *in
 		Where(q.RanFeedContent.UserID.Eq(userID)).
 		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32()))
 	if status != nil {
-		stmt = stmt.Where(q.RanFeedContent.Status.Eq(*status))
+		stmt = stmt.Where(q.RanFeedContent.Status.Eq(status.Int32()))
 	}
 	if contentType != nil {
-		stmt = stmt.Where(q.RanFeedContent.ContentType.Eq(*contentType))
+		stmt = stmt.Where(q.RanFeedContent.ContentType.Eq(contentType.Int32()))
 	}
 	if cursorID > 0 {
 		stmt = stmt.Where(q.RanFeedContent.ID.Lt(cursorID))
@@ -329,17 +329,17 @@ func (r *Repository) AdminGetByID(ctx context.Context, contentID int64) (*model.
 	return row, nil
 }
 
-func (r *Repository) AdminPageContents(ctx context.Context, status *int32, contentType *int32, authorID *int64, offset, limit int) ([]*model.RanFeedContent, int64, error) {
+func (r *Repository) AdminPageContents(ctx context.Context, status *contentEnum.ContentStatusEnum, contentType *contentEnum.ContentTypeEnum, authorID *int64, offset, limit int) ([]*model.RanFeedContent, int64, error) {
 	if limit <= 0 {
 		return []*model.RanFeedContent{}, 0, nil
 	}
 	q := r.getQuery()
 	stmt := q.RanFeedContent.WithContext(ctx).Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32()))
 	if status != nil {
-		stmt = stmt.Where(q.RanFeedContent.Status.Eq(*status))
+		stmt = stmt.Where(q.RanFeedContent.Status.Eq(status.Int32()))
 	}
 	if contentType != nil {
-		stmt = stmt.Where(q.RanFeedContent.ContentType.Eq(*contentType))
+		stmt = stmt.Where(q.RanFeedContent.ContentType.Eq(contentType.Int32()))
 	}
 	if authorID != nil {
 		stmt = stmt.Where(q.RanFeedContent.UserID.Eq(*authorID))
@@ -371,15 +371,15 @@ func (r *Repository) DeleteByID(ctx context.Context, contentID int64) error {
 	return err
 }
 
-func (r *Repository) AdminUpdateStatus(ctx context.Context, contentID int64, fromStatus, toStatus int32, operatorID int64) (int64, error) {
+func (r *Repository) AdminUpdateStatus(ctx context.Context, contentID int64, fromStatus, toStatus contentEnum.ContentStatusEnum, operatorID int64) (int64, error) {
 
 	q := r.getQuery()
 	info, err := q.RanFeedContent.WithContext(ctx).
 		Where(q.RanFeedContent.ID.Eq(contentID)).
 		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
-		Where(q.RanFeedContent.Status.Eq(fromStatus)).
+		Where(q.RanFeedContent.Status.Eq(fromStatus.Int32())).
 		UpdateSimple(
-			q.RanFeedContent.Status.Value(toStatus),
+			q.RanFeedContent.Status.Value(toStatus.Int32()),
 			q.RanFeedContent.UpdatedBy.Value(operatorID),
 		)
 	if err != nil {
@@ -409,7 +409,7 @@ func (r *Repository) AdminApproveContent(ctx context.Context, contentID, operato
 	return info.RowsAffected, nil
 }
 
-func (r *Repository) UpdateDraftMeta(ctx context.Context, contentID int64, visibility int32, updatedBy int64) error {
+func (r *Repository) UpdateDraftMeta(ctx context.Context, contentID int64, visibility contentEnum.VisibilityEnum, updatedBy int64) error {
 	if contentID <= 0 {
 		return nil
 	}
@@ -419,24 +419,28 @@ func (r *Repository) UpdateDraftMeta(ctx context.Context, contentID int64, visib
 		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		UpdateSimple(
 			q.RanFeedContent.Status.Value(contentEnum.ContentStatusDraft.Int32()),
-			q.RanFeedContent.Visibility.Value(visibility),
+			q.RanFeedContent.Visibility.Value(visibility.Int32()),
 			q.RanFeedContent.UpdatedBy.Value(updatedBy),
 		)
 	return err
 }
 
-func (r *Repository) SubmitOwned(ctx context.Context, contentID, userID int64, fromStatuses []int32, toStatus int32, updatedBy int64) (int64, error) {
+func (r *Repository) SubmitOwned(ctx context.Context, contentID, userID int64, fromStatuses []contentEnum.ContentStatusEnum, toStatus contentEnum.ContentStatusEnum, updatedBy int64) (int64, error) {
 	if contentID <= 0 || userID <= 0 || len(fromStatuses) == 0 {
 		return 0, nil
+	}
+	fromValues := make([]int32, 0, len(fromStatuses))
+	for _, s := range fromStatuses {
+		fromValues = append(fromValues, s.Int32())
 	}
 	q := r.getQuery()
 	info, err := q.RanFeedContent.WithContext(ctx).
 		Where(q.RanFeedContent.ID.Eq(contentID)).
 		Where(q.RanFeedContent.UserID.Eq(userID)).
 		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
-		Where(q.RanFeedContent.Status.In(fromStatuses...)).
+		Where(q.RanFeedContent.Status.In(fromValues...)).
 		UpdateSimple(
-			q.RanFeedContent.Status.Value(toStatus),
+			q.RanFeedContent.Status.Value(toStatus.Int32()),
 			q.RanFeedContent.UpdatedBy.Value(updatedBy),
 		)
 	if err != nil {
@@ -445,7 +449,7 @@ func (r *Repository) SubmitOwned(ctx context.Context, contentID, userID int64, f
 	return info.RowsAffected, nil
 }
 
-func (r *Repository) BatchGetRecommendByIDs(ctx context.Context, status int32, visibility int32, contentIDs []int64) (map[int64]*model.RanFeedContent, error) {
+func (r *Repository) BatchGetRecommendByIDs(ctx context.Context, status contentEnum.ContentStatusEnum, visibility contentEnum.VisibilityEnum, contentIDs []int64) (map[int64]*model.RanFeedContent, error) {
 	if len(contentIDs) == 0 {
 		return map[int64]*model.RanFeedContent{}, nil
 	}
@@ -454,8 +458,8 @@ func (r *Repository) BatchGetRecommendByIDs(ctx context.Context, status int32, v
 	rows, err := q.RanFeedContent.WithContext(ctx).
 		Select(q.RanFeedContent.ID, q.RanFeedContent.ContentType, q.RanFeedContent.UserID, q.RanFeedContent.PublishedAt).
 		Where(q.RanFeedContent.ID.In(contentIDs...)).
-		Where(q.RanFeedContent.Status.Eq(status)).
-		Where(q.RanFeedContent.Visibility.Eq(visibility)).
+		Where(q.RanFeedContent.Status.Eq(status.Int32())).
+		Where(q.RanFeedContent.Visibility.Eq(visibility.Int32())).
 		Where(q.RanFeedContent.IsDeleted.Eq(enums.NotDeleted.Int32())).
 		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
 		Find()

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -34,7 +35,7 @@ func (l *PublishArticleLogic) PublishArticle(in *content.ArticlePublishReq) (*co
 	if err := validateArticlePublish(in.Title, in.Cover, in.Content); err != nil {
 		return nil, err
 	}
-	visibility, err := resolveWriteVisibility(writeModePublish, in.Visibility, 0)
+	visibility, err := resolveWriteVisibility(writeModePublish, in.Visibility, contentEnum.VisibilityUnknown)
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +45,8 @@ func (l *PublishArticleLogic) PublishArticle(in *content.ArticlePublishReq) (*co
 		contentRepo := l.contentRepository.WithTx(tx)
 		articleRepo := l.articleRepository.WithTx(tx)
 
-		contentModel := buildContentModel(in.UserId, content.ContentType_CONTENT_TYPE_ARTICLE,
-			content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW, visibility)
+		contentModel := buildContentModel(in.UserId, contentEnum.ContentTypeArticle,
+			contentEnum.ContentStatusPendingReview, visibility)
 		contentId = contentModel.ID
 		if err := contentRepo.CreateContent(l.ctx, contentModel); err != nil {
 			return err

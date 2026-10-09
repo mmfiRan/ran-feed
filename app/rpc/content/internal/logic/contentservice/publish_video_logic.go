@@ -35,7 +35,7 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 	if err := validateVideoPublish(in.Title, in.CoverUrl, in.VideoUrl); err != nil {
 		return nil, err
 	}
-	visibility, err := resolveWriteVisibility(writeModePublish, in.Visibility, 0)
+	visibility, err := resolveWriteVisibility(writeModePublish, in.Visibility, contentEnum.VisibilityUnknown)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +45,8 @@ func (l *PublishVideoLogic) PublishVideo(in *content.VideoPublishReq) (*content.
 		contentRepo := l.contentRepository.WithTx(tx)
 		videoRepo := l.videoRepository.WithTx(tx)
 
-		contentModel := buildContentModel(in.UserId, content.ContentType_CONTENT_TYPE_VIDEO,
-			content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW, visibility)
+		contentModel := buildContentModel(in.UserId, contentEnum.ContentTypeVideo,
+			contentEnum.ContentStatusPendingReview, visibility)
 		contentId = contentModel.ID
 		if err := contentRepo.CreateContent(l.ctx, contentModel); err != nil {
 			return err

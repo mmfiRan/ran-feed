@@ -5,6 +5,7 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/common/convert"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -43,9 +44,17 @@ func NewAdminListContentsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 
 func (l *AdminListContentsLogic) AdminListContents(in *content.AdminListContentsReq) (*content.AdminListContentsRes, error) {
 	offset, limit := pkgutils.NormalizePage(in.GetPage(), in.GetPageSize())
+	status, ok := convert.ContentStatusPtrFromPB(in.Status)
+	if !ok {
+		return nil, errorx.NewMsg("状态取值非法")
+	}
+	contentType, ok := convert.ContentTypePtrFromPB(in.ContentType)
+	if !ok {
+		return nil, errorx.NewMsg("内容类型取值非法")
+	}
 	rows, total, err := l.contentRepo.AdminPageContents(l.ctx,
-		pkgutils.CastPtr[int32](in.Status),
-		pkgutils.CastPtr[int32](in.ContentType),
+		status,
+		contentType,
 		in.AuthorId,
 		offset, limit,
 	)
@@ -157,10 +166,10 @@ func (l *AdminListContentsLogic) loadTitles(rows []*model.RanFeedContent) (map[i
 	articleIDs := make([]int64, 0, len(rows))
 	videoIDs := make([]int64, 0, len(rows))
 	for _, row := range rows {
-		switch content.ContentType(row.ContentType) {
-		case content.ContentType_CONTENT_TYPE_ARTICLE:
+		switch contentEnum.ContentTypeEnum(row.ContentType) {
+		case contentEnum.ContentTypeArticle:
 			articleIDs = append(articleIDs, row.ID)
-		case content.ContentType_CONTENT_TYPE_VIDEO:
+		case contentEnum.ContentTypeVideo:
 			videoIDs = append(videoIDs, row.ID)
 		}
 	}

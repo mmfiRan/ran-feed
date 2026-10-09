@@ -112,8 +112,8 @@ func (l *RecommendFeedLogic) pageFromDB(cursor string, pageSize int) (hotfeed.Pa
 	}
 
 	rows, err := l.contentRepo.ListRecommendByHotScoreCursor(l.ctx,
-		contentEnum.ContentStatusPublished.Int32(),
-		contentEnum.VisibilityPublic.Int32(),
+		contentEnum.ContentStatusPublished,
+		contentEnum.VisibilityPublic,
 		cursorScore,
 		cursorID,
 		pageSize+1,

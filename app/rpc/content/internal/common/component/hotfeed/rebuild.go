@@ -21,8 +21,8 @@ func (f *Feed) rebuildFromDB(ctx context.Context, calculator hotrank.AdditiveTim
 			return err
 		}
 		rows, err := f.contentRepo.ListColdUpdateContents(ctx,
-			contentEnum.ContentStatusPublished.Int32(),
-			contentEnum.VisibilityPublic.Int32(),
+			contentEnum.ContentStatusPublished,
+			contentEnum.VisibilityPublic,
 			startTime,
 			cursorID,
 			opts.PageSize,

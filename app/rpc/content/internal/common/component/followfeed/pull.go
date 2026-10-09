@@ -93,8 +93,8 @@ func (f *Feed) fromSource(ctx context.Context, viewerID int64) Sources {
 	}
 
 	rows, err := f.contentRepo.ListFollowByAuthorsCursor(ctx,
-		contentEnum.ContentStatusPublished.Int32(),
-		contentEnum.VisibilityPublic.Int32(),
+		contentEnum.ContentStatusPublished,
+		contentEnum.VisibilityPublic,
 		small, 0, int(contentconsts.TimelineKeepN),
 	)
 	if err != nil {

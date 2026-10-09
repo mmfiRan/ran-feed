@@ -3,8 +3,8 @@ package contentresolver
 import (
 	"context"
 
-	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/common/component/contentcache"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/interaction/client/likeservice"
 	"ran-feed/app/rpc/interaction/interaction"
@@ -89,7 +89,7 @@ func (r *Resolver) resolveDetails(ctx context.Context, ids []int64, publicOnly b
 		if !ok || d == nil {
 			continue
 		}
-		if publicOnly && d.Visibility != int32(content.Visibility_VISIBILITY_PUBLIC) {
+		if publicOnly && d.Visibility != contentEnum.VisibilityPublic.Int32() {
 			continue
 		}
 		details = append(details, d)
@@ -110,10 +110,10 @@ func (r *Resolver) loadDetails(ctx context.Context, missIDs []int64) (map[int64]
 	articleIDs := make([]int64, 0)
 	videoIDs := make([]int64, 0)
 	for _, row := range contentMap {
-		switch content.ContentType(row.ContentType) {
-		case content.ContentType_CONTENT_TYPE_ARTICLE:
+		switch contentEnum.ContentTypeEnum(row.ContentType) {
+		case contentEnum.ContentTypeArticle:
 			articleIDs = append(articleIDs, row.ID)
-		case content.ContentType_CONTENT_TYPE_VIDEO:
+		case contentEnum.ContentTypeVideo:
 			videoIDs = append(videoIDs, row.ID)
 		}
 	}
@@ -131,13 +131,13 @@ func (r *Resolver) loadDetails(ctx context.Context, missIDs []int64) (map[int64]
 	for id, row := range contentMap {
 		title := ""
 		coverURL := ""
-		switch content.ContentType(row.ContentType) {
-		case content.ContentType_CONTENT_TYPE_ARTICLE:
+		switch contentEnum.ContentTypeEnum(row.ContentType) {
+		case contentEnum.ContentTypeArticle:
 			if a, ok := articleMap[row.ID]; ok && a != nil {
 				title = a.Title
 				coverURL = a.Cover
 			}
-		case content.ContentType_CONTENT_TYPE_VIDEO:
+		case contentEnum.ContentTypeVideo:
 			if v, ok := videoMap[row.ID]; ok && v != nil {
 				title = v.Title
 				coverURL = v.CoverURL
@@ -171,13 +171,13 @@ func (r *Resolver) loadAuthorsAndLikes(ctx context.Context, details []*contentca
 			authorSeen[d.AuthorID] = struct{}{}
 			authorIDs = append(authorIDs, d.AuthorID)
 		}
-		switch content.ContentType(d.ContentType) {
-		case content.ContentType_CONTENT_TYPE_ARTICLE:
+		switch contentEnum.ContentTypeEnum(d.ContentType) {
+		case contentEnum.ContentTypeArticle:
 			likeInfos = append(likeInfos, &likeservice.LikeInfo{
 				ContentId: d.ContentID,
 				Scene:     interaction.Scene_SCENE_ARTICLE,
 			})
-		case content.ContentType_CONTENT_TYPE_VIDEO:
+		case contentEnum.ContentTypeVideo:
 			likeInfos = append(likeInfos, &likeservice.LikeInfo{
 				ContentId: d.ContentID,
 				Scene:     interaction.Scene_SCENE_VIDEO,

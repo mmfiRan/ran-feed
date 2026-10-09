@@ -151,8 +151,8 @@ l.Errorf("RebuildHotSnapshotScript EvalCtx 执行异常, 详见: %+v", err)
 
 DB 枚举字段的创建与使用见 [references/enum.md](references/enum.md)，核心两条：
 
-- DB 持久化字段不自造字面量（含查询里的 `IsDeleted.Eq(0)` 这类裸值），复用业务枚举或 pb 枚举；
-  从 DB 行转枚举用 `content.ContentStatus(row.Status)`，需拦非法值用 `Parse` 校验 `Valid`
+- DB 持久化字段不自造字面量（含查询里的 `IsDeleted.Eq(0)` 这类裸值），复用业务枚举；
+  从 DB 行转枚举用该域业务枚举（`contentEnum.ContentStatus(row.Status)`），需拦非法值用 `enums.Parse` 校验 `Valid`
 - **pb 枚举只允许出现在 RPC 边界**（server / logic 入参转换与响应组装）；repository / do / cron /
   mq consumer 与领域组件一律用业务枚举，取值一致性由各域 `enum_consistency_test.go` 兜底
 

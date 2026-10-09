@@ -48,7 +48,7 @@ func (l *SaveVideoDraftLogic) SaveVideoDraft(in *content.SaveVideoDraftReq) (*co
 }
 
 func (l *SaveVideoDraftLogic) createDraft(in *content.SaveVideoDraftReq) (int64, error) {
-	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, int32(content.Visibility_VISIBILITY_PUBLIC))
+	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, contentEnum.VisibilityPublic)
 	if err != nil {
 		return 0, err
 	}
@@ -58,8 +58,8 @@ func (l *SaveVideoDraftLogic) createDraft(in *content.SaveVideoDraftReq) (int64,
 		contentRepo := l.contentRepository.WithTx(tx)
 		videoRepo := l.videoRepository.WithTx(tx)
 
-		contentModel := buildContentModel(in.UserId, content.ContentType_CONTENT_TYPE_VIDEO,
-			content.ContentStatus_CONTENT_STATUS_DRAFT, visibility)
+		contentModel := buildContentModel(in.UserId, contentEnum.ContentTypeVideo,
+			contentEnum.ContentStatusDraft, visibility)
 		contentID = contentModel.ID
 		if err := contentRepo.CreateContent(l.ctx, contentModel); err != nil {
 			return err
@@ -88,14 +88,14 @@ func (l *SaveVideoDraftLogic) updateDraft(in *content.SaveVideoDraftReq, content
 	if row == nil {
 		return 0, errorx.NewMsg("内容不存在或无权限")
 	}
-	if row.ContentType != int32(content.ContentType_CONTENT_TYPE_VIDEO) {
+	if contentEnum.ContentTypeEnum(row.ContentType) != contentEnum.ContentTypeVideo {
 		return 0, errorx.NewMsg("内容类型不匹配")
 	}
-	if !isEditableStatus(row.Status) {
+	if !isEditableStatus(contentEnum.ContentStatusEnum(row.Status)) {
 		return 0, errorx.NewMsg("该内容当前状态不可编辑")
 	}
 
-	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, row.Visibility)
+	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, contentEnum.VisibilityEnum(row.Visibility))
 	if err != nil {
 		return 0, err
 	}

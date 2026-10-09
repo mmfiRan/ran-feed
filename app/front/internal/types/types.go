@@ -88,7 +88,7 @@ type DeleteCommentRes struct {
 }
 
 type DeleteContentReq struct {
-	ContentId int64 `path:"content_id"`
+	ContentId int64 `path:"content_id" validate:"required,gt=0"`
 }
 
 type DeleteContentRes struct {
@@ -151,7 +151,7 @@ type FollowUserRes struct {
 }
 
 type GetContentDetailReq struct {
-	ContentId int64 `json:"content_id,string,optional" validate:"required,gt=0"`
+	ContentId int64 `path:"content_id" validate:"required,gt=0"`
 }
 
 type GetContentDetailRes struct {

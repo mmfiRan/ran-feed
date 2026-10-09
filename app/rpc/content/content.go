@@ -73,7 +73,7 @@ func main() {
 
 	serviceGroup := service.NewServiceGroup()
 	defer serviceGroup.Stop()
-	for _, mq := range mq.Consumers(c, context.Background(), ctx) {
+	for _, mq := range mq.Consumers(context.Background(), c, ctx) {
 		serviceGroup.Add(mq)
 	}
 	serviceGroup.Add(s)

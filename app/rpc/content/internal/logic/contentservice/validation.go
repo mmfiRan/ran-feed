@@ -2,6 +2,8 @@ package contentservicelogic
 
 import (
 	"ran-feed/app/rpc/content/content"
+	"ran-feed/app/rpc/content/internal/common/convert"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/pkg/errorx"
 )
 
@@ -14,17 +16,18 @@ const (
 )
 
 // resolveWriteVisibility 定可见性 草稿缺省回退 fallback 新建默认公开编辑沿用原值 发布必须显式给合法值 否则请求里的 0 会被当合法枚举写进库
-func resolveWriteVisibility(mode contentWriteMode, reqVis content.Visibility, fallback int32) (int32, error) {
+func resolveWriteVisibility(mode contentWriteMode, reqVis content.Visibility, fallback contentEnum.VisibilityEnum) (contentEnum.VisibilityEnum, error) {
 	if reqVis == content.Visibility_VISIBILITY_UNSPECIFIED {
 		if mode == writeModePublish {
-			return 0, errorx.NewMsg("可见性不能为空")
+			return contentEnum.VisibilityUnknown, errorx.NewMsg("可见性不能为空")
 		}
 		return fallback, nil
 	}
-	if reqVis != content.Visibility_VISIBILITY_PUBLIC && reqVis != content.Visibility_VISIBILITY_PRIVATE {
-		return 0, errorx.NewMsg("可见性取值非法")
+	vis, ok := convert.VisibilityFromPB(reqVis)
+	if !ok || vis == contentEnum.VisibilityUnknown {
+		return contentEnum.VisibilityUnknown, errorx.NewMsg("可见性取值非法")
 	}
-	return int32(reqVis), nil
+	return vis, nil
 }
 
 // validateArticlePublish 发布前完整性校验 放 RPC 层因为前端校验能被直连 RPC 绕过

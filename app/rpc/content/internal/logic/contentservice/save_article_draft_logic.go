@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -44,11 +45,13 @@ func (l *SaveArticleDraftLogic) SaveArticleDraft(in *content.SaveArticleDraftReq
 	if err != nil {
 		return nil, err
 	}
-	return &content.SaveArticleDraftRes{ContentId: contentID}, nil
+	return &content.SaveArticleDraftRes{
+		ContentId: contentID,
+	}, nil
 }
 
 func (l *SaveArticleDraftLogic) createDraft(in *content.SaveArticleDraftReq) (int64, error) {
-	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, int32(content.Visibility_VISIBILITY_PUBLIC))
+	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, contentEnum.VisibilityPublic)
 	if err != nil {
 		return 0, err
 	}
@@ -58,8 +61,8 @@ func (l *SaveArticleDraftLogic) createDraft(in *content.SaveArticleDraftReq) (in
 		contentRepo := l.contentRepository.WithTx(tx)
 		articleRepo := l.articleRepository.WithTx(tx)
 
-		contentModel := buildContentModel(in.UserId, content.ContentType_CONTENT_TYPE_ARTICLE,
-			content.ContentStatus_CONTENT_STATUS_DRAFT, visibility)
+		contentModel := buildContentModel(in.UserId, contentEnum.ContentTypeArticle,
+			contentEnum.ContentStatusDraft, visibility)
 		contentID = contentModel.ID
 		if err := contentRepo.CreateContent(l.ctx, contentModel); err != nil {
 			return err
@@ -87,14 +90,14 @@ func (l *SaveArticleDraftLogic) updateDraft(in *content.SaveArticleDraftReq, con
 	if row == nil {
 		return 0, errorx.NewMsg("内容不存在或无权限")
 	}
-	if row.ContentType != int32(content.ContentType_CONTENT_TYPE_ARTICLE) {
+	if contentEnum.ContentTypeEnum(row.ContentType) != contentEnum.ContentTypeArticle {
 		return 0, errorx.NewMsg("内容类型不匹配")
 	}
-	if !isEditableStatus(row.Status) {
+	if !isEditableStatus(contentEnum.ContentStatusEnum(row.Status)) {
 		return 0, errorx.NewMsg("该内容当前状态不可编辑")
 	}
 
-	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, row.Visibility)
+	visibility, err := resolveWriteVisibility(writeModeDraft, in.Visibility, contentEnum.VisibilityEnum(row.Visibility))
 	if err != nil {
 		return 0, err
 	}
@@ -121,7 +124,6 @@ func (l *SaveArticleDraftLogic) updateDraft(in *content.SaveArticleDraftReq, con
 }
 
 // isEditableStatus 仅草稿与被拒内容可编辑
-func isEditableStatus(status int32) bool {
-	return status == int32(content.ContentStatus_CONTENT_STATUS_DRAFT) ||
-		status == int32(content.ContentStatus_CONTENT_STATUS_REJECTED)
+func isEditableStatus(status contentEnum.ContentStatusEnum) bool {
+	return status == contentEnum.ContentStatusDraft || status == contentEnum.ContentStatusRejected
 }

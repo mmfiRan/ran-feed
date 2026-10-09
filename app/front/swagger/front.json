@@ -141,12 +141,9 @@
         }
       }
     },
-    "/v1/content/detail": {
-      "post": {
+    "/v1/content/detail/{content_id}": {
+      "get": {
         "description": "获取内容详情",
-        "consumes": [
-          "application/json"
-        ],
         "produces": [
           "application/json"
         ],
@@ -160,17 +157,10 @@
         "operationId": "contentGetContentDetail",
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "content_id": {
-                  "type": "integer"
-                }
-              }
-            }
+            "type": "integer",
+            "name": "content_id",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
@@ -3108,7 +3098,7 @@
       }
     }
   },
-  "x-date": "2026-09-24 14:23:18",
+  "x-date": "2026-10-09 15:25:18",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

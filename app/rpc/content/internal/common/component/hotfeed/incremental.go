@@ -67,8 +67,8 @@ func (f *Feed) cleanupProcShards(ctx context.Context, shards int) error {
 // 每批 ZADD 后立即把主榜裁回 mainN 候选池 主榜瞬时上限 等于 mainN 加 批大小
 // 每条脏 ID 的新分都照写 含掉分内容 故无降分赖榜问题 裁剪只删分数最低的多余成员
 func (f *Feed) recomputeAndOverwrite(ctx context.Context, calculator hotrank.AdditiveTime, dirtyIDs []int64, mainN, batchSize int) error {
-	statusPublished := contentEnum.ContentStatusPublished.Int32()
-	visibilityPublic := contentEnum.VisibilityPublic.Int32()
+	statusPublished := contentEnum.ContentStatusPublished
+	visibilityPublic := contentEnum.VisibilityPublic
 
 	for start := 0; start < len(dirtyIDs); start += batchSize {
 		if err := ctx.Err(); err != nil {

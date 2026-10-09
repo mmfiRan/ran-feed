@@ -38,11 +38,11 @@ type (
 		ContentId int64 `json:"content_id,string"`
 	}
 	DeleteContentReq {
-		ContentId int64 `path:"content_id"`
+		ContentId int64 `path:"content_id" validate:"required,gt=0"`
 	}
 	DeleteContentRes  {}
 	GetContentDetailReq {
-		ContentId int64 `json:"content_id,string,optional" validate:"required,gt=0"`
+		ContentId int64 `path:"content_id" validate:"required,gt=0"`
 	}
 	ContentDetail {
 		ContentId         int64     `json:"content_id,string"`
@@ -190,6 +190,6 @@ service front-api {
 		description: "获取内容详情"
 	)
 	@handler GetContentDetail
-	post /detail (GetContentDetailReq) returns (GetContentDetailRes)
+	get /detail/:content_id (GetContentDetailReq) returns (GetContentDetailRes)
 }
 

@@ -72,8 +72,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Middleware{serverCtx.OptionalLoginMiddleware},
 			[]rest.Route{
 				{
-					Method:  http.MethodPost,
-					Path:    "/detail",
+					Method:  http.MethodGet,
+					Path:    "/detail/:content_id",
 					Handler: content.GetContentDetailHandler(serverCtx),
 				},
 			}...,

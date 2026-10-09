@@ -21,7 +21,9 @@ func New() *Repository {
 }
 
 func (r *Repository) WithTx(tx *query.Query) repositories.ContentReviewRepository {
-	return &Repository{tx: tx}
+	return &Repository{
+		tx: tx,
+	}
 }
 
 func (r *Repository) getQuery() *query.Query {

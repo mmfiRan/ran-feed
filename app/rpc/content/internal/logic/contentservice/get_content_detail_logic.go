@@ -5,6 +5,7 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/common/convert"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -67,11 +68,11 @@ func (l *GetContentDetailLogic) GetContentDetail(in *content.GetContentDetailReq
 	viewerID := in.GetViewerId()
 	isAuthor := viewerID > 0 && viewerID == contentRow.UserID
 	// 非已发布内容仅作者本人可见 供编辑回显
-	if contentRow.Status != int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED) && !isAuthor {
+	if contentRow.Status != contentEnum.ContentStatusPublished.Int32() && !isAuthor {
 		return nil, errorx.NewMsg("内容不存在")
 	}
 	// 私密内容仅作者本人可见
-	if contentRow.Visibility == int32(content.Visibility_VISIBILITY_PRIVATE) && !isAuthor {
+	if contentRow.Visibility == contentEnum.VisibilityPrivate.Int32() && !isAuthor {
 		return nil, errorx.NewMsg("内容不存在")
 	}
 
@@ -86,7 +87,7 @@ func (l *GetContentDetailLogic) GetContentDetail(in *content.GetContentDetailReq
 }
 
 func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, viewerID int64) (*content.ContentDetail, error) {
-	contentType := content.ContentType(contentRow.ContentType)
+	contentType := contentEnum.ContentTypeEnum(contentRow.ContentType)
 	detail := &content.ContentDetail{
 		ContentId:   contentRow.ID,
 		ContentType: convert.ContentTypeValue(contentRow.ContentType),
@@ -101,9 +102,9 @@ func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, vi
 		return nil, err
 	}
 	switch contentType {
-	case content.ContentType_CONTENT_TYPE_ARTICLE:
+	case contentEnum.ContentTypeArticle:
 		scene = interaction.Scene_SCENE_ARTICLE
-	case content.ContentType_CONTENT_TYPE_VIDEO:
+	case contentEnum.ContentTypeVideo:
 		scene = interaction.Scene_SCENE_VIDEO
 	default:
 		return nil, errorx.NewMsg("内容类型错误")
@@ -135,9 +136,9 @@ func (l *GetContentDetailLogic) buildDetail(contentRow *model.RanFeedContent, vi
 	return detail, nil
 }
 
-func (l *GetContentDetailLogic) fillContentFields(detail *content.ContentDetail, contentID int64, contentType content.ContentType) error {
+func (l *GetContentDetailLogic) fillContentFields(detail *content.ContentDetail, contentID int64, contentType contentEnum.ContentTypeEnum) error {
 	switch contentType {
-	case content.ContentType_CONTENT_TYPE_ARTICLE:
+	case contentEnum.ContentTypeArticle:
 		articleRow, err := l.articleRepo.GetByContentID(l.ctx, contentID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))
@@ -153,7 +154,7 @@ func (l *GetContentDetailLogic) fillContentFields(detail *content.ContentDetail,
 		detail.CoverUrl = articleRow.Cover
 		detail.ArticleContent = articleRow.Content
 		return nil
-	case content.ContentType_CONTENT_TYPE_VIDEO:
+	case contentEnum.ContentTypeVideo:
 		videoRow, err := l.videoRepo.GetByContentID(l.ctx, contentID)
 		if err != nil {
 			return errorx.Wrap(l.ctx, err, errorx.NewMsg("查询内容详情失败"))

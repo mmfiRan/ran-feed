@@ -50,10 +50,19 @@ func (l *MyContentListLogic) MyContentList(in *content.MyContentListReq) (*conte
 		cursorID, _ = strconv.ParseInt(in.Cursor, 10, 64)
 	}
 
+	status, ok := convert.ContentStatusPtrFromPB(in.Status)
+	if !ok {
+		return nil, errorx.NewMsg("状态取值非法")
+	}
+	contentType, ok := convert.ContentTypePtrFromPB(in.ContentType)
+	if !ok {
+		return nil, errorx.NewMsg("内容类型取值非法")
+	}
+
 	rows, err := l.contentRepository.MyContentPage(l.ctx,
 		in.UserId,
-		utils.CastPtr[int32](in.Status),
-		utils.CastPtr[int32](in.ContentType),
+		status,
+		contentType,
 		cursorID,
 		pageSize+1,
 	)
@@ -96,16 +105,16 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 	allIDs := make([]int64, 0, len(rows))
 	for _, row := range rows {
 		allIDs = append(allIDs, row.ID)
-		switch content.ContentType(row.ContentType) {
-		case content.ContentType_CONTENT_TYPE_ARTICLE:
+		switch contentEnum.ContentTypeEnum(row.ContentType) {
+		case contentEnum.ContentTypeArticle:
 			articleIDs = append(articleIDs, row.ID)
-		case content.ContentType_CONTENT_TYPE_VIDEO:
+		case contentEnum.ContentTypeVideo:
 			videoIDs = append(videoIDs, row.ID)
 		}
-		switch content.ContentStatus(row.Status) {
-		case content.ContentStatus_CONTENT_STATUS_REJECTED:
+		switch contentEnum.ContentStatusEnum(row.Status) {
+		case contentEnum.ContentStatusRejected:
 			rejectedIDs = append(rejectedIDs, row.ID)
-		case content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN:
+		case contentEnum.ContentStatusTakenDown:
 			takenDownIDs = append(takenDownIDs, row.ID)
 		}
 	}
@@ -175,20 +184,20 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 		if row.PublishedAt != nil {
 			item.PublishedAt = timestamppb.New(*row.PublishedAt)
 		}
-		switch content.ContentType(row.ContentType) {
-		case content.ContentType_CONTENT_TYPE_ARTICLE:
+		switch contentEnum.ContentTypeEnum(row.ContentType) {
+		case contentEnum.ContentTypeArticle:
 			if a := articleMap[row.ID]; a != nil {
 				item.Title = a.Title
 				item.CoverUrl = a.Cover
 			}
-		case content.ContentType_CONTENT_TYPE_VIDEO:
+		case contentEnum.ContentTypeVideo:
 			if v := videoMap[row.ID]; v != nil {
 				item.Title = v.Title
 				item.CoverUrl = v.CoverURL
 			}
 		}
-		switch content.ContentStatus(row.Status) {
-		case content.ContentStatus_CONTENT_STATUS_REJECTED, content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN:
+		switch contentEnum.ContentStatusEnum(row.Status) {
+		case contentEnum.ContentStatusRejected, contentEnum.ContentStatusTakenDown:
 			item.StatusReason = reasonMap[row.ID]
 		}
 		if c := countMap[row.ID]; c != nil {

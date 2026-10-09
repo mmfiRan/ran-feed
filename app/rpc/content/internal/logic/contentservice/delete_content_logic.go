@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"ran-feed/app/rpc/content/content"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
 	"ran-feed/app/rpc/content/internal/svc"
@@ -39,6 +40,10 @@ func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*empty
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除内容失败"))
 	}
+	// 查不到 已软删 与非法 id 都返回 nil 不判会解引用崩
+	if row == nil {
+		return nil, errorx.NewMsg("内容不存在或无权限")
+	}
 	if row.UserID != in.UserId {
 		return nil, errorx.NewMsg("不是发布内容用户无法删除该内容")
 	}
@@ -48,12 +53,12 @@ func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*empty
 		articleRepo := l.articleRepo.WithTx(tx)
 		videoRepo := l.videoRepo.WithTx(tx)
 
-		if row.ContentType == int32(content.ContentType_CONTENT_TYPE_ARTICLE) {
+		if contentEnum.ContentTypeEnum(row.ContentType) == contentEnum.ContentTypeArticle {
 			if derr := articleRepo.DeleteByContentID(l.ctx, in.ContentId); derr != nil {
 				return derr
 			}
 		}
-		if row.ContentType == int32(content.ContentType_CONTENT_TYPE_VIDEO) {
+		if contentEnum.ContentTypeEnum(row.ContentType) == contentEnum.ContentTypeVideo {
 			if derr := videoRepo.DeleteByContentID(l.ctx, in.ContentId); derr != nil {
 				return derr
 			}

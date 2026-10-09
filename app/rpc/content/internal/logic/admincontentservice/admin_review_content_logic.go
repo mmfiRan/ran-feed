@@ -6,6 +6,7 @@ import (
 
 	"ran-feed/app/rpc/content/content"
 	"ran-feed/app/rpc/content/internal/common/convert"
+	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/entity/query"
 	"ran-feed/app/rpc/content/internal/repositories"
@@ -37,7 +38,8 @@ func NewAdminReviewContentLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 
 // AdminReviewContent 内容审核
 func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewContentReq) (*content.AdminReviewContentRes, error) {
-	if in.Decision != content.ReviewDecision_REVIEW_DECISION_APPROVE && in.Decision != content.ReviewDecision_REVIEW_DECISION_REJECT {
+	decision, ok := convert.ReviewDecisionFromPB(in.Decision)
+	if !ok || (decision != contentEnum.ReviewDecisionApprove && decision != contentEnum.ReviewDecisionReject) {
 		return nil, errorx.NewMsg("不支持的审核决策")
 	}
 
@@ -48,15 +50,15 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 	if row == nil {
 		return nil, errorx.NewMsg("内容不存在")
 	}
-	if content.ContentStatus(row.Status) != content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW {
+	if contentEnum.ContentStatusEnum(row.Status) != contentEnum.ContentStatusPendingReview {
 		return nil, errorx.NewMsg("内容不在待审状态")
 	}
 
-	approve := in.Decision == content.ReviewDecision_REVIEW_DECISION_APPROVE
-	targetStatus := content.ContentStatus_CONTENT_STATUS_REJECTED
+	approve := decision == contentEnum.ReviewDecisionApprove
+	targetStatus := contentEnum.ContentStatusRejected
 	reason := in.RejectReason
 	if approve {
-		targetStatus = content.ContentStatus_CONTENT_STATUS_PUBLISHED
+		targetStatus = contentEnum.ContentStatusPublished
 		reason = ""
 	}
 	now := time.Now()
@@ -72,7 +74,7 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 			affected, err = contentRepo.AdminApproveContent(l.ctx, in.ContentId, in.OperatorId, now)
 		} else {
 			affected, err = contentRepo.AdminUpdateStatus(l.ctx, in.ContentId,
-				int32(content.ContentStatus_CONTENT_STATUS_PENDING_REVIEW), int32(targetStatus), in.OperatorId)
+				contentEnum.ContentStatusPendingReview, targetStatus, in.OperatorId)
 		}
 		if err != nil {
 			return err
@@ -84,7 +86,7 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 		if err := l.reviewRepo.WithTx(tx).Create(l.ctx, &model.RanFeedContentReview{
 			ID:        snowflake.GenID(),
 			ContentID: in.ContentId,
-			Decision:  int32(in.Decision),
+			Decision:  decision.Int32(),
 			Reason:    reason,
 			CreatedBy: in.OperatorId,
 			UpdatedBy: in.OperatorId,
@@ -100,7 +102,7 @@ func (l *AdminReviewContentLogic) AdminReviewContent(in *content.AdminReviewCont
 	}
 
 	return &content.AdminReviewContentRes{
-		Status: convert.ContentStatusValue(int32(targetStatus)),
+		Status: convert.ContentStatusValue(targetStatus.Int32()),
 	}, nil
 }
 

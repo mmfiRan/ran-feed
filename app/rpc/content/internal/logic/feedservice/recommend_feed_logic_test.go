@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"ran-feed/app/rpc/content/internal/common/enums"
 	"ran-feed/app/rpc/content/internal/entity/model"
 	"ran-feed/app/rpc/content/internal/repositories"
 
@@ -28,7 +29,7 @@ func (m *mockContentRepo) GetHotScoreByID(_ context.Context, contentID int64) (f
 	return m.score, m.scoreErr
 }
 
-func (m *mockContentRepo) ListRecommendByHotScoreCursor(_ context.Context, status, visibility int32, cursorScore float64, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
+func (m *mockContentRepo) ListRecommendByHotScoreCursor(_ context.Context, _ enums.ContentStatusEnum, _ enums.VisibilityEnum, cursorScore float64, cursorID int64, limit int) ([]*model.RanFeedContent, error) {
 	m.gotCursorScore, m.gotCursorID, m.gotLimit = cursorScore, cursorID, limit
 	return m.rows, nil
 }

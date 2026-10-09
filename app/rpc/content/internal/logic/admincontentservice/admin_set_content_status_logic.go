@@ -39,14 +39,17 @@ func NewAdminSetContentStatusLogic(ctx context.Context, svcCtx *svc.ServiceConte
 
 // AdminSetContentStatus 下架/恢复
 func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetContentStatusReq) (*content.AdminSetContentStatusRes, error) {
-	target := in.GetStatus()
+	target, ok := convert.ContentStatusFromPB(in.GetStatus())
+	if !ok {
+		return nil, errorx.NewMsg("不支持的目标状态")
+	}
 	from, err := l.flipSourceStatus(target)
 	if err != nil {
 		return nil, err
 	}
 
 	reason := ""
-	if target == content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN {
+	if target == contentEnum.ContentStatusTakenDown {
 		if in.Reason == nil || strings.TrimSpace(in.GetReason()) == "" {
 			return nil, errorx.NewMsg("下架原因不能为空")
 		}
@@ -62,7 +65,7 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 	}
 
 	err = query.Q.Transaction(func(tx *query.Query) error {
-		affected, uerr := l.contentRepo.WithTx(tx).AdminUpdateStatus(l.ctx, in.ContentId, int32(from), int32(target), in.GetOperatorId())
+		affected, uerr := l.contentRepo.WithTx(tx).AdminUpdateStatus(l.ctx, in.ContentId, from, target, in.GetOperatorId())
 		if uerr != nil {
 			return uerr
 		}
@@ -91,32 +94,32 @@ func (l *AdminSetContentStatusLogic) AdminSetContentStatus(in *content.AdminSetC
 	}
 
 	return &content.AdminSetContentStatusRes{
-		Status: convert.ContentStatusValue(int32(target)),
+		Status: convert.ContentStatusValue(target.Int32()),
 	}, nil
 }
 
-func (l *AdminSetContentStatusLogic) flipSourceStatus(target content.ContentStatus) (content.ContentStatus, error) {
+func (l *AdminSetContentStatusLogic) flipSourceStatus(target contentEnum.ContentStatusEnum) (contentEnum.ContentStatusEnum, error) {
 	switch target {
-	case content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN:
-		return content.ContentStatus_CONTENT_STATUS_PUBLISHED, nil
-	case content.ContentStatus_CONTENT_STATUS_PUBLISHED:
-		return content.ContentStatus_CONTENT_STATUS_TAKEN_DOWN, nil
+	case contentEnum.ContentStatusTakenDown:
+		return contentEnum.ContentStatusPublished, nil
+	case contentEnum.ContentStatusPublished:
+		return contentEnum.ContentStatusTakenDown, nil
 	default:
-		return content.ContentStatus_CONTENT_STATUS_UNSPECIFIED, errorx.NewMsg("不支持的目标状态")
+		return contentEnum.ContentStatusUnknown, errorx.NewMsg("不支持的目标状态")
 	}
 }
 
 // buildStatusEvent 下架发下架事件(带原因) 恢复发恢复事件
-func buildStatusEvent(target content.ContentStatus, row *model.RanFeedContent, reason string) *contentevent.ContentEvent {
-	if target == content.ContentStatus_CONTENT_STATUS_PUBLISHED {
+func buildStatusEvent(target contentEnum.ContentStatusEnum, row *model.RanFeedContent, reason string) *contentevent.ContentEvent {
+	if target == contentEnum.ContentStatusPublished {
 		return contentevent.NewContentRestoredEvent(row.ID, row.UserID)
 	}
 	return contentevent.NewContentTakenDownEvent(row.ID, row.UserID, reason)
 }
 
 // reviewDecisionFor 目标状态对应的审核记录决策
-func reviewDecisionFor(target content.ContentStatus) contentEnum.ReviewDecisionEnum {
-	if target == content.ContentStatus_CONTENT_STATUS_PUBLISHED {
+func reviewDecisionFor(target contentEnum.ContentStatusEnum) contentEnum.ReviewDecisionEnum {
+	if target == contentEnum.ContentStatusPublished {
 		return contentEnum.ReviewDecisionRestored
 	}
 	return contentEnum.ReviewDecisionTakenDown
