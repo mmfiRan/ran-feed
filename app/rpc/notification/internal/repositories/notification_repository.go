@@ -21,16 +21,16 @@ type NotificationRepository interface {
 	UpsertAggregate(row *model.RanFeedNotification) error
 	// Insert 单条 insert COMMENT_REPLY 走该路径 agg_key 天然唯一(CR:{comment_id})
 	Insert(row *model.RanFeedNotification) error
-	// UpsertReview 内容审核结果 upsert 同内容一条通知反映最新结果 命中则覆盖 type/snippet 并 re-surface 变未读 不累加 agg_count
+	// UpsertReview 内容审核结果 upsert 同内容一条通知反映最新结果,命中则覆盖 type/snippet 并 re-surface 变未读,不累加 agg_count
 	UpsertReview(row *model.RanFeedNotification) error
-	// ListByRecipient 收件箱复合游标查询 按(updated_at DESC id DESC)排序 一次多取 1 条供 logic 层判 has_more
+	// ListByRecipient 收件箱复合游标查询,按(updated_at DESC id DESC)排序,一次多取 1 条供 logic 层判 has_more
 	// cursorUpdatedAt 零值视为首页 typeFilter 为 0 视为不限
 	ListByRecipient(recipientID int64, typeFilter int32, cursorUpdatedAt time.Time, cursorID int64, limit int) ([]*model.RanFeedNotification, error)
-	// CountUnread 未读数 走 idx_recipient_unread
+	// CountUnread 未读数,走 idx_recipient_unread
 	CountUnread(recipientID int64) (int64, error)
-	// MarkRead 按 ids 标已读 recipient 入 where 防越权 只翻未读避免重复计数 返回真实变更行数
+	// MarkRead 按 ids 标已读 recipient 入 where 防越权,只翻未读避免重复计数,返回真实变更行数
 	MarkRead(recipientID int64, ids []int64) (int64, error)
-	// MarkAllRead 全部标已读 recipient 入 where 只翻未读 返回变更行数
+	// MarkAllRead 全部标已读 recipient 入 where 只翻未读,返回变更行数
 	MarkAllRead(recipientID int64) (int64, error)
 }
 
@@ -79,7 +79,7 @@ func (r *notificationRepositoryImpl) UpsertAggregate(row *model.RanFeedNotificat
 	//   agg_count+1 累加互动次数
 	//   actor_id 换为最新触发者
 	//   re-surface 冒到顶(updated_at 由 ON UPDATE CURRENT_TIMESTAMP(3) 自动刷)
-	//   is_read=0 让老通知重新变未读 保证再触达
+	//   is_read=0 让老通知重新变未读,保证再触达
 	return db.Exec(
 		`INSERT INTO ran_feed_notification
 			(recipient_id, actor_id, notify_type, agg_key, agg_count,
@@ -107,7 +107,7 @@ func (r *notificationRepositoryImpl) UpsertAggregate(row *model.RanFeedNotificat
 	).Error
 }
 
-// UpsertReview 审核结果通知 按 uk_recipient_aggkey(RV:{content_id}) upsert
+// UpsertReview 审核结果通知,按 uk_recipient_aggkey(RV:{content_id}) upsert
 // 命中则覆盖 notify_type/snippet/content_id 换最新触发者 re-surface 变未读 agg_count 恒为 1 不累加
 func (r *notificationRepositoryImpl) UpsertReview(row *model.RanFeedNotification) error {
 	if row == nil || row.RecipientID <= 0 || row.AggKey == "" {

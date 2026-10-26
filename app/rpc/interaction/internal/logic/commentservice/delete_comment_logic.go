@@ -60,7 +60,7 @@ func (l *DeleteCommentLogic) DeleteComment(in *interaction.DeleteCommentReq) (*e
 	}
 
 	if hasRef {
-		// 有后代，墓碑删除
+		// 有后代,墓碑删除
 		if err = l.commentRepo.MarkDeleted(comment.ID, in.UserId); err != nil {
 			return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除评论失败"))
 		}
@@ -68,19 +68,19 @@ func (l *DeleteCommentLogic) DeleteComment(in *interaction.DeleteCommentReq) (*e
 		return &emptypb.Empty{}, nil
 	}
 
-	// 无后代，物理删除
+	// 无后代,物理删除
 	if err = l.commentRepo.DeleteByID(comment.ID); err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除评论失败"))
 	}
 	l.invalidateCommentCache(comment)
 
-	// 清理父链：若父评论为墓碑且已无子评论，则物理删除
+	// 清理父链：若父评论为墓碑且已无子评论,则物理删除
 	l.cleanupDeletedAncestors(comment.ParentID)
 
 	return &emptypb.Empty{}, nil
 }
 
-// invalidateCommentCache 仅失效自身 obj obj 为不可变快照 回复数在 by-id 路径实时重算无需连删父根
+// invalidateCommentCache 仅失效自身 obj obj 为不可变快照,回复数在 by-id 路径实时重算无需连删父根
 func (l *DeleteCommentLogic) invalidateCommentCache(c *do.CommentDO) {
 	if c == nil {
 		return

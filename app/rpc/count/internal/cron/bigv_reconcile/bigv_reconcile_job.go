@@ -19,7 +19,7 @@ const HandlerName = "bigv.reconcile"
 // reconcileBatchSize Redis 集合分批 SADD 大小
 const reconcileBatchSize = 500
 
-// BigVReconcileJob 大 V 定时修正 复查粉丝数补 CDC 漏网晋升 再把 Redis 集合与表对齐
+// BigVReconcileJob 大 V 定时修正,复查粉丝数补 CDC 漏网晋升,再把 Redis 集合与表对齐
 type BigVReconcileJob struct {
 	svc       *svc.ServiceContext
 	countRepo repositories.CountValueRepository
@@ -38,7 +38,7 @@ func Register(ctx context.Context, executor *xxljob.Executor, svcCtx *svc.Servic
 	executor.RegisterTask(HandlerName, job.Run)
 }
 
-// Run 先复查计数补晋升 再 Redis 与表对齐 多实例并发幂等可接受
+// Run 先复查计数补晋升,再 Redis 与表对齐,多实例并发幂等可接受
 func (j *BigVReconcileJob) Run(ctx context.Context, _ xxljob.TriggerParam) (string, error) {
 	if err := j.promoteMissed(ctx); err != nil {
 		return "", err
@@ -49,7 +49,7 @@ func (j *BigVReconcileJob) Run(ctx context.Context, _ xxljob.TriggerParam) (stri
 	return "ok", nil
 }
 
-// promoteMissed 复查当前粉丝数 把 ≥阈值却漏晋升的补进大 V 表 单个失败只记日志不阻断
+// promoteMissed 复查当前粉丝数,把 ≥阈值却漏晋升的补进大 V 表,单个失败只记日志不阻断
 func (j *BigVReconcileJob) promoteMissed(ctx context.Context) error {
 	candidates, err := j.countRepo.ListTargetValuesByValueGte(
 		countenum.BizTypeFollowed.Int32(),
@@ -70,7 +70,7 @@ func (j *BigVReconcileJob) promoteMissed(ctx context.Context) error {
 	return nil
 }
 
-// syncRedisFromTable 以大 V 表为真相源全量灌临时 key 再 RENAME 原子替换 表空则清空正式集合
+// syncRedisFromTable 以大 V 表为真相源全量灌临时 key 再 RENAME 原子替换,表空则清空正式集合
 func (j *BigVReconcileJob) syncRedisFromTable(ctx context.Context) error {
 	ids, err := j.bigVRepo.ListAllUserIDs()
 	if err != nil {

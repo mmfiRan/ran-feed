@@ -44,12 +44,12 @@ func (l *BackfillFollowInboxLogic) BackfillFollowInbox(in *content.BackfillFollo
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	// 关注关系变更 失效 viewer 拉模式集 下次读按新关注集合重算
+	// 关注关系变更,失效 viewer 拉模式集,下次读按新关注集合重算
 	if err := l.followFeed.InvalidatePull(l.ctx, in.FollowerId); err != nil {
 		l.Errorf("失效拉模式关注集失败 viewerID=%d err=%v", in.FollowerId, err)
 	}
 
-	// 拉模式作者不回填 其内容由读路径查其发件箱覆盖 与写扩散对称 查询失败保守仍回填
+	// 拉模式作者不回填,其内容由读路径查其发件箱覆盖,与写扩散对称,查询失败保守仍回填
 	if isBig, berr := l.bigv.IsBigV(l.ctx, in.FolloweeId); berr != nil {
 		l.Errorf("查询大 V 集合失败 followeeID=%d err=%v", in.FolloweeId, berr)
 	} else if isBig {
@@ -75,7 +75,7 @@ func (l *BackfillFollowInboxLogic) BackfillFollowInbox(in *content.BackfillFollo
 	return &content.BackfillFollowInboxRes{AddedCount: int32(added)}, nil
 }
 
-// toInboxItems 发件箱候选转收件箱成员 两侧都是 content_id 加发布时间毫秒
+// toInboxItems 发件箱候选转收件箱成员,两侧都是 content_id 加发布时间毫秒
 func toInboxItems(items []publishbox.ScoredID) []followfeed.ScoredID {
 	out := make([]followfeed.ScoredID, 0, len(items))
 	for _, it := range items {

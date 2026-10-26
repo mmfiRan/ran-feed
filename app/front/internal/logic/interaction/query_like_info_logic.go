@@ -31,7 +31,7 @@ func NewQueryLikeInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Que
 }
 
 func (l *QueryLikeInfoLogic) QueryLikeInfo(req *types.QueryLikeInfoReq) (resp *types.QueryLikeInfoRes, err error) {
-	// 解析scene参数
+	// 解析 scene 参数
 	scene, err := transform.ParseEnum[interaction.Scene](interaction.Scene_value, *req.Scene)
 	if err != nil {
 		return nil, errorx.NewMsg("场景参数错误")

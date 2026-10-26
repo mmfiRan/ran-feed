@@ -1,5 +1,4 @@
-// Package followfeed 负责关注流两半 收件箱 feed:follow:inbox 与拉模式集 feed:follow:pull 的全部读写
-// 两半共同维持一条不变式 推侧并集拉侧覆盖 viewer 的全部关注 任一半缺失都会漏内容
+// Package followfeed 负责关注流两半,收件箱 feed:follow:inbox 与拉模式 feed:follow:pull 的全部读写
 package followfeed
 
 import (
@@ -10,12 +9,12 @@ import (
 	"ran-feed/app/rpc/interaction/client/followservice"
 	"ran-feed/pkg/cache"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
 const (
-	// followeesScanLimit 重建时扫描关注上限 推拉两半共用单一上限
-	// 两条上限不一致会造出既没推也不拉的黑洞
+	// followeesScanLimit 重建时扫描关注上限,推拉两半共用单一上限
 	followeesScanLimit = 5000
 	// followeesPageSize 翻关注列表的单页大小
 	followeesPageSize = 500
@@ -27,7 +26,7 @@ type ScoredID struct {
 	Score int64
 }
 
-// Sources 关注流一页的两侧来源 推侧是本页候选 拉侧是待查发件箱的作者
+// Sources 关注流一页的两侧来源,推侧是本页候选,拉侧是待查发件箱的作者
 type Sources struct {
 	PushItems   []ScoredID
 	PushHasMore bool
@@ -43,13 +42,7 @@ type Feed struct {
 	contentRepo repositories.ContentRepository
 }
 
-func New(
-	redisClient *redis.Redis,
-	locker *cache.DistLocker,
-	followRpc followservice.FollowService,
-	bigvSet *bigv.Set,
-	contentRepo repositories.ContentRepository,
-) *Feed {
+func New(redisClient *redis.Redis, locker *cache.DistLocker, followRpc followservice.FollowService, bigvSet *bigv.Set, contentRepo repositories.ContentRepository) *Feed {
 	return &Feed{
 		redis:       redisClient,
 		locker:      locker,
@@ -60,9 +53,8 @@ func New(
 }
 
 // Sources 取本页推侧候选与拉侧作者集
-// 两半独立判就绪独立重建 拉侧只要翻关注列表 推侧要扫库 代价差一个量级 不该互相拖
-// 任一步失败或等锁超时都降级直接回源 不返回空
 func (f *Feed) Sources(ctx context.Context, viewerID, cursorScore int64, pageSize int) Sources {
+	// 获取需要拉的大V集合
 	pullAuthors, pullReady := f.ensurePull(ctx, viewerID)
 	if !pullReady {
 		return f.fromSource(ctx, viewerID)
@@ -70,7 +62,7 @@ func (f *Feed) Sources(ctx context.Context, viewerID, cursorScore int64, pageSiz
 
 	inboxReady, err := f.ensureInbox(ctx, viewerID, pullAuthors)
 	if err != nil {
-		f.logger(ctx).Errorf("准备关注收件箱失败 viewerID=%d err=%v", viewerID, err)
+		logx.WithContext(ctx).Errorf("准备关注收件箱失败 viewerID=%d err=%v", viewerID, err)
 	}
 	if !inboxReady {
 		return f.fromSource(ctx, viewerID)
@@ -78,10 +70,14 @@ func (f *Feed) Sources(ctx context.Context, viewerID, cursorScore int64, pageSiz
 
 	items, hasMore, qerr := f.queryInbox(ctx, viewerID, cursorScore, pageSize)
 	if qerr != nil {
-		f.logger(ctx).Errorf("查询关注收件箱失败 viewerID=%d err=%v", viewerID, qerr)
+		logx.WithContext(ctx).Errorf("查询关注收件箱失败 viewerID=%d err=%v", viewerID, qerr)
 		return f.fromSource(ctx, viewerID)
 	}
-	return Sources{PushItems: items, PushHasMore: hasMore, PullAuthors: pullAuthors}
+	return Sources{
+		PushItems:   items,
+		PushHasMore: hasMore,
+		PullAuthors: pullAuthors,
+	}
 }
 
 // listFolloweesCapped 按 limit 截断的关注列表分页拉取
@@ -116,7 +112,7 @@ func (f *Feed) listFolloweesCapped(ctx context.Context, viewerID int64, limit in
 	return followees, nil
 }
 
-// splitFollowees 把关注列表切成拉侧大 V 与推侧小号 判定失败时全部当小号 宁可多推不可漏
+// splitFollowees 把关注列表切成拉侧大 V 与推侧小号,判定失败时全部当小号
 func (f *Feed) splitFollowees(ctx context.Context, followees []int64) (bigVs, small []int64, err error) {
 	if len(followees) == 0 {
 		return nil, nil, nil
@@ -128,7 +124,7 @@ func (f *Feed) splitFollowees(ctx context.Context, followees []int64) (bigVs, sm
 	return bigVs, excludeIDs(followees, bigVs), nil
 }
 
-// excludeIDs 返回 all 中不在 excluded 里的元素 保序
+// excludeIDs 返回 all 中不在 excluded 里的元素,保序
 func excludeIDs(all, excluded []int64) []int64 {
 	if len(all) == 0 {
 		return nil

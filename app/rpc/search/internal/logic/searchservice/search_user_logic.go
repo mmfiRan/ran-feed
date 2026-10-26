@@ -62,8 +62,8 @@ func (l *SearchUserLogic) SearchUser(in *search.SearchUserReq) (*search.SearchUs
 	}, nil
 }
 
-// buildQuery 昵称^3 简介 多字段匹配 仅正常未删除 排序 _score 末位 user_id 兜底唯一序
-// searchAfter 非空时接 search_after 游标翻页 不用 from 偏移
+// buildQuery 昵称^3 简介,多字段匹配,仅正常未删除,排序 _score 末位 user_id 兜底唯一序
+// searchAfter 非空时接 search_after 游标翻页,不用 from 偏移
 func (l *SearchUserLogic) buildQuery(in *search.SearchUserReq, size int, searchAfter []any) map[string]any {
 	query := map[string]any{
 		"size": size,

@@ -5,14 +5,14 @@ import (
 	"ran-feed/app/rpc/count/internal/mq/consumer/strategy"
 )
 
-// countKey 计数缓存失效用的类型化键 取代字符串拼接再解析
+// countKey 计数缓存失效用的类型化键,取代字符串拼接再解析
 type countKey struct {
 	bizType    countenum.BizTypeEnum
 	targetType countenum.TargetTypeEnum
 	targetID   int64
 }
 
-// changeSet 累积一条消息落库后衍生的副作用 待失效缓存与待标脏内容
+// changeSet 累积一条消息落库后衍生的副作用,待失效缓存与待标脏内容
 type changeSet struct {
 	counts   map[countKey]struct{} // 待失效的计数缓存
 	users    map[int64]struct{}    // 待失效的用户主页计数缓存

@@ -4,7 +4,7 @@ package enums
 import "fmt"
 
 // LikeStatusEnum 点赞状态 ran_feed_like 表的 status 字段类型
-// 业务专属 不与其他状态机共用类型 避免误用
+// 业务专属,不与其他状态机共用类型,避免误用
 type LikeStatusEnum int32
 
 const (
@@ -12,7 +12,7 @@ const (
 	LikeStatusCancel LikeStatusEnum = 20
 )
 
-// likeStatusNames 集中维护值与名称的映射 新增值只需在此处补充
+// likeStatusNames 集中维护值与名称的映射,新增值只需在此处补充
 var likeStatusNames = map[LikeStatusEnum]string{
 	LikeStatusLike:   "LIKE",
 	LikeStatusCancel: "CANCEL",

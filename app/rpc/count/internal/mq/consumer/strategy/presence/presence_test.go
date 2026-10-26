@@ -18,7 +18,7 @@ func getStrategy(t *testing.T, table string) strategy.TableStrategy {
 	return s
 }
 
-// findUpdate 按 bizType 取出唯一更新 便于断言
+// findUpdate 按 bizType 取出唯一更新,便于断言
 func findUpdate(t *testing.T, updates []strategy.Update, biz countenum.BizTypeEnum) strategy.Update {
 	t.Helper()
 	for _, u := range updates {

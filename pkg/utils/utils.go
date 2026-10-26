@@ -31,17 +31,17 @@ func GetContextUserIdWithDefault(ctx context.Context) int64 {
 	return id
 }
 
-// GetContextUserId 仅从 context 中获取 int64 类型的 C 端用户ID
+// GetContextUserId 仅从 context 中获取 int64 类型的 C 端用户 ID
 func GetContextUserId(ctx context.Context) (int64, error) {
 	return GetContextID(ctx, consts.CtxKeyUserID)
 }
 
-// GetContextAdminId 仅从 context 中获取 int64 类型的后台管理员ID
+// GetContextAdminId 仅从 context 中获取 int64 类型的后台管理员 ID
 func GetContextAdminId(ctx context.Context) (int64, error) {
 	return GetContextID(ctx, consts.CtxKeyAdminID)
 }
 
-// GetContextAdminIdWithDefault 从 context 中获取后台管理员ID
+// GetContextAdminIdWithDefault 从 context 中获取后台管理员 ID
 func GetContextAdminIdWithDefault(ctx context.Context) int64 {
 	id, _ := GetContextAdminId(ctx)
 	return id

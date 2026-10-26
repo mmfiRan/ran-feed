@@ -51,7 +51,7 @@ func (r *searchHistoryRepositoryImpl) WithTx(tx *query.Query) SearchHistoryRepos
 	}
 }
 
-// Upsert 记录一次搜索 同人同词不新增行只刷新时间并复活已清记录 显式置 updated_at 确保提到最前
+// Upsert 记录一次搜索,同人同词不新增行只刷新时间并复活已清记录,显式置 updated_at 确保提到最前
 func (r *searchHistoryRepositoryImpl) Upsert(userID int64, keyword string) error {
 	if userID <= 0 || keyword == "" {
 		return nil
@@ -71,7 +71,7 @@ func (r *searchHistoryRepositoryImpl) Upsert(userID int64, keyword string) error
 	).Error
 }
 
-// ListRecent 取最近 limit 条 按更新时间倒序 读时截断无需淘汰
+// ListRecent 取最近 limit 条,按更新时间倒序,读时截断无需淘汰
 func (r *searchHistoryRepositoryImpl) ListRecent(userID int64, limit int) ([]*model.RanFeedSearchHistory, error) {
 	if userID <= 0 || limit <= 0 {
 		return nil, nil

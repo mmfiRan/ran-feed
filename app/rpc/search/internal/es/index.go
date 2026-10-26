@@ -13,7 +13,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// EnsureIndices 幂等确保两个别名可用 别名不存在则建物理索引并把别名指过去
+// EnsureIndices 幂等确保两个别名可用,别名不存在则建物理索引并把别名指过去
 func EnsureIndices(ctx context.Context, client *elasticsearch.Client) error {
 	indices := []struct {
 		name    string
@@ -38,7 +38,7 @@ func MappingFor(alias string) string {
 	return contentMapping
 }
 
-// RebuildIndexName 生成新物理索引名 别名加时间与雪花号 全局唯一
+// RebuildIndexName 生成新物理索引名,别名加时间与雪花号,全局唯一
 func RebuildIndexName(alias string) string {
 	return fmt.Sprintf("%s-%d-%d", alias, time.Now().Unix(), snowflake.GenID())
 }
@@ -59,7 +59,7 @@ func IndexExists(ctx context.Context, client *elasticsearch.Client, name string)
 	return true, nil
 }
 
-// AliasIndices 列出别名当前指向的物理索引 别名不存在返回空
+// AliasIndices 列出别名当前指向的物理索引,别名不存在返回空
 func AliasIndices(ctx context.Context, client *elasticsearch.Client, alias string) ([]string, error) {
 	res, err := client.Indices.GetAlias(
 		client.Indices.GetAlias.WithContext(ctx),
@@ -86,7 +86,7 @@ func AliasIndices(ctx context.Context, client *elasticsearch.Client, alias strin
 	return names, nil
 }
 
-// CreatePhysicalIndex 建物理索引 已存在则跳过
+// CreatePhysicalIndex 建物理索引,已存在则跳过
 func CreatePhysicalIndex(ctx context.Context, client *elasticsearch.Client, name, mapping string) error {
 	exists, err := IndexExists(ctx, client, name)
 	if err != nil {
@@ -110,7 +110,7 @@ func CreatePhysicalIndex(ctx context.Context, client *elasticsearch.Client, name
 	return nil
 }
 
-// SwitchAlias 原子把别名迁到新索引 只对本就挂着该别名的索引发 remove
+// SwitchAlias 原子把别名迁到新索引,只对本就挂着该别名的索引发 remove
 func SwitchAlias(ctx context.Context, client *elasticsearch.Client, alias, newIndex string, olds []string) error {
 	actions := make([]map[string]any, 0, len(olds)+1)
 	for _, old := range olds {
@@ -139,7 +139,7 @@ func SwitchAlias(ctx context.Context, client *elasticsearch.Client, alias, newIn
 	return nil
 }
 
-// DeletePhysicalIndex 删物理索引 不存在视为成功
+// DeletePhysicalIndex 删物理索引,不存在视为成功
 func DeletePhysicalIndex(ctx context.Context, client *elasticsearch.Client, name string) error {
 	res, err := client.Indices.Delete([]string{name}, client.Indices.Delete.WithContext(ctx))
 	if err != nil {
@@ -152,8 +152,8 @@ func DeletePhysicalIndex(ctx context.Context, client *elasticsearch.Client, name
 	return nil
 }
 
-// RebuildIndex 以新物理索引重建别名指向的索引 全程旧索引可读
-// 成功则切别名并删旧索引 加载或切换失败则清理新索引 旧索引与别名保持不动
+// RebuildIndex 以新物理索引重建别名指向的索引,全程旧索引可读
+// 成功则切别名并删旧索引,加载或切换失败则清理新索引,旧索引与别名保持不动
 func RebuildIndex(ctx context.Context, client *elasticsearch.Client, alias string, load func(ctx context.Context, index string) (int, error)) (int, error) {
 	physical := RebuildIndexName(alias)
 	if err := CreatePhysicalIndex(ctx, client, physical, MappingFor(alias)); err != nil {
@@ -185,8 +185,8 @@ func RebuildIndex(ctx context.Context, client *elasticsearch.Client, alias strin
 	return total, nil
 }
 
-// ensureAlias 别名不存在则建物理索引并指过去 已存在跳过
-// 同名具体索引存在但未挂别名时只告警 需人工删除后由本服务重建别名
+// ensureAlias 别名不存在则建物理索引并指过去,已存在跳过
+// 同名具体索引存在但未挂别名时只告警,需人工删除后由本服务重建别名
 func ensureAlias(ctx context.Context, client *elasticsearch.Client, alias, mapping string) error {
 	exists, err := IndexExists(ctx, client, alias)
 	if err != nil {

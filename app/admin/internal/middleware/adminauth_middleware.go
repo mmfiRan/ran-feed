@@ -66,7 +66,7 @@ func (m *AdminAuthMiddleware) verifyAndRenew(ctx context.Context, token string) 
 	}
 	adminID, parseErr := strconv.ParseInt(val, 10, 64)
 	if parseErr != nil {
-		// 会话值损坏 记录日志并视为未登录
+		// 会话值损坏,记录日志并视为未登录
 		logx.WithContext(ctx).Errorf("管理员会话值损坏 key=%s err=%v", consts.BuildAdminSessionKey(token), parseErr)
 		return 0, nil
 	}

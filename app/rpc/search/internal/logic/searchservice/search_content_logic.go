@@ -64,8 +64,8 @@ func (l *SearchContentLogic) SearchContent(in *search.SearchContentReq) (*search
 	}, nil
 }
 
-// buildQuery 标题^3 简介^2 正文 多字段匹配 仅已发布公开未删除 排序 _score 加 hot_score 加 published_at 末位 content_id 兜底唯一序
-// searchAfter 非空时接 search_after 游标翻页 不用 from 偏移
+// buildQuery 标题^3 简介^2 正文,多字段匹配,仅已发布公开未删除,排序 _score 加 hot_score 加 published_at 末位 content_id 兜底唯一序
+// searchAfter 非空时接 search_after 游标翻页,不用 from 偏移
 func (l *SearchContentLogic) buildQuery(in *search.SearchContentReq, size int, searchAfter []any) map[string]any {
 	filters := []map[string]any{
 		{"term": map[string]any{"status": int32(content.ContentStatus_CONTENT_STATUS_PUBLISHED)}},

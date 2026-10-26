@@ -13,7 +13,7 @@ import (
 
 const (
 	commentTableName = "ran_feed_comment"
-	// snippetMaxRunes 与 ran_feed_notification.snippet varchar(140) 对齐 按字符不按字节截断避免中文半字节
+	// snippetMaxRunes 与 ran_feed_notification.snippet varchar(140) 对齐,按字符不按字节截断避免中文半字节
 	snippetMaxRunes = 140
 )
 
@@ -48,7 +48,7 @@ func (s *commentStrategy) ExtractEvents(ctx context.Context, op string, row, old
 	}
 	parentID, _ := canal.ParseInt64(row["parent_id"])
 
-	// 按 parent_id 分流 recipient(N5):顶评→内容作者 回复→父评论作者
+	// 按 parent_id 分流 recipient(N5):顶评→内容作者,回复→父评论作者
 	var recipientID int64
 	if parentID == 0 {
 		recipientID, _ = canal.ParseInt64(row["content_user_id"])

@@ -36,7 +36,7 @@ func TestQueryReplyList_InvalidReq(t *testing.T) {
 }
 
 func TestQueryReplyList_PaginationAndCount(t *testing.T) {
-	// pageSize=2 DB 返回 3 条 回复数走 parent 维度
+	// pageSize=2 DB 返回 3 条,回复数走 parent 维度
 	repo := &fakeCommentRepo{
 		replyRows: []*model.RanFeedComment{
 			cmtRow(33, 1, 100, 9, 9, 0, 10),

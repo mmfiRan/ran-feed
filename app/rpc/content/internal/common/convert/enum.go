@@ -14,7 +14,7 @@ func ContentStatusFromPB(v content.ContentStatus) (contentEnum.ContentStatusEnum
 }
 
 // VisibilityFromPB 请求可见性转业务枚举
-// Parse 对 UNSPECIFIED 返回 ok 因为业务枚举的 0 值 Unknown 也在合法集合内 调用方须先单独判未指定
+// Parse 对 UNSPECIFIED 返回 ok 因为业务枚举的 0 值 Unknown 也在合法集合内,调用方须先单独判未指定
 func VisibilityFromPB(v content.Visibility) (contentEnum.VisibilityEnum, bool) {
 	return enums.Parse[contentEnum.VisibilityEnum](int32(v))
 }
@@ -34,7 +34,7 @@ func FileExtFromPB(v content.FileExt) (contentEnum.FileExtEnum, bool) {
 	return enums.Parse[contentEnum.FileExtEnum](int32(v))
 }
 
-// ContentStatusPtrFromPB 可选状态筛选转业务枚举指针 未传返回 nil
+// ContentStatusPtrFromPB 可选状态筛选转业务枚举指针,未传返回 nil
 func ContentStatusPtrFromPB(v *content.ContentStatus) (*contentEnum.ContentStatusEnum, bool) {
 	if v == nil {
 		return nil, true
@@ -46,7 +46,7 @@ func ContentStatusPtrFromPB(v *content.ContentStatus) (*contentEnum.ContentStatu
 	return &s, true
 }
 
-// ContentTypePtrFromPB 可选类型筛选转业务枚举指针 未传返回 nil
+// ContentTypePtrFromPB 可选类型筛选转业务枚举指针,未传返回 nil
 func ContentTypePtrFromPB(v *content.ContentType) (*contentEnum.ContentTypeEnum, bool) {
 	if v == nil {
 		return nil, true

@@ -24,7 +24,7 @@ func NewBatchGetUserForIndexLogic(ctx context.Context, svcCtx *svc.ServiceContex
 	}
 }
 
-// BatchGetUserForIndex 增量回源 只返回可索引用户的原始投影 不可索引的 id 直接缺席由 search 判删
+// BatchGetUserForIndex 增量回源,只返回可索引用户的原始投影,不可索引的 id 直接缺席由 search 判删
 func (l *BatchGetUserForIndexLogic) BatchGetUserForIndex(in *user.BatchGetUserForIndexReq) (*user.BatchGetUserForIndexRes, error) {
 	if in == nil || len(in.UserIds) == 0 {
 		return &user.BatchGetUserForIndexRes{Items: []*user.UserIndexItem{}}, nil

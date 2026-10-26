@@ -21,13 +21,13 @@ import (
 	"ran-feed/pkg/cache"
 )
 
-// fakeLikeRepo 测试桩 仅实现 batch 路径用到的 BatchIsLiked / QueryUserLikedTopN
+// fakeLikeRepo 测试桩,仅实现 batch 路径用到的 BatchIsLiked / QueryUserLikedTopN
 // 其余接口方法保留 panic 提示误用
 type fakeLikeRepo struct {
 	topNByUser  map[int64][]int64 // user_id → topN cids（降序）
 	likedByUser map[int64]map[int64]bool
 
-	topNCalls  int32 // QueryUserLikedTopN 调用次数 用于验证单飞
+	topNCalls  int32 // QueryUserLikedTopN 调用次数,用于验证单飞
 	batchCalls int32 // BatchIsLiked 调用次数
 
 	mu sync.Mutex
@@ -81,7 +81,7 @@ func newTestBatchLogic(t *testing.T, repo *fakeLikeRepo) (*BatchQueryIsLikedLogi
 		ctx: ctx,
 		svcCtx: &svc.ServiceContext{
 			Redis: r,
-			// 测试用更激进的轮询参数 加速并发去重场景验证
+			// 测试用更激进的轮询参数,加速并发去重场景验证
 			LikeUserRebuildLocker: cache.NewDistLocker(r,
 				cache.WithWaitTimeout(2*time.Second),
 				cache.WithPollInterval(10*time.Millisecond),
@@ -132,7 +132,7 @@ func TestBatch_NoUserID(t *testing.T) {
 	}
 }
 
-// TestBatch_CacheMissTriggersRebuild 缓存不存在时触发重建 重建后按 topN 填充结果
+// TestBatch_CacheMissTriggersRebuild 缓存不存在时触发重建,重建后按 topN 填充结果
 func TestBatch_CacheMissTriggersRebuild(t *testing.T) {
 	repo := &fakeLikeRepo{
 		topNByUser: map[int64][]int64{
@@ -156,7 +156,7 @@ func TestBatch_CacheMissTriggersRebuild(t *testing.T) {
 	assert.Equal(t, "100", mr.HGet(userLikeKey, "_mincid"), "_mincid 应为 topN 末尾值")
 }
 
-// TestBatch_CacheHitFullReturnsCacheOnly _full=1 缓存可信 命中信缓存 未命中=false
+// TestBatch_CacheHitFullReturnsCacheOnly _full=1 缓存可信,命中信缓存,未命中=false
 func TestBatch_CacheHitFullReturnsCacheOnly(t *testing.T) {
 	repo := &fakeLikeRepo{}
 	logic, mr := newTestBatchLogic(t, repo)
@@ -202,7 +202,7 @@ func TestBatch_ColdDataFallsBackToDB(t *testing.T) {
 	assert.Equal(t, int32(0), atomic.LoadInt32(&repo.topNCalls), "_full=1 不该重建")
 }
 
-// TestBatch_StaleCacheTriggersRebuild _full=0 视为残缺 触发重建
+// TestBatch_StaleCacheTriggersRebuild _full=0 视为残缺,触发重建
 func TestBatch_StaleCacheTriggersRebuild(t *testing.T) {
 	repo := &fakeLikeRepo{
 		topNByUser: map[int64][]int64{
@@ -212,7 +212,7 @@ func TestBatch_StaleCacheTriggersRebuild(t *testing.T) {
 	logic, mr := newTestBatchLogic(t, repo)
 
 	userLikeKey := "like:user:1"
-	mr.HSet(userLikeKey, "300", "1") // 残缺缓存 无 _full
+	mr.HSet(userLikeKey, "300", "1") // 残缺缓存,无 _full
 
 	out, err := logic.BatchQueryIsLiked(batchReq(1, 400, 500))
 	require.NoError(t, err)
@@ -224,7 +224,7 @@ func TestBatch_StaleCacheTriggersRebuild(t *testing.T) {
 	assert.Equal(t, "", mr.HGet(userLikeKey, "300"), "残缺脏字段应被重建清除")
 }
 
-// TestBatch_EmptyTopNStillMarksFull 用户无任何点赞 也应写空 _full=1 hash 避免反复重建
+// TestBatch_EmptyTopNStillMarksFull 用户无任何点赞,也应写空 _full=1 hash 避免反复重建
 func TestBatch_EmptyTopNStillMarksFull(t *testing.T) {
 	repo := &fakeLikeRepo{topNByUser: map[int64][]int64{}}
 	logic, mr := newTestBatchLogic(t, repo)
@@ -284,7 +284,7 @@ func TestBatch_RedisErrorDegrades(t *testing.T) {
 	assert.GreaterOrEqual(t, atomic.LoadInt32(&repo.batchCalls), int32(1))
 }
 
-// TestBatch_DedupContentIDs 入参重复 cid 结果一致 不重复打 cache
+// TestBatch_DedupContentIDs 入参重复 cid 结果一致,不重复打 cache
 func TestBatch_DedupContentIDs(t *testing.T) {
 	repo := &fakeLikeRepo{topNByUser: map[int64][]int64{1: {100}}}
 	logic, _ := newTestBatchLogic(t, repo)
@@ -298,7 +298,7 @@ func TestBatch_DedupContentIDs(t *testing.T) {
 	}
 }
 
-// TestBatch_LockBusyFallsBackToDB 模拟另一个实例长期持锁 本实例等待超时后降级走 DB
+// TestBatch_LockBusyFallsBackToDB 模拟另一个实例长期持锁,本实例等待超时后降级走 DB
 // 体现"拿不到锁→ErrLockBusy→fillAllFromDB"的兜底链路
 func TestBatch_LockBusyFallsBackToDB(t *testing.T) {
 	repo := &fakeLikeRepo{
@@ -326,7 +326,7 @@ func TestBatch_LockBusyFallsBackToDB(t *testing.T) {
 		likeRepo: repo,
 	}
 
-	// 模拟另一个实例已持有锁 长期不释放
+	// 模拟另一个实例已持有锁,长期不释放
 	require.NoError(t, mr.Set(cache.BuildLockKey("like:user:1"), "other-instance-owner"))
 	mr.SetTTL(cache.BuildLockKey("like:user:1"), 30*time.Second)
 
@@ -340,7 +340,7 @@ func TestBatch_LockBusyFallsBackToDB(t *testing.T) {
 	assert.Equal(t, int32(0), atomic.LoadInt32(&repo.topNCalls), "未拿到锁不应执行重建 topN")
 }
 
-// TestBatch_InvalidContentIDsSkipped 非法 cid (≤0) 跳过 不影响其他 cid
+// TestBatch_InvalidContentIDsSkipped 非法 cid (≤0) 跳过,不影响其他 cid
 func TestBatch_InvalidContentIDsSkipped(t *testing.T) {
 	repo := &fakeLikeRepo{topNByUser: map[int64][]int64{1: {100}}}
 	logic, _ := newTestBatchLogic(t, repo)

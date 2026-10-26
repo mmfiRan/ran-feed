@@ -72,7 +72,7 @@ func (p *LikeProducer) sendEventWithRetry(ctx context.Context, evt *event.LikeEv
 	}
 }
 
-// sendEvent 发送事件到Kafka
+// sendEvent 发送事件到 Kafka
 func (p *LikeProducer) sendEvent(ctx context.Context, evt *event.LikeEvent) error {
 	body, err := evt.Marshal()
 	if err != nil {

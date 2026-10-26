@@ -17,11 +17,11 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
-// inboxEmptySentinelID 空收件箱的负缓存哨兵 读时按 id<=0 过滤不可见
+// inboxEmptySentinelID 空收件箱的负缓存哨兵,读时按 id<=0 过滤不可见
 const inboxEmptySentinelID int64 = 0
 
-// AddFanOut 扇出写一批 follower 的收件箱 整批一次 pipeline
-// 写收件箱幂等可重放 任一步失败整批返回错误交调用方重试
+// AddFanOut 扇出写一批 follower 的收件箱,整批一次 pipeline
+// 写收件箱幂等可重放,任一步失败整批返回错误交调用方重试
 func (f *Feed) AddFanOut(ctx context.Context, followerIDs []int64, contentID, publishedAtMillis int64) error {
 	if contentID <= 0 || len(followerIDs) == 0 {
 		return nil
@@ -38,7 +38,7 @@ func (f *Feed) AddFanOut(ctx context.Context, followerIDs []int64, contentID, pu
 	})
 }
 
-// Backfill 把一批内容灌进单个 follower 的收件箱 返回实际新增数 新关注时调用
+// Backfill 把一批内容灌进单个 follower 的收件箱,返回实际新增数,新关注时调用
 func (f *Feed) Backfill(ctx context.Context, followerID int64, items []ScoredID) (int, error) {
 	if followerID <= 0 || len(items) == 0 {
 		return 0, nil
@@ -60,7 +60,7 @@ func (f *Feed) Backfill(ctx context.Context, followerID int64, items []ScoredID)
 	return int(added), nil
 }
 
-// RemoveContents 从 follower 收件箱摘掉指定内容 取关时调用
+// RemoveContents 从 follower 收件箱摘掉指定内容,取关时调用
 func (f *Feed) RemoveContents(ctx context.Context, followerID int64, contentIDs []int64) (int, error) {
 	if followerID <= 0 || len(contentIDs) == 0 {
 		return 0, nil
@@ -81,7 +81,7 @@ func (f *Feed) RemoveContents(ctx context.Context, followerID int64, contentIDs 
 	return removed, nil
 }
 
-// ensureInbox 收件箱在即就绪 否则抢锁重建一次 抢不到返回不就绪由调用方降级
+// ensureInbox 收件箱在即就绪,否则抢锁重建一次,抢不到返回不就绪由调用方降级
 func (f *Feed) ensureInbox(ctx context.Context, viewerID int64, pullAuthors []int64) (bool, error) {
 	inboxKey := rediskey.BuildFollowInboxKey(viewerID)
 	if f.keyExists(ctx, inboxKey) {
@@ -96,7 +96,7 @@ func (f *Feed) ensureInbox(ctx context.Context, viewerID int64, pullAuthors []in
 		},
 	)
 	if err != nil {
-		// 等锁超时 本轮降级回源 不阻塞整流
+		// 等锁超时,本轮降级回源,不阻塞整流
 		if errors.Is(err, cache.ErrLockBusy) {
 			return false, nil
 		}
@@ -105,8 +105,7 @@ func (f *Feed) ensureInbox(ctx context.Context, viewerID int64, pullAuthors []in
 	return ok, nil
 }
 
-// rebuildInbox 按推侧作者扫库回填收件箱 推侧为空写哨兵做负缓存
-// 用脱离请求取消的 ctx 保证写入不被请求结束打断
+// rebuildInbox 按推侧作者扫库回填收件箱,推侧为空写哨兵做负缓存
 func (f *Feed) rebuildInbox(ctx context.Context, inboxKey string, viewerID int64, pullAuthors []int64) error {
 	bgCtx := context.WithoutCancel(ctx)
 
@@ -149,7 +148,7 @@ func (f *Feed) rebuildInbox(ctx context.Context, inboxKey string, viewerID int64
 	return err
 }
 
-// queryInbox 读收件箱窗口内本页候选 多取一条判 hasMore 复合游标的精确过滤交调用方
+// queryInbox 读收件箱窗口内本页候选,多取一条判 hasMore 复合游标的精确过滤交调用方
 func (f *Feed) queryInbox(ctx context.Context, viewerID, cursorScore int64, pageSize int) ([]ScoredID, bool, error) {
 	inboxKey := rediskey.BuildFollowInboxKey(viewerID)
 	maxScore := math.MaxFloat64
@@ -165,16 +164,16 @@ func (f *Feed) queryInbox(ctx context.Context, viewerID, cursorScore int64, page
 		return nil, false, nil
 	}
 	if eerr := f.redis.ExpireCtx(ctx, inboxKey, contentconsts.TimelineTTLSeconds()); eerr != nil {
-		f.logger(ctx).Errorf("续期收件箱 TTL 失败 inboxKey=%s err=%v", inboxKey, eerr)
+		logx.WithContext(ctx).Errorf("续期收件箱 TTL 失败 inboxKey=%s err=%v", inboxKey, eerr)
 	}
 	hasMore := len(pairs) > pageSize
 	return pairsToScored(pairs), hasMore, nil
 }
 
-// writeEmptyInboxSentinel 写不可见哨兵做空收件箱负缓存 避免空用户每次读都重扫库
+// writeEmptyInboxSentinel 写不可见哨兵做空收件箱负缓存,避免空用户每次读都重扫库
 func (f *Feed) writeEmptyInboxSentinel(ctx context.Context, inboxKey string) {
 	if _, err := f.writeInbox(ctx, inboxKey, contentconsts.NowMillis(), inboxEmptySentinelID); err != nil {
-		f.logger(ctx).Errorf("写空收件箱哨兵失败 inboxKey=%s err=%v", inboxKey, err)
+		logx.WithContext(ctx).Errorf("写空收件箱哨兵失败 inboxKey=%s err=%v", inboxKey, err)
 	}
 }
 
@@ -202,21 +201,17 @@ func (f *Feed) inboxArgs(pairs ...int64) []any {
 	return args
 }
 
-// keyExists 判 key 在不在 查询失败按不在处理 宁可重建不可漏内容
+// keyExists 判 key 在不在,查询失败按不在处理
 func (f *Feed) keyExists(ctx context.Context, key string) bool {
 	exists, err := f.redis.ExistsCtx(ctx, key)
 	if err != nil {
-		f.logger(ctx).Errorf("检查关注流缓存存在性失败 key=%s err=%v", key, err)
+		logx.WithContext(ctx).Errorf("检查关注流缓存存在性失败 key=%s err=%v", key, err)
 		return false
 	}
 	return exists
 }
 
-func (f *Feed) logger(ctx context.Context) logx.Logger {
-	return logx.WithContext(ctx)
-}
-
-// pairsToScored 解析 zset 成员 过滤非法 id 与哨兵
+// pairsToScored 解析 zset 成员,过滤非法 id 与哨兵
 func pairsToScored(pairs []redis.FloatPair) []ScoredID {
 	items := make([]ScoredID, 0, len(pairs))
 	for _, p := range pairs {

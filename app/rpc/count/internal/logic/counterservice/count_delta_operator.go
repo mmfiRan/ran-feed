@@ -12,7 +12,7 @@ import (
 	"github.com/zeromicro/go-zero/core/threading"
 )
 
-// CountDeltaOperator 封装计数增减与缓存失效的通用逻辑。
+// CountDeltaOperator 封装计数增减与缓存失效的通用逻辑
 type CountDeltaOperator struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
@@ -31,12 +31,12 @@ func NewCountDeltaOperator(ctx context.Context, svcCtx *svc.ServiceContext) *Cou
 	}
 }
 
-// UpdateDeltaOnly 仅更新DB，不处理缓存
+// UpdateDeltaOnly 仅更新 DB,不处理缓存
 func (o *CountDeltaOperator) UpdateDeltaOnly(bizType countenum.BizTypeEnum, targetType countenum.TargetTypeEnum, targetID int64, delta int64, updatedAt time.Time) error {
 	return o.UpdateDeltaOnlyWithRepo(o.countRepo, bizType, targetType, targetID, delta, updatedAt)
 }
 
-// UpdateDeltaOnlyWithRepo 允许调用方传入带事务的repo
+// UpdateDeltaOnlyWithRepo 允许调用方传入带事务的 repo
 func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepo(repo repositories.CountValueRepository, bizType countenum.BizTypeEnum, targetType countenum.TargetTypeEnum, targetID int64, delta int64, updatedAt time.Time) error {
 	if bizType == countenum.BizTypeUnknown || targetType == countenum.TargetTypeUnknown || targetID <= 0 || delta == 0 {
 		return nil
@@ -45,7 +45,7 @@ func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepo(repo repositories.CountValu
 	return err
 }
 
-// UpdateDeltaOnlyWithOwner 仅更新DB（携带owner_id），不处理缓存
+// UpdateDeltaOnlyWithOwner 仅更新 DB（携带 owner_id）,不处理缓存
 func (o *CountDeltaOperator) UpdateDeltaOnlyWithOwner(
 	bizType countenum.BizTypeEnum,
 	targetType countenum.TargetTypeEnum,
@@ -57,7 +57,7 @@ func (o *CountDeltaOperator) UpdateDeltaOnlyWithOwner(
 	return o.UpdateDeltaOnlyWithRepoAndOwner(o.countRepo, bizType, targetType, targetID, ownerID, delta, updatedAt)
 }
 
-// UpdateDeltaOnlyWithRepoAndOwner 允许调用方传入带事务的repo，并携带owner_id
+// UpdateDeltaOnlyWithRepoAndOwner 允许调用方传入带事务的 repo,并携带 owner_id
 func (o *CountDeltaOperator) UpdateDeltaOnlyWithRepoAndOwner(
 	repo repositories.CountValueRepository,
 	bizType countenum.BizTypeEnum,
@@ -89,7 +89,7 @@ func (o *CountDeltaOperator) InvalidateCountCache(bizType countenum.BizTypeEnum,
 			cacheKey, bizType, targetType, targetID, err)
 	}
 
-	// 延迟双删兜住删缓存后到 DB 提交可见前的回填窗口 用 GoSafe 防 panic 逃逸
+	// 延迟双删兜住删缓存后到 DB 提交可见前的回填窗口,用 GoSafe 防 panic 逃逸
 	threading.GoSafe(func() {
 		time.Sleep(delayedCacheInvalidateDelay)
 		if _, err := o.svcCtx.Redis.DelCtx(context.Background(), cacheKey); err != nil {

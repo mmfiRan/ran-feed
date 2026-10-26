@@ -12,7 +12,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// fillCommentUsers 按 user_id 去重批量补昵称头像 删除态跳过
+// fillCommentUsers 按 user_id 去重批量补昵称头像,删除态跳过
 func fillCommentUsers(ctx context.Context, svcCtx *svc.ServiceContext, logger logx.Logger, items []*interaction.CommentItem) {
 	if svcCtx == nil || svcCtx.UserRpc == nil || len(items) == 0 {
 		return

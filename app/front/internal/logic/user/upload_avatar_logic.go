@@ -48,7 +48,7 @@ func NewUploadAvatarLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Uplo
 
 func (l *UploadAvatarLogic) UploadAvatar(w http.ResponseWriter, r *http.Request) (*types.UploadAvatarRes, error) {
 
-	// 限制上传体积，避免大文件占用内存
+	// 限制上传体积,避免大文件占用内存
 	r.Body = http.MaxBytesReader(w, r.Body, maxAvatarSize+1024)
 
 	// 解析 multipart 表单

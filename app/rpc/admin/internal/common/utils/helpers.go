@@ -47,7 +47,7 @@ func AdminStatusValue(status int32) *commonpb.EnumValue {
 	return enums.ToCommonPB(adminenums.AdminStatusEnum(status))
 }
 
-// BuildUserRoleRows 组装管理员角色绑定行 跳过非正 roleID 每行预生成雪花ID
+// BuildUserRoleRows 组装管理员角色绑定行,跳过非正 roleID 每行预生成雪花 ID
 func BuildUserRoleRows(adminID int64, roleIDs []int64, operatorID int64) []*model.RanFeedAdminUserRole {
 	rows := make([]*model.RanFeedAdminUserRole, 0, len(roleIDs))
 	for _, rid := range roleIDs {
@@ -70,7 +70,7 @@ func IsSelfDisable(targetID, operatorID int64, status admin.AdminStatus) bool {
 	return status == admin.AdminStatus_ADMIN_STATUS_DISABLED && targetID == operatorID
 }
 
-// RemovesSelfSuper 操作者给自己设角色 当前持有 super 但新集合不含 super
+// RemovesSelfSuper 操作者给自己设角色,当前持有 super 但新集合不含 super
 func RemovesSelfSuper(adminID, operatorID, superRoleID int64, currentlyHasSuper bool, newRoleIDs []int64) bool {
 	if adminID != operatorID || superRoleID <= 0 || !currentlyHasSuper {
 		return false

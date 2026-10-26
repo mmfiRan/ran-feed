@@ -41,8 +41,8 @@ func Fail(msg string) ReturnT {
 	}
 }
 
-// TriggerParam 是 XXL-Job admin 调用执行器 /run 的参数。
-// Raw 保留原始 JSON，方便兼容未知字段。
+// TriggerParam 是 XXL-Job admin 调用执行器 /run 的参数
+// Raw 保留原始 JSON,方便兼容未知字段
 type TriggerParam struct {
 	JobID                 int64           `json:"jobId"`
 	ExecutorHandler       string          `json:"executorHandler"`
@@ -59,26 +59,26 @@ type TriggerParam struct {
 	Raw                   json.RawMessage `json:"-"`
 }
 
-// IdleBeatParam 是 /idleBeat 的参数。
+// IdleBeatParam 是 /idleBeat 的参数
 type IdleBeatParam struct {
 	JobID           int64  `json:"jobId"`
 	ExecutorHandler string `json:"executorHandler"`
 }
 
-// KillParam 是 /kill 的参数。
+// KillParam 是 /kill 的参数
 type KillParam struct {
 	JobID           int64  `json:"jobId"`
 	ExecutorHandler string `json:"executorHandler"`
 }
 
-// LogParam 是 /log 的参数。
+// LogParam 是 /log 的参数
 type LogParam struct {
 	LogDateTime int64 `json:"logDateTim"`
 	LogID       int64 `json:"logId"`
 	FromLineNum int   `json:"fromLineNum"`
 }
 
-// LogResult 是 /log 的响应内容。
+// LogResult 是 /log 的响应内容
 type LogResult struct {
 	LogContent  string `json:"logContent"`
 	FromLineNum int    `json:"fromLineNum"`
@@ -86,7 +86,7 @@ type LogResult struct {
 	IsEnd       bool   `json:"isEnd"`
 }
 
-// HandleCallbackParam 是 admin /api/callback 的参数。
+// HandleCallbackParam 是 admin /api/callback 的参数
 type HandleCallbackParam struct {
 	LogID       int64  `json:"logId"`
 	LogDateTime int64  `json:"logDateTim"`
@@ -105,21 +105,21 @@ func (p HandleCallbackParam) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// RegistryParam 是 admin /api/registry 和 /api/registryRemove 的参数。
+// RegistryParam 是 admin /api/registry 和 /api/registryRemove 的参数
 type RegistryParam struct {
 	RegistryGroup string `json:"registryGroup"`
 	RegistryKey   string `json:"registryKey"`
 	RegistryValue string `json:"registryValue"`
 }
 
-// RunResult 是内部执行结果结构（用于回调）。
+// RunResult 是内部执行结果结构（用于回调）
 type RunResult struct {
 	Code    int
 	Msg     string
 	EndTime time.Time
 }
 
-// BlockStrategy 是执行器阻塞策略。
+// BlockStrategy 是执行器阻塞策略
 type BlockStrategy string
 
 const (

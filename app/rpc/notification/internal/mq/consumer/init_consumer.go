@@ -16,7 +16,7 @@ func Consumers(c config.Config, ctx context.Context, svcContext *svc.ServiceCont
 	if c.KqConsumerConf.Topic != "" {
 		consumers = append(consumers, kq.MustNewQueue(c.KqConsumerConf, NewCanalNotificationConsumer(ctx, svcContext)))
 	}
-	// content 域 outbox 事件消费者 通知作者审核结果
+	// content 域 outbox 事件消费者,通知作者审核结果
 	if c.ContentEventKqConsumerConf.Topic != "" {
 		consumers = append(consumers, kq.MustNewQueue(c.ContentEventKqConsumerConf, NewContentReviewConsumer(ctx, svcContext)))
 	}

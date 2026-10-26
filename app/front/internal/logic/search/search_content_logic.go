@@ -38,7 +38,7 @@ func (l *SearchContentLogic) SearchContent(req *types.SearchContentReq) (resp *t
 
 	viewerID := utils.GetContextUserIdWithDefault(l.ctx)
 
-	// search-rpc 只排序 出 ranked content_ids 与高亮
+	// search-rpc 只排序,出 ranked content_ids 与高亮
 	searchRes, err := l.svcCtx.SearchRpc.SearchContent(l.ctx, &search.SearchContentReq{
 		Keyword:     req.Keyword,
 		ContentType: search.ContentType(req.ContentType),
@@ -59,7 +59,7 @@ func (l *SearchContentLogic) SearchContent(req *types.SearchContentReq) (resp *t
 		highlightMap[h.ContentId] = h
 	}
 
-	// content-rpc 复用 feed 拼装链富化 按 id 顺序返回
+	// content-rpc 复用 feed 拼装链富化,按 id 顺序返回
 	enriched, err := l.svcCtx.FeedRpc.BatchGetContentItems(l.ctx, &content.BatchGetContentItemsReq{
 		ContentIds: ids,
 		ViewerId:   viewerID,

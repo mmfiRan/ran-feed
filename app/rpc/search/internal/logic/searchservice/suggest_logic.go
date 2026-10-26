@@ -26,7 +26,7 @@ func NewSuggestLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SuggestLo
 	}
 }
 
-// Suggest 前缀补全 并行查内容标题与用户昵称两索引 合并成带 type 的建议 单索引失败仅该组为空不整体报错
+// Suggest 前缀补全,并行查内容标题与用户昵称两索引,合并成带 type 的建议,单索引失败仅该组为空不整体报错
 func (l *SuggestLogic) Suggest(in *search.SuggestReq) (*search.SuggestRes, error) {
 	res := &search.SuggestRes{Items: []*search.SuggestItem{}}
 	if in == nil || in.Keyword == "" {
@@ -65,7 +65,7 @@ func (l *SuggestLogic) Suggest(in *search.SuggestReq) (*search.SuggestRes, error
 	return res, nil
 }
 
-// suggestOne 查单个索引的补全 失败只记日志返回空 保证按键接口稳定
+// suggestOne 查单个索引的补全,失败只记日志返回空,保证按键接口稳定
 func (l *SuggestLogic) suggestOne(index, field, prefix string, size int) []string {
 	texts, err := es.Suggest(l.ctx, l.svcCtx.ES, index, field, prefix, size)
 	if err != nil {

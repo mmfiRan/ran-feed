@@ -81,7 +81,7 @@ func TestLoadPermissions_ZeroPermCachedBySentinel(t *testing.T) {
 	assert.Empty(t, set)
 	assert.Equal(t, 1, calls)
 
-	// 零权限也被哨兵缓存 二次不回源
+	// 零权限也被哨兵缓存,二次不回源
 	_, err = LoadPermissions(context.Background(), r, 2, 600, loader)
 	require.NoError(t, err)
 	assert.Equal(t, 1, calls)

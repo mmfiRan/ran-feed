@@ -23,7 +23,7 @@ func ClampPageSize[T Integer](size T) int {
 	return s
 }
 
-// NormalizePage offset分页 返回归一后的 offset 与 limit
+// NormalizePage offset 分页,返回归一后的 offset 与 limit
 func NormalizePage[T Integer, S Integer](page T, pageSize S) (offset, limit int) {
 	limit = ClampPageSize(pageSize)
 	p := int(page)

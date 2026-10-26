@@ -34,7 +34,7 @@ func NewDeleteRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 	}
 }
 
-// DeleteRole 删角色 禁删 super 角色
+// DeleteRole 删角色,禁删 super 角色
 func (l *DeleteRoleLogic) DeleteRole(in *admin.DeleteRoleReq) (*admin.DeleteRoleRes, error) {
 	if in.GetId() <= 0 {
 		return nil, errorx.NewMsg("角色ID参数错误")
@@ -73,7 +73,7 @@ func (l *DeleteRoleLogic) DeleteRole(in *admin.DeleteRoleReq) (*admin.DeleteRole
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除角色失败"))
 	}
 
-	// 角色删除 失效受影响管理员的权限缓存使新权限立即生效
+	// 角色删除,失效受影响管理员的权限缓存使新权限立即生效
 	utils.InvalidateAdminPerms(l.ctx, l.svcCtx.Redis, adminIDs)
 	return &admin.DeleteRoleRes{
 		AffectedAdminIds: adminIDs,

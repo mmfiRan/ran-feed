@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestBuildContentModel 统一构造主行 审计字段与归属一致
+// TestBuildContentModel 统一构造主行,审计字段与归属一致
 func TestBuildContentModel(t *testing.T) {
 	row := buildContentModel(7, contentEnum.ContentTypeArticle, contentEnum.ContentStatusDraft, contentEnum.VisibilityPublic)
 	assert.NotZero(t, row.ID)

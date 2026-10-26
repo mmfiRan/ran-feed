@@ -55,7 +55,7 @@ func (m *mockNotifyRepo) MarkRead(int64, []int64) (int64, error) {
 }
 func (m *mockNotifyRepo) MarkAllRead(int64) (int64, error) { return 0, nil }
 
-// stubStrategy 由测试注入 便于精确控制 ExtractEvents 输出
+// stubStrategy 由测试注入,便于精确控制 ExtractEvents 输出
 type stubStrategy struct {
 	table  string
 	events []strategy.NotifyEvent
@@ -80,7 +80,7 @@ func newTestConsumer(notifyRepo repositories.NotificationRepository) *CanalNotif
 	}
 }
 
-// newTestMeta 行元信息 去重键由管道算 此处只需业务字段
+// newTestMeta 行元信息,去重键由管道算,此处只需业务字段
 func newTestMeta(table, op string) pipeline.RowMeta {
 	return pipeline.RowMeta{Table: table, Op: op, EventID: "evt", UpdatedAt: time.Now()}
 }
@@ -129,7 +129,7 @@ func TestPersistEvent_updatedAt零值取当前(t *testing.T) {
 	assert.False(t, notify.lastUpserted.UpdatedAt.IsZero(), "零 updated_at 应替换为 time.Now")
 }
 
-// ---------- processRow 落库 去重由管道负责 ----------
+// ---------- processRow 落库,去重由管道负责 ----------
 
 func TestProcessRow_事件落库并返回recipient(t *testing.T) {
 	notify := &mockNotifyRepo{}
@@ -164,7 +164,7 @@ func TestProcessRow_多事件全部落库(t *testing.T) {
 	notify := &mockNotifyRepo{}
 	c := newTestConsumer(notify)
 
-	// 单行产两个事件(边界场景 目前 strategy 不产 但接口允许)
+	// 单行产两个事件(边界场景,目前 strategy 不产,但接口允许)
 	stub := &stubStrategy{table: "ran_feed_comment", events: []strategy.NotifyEvent{
 		{RecipientID: 200, ActorID: 100, Action: strategy.PersistInsertOne, AggKey: "CR:1"},
 		{RecipientID: 300, ActorID: 100, Action: strategy.PersistInsertOne, AggKey: "CR:2"},

@@ -19,7 +19,7 @@ import (
 	"github.com/zeromicro/go-zero/core/mr"
 )
 
-// followSummaryConcurrency 关注摘要并发上限 防一页命中数十用户时打爆下游
+// followSummaryConcurrency 关注摘要并发上限,防一页命中数十用户时打爆下游
 const followSummaryConcurrency = 16
 
 type SearchUserLogic struct {
@@ -101,7 +101,7 @@ func (l *SearchUserLogic) SearchUser(req *types.SearchUserReq) (resp *types.Sear
 	return resp, nil
 }
 
-// loadFollowSummaries 并发取每个用户的是否已关注与粉丝数 限并发 单个失败只记日志不阻断
+// loadFollowSummaries 并发取每个用户的是否已关注与粉丝数,限并发,单个失败只记日志不阻断
 func (l *SearchUserLogic) loadFollowSummaries(ids []int64, viewerID int64) map[int64]*interaction.GetFollowSummaryRes {
 	res := make(map[int64]*interaction.GetFollowSummaryRes, len(ids))
 	if len(ids) == 0 {

@@ -19,7 +19,7 @@ func SetMachineID(id uint16) {
 	machineID = id
 }
 
-// sf 懒初始化 且只初始化一次
+// sf 懒初始化,且只初始化一次
 var sf = sync.OnceValue(func() *sonyflake.Sonyflake {
 	opts := sonyflake.Settings{}
 	if machineID != 0 {
@@ -34,7 +34,7 @@ var sf = sync.OnceValue(func() *sonyflake.Sonyflake {
 	return s
 })
 
-// GenID 生成唯一ID 失败即 panic 快速失败
+// GenID 生成唯一 ID 失败即 panic 快速失败
 func GenID() int64 {
 	id, err := sf().NextID()
 	if err != nil {

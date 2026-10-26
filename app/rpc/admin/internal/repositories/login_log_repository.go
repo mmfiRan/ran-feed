@@ -51,7 +51,7 @@ func (r *loginLogRepositoryImpl) WithTx(tx *query.Query) LoginLogRepository {
 	}
 }
 
-// Create 落一条登录日志 返回ID
+// Create 落一条登录日志,返回 ID
 func (r *loginLogRepositoryImpl) Create(row *model.RanFeedLoginLog) (int64, error) {
 	if row == nil {
 		return 0, nil

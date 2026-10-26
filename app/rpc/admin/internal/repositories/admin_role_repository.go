@@ -23,7 +23,7 @@ type AdminRoleRepository interface {
 	GetByID(id int64) (*model.RanFeedAdminRole, error)
 	// GetByCode 按 code 获取角色
 	GetByCode(code string) (*model.RanFeedAdminRole, error)
-	// ListByIDs 按ID集合取角色
+	// ListByIDs 按 ID 集合取角色
 	ListByIDs(ids []int64) ([]*model.RanFeedAdminRole, error)
 	// Create 创建角色
 	Create(row *model.RanFeedAdminRole) error
@@ -129,7 +129,7 @@ func (r *adminRoleRepositoryImpl) GetByCode(code string) (*model.RanFeedAdminRol
 	return row, nil
 }
 
-// ListByIDs 按ID集合取角色
+// ListByIDs 按 ID 集合取角色
 func (r *adminRoleRepositoryImpl) ListByIDs(ids []int64) ([]*model.RanFeedAdminRole, error) {
 	if len(ids) == 0 {
 		return nil, nil

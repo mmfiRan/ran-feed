@@ -17,12 +17,12 @@ import (
 const (
 	outboxTable = "ran_feed_content_outbox"
 	opInsert    = "INSERT"
-	// 单条事件处理的有界重试次数与退避基数 耗尽后交 kafka 重投 可靠性最终由对账作业兜底
+	// 单条事件处理的有界重试次数与退避基数,耗尽后交 kafka 重投
 	handleMaxAttempts   = 3
 	handleRetryBaseWait = 100 * time.Millisecond
 )
 
-// ContentEventConsumer 消费 content 域 outbox 事件 只做协议解析 幂等与重试 业务投影下沉 feedprojector
+// ContentEventConsumer 消费 content 域 outbox 事件
 type ContentEventConsumer struct {
 	dedupGate *dedup.Gate
 	projector *feedprojector.Projector
@@ -35,7 +35,7 @@ func NewContentEventConsumer(svcCtx *svc.ServiceContext) *ContentEventConsumer {
 	}
 }
 
-// Consume 解析 canal 消息 仅处理 outbox 表 INSERT 逐行幂等处理
+// Consume 解析 canal 消息,仅处理 outbox 表 INSERT 逐行幂等处理
 func (c *ContentEventConsumer) Consume(ctx context.Context, key, val string) error {
 	msg, err := canal.Parse(val)
 	if err != nil {
@@ -58,7 +58,7 @@ func (c *ContentEventConsumer) Consume(ctx context.Context, key, val string) err
 	return nil
 }
 
-// processRow 单行处理 Exists 跳过已处理 处理失败返回错误交 kafka 重投 成功后标记 dedup
+// processRow 单行处理 Exists 跳过已处理,处理失败返回错误交 kafka 重投,成功后标记 dedup
 func (c *ContentEventConsumer) processRow(ctx context.Context, eventID, table, op string, row map[string]any, idx int) error {
 	eid := outboxEventKey(eventID, table, op, row, idx)
 	seen, err := c.dedupGate.Exists(ctx, contentconsts.ContentEventConsumerName, eid)
@@ -93,7 +93,7 @@ func outboxEventKey(eventID, table, op string, row map[string]any, idx int) stri
 	return canal.RowEventID(eventID, table, op, row, idx)
 }
 
-// handleWithRetry 有界重试 指数退避 耗尽后返回最后错误交 kafka 重投
+// handleWithRetry 有界重试,指数退避,耗尽后返回最后错误交 kafka 重投
 func (c *ContentEventConsumer) handleWithRetry(ctx context.Context, evt *contentevent.ContentEvent) error {
 	return retryWithBackoff(ctx, handleMaxAttempts, handleRetryBaseWait, func() error {
 		return c.projector.Apply(ctx, evt)

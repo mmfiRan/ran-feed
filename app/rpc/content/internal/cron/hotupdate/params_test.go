@@ -11,7 +11,7 @@ import (
 )
 
 // TestParseParams_ShardConsistency 任务按 p.Shards 冻结并清理分片
-// 缺省须取约定值 显式与写入方不一致必须报错 否则落在其余分片的脏内容永不被处理
+// 缺省须取约定值,显式与写入方不一致必须报错,否则落在其余分片的脏内容永不被处理
 func TestParseParams_ShardConsistency(t *testing.T) {
 	cases := []struct {
 		name    string
@@ -37,14 +37,14 @@ func TestParseParams_ShardConsistency(t *testing.T) {
 	}
 }
 
-// TestParseParams_LockTTLDefault 锁 TTL 属任务级 缺省按任务内置值补齐
+// TestParseParams_LockTTLDefault 锁 TTL 属任务级,缺省按任务内置值补齐
 func TestParseParams_LockTTLDefault(t *testing.T) {
 	p, err := parseParams("")
 	require.NoError(t, err)
 	assert.Equal(t, defaultFullLockTTL, p.LockTTL)
 }
 
-// TestParseParams_OptionsPopulated 榜单参数走内嵌 Options 展开 缺省由组件归一化补齐
+// TestParseParams_OptionsPopulated 榜单参数走内嵌 Options 展开,缺省由组件归一化补齐
 func TestParseParams_OptionsPopulated(t *testing.T) {
 	p, err := parseParams(`{"mainN":700,"topN":300,"halfLifeHours":48}`)
 	require.NoError(t, err)

@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// FromError 将任意错误转换为gRPCStatus
+// FromError 将任意错误转换为 gRPCStatus
 func FromError(e error) error {
 	if e == nil {
 		return nil
@@ -27,7 +27,7 @@ func FromError(e error) error {
 		return e
 	}
 
-	// 检查是否是context错误
+	// 检查是否是 context 错误
 	switch e {
 	case context.Canceled:
 		return status.Error(Canceled, "操作已取消")
@@ -35,7 +35,7 @@ func FromError(e error) error {
 		return status.Error(DeadlineExceeded, "操作超时")
 	}
 
-	// 未知错误，返回兜底错误
+	// 未知错误,返回兜底错误
 	return status.Error(Internal, e.Error())
 }
 
@@ -51,17 +51,17 @@ func ToError(ctx context.Context, e error) error {
 	}
 	grpcStatus, ok := status.FromError(e)
 	if !ok {
-		// 不是 gRPC 错误，包装为业务错误
+		// 不是 gRPC 错误,包装为业务错误
 		return errorx.New(errorx.DefaultErrorMessage, errorx.DefaultErrorCode)
 	}
 
 	return grpcStatusToBizError(ctx, grpcStatus)
 }
 
-// bizErrorToGrpcStatus将业务错误转换为gRPCStatus
+// bizErrorToGrpcStatus 将业务错误转换为 gRPCStatus
 // 使用 gRPC Status Details 机制传递业务错误信息
 func bizErrorToGrpcStatus(bizErr *errorx.BizError) error {
-	// 业务错误统一使用 Unknown 状态码，不做映射
+	// 业务错误统一使用 Unknown 状态码,不做映射
 	// 真正的业务错误码通过 Details 传递
 	st := status.New(Unknown, bizErr.Message)
 
@@ -77,7 +77,7 @@ func bizErrorToGrpcStatus(bizErr *errorx.BizError) error {
 	// 添加 Details
 	st, err := st.WithDetails(detail)
 	if err != nil {
-		// 如果添加 Details 失败，返回基础 Status
+		// 如果添加 Details 失败,返回基础 Status
 		return status.New(Unknown, bizErr.Message).Err()
 	}
 
@@ -104,7 +104,7 @@ func grpcStatusToBizError(ctx context.Context, grpcStatus *status.Status) *error
 		}
 	}
 
-	// 没有 Details，说明是系统异常错误，需要打印日志
+	// 没有 Details,说明是系统异常错误,需要打印日志
 	message := grpcStatus.Message()
 	if message == "" {
 		message = errorx.DefaultErrorMessage

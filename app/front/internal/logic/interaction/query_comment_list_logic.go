@@ -36,7 +36,7 @@ func (l *QueryCommentListLogic) QueryCommentList(req *types.QueryCommentListReq)
 	if req.ContentId == nil || req.Scene == nil {
 		return nil, errorx.NewMsg("参数错误")
 	}
-	// 解析scene参数
+	// 解析 scene 参数
 	scene, err := transform.ParseEnum[interaction.Scene](interaction.Scene_value, *req.Scene)
 	if err != nil {
 		return nil, errorx.NewMsg("场景参数错误")

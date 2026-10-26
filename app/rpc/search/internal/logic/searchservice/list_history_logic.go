@@ -31,7 +31,7 @@ func NewListHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListH
 	}
 }
 
-// ListHistory 取最近 limit 条 匿名返回空
+// ListHistory 取最近 limit 条,匿名返回空
 func (l *ListHistoryLogic) ListHistory(in *search.ListHistoryReq) (*search.ListHistoryRes, error) {
 	if in == nil || in.UserId <= 0 {
 		return &search.ListHistoryRes{}, nil

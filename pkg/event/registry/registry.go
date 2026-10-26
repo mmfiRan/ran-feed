@@ -12,7 +12,7 @@ type Registry[S TableNamer] struct {
 	strategies map[string]S
 }
 
-// New 建注册表 表名为空的策略被忽略
+// New 建注册表,表名为空的策略被忽略
 func New[S TableNamer](strategies ...S) *Registry[S] {
 	r := &Registry[S]{
 		strategies: make(map[string]S, len(strategies)),
@@ -27,7 +27,7 @@ func New[S TableNamer](strategies ...S) *Registry[S] {
 	return r
 }
 
-// Get 按表名取策略 未注册返回 false
+// Get 按表名取策略,未注册返回 false
 func (r *Registry[S]) Get(table string) (S, bool) {
 	s, ok := r.strategies[NormalizeTable(table)]
 	return s, ok

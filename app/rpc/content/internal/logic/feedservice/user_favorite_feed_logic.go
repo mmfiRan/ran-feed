@@ -46,14 +46,14 @@ func (l *UserFavoriteFeedLogic) UserFavoriteFeed(in *content.UserFavoriteFeedReq
 		return emptyUserFavoriteFeedRes(), nil
 	}
 
-	// 列表按被访问者(owner)取 点赞态按实际访问者(viewer)算 二者不能混用
+	// 列表按被访问者(owner)取,点赞态按实际访问者(viewer)算,二者不能混用
 	entries, err := l.resolver.Resolve(l.ctx, page.ContentIDs, favoriteViewerID(in), true)
 	if err != nil {
 		return nil, err
 	}
 	items := buildContentItems(entries)
 	if len(items) == 0 {
-		// 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
+		// 过滤后为空也返回原始游标,避免整页死内容导致翻页中断
 		return &content.UserFavoriteFeedRes{Items: []*content.ContentItem{}, NextCursor: page.NextCursor, HasMore: page.HasMore}, nil
 	}
 
@@ -72,8 +72,8 @@ func emptyUserFavoriteFeedRes() *content.UserFavoriteFeedRes {
 	}
 }
 
-// favoriteViewerID 取实际访问者 未登录或未传为 0 匿名
-// 收藏列表按 owner(user_id) 取 点赞态必须按 viewer(viewer_id) 算
+// favoriteViewerID 取实际访问者,未登录或未传为 0 匿名
+// 收藏列表按 owner(user_id) 取,点赞态必须按 viewer(viewer_id) 算
 func favoriteViewerID(in *content.UserFavoriteFeedReq) int64 {
 	if in == nil || in.ViewerId == nil {
 		return 0

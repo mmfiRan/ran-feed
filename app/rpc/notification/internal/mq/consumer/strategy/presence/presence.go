@@ -1,5 +1,5 @@
 // Package presence 通知域出现型策略
-// 复用 count presence 翻转判定思想 但产出物是 NotifyEvent 且严格遵守 N9(只在激活态生成)+N10(actor==recipient 自我过滤)
+// 复用 count presence 翻转判定思想,但产出物是 NotifyEvent 且严格遵守 N9(只在激活态生成)+N10(actor==recipient 自我过滤)
 package presence
 
 import (
@@ -23,7 +23,7 @@ func isActivation(op string, isActive func(map[string]interface{}) bool, row, ol
 	}
 }
 
-// beforeView 还原变更前整行 canal 的 Old 只带改动列 用其覆盖新行得到旧视图
+// beforeView 还原变更前整行 canal 的 Old 只带改动列,用其覆盖新行得到旧视图
 func beforeView(row, oldRow map[string]interface{}) map[string]interface{} {
 	if len(oldRow) == 0 {
 		return row
@@ -38,7 +38,7 @@ func beforeView(row, oldRow map[string]interface{}) map[string]interface{} {
 	return merged
 }
 
-// statusActive status=10 视为活跃 复用互动表的 status 值域(10 正常)
+// statusActive status=10 视为活跃,复用互动表的 status 值域(10 正常)
 func statusActive(row map[string]interface{}) bool {
 	v, ok := canal.ParseInt64(row["status"])
 	if !ok {

@@ -107,7 +107,7 @@ func TestDistLock_ConcurrentDedup(t *testing.T) {
 	}
 }
 
-// TestDistLock_WaitTimeoutReturnsErrLockBusy 拿不到锁且别人迟迟不重建 超时返回 ErrLockBusy
+// TestDistLock_WaitTimeoutReturnsErrLockBusy 拿不到锁且别人迟迟不重建,超时返回 ErrLockBusy
 func TestDistLock_WaitTimeoutReturnsErrLockBusy(t *testing.T) {
 	dl, mr := newTestLocker(t,
 		WithLockTTL(30*time.Second),
@@ -115,7 +115,7 @@ func TestDistLock_WaitTimeoutReturnsErrLockBusy(t *testing.T) {
 		WithPollInterval(30*time.Millisecond),
 	)
 
-	// 提前在 Redis 写入锁 让本次调用拿不到
+	// 提前在 Redis 写入锁,让本次调用拿不到
 	assert.NoError(t, mr.Set(BuildLockKey("k"), "other-owner"))
 	mr.SetTTL(BuildLockKey("k"), 30*time.Second)
 
@@ -129,7 +129,7 @@ func TestDistLock_WaitTimeoutReturnsErrLockBusy(t *testing.T) {
 	assert.ErrorIs(t, err, ErrLockBusy)
 }
 
-// TestDistLock_WaitCachePopulatedDuringPoll 拿不到锁但等待期间 cache 就绪 应返回缓存值
+// TestDistLock_WaitCachePopulatedDuringPoll 拿不到锁但等待期间 cache 就绪,应返回缓存值
 func TestDistLock_WaitCachePopulatedDuringPoll(t *testing.T) {
 	dl, mr := newTestLocker(t,
 		WithWaitTimeout(2*time.Second),

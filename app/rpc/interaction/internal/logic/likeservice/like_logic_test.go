@@ -52,7 +52,7 @@ func TestLike_FirstLikeSucceeds(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-// TestLike_Idempotent 同用户同内容重复点赞两次，均无错误（幂等）
+// TestLike_Idempotent 同用户同内容重复点赞两次,均无错误（幂等）
 func TestLike_Idempotent(t *testing.T) {
 	logic, _ := newTestLikeLogic(t)
 	req := likeReq(1, 100)
@@ -75,7 +75,7 @@ func TestLike_IdempotentVerifyHash(t *testing.T) {
 	_, err = logic.Like(req)
 	require.NoError(t, err)
 
-	// 用户维度 Hash：content_id 作为 field，值应为 "1"，且只存在一次
+	// 用户维度 Hash：content_id 作为 field,值应为 "1",且只存在一次
 	userLikeKey := "like:user:" + strconv.FormatInt(req.UserId, 10)
 	val := mr.HGet(userLikeKey, strconv.FormatInt(req.ContentId, 10))
 	assert.Equal(t, "1", val, "点赞值应为 1，且 Hash 中只存在一次")
@@ -110,7 +110,7 @@ func TestLike_SameUserDifferentContent(t *testing.T) {
 }
 
 // TestProcessLike_UntrustedWhenNotFull 残缺缓存（无 _full 标记）：
-// 无论首次还是重复点赞，trusted 恒为 false，调用方应一律发事件交下游兜底
+// 无论首次还是重复点赞,trusted 恒为 false,调用方应一律发事件交下游兜底
 func TestProcessLike_UntrustedWhenNotFull(t *testing.T) {
 	logic, _ := newTestLikeLogic(t)
 
@@ -126,7 +126,7 @@ func TestProcessLike_UntrustedWhenNotFull(t *testing.T) {
 }
 
 // TestProcessLike_TrustedWhenFull 完整缓存（_full=1）：
-// 重复点赞应被识别为未变更且可信，从而可省去事件投递
+// 重复点赞应被识别为未变更且可信,从而可省去事件投递
 func TestProcessLike_TrustedWhenFull(t *testing.T) {
 	logic, mr := newTestLikeLogic(t)
 	userLikeKey := "like:user:7"

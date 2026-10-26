@@ -37,7 +37,7 @@ func New(db *gorm.DB) *Gate {
 	}
 }
 
-// InsertIfAbsent 插入成功返回 true 首次处理 命中唯一键返回 false 已处理过
+// InsertIfAbsent 插入成功返回 true 首次处理,命中唯一键返回 false 已处理过
 func (g *Gate) InsertIfAbsent(ctx context.Context, consumer, eventID string) (bool, error) {
 	if consumer == "" || eventID == "" {
 		return false, nil
@@ -72,8 +72,8 @@ func (g *Gate) Exists(ctx context.Context, consumer, eventID string) (bool, erro
 	return cnt > 0, nil
 }
 
-// Delete 撤回一条领取记录 领取后业务执行失败时调用 把事件放回待处理让下一轮重试
-// 撤回失败由调用方记日志 不掩盖原始业务错误
+// Delete 撤回一条领取记录,领取后业务执行失败时调用,把事件放回待处理让下一轮重试
+// 撤回失败由调用方记日志,不掩盖原始业务错误
 func (g *Gate) Delete(ctx context.Context, consumer, eventID string) error {
 	if consumer == "" || eventID == "" {
 		return nil
@@ -84,7 +84,7 @@ func (g *Gate) Delete(ctx context.Context, consumer, eventID string) error {
 		Delete(&row{}).Error
 }
 
-// DeleteBefore 清理保留期外的幂等记录 防止去重表无限增长 保留期须长于对账窗口
+// DeleteBefore 清理保留期外的幂等记录,防止去重表无限增长,保留期须长于对账窗口
 func (g *Gate) DeleteBefore(ctx context.Context, before time.Time) (int64, error) {
 	info := g.db.WithContext(ctx).
 		Where("created_at < ?", before).

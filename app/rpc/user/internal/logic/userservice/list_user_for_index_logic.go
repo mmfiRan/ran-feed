@@ -24,7 +24,7 @@ func NewListUserForIndexLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 	}
 }
 
-// ListUserForIndex 全量重建 按 id 游标扫可索引用户 组装原始投影 空返回表示扫完
+// ListUserForIndex 全量重建,按 id 游标扫可索引用户,组装原始投影,空返回表示扫完
 func (l *ListUserForIndexLogic) ListUserForIndex(in *user.ListUserForIndexReq) (*user.ListUserForIndexRes, error) {
 	if in == nil {
 		return &user.ListUserForIndexRes{Items: []*user.UserIndexItem{}}, nil

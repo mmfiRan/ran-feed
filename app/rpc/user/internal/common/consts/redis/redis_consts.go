@@ -13,7 +13,7 @@ const (
 	RedisUserLoginFailPrefix = "user:login:fail"
 	// RedisUserInfoPrefix 用户信息缓存 string 前缀 user:info:{userId}
 	RedisUserInfoPrefix = "user:info"
-	// RedisUserInfoMissingSentinel DB 已确认不存在用户的哨兵值，避免缓存穿透
+	// RedisUserInfoMissingSentinel DB 已确认不存在用户的哨兵值,避免缓存穿透
 	RedisUserInfoMissingSentinel = "-"
 )
 

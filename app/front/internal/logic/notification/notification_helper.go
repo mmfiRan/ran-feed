@@ -10,8 +10,8 @@ import (
 	userpb "ran-feed/app/rpc/user/user"
 )
 
-// encodeCursor 通知列表复合游标 编码为 "{updated_at_millis}:{id}" 字符串
-// 前端当黑盒回传 svr 侧再解码 首页返回空串
+// encodeCursor 通知列表复合游标,编码为 "{updated_at_millis}:{id}" 字符串
+// 前端当黑盒回传 svr 侧再解码,首页返回空串
 func encodeCursor(updatedAtMillis, id int64) string {
 	if updatedAtMillis <= 0 || id <= 0 {
 		return ""
@@ -19,8 +19,8 @@ func encodeCursor(updatedAtMillis, id int64) string {
 	return strconv.FormatInt(updatedAtMillis, 10) + ":" + strconv.FormatInt(id, 10)
 }
 
-// decodeCursor 解 encodeCursor 出的串 空串或非法格式视为首页返 (0, 0)
-// 非法输入不报错 直接首页 避免翻页因客户端错传死循环
+// decodeCursor 解 encodeCursor 出的串,空串或非法格式视为首页返 (0, 0)
+// 非法输入不报错,直接首页,避免翻页因客户端错传死循环
 func decodeCursor(cursor string) (int64, int64) {
 	cursor = strings.TrimSpace(cursor)
 	if cursor == "" {
@@ -90,7 +90,7 @@ func collectRefIDs(items []*notifypb.NotificationItem) (actorIDs, contentIDs []i
 }
 
 // splitReviewContentIDs 把内容 id 拆成审核类与其余
-// 任一条引用该内容的通知是审核类 即归入审核类 走作者本人视角取数
+// 任一条引用该内容的通知是审核类,即归入审核类,走作者本人视角取数
 // 审核通知指向被拒/下架内容 PUBLIC 批量链路查不到且会写负哨兵
 func splitReviewContentIDs(items []*notifypb.NotificationItem) (reviewIDs, publicIDs []int64) {
 	if len(items) == 0 {
@@ -129,7 +129,7 @@ func nilSafeInt64(v int64) *int64 {
 	return nil
 }
 
-// nilSafeString 非空转指针 空串返回 nil 用于 optional 字段映射
+// nilSafeString 非空转指针,空串返回 nil 用于 optional 字段映射
 func nilSafeString(v string) *string {
 	if v != "" {
 		return &v

@@ -55,12 +55,12 @@ func (e *Executor) SetLogHandler(h func(param LogParam) (LogResult, error)) {
 	e.logHandler = h
 }
 
-// SetLogger 设置日志实现（默认使用 go-zero 的 logx）。
+// SetLogger 设置日志实现（默认使用 go-zero 的 logx）
 func (e *Executor) SetLogger(l Logger) {
 	e.logger = l
 }
 
-// SetContextBuilder 注入上下文构造器，用于绑定 trace 等信息
+// SetContextBuilder 注入上下文构造器,用于绑定 trace 等信息
 // 传 nil 表示使用请求的原始 context
 func (e *Executor) SetContextBuilder(builder func(r *http.Request, param *TriggerParam) context.Context) {
 	e.ctxBuilder = builder

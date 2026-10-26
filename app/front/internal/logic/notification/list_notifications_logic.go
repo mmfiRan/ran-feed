@@ -126,8 +126,8 @@ func (l *ListNotificationsLogic) ListNotifications(req *types.NotificationListRe
 	}, nil
 }
 
-// fillReviewContents 审核通知按作者本人视角逐条取详情 只取标题封面
-// 内容已被删除取不到属正常 记日志跳过不报错 避免整页通知加载失败
+// fillReviewContents 审核通知按作者本人视角逐条取详情,只取标题封面
+// 内容已被删除取不到属正常,记日志跳过不报错,避免整页通知加载失败
 func (l *ListNotificationsLogic) fillReviewContents(contentIDs []int64, viewerID int64) map[int64]*contentpb.ContentItem {
 	out := make(map[int64]*contentpb.ContentItem, len(contentIDs))
 	if len(contentIDs) == 0 {

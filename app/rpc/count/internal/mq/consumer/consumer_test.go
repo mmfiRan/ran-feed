@@ -71,7 +71,7 @@ func newTestConsumer(t *testing.T, countRepo repositories.CountValueRepository) 
 	}
 }
 
-// newTestMeta 行元信息 去重键由管道算 此处只需业务字段
+// newTestMeta 行元信息,去重键由管道算,此处只需业务字段
 func newTestMeta(table, op string) pipeline.RowMeta {
 	return pipeline.RowMeta{Table: table, Op: op, EventID: "evt", UpdatedAt: time.Now()}
 }

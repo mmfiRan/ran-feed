@@ -37,7 +37,7 @@ func main() {
 	ctx := svc.NewServiceContext(c)
 	handler.RegisterHandlers(server, ctx)
 
-	// 启动 Redis Pub/Sub 订阅 分发 notify:push 到 ConnManager
+	// 启动 Redis Pub/Sub 订阅,分发 notify:push 到 ConnManager
 	// SSE 路由与 rest.WithSSE() 由 notification.api 声明 goctl 生成到 routes.go
 	pubsubCtx, cancelPubSub := context.WithCancel(context.Background())
 	defer cancelPubSub()

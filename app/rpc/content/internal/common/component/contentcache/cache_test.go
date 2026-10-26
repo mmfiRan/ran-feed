@@ -16,7 +16,7 @@ import (
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 )
 
-// mockLoader 记录回源调用 只返回存在的 content_id
+// mockLoader 记录回源调用,只返回存在的 content_id
 type mockLoader struct {
 	calls   int
 	lastIDs []int64
@@ -68,7 +68,7 @@ func TestBatchGet_AllHit(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, loader.calls)
 
-	// 二次全命中 不再回源
+	// 二次全命中,不再回源
 	res, err := c.BatchGet(context.Background(), []int64{1, 2}, loader.load)
 	require.NoError(t, err)
 	assert.Equal(t, 1, loader.calls, "cache hit should not call loader")
@@ -139,7 +139,7 @@ func TestBatchGet_NotFoundWritesSentinel(t *testing.T) {
 	require.NoError(t, err)
 	assert.Nil(t, res[999])
 
-	// 负哨兵写入 短 TTL 加抖动
+	// 负哨兵写入,短 TTL 加抖动
 	raw, err := mr.Get(rediskey.BuildContentDetailKey(999))
 	require.NoError(t, err)
 	assert.Equal(t, rediskey.RedisContentDetailMissingSentinel, raw)

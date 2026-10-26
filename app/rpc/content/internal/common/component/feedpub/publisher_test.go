@@ -23,7 +23,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// mockFollowService 只实现被测路径需要的方法 返回预置粉丝
+// mockFollowService 只实现被测路径需要的方法,返回预置粉丝
 type mockFollowService struct {
 	followers []int64
 }
@@ -36,7 +36,7 @@ func (m *mockFollowService) GetFollowSummary(ctx context.Context, in *followserv
 	return &followservice.GetFollowSummaryRes{}, nil
 }
 
-// 以下方法不在被测路径 返回零值占位
+// 以下方法不在被测路径,返回零值占位
 
 func (m *mockFollowService) FollowUser(ctx context.Context, in *followservice.FollowUserReq, opts ...grpc.CallOption) (*followservice.FollowUserRes, error) {
 	return &followservice.FollowUserRes{}, nil
@@ -80,7 +80,7 @@ func newTestPublisher(t *testing.T, followRpc followservice.FollowService, produ
 	return mr, r, NewPublisher(r, followRpc, bigv.New(r), box, producer)
 }
 
-// TestPublish_NonPublicSkipsFeedWrites 私密与未指定可见性都不应写任何 feed 结构 也不投扇出
+// TestPublish_NonPublicSkipsFeedWrites 私密与未指定可见性都不应写任何 feed 结构,也不投扇出
 func TestPublish_NonPublicSkipsFeedWrites(t *testing.T) {
 	cases := []struct {
 		name string
@@ -102,7 +102,7 @@ func TestPublish_NonPublicSkipsFeedWrites(t *testing.T) {
 	}
 }
 
-// TestPublish_PublicWritesBoxAndHotSeed 公开内容写作者发件箱与热榜脏集合 无粉丝则不投扇出
+// TestPublish_PublicWritesBoxAndHotSeed 公开内容写作者发件箱与热榜脏集合,无粉丝则不投扇出
 func TestPublish_PublicWritesBoxAndHotSeed(t *testing.T) {
 	producer := &mockFanOutProducer{}
 	mr, r, p := newTestPublisher(t, &mockFollowService{}, producer)
@@ -126,7 +126,7 @@ func TestPublish_PublicWritesBoxAndHotSeed(t *testing.T) {
 	assert.Empty(t, producer.sent(), "无粉丝不应投递扇出")
 }
 
-// TestPublish_PublicPublishesFanOutBatch 公开且有粉丝时按批投递扇出消息 不再同步写收件箱
+// TestPublish_PublicPublishesFanOutBatch 公开且有粉丝时按批投递扇出消息,不再同步写收件箱
 func TestPublish_PublicPublishesFanOutBatch(t *testing.T) {
 	producer := &mockFanOutProducer{}
 	follow := &mockFollowService{followers: []int64{11, 22}}

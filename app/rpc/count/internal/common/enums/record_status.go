@@ -1,4 +1,4 @@
-// Package enums count 服务级业务枚举 实现 pkg/enums.Enum 通用契约
+// Package enums count 服务级业务枚举,实现 pkg/enums.Enum 通用契约
 package enums
 
 import "fmt"
@@ -44,7 +44,7 @@ func (s RecordStatusEnum) Message() string {
 	return fmt.Sprintf("未知(%d)", s)
 }
 
-// IsActive 记录是否有效 正常即有效
+// IsActive 记录是否有效,正常即有效
 func (s RecordStatusEnum) IsActive() bool {
 	return s == RecordStatusNormal
 }

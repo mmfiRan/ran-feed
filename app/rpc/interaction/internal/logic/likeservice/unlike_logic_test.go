@@ -45,7 +45,7 @@ func TestUnlike_NoOpWhenNotLiked(t *testing.T) {
 	assert.NoError(t, err, "未点赞过的内容取消应无错误")
 }
 
-// TestUnlike_HappyPath 先 HSET 模拟点赞态 再取消应正常返回
+// TestUnlike_HappyPath 先 HSET 模拟点赞态,再取消应正常返回
 func TestUnlike_HappyPath(t *testing.T) {
 	logic, mr := newTestUnlikeLogic(t)
 	userLikeKey := "like:user:1"
@@ -133,7 +133,7 @@ func TestProcessUnlike_TrustedWhenFull(t *testing.T) {
 	assert.True(t, trusted, "_full=1 且 cid >= mincid 可信")
 }
 
-// TestProcessUnlike_UntrustedWhenCold 完整缓存但 cid 在热区下方 视为冷数据
+// TestProcessUnlike_UntrustedWhenCold 完整缓存但 cid 在热区下方,视为冷数据
 func TestProcessUnlike_UntrustedWhenCold(t *testing.T) {
 	logic, mr := newTestUnlikeLogic(t)
 	userLikeKey := "like:user:1"
@@ -164,7 +164,7 @@ func TestProcessUnlike_RecalcMinCidAfterDeleteMin(t *testing.T) {
 }
 
 // TestProcessUnlike_DeleteLastClearsMinCid 删除最后一个业务 cid 后 _mincid 应被 HDEL
-// 元字段 _full 仍保留 故 key 不会被整体删除
+// 元字段 _full 仍保留,故 key 不会被整体删除
 func TestProcessUnlike_DeleteLastClearsMinCid(t *testing.T) {
 	logic, mr := newTestUnlikeLogic(t)
 	userLikeKey := "like:user:1"

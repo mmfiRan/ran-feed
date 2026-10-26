@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestResolveWriteVisibility 发布必须显式合法可见性 草稿缺省回退 非法值一律拦下
+// TestResolveWriteVisibility 发布必须显式合法可见性,草稿缺省回退,非法值一律拦下
 func TestResolveWriteVisibility(t *testing.T) {
 	_, err := resolveWriteVisibility(writeModePublish, content.Visibility_VISIBILITY_UNSPECIFIED, contentEnum.VisibilityUnknown)
 	require.Error(t, err, "发布缺省可见性应报错 不得写入 0")

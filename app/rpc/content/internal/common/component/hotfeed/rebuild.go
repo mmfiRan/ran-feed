@@ -12,8 +12,8 @@ import (
 	"ran-feed/pkg/hotrank"
 )
 
-// rebuildFromDB 按 id 倒序游标分页扫窗口内 已发布且公开 内容 时点重算写主榜并落库
-// 直接写主榜不清空 与增量模式共用同一主榜 天然无重建空窗
+// rebuildFromDB 按 id 倒序游标分页扫窗口内,已发布且公开,内容,时点重算写主榜并落库
+// 直接写主榜不清空,与增量模式共用同一主榜,天然无重建空窗
 func (f *Feed) rebuildFromDB(ctx context.Context, calculator hotrank.AdditiveTime, startTime time.Time, opts Options) error {
 	cursorID := int64(0)
 	for {
@@ -34,7 +34,7 @@ func (f *Feed) rebuildFromDB(ctx context.Context, calculator hotrank.AdditiveTim
 			return nil
 		}
 
-		// 先筛出可算分的行 再批量回查互动计数 与增量模式同口径
+		// 先筛出可算分的行,再批量回查互动计数,与增量模式同口径
 		validRows := make([]*model.RanFeedContent, 0, len(rows))
 		contentIDs := make([]int64, 0, len(rows))
 		for _, row := range rows {

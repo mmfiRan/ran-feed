@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// castStatus 模拟 db 枚举具名类型 底层 int32
+// castStatus 模拟 db 枚举具名类型,底层 int32
 type castStatus int32
 
 func TestCastPtr(t *testing.T) {

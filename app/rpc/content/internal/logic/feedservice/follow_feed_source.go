@@ -9,11 +9,11 @@ import (
 	"github.com/zeromicro/go-zero/core/mr"
 )
 
-// pullConcurrency 拉侧并发查作者发件箱的并发度 工程常量不下发配置
+// pullConcurrency 拉侧并发查作者发件箱的并发度,工程常量不下发配置
 const pullConcurrency = 16
 
-// fetchPullItems 并发查拉侧作者发件箱当前窗口 返回所有命中的候选并集与任意源是否还有更多
-// 重复项交给 mergeScored 去重 单个作者查失败只记日志 不让一个大 V 拖垮整条流
+// fetchPullItems 并发查拉侧作者发件箱当前窗口,返回所有命中的候选并集与任意源是否还有更多
+// 重复项交给 mergeScored 去重,单个作者查失败只记日志,不让一个大 V 拖垮整条流
 func (l *FollowFeedLogic) fetchPullItems(pullAuthors []int64, cursorScore int64, pageSize int) ([]scoredID, bool) {
 	if len(pullAuthors) == 0 {
 		return nil, false

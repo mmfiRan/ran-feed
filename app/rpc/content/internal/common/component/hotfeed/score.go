@@ -10,7 +10,7 @@ import (
 	"ran-feed/pkg/hotrank"
 )
 
-// calcScore 算分 log10 加权互动 加 发布秒 除以 S counts 为 nil 时按 0 互动
+// calcScore 算分 log10 加权互动加发布秒除以 S counts 为 nil 时按 0 互动
 func calcScore(calculator hotrank.AdditiveTime, publishedAt time.Time, counts *count.ContentCountsItem) float64 {
 	weighted := calculator.Weighted(counts.GetLikeCount(), counts.GetCommentCount(), counts.GetFavoriteCount())
 	return calculator.Score(weighted, publishedAt)
@@ -33,9 +33,9 @@ func mergeWeights(w *hotrank.Weights) hotrank.Weights {
 	return base
 }
 
-// deriveWindowDays 从半衰期推导全量窗口 与加法时间模型的竞争视界对齐
-// 窗口天数 等于 ceil windowDecades 乘 halfLifeHours 除以 24 乘 log10 2
-// 半衰期非正时退化为固定兜底窗口 推导值封顶 maxWindowDays 防全表扫描
+// deriveWindowDays 从半衰期推导全量窗口,与加法时间模型的竞争视界对齐
+// 窗口天数等于 ceil windowDecades 乘 halfLifeHours 除以 24 乘 log10 2
+// 半衰期非正时退化为固定兜底窗口,推导值封顶 maxWindowDays 防全表扫描
 func deriveWindowDays(halfLifeHours float64) int {
 	if halfLifeHours <= 0 {
 		return defaultWindowDays
@@ -50,7 +50,7 @@ func deriveWindowDays(halfLifeHours float64) int {
 	return days
 }
 
-// batchGetCounts 批量回查内容互动计数 由 count 服务提供
+// batchGetCounts 批量回查内容互动计数,由 count 服务提供
 func (f *Feed) batchGetCounts(ctx context.Context, contentIDs []int64) (map[int64]*count.ContentCountsItem, error) {
 	countsByID := make(map[int64]*count.ContentCountsItem, len(contentIDs))
 	if len(contentIDs) == 0 {

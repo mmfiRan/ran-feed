@@ -72,7 +72,7 @@ OSS 策略通过 `internal/common/oss/factory.go` 可插拔，当前仅实现 `A
 - **Logic 层**：`internal/logic/<service>/`，每个 RPC 方法一个文件，内嵌 `logx.Logger`，构造函数接 `svcCtx` 做组装但结构体只保存真正用到的显式依赖
 - **Repository 层**：`internal/repositories/` 封装 GORM Gen 查询；软删除过滤统一用枚举（`IsDeleted.Eq(enums.NotDeleted.Int32())`，非 0 判别列用 `Int64()`）
 - **错误处理**：`pkg/errorx.BizError`（code+message）→ gRPC 服务端拦截器转为 status detail → `pkg/grpcx/converter.go` 在客户端还原
-- **Redis Lua 脚本**：Feed 翻页、Session 续期、热榜快照重建、大 V 成员批量判定、收件箱与发件箱写入等原子操作，通过 `go:embed` 加载于各域 `internal/common/component/<能力>/scripts/`，嵌入变量与被嵌脚本同包、脚本目录内不放 `.go` 文件
+- **Redis Lua 脚本**：Feed 翻页、Session 续期、热榜快照重建、收件箱与发件箱写入等原子操作，通过 `go:embed` 加载于各域 `internal/common/component/<能力>/scripts/`，嵌入变量与被嵌脚本同包、脚本目录内不放 `.go` 文件
 - **配置注入**：`*.yaml` 使用 `${ENV_VAR}` 占位符，go-zero 启动时从进程环境变量解析
 
 ## 结构规范

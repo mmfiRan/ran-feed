@@ -75,8 +75,8 @@ func TestQueryHotFeedZSet_LatestMissedFallsThroughToGlobal(t *testing.T) {
 	_, err = r.ZaddCtx(context.Background(), globalKey, 3, "200")
 	require.NoError(t, err)
 
-	// preferredKey 为空且 latestKey 不存在 走进 latest 分支但 GET 返回 false
-	// 旧版本会在 line 33 concat 崩溃 新版本应识别 false 后 fall through 到 globalKey
+	// preferredKey 为空且 latestKey 不存在,走进 latest 分支但 GET 返回 false
+	// 旧版本会在 line 33 concat 崩溃,新版本应识别 false 后 fall through 到 globalKey
 	res, err := r.EvalCtx(
 		context.Background(),
 		queryZSetScript,

@@ -10,7 +10,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// countBatchGetter 批量取数能力 抽接口便于测试注入
+// countBatchGetter 批量取数能力,抽接口便于测试注入
 type countBatchGetter interface {
 	BatchGetCount(in *count.BatchGetCountReq) (*count.BatchGetCountRes, error)
 }
@@ -31,7 +31,7 @@ func NewBatchGetContentCountsLogic(ctx context.Context, svcCtx *svc.ServiceConte
 	}
 }
 
-// BatchGetContentCounts 按内容ID批量取互动计数 复用 BatchGetCount 的缓存与批量取数
+// BatchGetContentCounts 按内容 ID 批量取互动计数,复用 BatchGetCount 的缓存与批量取数
 func (l *BatchGetContentCountsLogic) BatchGetContentCounts(in *count.BatchGetContentCountsReq) (*count.BatchGetContentCountsRes, error) {
 	if in == nil {
 		return nil, errorx.NewMsg("批量查询内容计数请求无效")
@@ -53,7 +53,7 @@ func (l *BatchGetContentCountsLogic) BatchGetContentCounts(in *count.BatchGetCon
 	items := make([]*count.ContentCountsItem, 0, len(contentIDs))
 	for _, contentID := range contentIDs {
 		item := countsByID[contentID]
-		// 无记录的内容补零值 保证返回与入参一一对应
+		// 无记录的内容补零值,保证返回与入参一一对应
 		if item == nil {
 			item = &count.ContentCountsItem{ContentId: contentID}
 		}
@@ -63,7 +63,7 @@ func (l *BatchGetContentCountsLogic) BatchGetContentCounts(in *count.BatchGetCon
 	return &count.BatchGetContentCountsRes{Items: items}, nil
 }
 
-// normalizeContentIDs 去重 过滤非正 保持入参顺序
+// normalizeContentIDs 去重,过滤非正,保持入参顺序
 func normalizeContentIDs(contentIDs []int64) []int64 {
 	seen := make(map[int64]struct{}, len(contentIDs))
 	ids := make([]int64, 0, len(contentIDs))
@@ -80,7 +80,7 @@ func normalizeContentIDs(contentIDs []int64) []int64 {
 	return ids
 }
 
-// buildContentCountKeys 每个内容组三个计数键 点赞 收藏 评论
+// buildContentCountKeys 每个内容组三个计数键,点赞,收藏,评论
 func buildContentCountKeys(contentIDs []int64) []*count.CountKey {
 	keys := make([]*count.CountKey, 0, len(contentIDs)*3)
 	for _, contentID := range contentIDs {
@@ -93,7 +93,7 @@ func buildContentCountKeys(contentIDs []int64) []*count.CountKey {
 	return keys
 }
 
-// foldContentCounts 扁平计数项折成 内容ID 到 三项计数 的映射
+// foldContentCounts 扁平计数项折成,内容 ID 到,三项计数,的映射
 func foldContentCounts(items []*count.CountValueItem) map[int64]*count.ContentCountsItem {
 	res := make(map[int64]*count.ContentCountsItem, len(items)/3+1)
 	for _, item := range items {

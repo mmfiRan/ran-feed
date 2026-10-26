@@ -38,7 +38,7 @@ func main() {
 	conf.MustLoad(*configFile, &c, conf.UseEnv())
 	ctx := svc.NewServiceContext(c)
 
-	// 启动幂等建索引 ES 暂不可用不致命 靠重建 job 兜底
+	// 启动幂等建索引 ES 暂不可用不致命,靠重建 job 兜底
 	if err := es.EnsureIndices(context.Background(), ctx.ES); err != nil {
 		logx.Errorf("ES 建索引失败 服务继续启动 err=%v", err)
 	}
@@ -60,7 +60,7 @@ func main() {
 		serviceGroup.Add(mq)
 	}
 
-	// xxl-job 执行器 全量回填/周期重建任务
+	// xxl-job 执行器,全量回填/周期重建任务
 	xxlCtx, cancelXxl := context.WithCancel(context.Background())
 	defer cancelXxl()
 	executor := xxljob.NewExecutor(xxljob.Config{

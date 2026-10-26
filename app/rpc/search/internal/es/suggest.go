@@ -10,7 +10,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
-// suggestName suggest DSL 里补全块的固定名字 解析响应时按此取
+// suggestName suggest DSL 里补全块的固定名字,解析响应时按此取
 const suggestName = "suggest"
 
 type esSuggestResponse struct {
@@ -21,8 +21,8 @@ type esSuggestResponse struct {
 	} `json:"suggest"`
 }
 
-// Suggest 用 completion suggester 按前缀补全 field 为 completion 字段 返回去重后的建议词
-// prefix 为空返回空 不查询 ES 报错上抛由上层降级
+// Suggest 用 completion suggester 按前缀补全 field 为 completion 字段,返回去重后的建议词
+// prefix 为空返回空,不查询 ES 报错上抛由上层降级
 func Suggest(ctx context.Context, client *elasticsearch.Client, index, field, prefix string, size int) ([]string, error) {
 	if prefix == "" {
 		return nil, nil
@@ -62,7 +62,7 @@ func Suggest(ctx context.Context, client *elasticsearch.Client, index, field, pr
 	return parseSuggestOptions(res.Body)
 }
 
-// parseSuggestOptions 解析 suggest 响应体 抽出补全块的所有 option 文本
+// parseSuggestOptions 解析 suggest 响应体,抽出补全块的所有 option 文本
 func parseSuggestOptions(r io.Reader) ([]string, error) {
 	var parsed esSuggestResponse
 	if err := json.NewDecoder(r).Decode(&parsed); err != nil {

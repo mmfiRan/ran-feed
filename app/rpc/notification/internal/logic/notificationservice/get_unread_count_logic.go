@@ -27,7 +27,7 @@ func NewGetUnreadCountLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ge
 	}
 }
 
-// GetUnreadCount 未读数(DB 真相 走 idx_recipient_unread)
+// GetUnreadCount 未读数(DB 真相,走 idx_recipient_unread)
 func (l *GetUnreadCountLogic) GetUnreadCount(in *notification.GetUnreadCountReq) (*notification.GetUnreadCountRes, error) {
 	if in == nil || in.RecipientId <= 0 {
 		return nil, errorx.NewMsg("参数错误")

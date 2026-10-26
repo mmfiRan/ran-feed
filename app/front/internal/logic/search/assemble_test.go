@@ -28,7 +28,7 @@ func TestAssembleSearchContentItems(t *testing.T) {
 	assert.Equal(t, int64(2), items[0].ContentId)
 	assert.Equal(t, int64(1), items[1].ContentId)
 
-	// 命中项合并高亮 字段透传
+	// 命中项合并高亮,字段透传
 	assert.Equal(t, "<em>标题</em>2", items[0].HighlightTitle)
 	assert.Equal(t, "简介命中", items[0].HighlightDescription)
 	assert.True(t, items[0].IsLiked)

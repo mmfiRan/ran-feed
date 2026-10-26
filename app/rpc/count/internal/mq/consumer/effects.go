@@ -20,8 +20,8 @@ const (
 	userProfileCacheInvalidateTimeout = 5 * time.Second
 )
 
-// dispatch 事务提交后批量派发副作用 失效计数与用户主页缓存并登记热榜脏 全部脱离请求 ctx
-// 脏标记写入失败不回滚已提交的计数 直接返回错误并显式记日志 丢失只造成热榜延迟 由全量模式窗口内重算兜底
+// dispatch 事务提交后批量派发副作用,失效计数与用户主页缓存并登记热榜脏,全部脱离请求 ctx
+// 脏标记写入失败不回滚已提交的计数,直接返回错误并显式记日志,丢失只造成热榜延迟,由全量模式窗口内重算兜底
 func (c *CanalCountConsumer) dispatch(ctx context.Context, cs *changeSet) error {
 	if cs.empty() {
 		return nil
@@ -46,8 +46,8 @@ func (c *CanalCountConsumer) reconcileBigVSet(ctx context.Context, cs *changeSet
 	}
 }
 
-// syncBigVMember 粉丝数跨阈值即晋升大 V sticky 只增不降 未达阈值不处理
-// 先落表作真相源 再写 Redis 全局集合 表失败不写集合 由周期重建兜底
+// syncBigVMember 粉丝数跨阈值即晋升大 V sticky 只增不降,未达阈值不处理
+// 先落表作真相源,再写 Redis 全局集合,表失败不写集合,由周期重建兜底
 func (c *CanalCountConsumer) syncBigVMember(ctx context.Context, userID int64) {
 	if userID <= 0 {
 		return
@@ -75,7 +75,7 @@ func (c *CanalCountConsumer) syncBigVMember(ctx context.Context, userID int64) {
 	}
 }
 
-// invalidateCountCaches 旁路缓存 写成功后删计数缓存 即时加延迟双删由 operator 内部完成
+// invalidateCountCaches 旁路缓存,写成功后删计数缓存,即时加延迟双删由 operator 内部完成
 func (c *CanalCountConsumer) invalidateCountCaches(cs *changeSet) {
 	for key := range cs.counts {
 		c.deltaOperator.InvalidateCountCache(key.bizType, key.targetType, key.targetID)
@@ -93,8 +93,8 @@ func (c *CanalCountConsumer) invalidateUserProfileCaches(cs *changeSet) {
 	}
 }
 
-// delayedDoubleDelete 即时删一次再延迟删一次 堵住删后到写可见前的回填窗口
-// 延迟删用 bg ctx 加超时 避免 consumer 关停时请求 ctx 取消让残留清理失败
+// delayedDoubleDelete 即时删一次再延迟删一次,堵住删后到写可见前的回填窗口
+// 延迟删用 bg ctx 加超时,避免 consumer 关停时请求 ctx 取消让残留清理失败
 func (c *CanalCountConsumer) delayedDoubleDelete(cacheKey string) {
 	if _, err := c.svcContext.Redis.DelCtx(c.ctx, cacheKey); err != nil {
 		c.Errorf("删除用户主页计数缓存失败: key=%s, err=%v", cacheKey, err)
@@ -109,7 +109,7 @@ func (c *CanalCountConsumer) delayedDoubleDelete(cacheKey string) {
 	})
 }
 
-// markHotDirty 把发生互动的内容登记进热榜脏集合 按取模分片分组 所有分片一次 pipeline 提交 只记谁脏了不算分
+// markHotDirty 把发生互动的内容登记进热榜脏集合,按取模分片分组,所有分片一次 pipeline 提交,只记谁脏了不算分
 func (c *CanalCountConsumer) markHotDirty(ctx context.Context, cs *changeSet) error {
 	if len(cs.contents) == 0 {
 		return nil

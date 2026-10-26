@@ -19,7 +19,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// fillObjCacheTimeout: 单条评论缓存回填的最大耗时，防止 Redis 卡住时 goroutine 泄漏。
+// fillObjCacheTimeout: 单条评论缓存回填的最大耗时,防止 Redis 卡住时 goroutine 泄漏
 const fillObjCacheTimeout = 5 * time.Second
 
 type BatchGetCommentsLogic struct {
@@ -48,12 +48,12 @@ func (l *BatchGetCommentsLogic) BatchGetComments(in *interaction.BatchGetComment
 			MissIds:  nil,
 		}, nil
 	}
-	// 限制单次批量数量，避免被滥用
+	// 限制单次批量数量,避免被滥用
 	if len(in.CommentIds) > 200 {
 		return nil, errorx.NewMsg("comment_ids过多")
 	}
 
-	// 去重+过滤非法ID，并保留原始顺序
+	// 去重+过滤非法 ID,并保留原始顺序
 	ordered := make([]int64, 0, len(in.CommentIds))
 	seen := make(map[int64]struct{}, len(in.CommentIds))
 	for _, id := range in.CommentIds {
@@ -137,7 +137,7 @@ func (l *BatchGetCommentsLogic) BatchGetComments(in *interaction.BatchGetComment
 		}
 	}
 
-	// miss 再查DB
+	// miss 再查 DB
 	dbMap := make(map[int64]*interaction.CommentItem)
 	if len(miss) > 0 {
 		rows, derr := l.commentRepo.ListByIDs(miss)
@@ -229,7 +229,7 @@ func (l *BatchGetCommentsLogic) BatchGetComments(in *interaction.BatchGetComment
 			}
 		}
 	}
-	// 异步回填缓存（仅obj，不更新idx），确保 reply_count 已更新
+	// 异步回填缓存（仅 obj,不更新 idx）,确保 reply_count 已更新
 	if len(dbMap) > 0 {
 		itemsToFill := make([]*interaction.CommentItem, 0, len(dbMap))
 		for _, it := range dbMap {
@@ -359,7 +359,7 @@ func (l *BatchGetCommentsLogic) fillObjCacheBestEffort(items []*interaction.Comm
 		if createdAt <= 0 {
 			createdAt = time.Now().Unix()
 		}
-		// bg ctx + per-call timeout：bg 避免请求 ctx 取消打断；timeout 避免 Redis 卡住 goroutine 泄漏。
+		// bg ctx + per-call timeout：bg 避免请求 ctx 取消打断,timeout 避免 Redis 卡住 goroutine 泄漏
 		ctx, cancel := context.WithTimeout(context.Background(), fillObjCacheTimeout)
 		_, err := l.svcCtx.Redis.EvalCtx(
 			ctx,

@@ -1,5 +1,5 @@
-// 本文件负责内容主表的读写 发布 下架 热榜候选 关注流与推荐流分页查询都经由此处
-// 只做数据读写 状态判定与可见性过滤由调用方以参数给出
+// Package contentrepo 负责内容主表的读写,发布,下架,热榜候选,关注流与推荐流分页查询都经由此处
+// 只做数据读写,状态判定与可见性过滤由调用方以参数给出
 package contentrepo
 
 import (
@@ -167,7 +167,7 @@ func (r *Repository) ListFollowByAuthorsCursor(ctx context.Context, status conte
 		Where(q.RanFeedContent.PublishedAt.IsNotNull()).
 		Where(q.RanFeedContent.UserID.In(authorIDs...))
 
-	// 游标按 published_at 毫秒 取早于游标的内容 与 inbox/publish zset 时间序对齐
+	// 游标按 published_at 毫秒,取早于游标的内容,与 inbox/publish zset 时间序对齐
 	if cursorMillis > 0 {
 		doQuery = doQuery.Where(q.RanFeedContent.PublishedAt.Lt(time.UnixMilli(cursorMillis)))
 	}
@@ -303,7 +303,7 @@ func (r *Repository) MyContentPage(ctx context.Context, userID int64, status *co
 	if cursorID > 0 {
 		stmt = stmt.Where(q.RanFeedContent.ID.Lt(cursorID))
 	}
-	// 游标即 id 排序也按 id 倒序 与游标口径一致 雪花 id 天然近似创建时间序
+	// 游标即 id 排序也按 id 倒序,与游标口径一致,雪花 id 天然近似创建时间序
 	return stmt.
 		Order(q.RanFeedContent.ID.Desc()).
 		Limit(limit).

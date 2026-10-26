@@ -33,7 +33,7 @@ func NewLikeLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LikeLogic {
 func (l *LikeLogic) Like(in *interaction.LikeReq) (*emptypb.Empty, error) {
 	scene := in.Scene.String()
 
-	// 用户维度缓存：避免 content 维度大 key，用 _mincid 区分冷热数据
+	// 用户维度缓存：避免 content 维度大 key,用 _mincid 区分冷热数据
 	// 返回 trusted 表示缓存是否完整可信：可信则按 changed 决定是否发事件（重复点赞可省投递）
 	changed, trusted, err := l.processLike(in.UserId, in.ContentId)
 	if err != nil {

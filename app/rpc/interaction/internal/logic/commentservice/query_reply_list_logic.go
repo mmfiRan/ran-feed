@@ -27,7 +27,7 @@ func NewQueryReplyListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Qu
 	}
 }
 
-// QueryReplyList 楼层回复列表只走 DB 翻页 旁挂直接回复数与用户信息 墓碑保留占位
+// QueryReplyList 楼层回复列表只走 DB 翻页,旁挂直接回复数与用户信息,墓碑保留占位
 func (l *QueryReplyListLogic) QueryReplyList(in *interaction.QueryReplyListReq) (*interaction.QueryReplyListRes, error) {
 	if in == nil || in.RootId <= 0 {
 		return nil, errorx.NewMsg("参数错误")

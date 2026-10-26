@@ -45,8 +45,8 @@ func (l *UnfollowUserLogic) UnfollowUser(in *interaction.UnfollowUserReq) (*inte
 		return nil, errorx.NewMsg("不能取关自己")
 	}
 
-	// 取关为清理语义：即使被取关用户已被禁/删，也允许 viewer 清理关注关系，故不再校验存在性
-	// 读前置状态判断是否真正从关注翻转为取关 读失败默认按翻转处理清理幂等无害
+	// 取关为清理语义：即使被取关用户已被禁/删,也允许 viewer 清理关注关系,故不再校验存在性
+	// 读前置状态判断是否真正从关注翻转为取关,读失败默认按翻转处理清理幂等无害
 	transitioned := true
 	if prior, perr := l.followRepo.GetByUserAndFollow(in.UserId, in.FollowUserId); perr != nil {
 		l.Errorf("查关注前置状态失败 默认清理 userID=%d followUserID=%d err=%v", in.UserId, in.FollowUserId, perr)
@@ -65,7 +65,7 @@ func (l *UnfollowUserLogic) UnfollowUser(in *interaction.UnfollowUserReq) (*inte
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("取消关注失败"))
 	}
 
-	// 仅真正翻转为取关才清理 收件箱清理与大 V 缓存失效由 content 侧统一处理
+	// 仅真正翻转为取关才清理,收件箱清理与大 V 缓存失效由 content 侧统一处理
 	if transitioned {
 		threading.GoSafe(func() {
 			ctx, cancel := context.WithTimeout(context.WithoutCancel(l.ctx), consts.FollowMaintainTimeout)

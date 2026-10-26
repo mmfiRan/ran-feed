@@ -28,13 +28,13 @@ const (
 	notifyPushChannel = "notify:push"
 )
 
-// notifyPushPayload dispatch → SSE 层的信号消息 与 front sse.PubSubMessage 对齐
+// notifyPushPayload dispatch → SSE 层的信号消息,与 front sse.PubSubMessage 对齐
 type notifyPushPayload struct {
 	RecipientID int64 `json:"recipient_id"`
 	Unread      int64 `json:"unread"`
 }
 
-// CanalNotificationConsumer 五步管道 解析 → strategy 路由 → 每行 rowEventID dedup 与落库同事务 → 事务外 dispatch(桩)
+// CanalNotificationConsumer 五步管道,解析 → strategy 路由 → 每行 rowEventID dedup 与落库同事务 → 事务外 dispatch(桩)
 type CanalNotificationConsumer struct {
 	ctx        context.Context
 	svcContext *svc.ServiceContext
@@ -53,7 +53,7 @@ func NewCanalNotificationConsumer(ctx context.Context, svcContext *svc.ServiceCo
 	}
 }
 
-// Consume 收到一条 canal 消息 解析后按表路由 dedup+落库同事务 事务成功后 dispatch 事件外副作用
+// Consume 收到一条 canal 消息,解析后按表路由 dedup+落库同事务,事务成功后 dispatch 事件外副作用
 func (c *CanalNotificationConsumer) Consume(ctx context.Context, key, val string) error {
 	logc.Infof(ctx, "收到canal消息(notification): key=%s", key)
 
@@ -90,7 +90,7 @@ func (c *CanalNotificationConsumer) Consume(ctx context.Context, key, val string
 	return nil
 }
 
-// processRow 单行落库 去重由管道负责 落库失败连带事务回滚
+// processRow 单行落库,去重由管道负责,落库失败连带事务回滚
 // 返回受影响的 recipient 列表供事务外 dispatch(空表示本行未触发通知)
 func (c *CanalNotificationConsumer) processRow(ctx context.Context, tx *query.Query, meta pipeline.RowMeta, tableStrategy strategy.TableStrategy, row, oldRow map[string]any) ([]int64, error) {
 	events := tableStrategy.ExtractEvents(ctx, meta.Op, row, oldRow)
@@ -139,7 +139,7 @@ func (c *CanalNotificationConsumer) persistEvent(notifyRepo repositories.Notific
 	}
 }
 
-// dispatch 事务外副作用 事务提交后异步计每个 recipient 未读数并 PUBLISH notify:push
+// dispatch 事务外副作用,事务提交后异步计每个 recipient 未读数并 PUBLISH notify:push
 // front SSE 层订阅该 channel 收信号后回拉;PUBLISH 失败非致命 log 由拉取兜底
 func (c *CanalNotificationConsumer) dispatch(recipients map[int64]struct{}) {
 	if len(recipients) == 0 {

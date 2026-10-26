@@ -11,10 +11,10 @@ import (
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 )
 
-// Loader 缓存没命中时的批量回源 只会收到没命中的 id
+// Loader 缓存没命中时的批量回源,只会收到没命中的 id
 type Loader func(missIDs []int64) (map[int64]*Detail, error)
 
-// Cache 内容详情的二级缓存 命中直返 未命中回源并写回 查不到的写负哨兵
+// Cache 内容详情的二级缓存,命中直返,未命中回源并写回,查不到的写负哨兵
 type Cache struct {
 	redis *redis.Redis
 }
@@ -25,7 +25,7 @@ func New(redisClient *redis.Redis) *Cache {
 	}
 }
 
-// BatchGet 按 id 批量取详情 loader 只收到没命中的 id Redis 出任何错都降级回源 不阻断调用方
+// BatchGet 按 id 批量取详情 loader 只收到没命中的 id Redis 出任何错都降级回源,不阻断调用方
 func (c *Cache) BatchGet(ctx context.Context, contentIDs []int64, loader Loader) (map[int64]*Detail, error) {
 	result := make(map[int64]*Detail, len(contentIDs))
 	if len(contentIDs) == 0 {

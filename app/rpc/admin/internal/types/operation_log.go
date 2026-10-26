@@ -5,7 +5,7 @@ import (
 	"ran-feed/app/rpc/admin/internal/entity/model"
 )
 
-// OperationLogFilter 操作日志查询条件 username/action 模糊匹配 status 精确 字段为 nil 表示不限
+// OperationLogFilter 操作日志查询条件 username/action 模糊匹配 status 精确,字段为 nil 表示不限
 type OperationLogFilter struct {
 	AdminID     *int64
 	Username    *string
@@ -21,7 +21,7 @@ type OperationLogRow struct {
 	Username string
 }
 
-// LoginLogFilter 登录日志查询条件 username/ip 模糊匹配 字段为 nil 表示不限
+// LoginLogFilter 登录日志查询条件 username/ip 模糊匹配,字段为 nil 表示不限
 type LoginLogFilter struct {
 	Username    *string
 	IP          *string

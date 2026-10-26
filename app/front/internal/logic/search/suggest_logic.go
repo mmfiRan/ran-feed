@@ -46,7 +46,7 @@ func (l *SuggestLogic) Suggest(req *types.SuggestReq) (resp *types.SuggestRes, e
 		return resp, nil
 	}
 
-	// search-rpc 跨内容/用户两索引前缀补全 只出建议词与类型 不富化
+	// search-rpc 跨内容/用户两索引前缀补全,只出建议词与类型,不富化
 	suggestRes, err := l.svcCtx.SearchRpc.Suggest(l.ctx, &search.SuggestReq{
 		Keyword: req.Keyword,
 		Size:    req.Size,

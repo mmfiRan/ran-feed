@@ -91,7 +91,7 @@ func (l *GetUserProfileCountsLogic) rebuildCacheWithLock(userID int64, cacheKey 
 	}
 
 	if !lockAcquired {
-		// 别人正在重建 不阻塞请求 直接回源查库
+		// 别人正在重建,不阻塞请求,直接回源查库
 		return l.queryFromDB(userID)
 	}
 

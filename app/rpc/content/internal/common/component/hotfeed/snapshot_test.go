@@ -7,7 +7,7 @@ import (
 )
 
 // TestNewSnapshotID_GloballyUnique 连续生成的快照 id 必须不同
-// 防止退回秒级时间戳 同秒两模式生成同一 key 导致快照残缺
+// 防止退回秒级时间戳,同秒两模式生成同一 key 导致快照残缺
 func TestNewSnapshotID_GloballyUnique(t *testing.T) {
 	seen := make(map[string]struct{}, 1000)
 	for i := 0; i < 1000; i++ {

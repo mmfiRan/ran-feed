@@ -61,7 +61,7 @@ func (l *RecommendFeedLogic) RecommendFeed(in *content.RecommendFeedReq) (*conte
 	}
 	items := buildContentItems(entries)
 	if len(items) == 0 {
-		// 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
+		// 过滤后为空也返回原始游标,避免整页死内容导致翻页中断
 		return &content.RecommendFeedRes{
 			Items:      nil,
 			NextCursor: page.NextCursor,
@@ -78,7 +78,7 @@ func (l *RecommendFeedLogic) RecommendFeed(in *content.RecommendFeedReq) (*conte
 	}, nil
 }
 
-// queryPage 先读热榜 读不到按 hot_score 游标查库兜底 保证推荐流不整接口失败
+// queryPage 先读热榜,读不到按 hot_score 游标查库兜底,保证推荐流不整接口失败
 func (l *RecommendFeedLogic) queryPage(snapshotID, cursor string, pageSize int) (hotfeed.Page, error) {
 	page, hit, err := l.hotFeed.Query(l.ctx, snapshotID, cursor, pageSize)
 	if err != nil {
@@ -92,7 +92,7 @@ func (l *RecommendFeedLogic) queryPage(snapshotID, cursor string, pageSize int) 
 	return page, nil
 }
 
-// pageFromDB 兜底查询 已发布加公开加未删 按 hot_score 与 id 倒序 keyset 翻页
+// pageFromDB 兜底查询,已发布加公开加未删,按 hot_score 与 id 倒序 keyset 翻页
 func (l *RecommendFeedLogic) pageFromDB(cursor string, pageSize int) (hotfeed.Page, error) {
 	cursorID := int64(0)
 	if v, err := strconv.ParseInt(cursor, 10, 64); err == nil && v > 0 {
@@ -101,7 +101,7 @@ func (l *RecommendFeedLogic) pageFromDB(cursor string, pageSize int) (hotfeed.Pa
 
 	cursorScore := 0.0
 	if cursorID > 0 {
-		// 取游标内容的分值定位翻页位置 取不到说明该内容已删 退化为首页
+		// 取游标内容的分值定位翻页位置,取不到说明该内容已删,退化为首页
 		score, err := l.contentRepo.GetHotScoreByID(l.ctx, cursorID)
 		if err != nil {
 			l.Errorf("兜底查询解析游标分值失败 退化为首页 cursorID=%d err=%v", cursorID, err)

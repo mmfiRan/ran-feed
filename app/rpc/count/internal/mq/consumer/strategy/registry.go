@@ -30,8 +30,8 @@ type TableStrategy interface {
 	ExtractUpdates(ctx context.Context, op string, row map[string]interface{}, oldRow map[string]interface{}) []Update
 }
 
-// RowSkipper 可选能力 策略声明哪些变更行与自己无关
-// 消费者在落去重行之前调用 避免为无关变更留下无谓的去重记录
+// RowSkipper 可选能力,策略声明哪些变更行与自己无关
+// 消费者在落去重行之前调用,避免为无关变更留下无谓的去重记录
 type RowSkipper interface {
 	SkipRow(row, oldRow map[string]interface{}) bool
 }

@@ -58,7 +58,7 @@ func TestStatusActiveNotDeleted(t *testing.T) {
 	assert.True(t, statusActiveNotDeleted(map[string]interface{}{"status": int64(10), "is_deleted": int64(0)}))
 	assert.False(t, statusActiveNotDeleted(map[string]interface{}{"status": int64(10), "is_deleted": int64(1)}))
 	assert.False(t, statusActiveNotDeleted(map[string]interface{}{"status": int64(20), "is_deleted": int64(0)}))
-	// is_deleted 缺失 视为未删
+	// is_deleted 缺失,视为未删
 	assert.True(t, statusActiveNotDeleted(map[string]interface{}{"status": int64(10)}))
 }
 

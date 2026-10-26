@@ -2,7 +2,7 @@ package consts
 
 import "strconv"
 
-// SuperRoleCode 超级管理员角色码 受保护不可删除
+// SuperRoleCode 超级管理员角色码,受保护不可删除
 const SuperRoleCode = "super"
 
 // RedisAdminSessionPrefix 后台登录态 token 前缀 admin:session:{token}

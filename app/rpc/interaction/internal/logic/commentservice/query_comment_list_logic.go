@@ -33,7 +33,7 @@ func NewQueryCommentListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 	}
 }
 
-// QueryCommentList 一级评论列表只走 DB 翻页 旁挂回复数与用户信息 墓碑保留占位
+// QueryCommentList 一级评论列表只走 DB 翻页,旁挂回复数与用户信息,墓碑保留占位
 func (l *QueryCommentListLogic) QueryCommentList(in *interaction.QueryCommentListReq) (*interaction.QueryCommentListRes, error) {
 	if in == nil || in.ContentId <= 0 {
 		return nil, errorx.NewMsg("参数错误")
@@ -75,7 +75,7 @@ func (l *QueryCommentListLogic) QueryCommentList(in *interaction.QueryCommentLis
 	}, nil
 }
 
-// clampCommentPageSize 收敛分页大小 默认 20 上限 100
+// clampCommentPageSize 收敛分页大小,默认 20 上限 100
 func clampCommentPageSize(pageSize int) int {
 	if pageSize <= 0 {
 		return 20
@@ -102,7 +102,7 @@ func nextCommentCursor(comments []*interaction.CommentItem, hasMore bool) int64 
 	return comments[len(comments)-1].CommentId
 }
 
-// buildCommentItemFromRow 行转 DTO 墓碑 is_deleted 或 status 删除态 换占位文案并抹作者
+// buildCommentItemFromRow 行转 DTO 墓碑 is_deleted 或 status 删除态,换占位文案并抹作者
 func buildCommentItemFromRow(row *model.RanFeedComment) *interaction.CommentItem {
 	commentText := row.Comment
 	status := row.Status

@@ -9,8 +9,8 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
-// Hit 一条命中 只含 _id 排序分 高亮与 sort 值 展示字段由 front 富化
-// Sort 为 ES 按 sort 子句返回的排序值数组 原样作 search_after 游标
+// Hit 一条命中,只含 _id 排序分,高亮与 sort 值,展示字段由 front 富化
+// Sort 为 ES 按 sort 子句返回的排序值数组,原样作 search_after 游标
 type Hit struct {
 	ID        string
 	Score     float64
@@ -18,7 +18,7 @@ type Hit struct {
 	Sort      []any
 }
 
-// FirstHighlight 取某字段首个高亮片段 无则空串
+// FirstHighlight 取某字段首个高亮片段,无则空串
 func (h Hit) FirstHighlight(field string) string {
 	if frags := h.Highlight[field]; len(frags) > 0 {
 		return frags[0]

@@ -13,18 +13,18 @@ import (
 	"ran-feed/app/rpc/user/internal/config"
 )
 
-// LoginRateLimitResult Check 返回结果。Allowed 为 false 时 RetryAfter 给出最早窗口出清剩余秒数。
+// LoginRateLimitResult Check 返回结果。Allowed 为 false 时 RetryAfter 给出最早窗口出清剩余秒数
 type LoginRateLimitResult struct {
 	Allowed    bool
 	RetryAfter int64
 }
 
-// Enabled 配置零值或负值视为关闭限频。
+// Enabled 配置零值或负值视为关闭限频
 func Enabled(cfg config.LoginRateLimitConfig) bool {
 	return cfg.WindowSeconds > 0 && cfg.MaxAttempts > 0
 }
 
-// CheckLogin 按手机号检查滑动窗口是否已达上限。
+// CheckLogin 按手机号检查滑动窗口是否已达上限
 func CheckLogin(ctx context.Context, r *redis.Redis, cfg config.LoginRateLimitConfig, mobile string) (LoginRateLimitResult, error) {
 	if !Enabled(cfg) || mobile == "" {
 		return LoginRateLimitResult{Allowed: true}, nil
@@ -49,7 +49,7 @@ func CheckLogin(ctx context.Context, r *redis.Redis, cfg config.LoginRateLimitCo
 	return LoginRateLimitResult{Allowed: false, RetryAfter: retryAfter}, nil
 }
 
-// RecordLoginFailure 记录一次失败，返回写入后当前窗口失败次数。
+// RecordLoginFailure 记录一次失败,返回写入后当前窗口失败次数
 func RecordLoginFailure(ctx context.Context, r *redis.Redis, cfg config.LoginRateLimitConfig, mobile string) (int64, error) {
 	if !Enabled(cfg) || mobile == "" {
 		return 0, nil
@@ -71,7 +71,7 @@ func RecordLoginFailure(ctx context.Context, r *redis.Redis, cfg config.LoginRat
 	return count, nil
 }
 
-// ClearLoginFailures 登录成功后清零计数。
+// ClearLoginFailures 登录成功后清零计数
 func ClearLoginFailures(ctx context.Context, r *redis.Redis, cfg config.LoginRateLimitConfig, mobile string) error {
 	if !Enabled(cfg) || mobile == "" {
 		return nil

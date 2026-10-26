@@ -8,7 +8,7 @@ import (
 	"ran-feed/app/rpc/notification/internal/mq/consumer/strategy"
 )
 
-// 用 presence 包做为 strategy.NewDefaultRegistry 的四表注册验证宿主
+// TestDefaultRegistry_四张源表全注册,用 presence 包做为 strategy.NewDefaultRegistry 的四表注册验证宿主
 // 放在此处避免 strategy 测试文件 import presence 造成 cycle
 func TestDefaultRegistry_四张源表全注册(t *testing.T) {
 	reg := strategy.NewDefaultRegistry()

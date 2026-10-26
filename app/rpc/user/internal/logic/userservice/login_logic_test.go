@@ -20,7 +20,7 @@ import (
 	"ran-feed/pkg/utils"
 )
 
-// mockUserRepository 实现 repositories.UserRepository，仅用于测试
+// mockUserRepository 实现 repositories.UserRepository,仅用于测试
 type mockUserRepository struct {
 	getByMobileFn func(mobile string) (*do.UserDO, error)
 	getByIDFn     func(userID int64) (*do.UserDO, error)
@@ -163,7 +163,7 @@ func TestLogin_NormalizesMobileForLookup(t *testing.T) {
 	}
 	logic, _ := newTestLoginLogic(t, repo)
 
-	// 裸号也要能查到 带区号存储的账号
+	// 裸号也要能查到,带区号存储的账号
 	_, err := logic.Login(&user.LoginReq{Mobile: "138 0013 8000", Password: "correct-password"})
 	require.NoError(t, err)
 	assert.Equal(t, "+8613800138000", lookedUp)
@@ -196,12 +196,12 @@ func TestLogin_SuccessClearsRateLimitCounter(t *testing.T) {
 	cfg := config.Config{LoginRateLimit: config.LoginRateLimitConfig{WindowSeconds: 60, MaxAttempts: 3}}
 	logic, mr := newTestLoginLogicWithCfg(t, repo, cfg)
 
-	// 两次失败，未达上限
+	// 两次失败,未达上限
 	for i := 0; i < 2; i++ {
 		_, err := logic.Login(&user.LoginReq{Mobile: "13800138000", Password: "wrong"})
 		assert.Error(t, err)
 	}
-	// 限频 key 用归一化后的 E.164 号 裸号与带区号共用同一计数
+	// 限频 key 用归一化后的 E.164 号,裸号与带区号共用同一计数
 	assert.True(t, mr.Exists("user:login:fail:+8613800138000"))
 
 	// 第三次成功 → 计数清零

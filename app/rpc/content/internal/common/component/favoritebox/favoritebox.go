@@ -1,5 +1,5 @@
 // Package favoritebox 负责用户收藏流 feed:user:favorite 的全部读写
-// 数据源是 interaction 域的收藏列表 本域只做缓存投影 命中直读 未命中抢锁回源重建
+// 数据源是 interaction 域的收藏列表,本域只做缓存投影,命中直读,未命中抢锁回源重建
 package favoritebox
 
 import (
@@ -19,10 +19,10 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
-// emptySentinel 空收藏负缓存哨兵成员 读时按 id<=0 过滤不可见
+// emptySentinel 空收藏负缓存哨兵成员,读时按 id<=0 过滤不可见
 const emptySentinel = "0"
 
-// Page 一页收藏结果 游标是收藏记录 id 严格递减
+// Page 一页收藏结果,游标是收藏记录 id 严格递减
 type Page struct {
 	ContentIDs []int64
 	NextCursor string
@@ -48,7 +48,7 @@ func New(
 	}
 }
 
-// Query 读收藏流一页 命中读缓存 未命中抢锁回源重建 等锁超时降级单页回源
+// Query 读收藏流一页,命中读缓存,未命中抢锁回源重建,等锁超时降级单页回源
 func (b *Box) Query(ctx context.Context, ownerID int64, cursor string, pageSize int) (Page, error) {
 	if ownerID <= 0 || pageSize <= 0 {
 		return Page{}, nil
@@ -69,7 +69,7 @@ func (b *Box) Query(ctx context.Context, ownerID int64, cursor string, pageSize 
 		},
 	)
 	if err != nil {
-		// 等锁超时 本轮降级单页回源 不返回空
+		// 等锁超时,本轮降级单页回源,不返回空
 		if errors.Is(err, cache.ErrLockBusy) {
 			return b.pageFromSource(ctx, ownerID, cursorScore, pageSize)
 		}
@@ -78,7 +78,7 @@ func (b *Box) Query(ctx context.Context, ownerID int64, cursor string, pageSize 
 	return page, nil
 }
 
-// Invalidate 失效某用户收藏流缓存 收藏变更后由 interaction 域跨域触发
+// Invalidate 失效某用户收藏流缓存,收藏变更后由 interaction 域跨域触发
 func (b *Box) Invalidate(ctx context.Context, ownerID int64) error {
 	if ownerID <= 0 {
 		return nil
@@ -87,7 +87,7 @@ func (b *Box) Invalidate(ctx context.Context, ownerID int64) error {
 	return err
 }
 
-// queryOnce 只读缓存不重建 多取一条判 hasMore 空结果再 EXISTS 区分 key 不存在与窗口内真空
+// queryOnce 只读缓存不重建,多取一条判 hasMore 空结果再 EXISTS 区分 key 不存在与窗口内真空
 func (b *Box) queryOnce(ctx context.Context, feedKey string, cursorScore int64, pageSize int) (Page, bool, error) {
 	// 雪花 id 唯一 start 减一即排除游标本身实现 score < cursor
 	start := int64(math.MaxInt64)
@@ -117,10 +117,14 @@ func (b *Box) queryOnce(ctx context.Context, feedKey string, cursorScore int64, 
 	if hasMore && len(pairs) > 0 {
 		nextCursor = strconv.FormatInt(pairs[len(pairs)-1].Score, 10)
 	}
-	return Page{ContentIDs: pairsToIDs(pairs), NextCursor: nextCursor, HasMore: hasMore}, true, nil
+	return Page{
+		ContentIDs: pairsToIDs(pairs),
+		NextCursor: nextCursor,
+		HasMore:    hasMore,
+	}, true, nil
 }
 
-// rebuild 持锁回源 interaction 域收藏列表 写满缓存或空哨兵 再回读本页
+// rebuild 持锁回源 interaction 域收藏列表,写满缓存或空哨兵,再回读本页
 // 用脱离请求取消的 ctx 保证重建写入不被请求结束打断
 func (b *Box) rebuild(ctx context.Context, feedKey string, ownerID, cursorScore int64, pageSize int) (Page, error) {
 	bgCtx := context.WithoutCancel(ctx)
@@ -147,7 +151,7 @@ func (b *Box) rebuild(ctx context.Context, feedKey string, ownerID, cursorScore 
 	return page, nil
 }
 
-// pageFromSource 等锁超时的降级路径 直接回源单页 不写缓存
+// pageFromSource 等锁超时的降级路径,直接回源单页,不写缓存
 func (b *Box) pageFromSource(ctx context.Context, ownerID, cursorScore int64, pageSize int) (Page, error) {
 	resp, err := b.favoriteRpc.QueryFavoriteList(ctx, &favoriteservice.QueryFavoriteListReq{
 		UserId:   ownerID,
@@ -171,7 +175,11 @@ func (b *Box) pageFromSource(ctx context.Context, ownerID, cursorScore int64, pa
 	if resp.HasMore && resp.NextCursor > 0 {
 		nextCursor = strconv.FormatInt(resp.NextCursor, 10)
 	}
-	return Page{ContentIDs: ids, NextCursor: nextCursor, HasMore: resp.HasMore}, nil
+	return Page{
+		ContentIDs: ids,
+		NextCursor: nextCursor,
+		HasMore:    resp.HasMore,
+	}, nil
 }
 
 // writeCache 全量回填收藏 zset score 取收藏记录 id 容量与 TTL 与发布流对齐
@@ -194,7 +202,7 @@ func (b *Box) writeCache(ctx context.Context, feedKey string, items []*favorites
 	})
 }
 
-// writeEmptySentinel 写不可见哨兵做空收藏负缓存 避免空用户每次读都回源
+// writeEmptySentinel 写不可见哨兵做空收藏负缓存,避免空用户每次读都回源
 func (b *Box) writeEmptySentinel(ctx context.Context, feedKey string) {
 	err := b.redis.PipelinedCtx(ctx, func(pipe redis.Pipeliner) error {
 		pipe.ZAdd(ctx, feedKey, redis.Z{Score: 0, Member: emptySentinel})

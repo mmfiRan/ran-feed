@@ -3,7 +3,7 @@ package canal
 import "fmt"
 
 // OnlyIgnoredColumnsChanged 判断 UPDATE 是否只改动了 ignored 里的列
-// 需要 old 行可比对 缺失或不完整时保守返回 false 保证不漏处理
+// 需要 old 行可比对,缺失或不完整时保守返回 false 保证不漏处理
 // 变更集合非空且全部落在 ignored 内才返回 true
 func OnlyIgnoredColumnsChanged(row, oldRow map[string]any, ignored ...string) bool {
 	if len(row) == 0 || len(oldRow) == 0 {
@@ -18,7 +18,7 @@ func OnlyIgnoredColumnsChanged(row, oldRow map[string]any, ignored ...string) bo
 	for col, newVal := range row {
 		oldVal, ok := oldRow[col]
 		if !ok {
-			// old 缺该列 无法比对 保守按需处理
+			// old 缺该列,无法比对,保守按需处理
 			return false
 		}
 		if sameColumnValue(newVal, oldVal) {

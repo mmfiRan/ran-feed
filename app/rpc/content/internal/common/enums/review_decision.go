@@ -3,7 +3,7 @@ package enums
 import "fmt"
 
 // ReviewDecisionEnum 审核决策 ran_feed_content_review 表的 decision 字段类型
-// 审核通过拒绝与管理端下架恢复都落该表 各占一个决策值便于查历史
+// 审核通过拒绝与管理端下架恢复都落该表,各占一个决策值便于查历史
 type ReviewDecisionEnum int32
 
 const (
@@ -53,7 +53,7 @@ func (d ReviewDecisionEnum) Message() string {
 	return fmt.Sprintf("未知(%d)", d)
 }
 
-// IsReject 是否为审核拒绝 取拒绝理由时用
+// IsReject 是否为审核拒绝,取拒绝理由时用
 func (d ReviewDecisionEnum) IsReject() bool {
 	return d == ReviewDecisionReject
 }

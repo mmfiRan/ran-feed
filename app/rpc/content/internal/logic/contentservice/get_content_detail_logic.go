@@ -67,7 +67,7 @@ func (l *GetContentDetailLogic) GetContentDetail(in *content.GetContentDetailReq
 
 	viewerID := in.GetViewerId()
 	isAuthor := viewerID > 0 && viewerID == contentRow.UserID
-	// 非已发布内容仅作者本人可见 供编辑回显
+	// 非已发布内容仅作者本人可见,供编辑回显
 	if contentRow.Status != contentEnum.ContentStatusPublished.Int32() && !isAuthor {
 		return nil, errorx.NewMsg("内容不存在")
 	}

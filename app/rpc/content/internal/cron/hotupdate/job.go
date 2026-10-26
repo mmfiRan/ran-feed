@@ -1,4 +1,4 @@
-// Package hotupdate 推荐榜算分任务 增量与全量两种模式共用 hotfeed 组件的算分与写榜逻辑
+// Package hotupdate 推荐榜算分任务,增量与全量两种模式共用 hotfeed 组件的算分与写榜逻辑
 package hotupdate
 
 import (
@@ -15,22 +15,22 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
-// 增量与全量注册为两个 handler 共用同一实现 由 mode 区分批次来源
+// 增量与全量注册为两个 handler 共用同一实现,由 mode 区分批次来源
 const (
 	HandlerNameIncrement = "hot.fast.update"
 	HandlerNameFull      = "hot.cold.update"
 )
 
-// 全量模式幂等锁 TTL 秒 仅防多实例同时全量重建 不承担与增量互斥
+// 全量模式幂等锁 TTL 秒,仅防多实例同时全量重建,不承担与增量互斥
 const defaultFullLockTTL = 1800
 
 // Mode 任务模式
 type Mode int
 
 const (
-	// ModeIncrement 增量 只算脏集合里的内容
+	// ModeIncrement 增量,只算脏集合里的内容
 	ModeIncrement Mode = iota
-	// ModeFull 全量 按窗口扫库重算
+	// ModeFull 全量,按窗口扫库重算
 	ModeFull
 )
 
@@ -55,7 +55,7 @@ func register(executor *xxljob.Executor, svcCtx *svc.ServiceContext, name string
 	executor.RegisterTask(name, job.Run)
 }
 
-// Run 增量模式在主榜为空时自动转全量 分钟级自愈 Redis 丢数据
+// Run 增量模式在主榜为空时自动转全量,分钟级自愈 Redis 丢数据
 func (j *Job) Run(ctx context.Context, param xxljob.TriggerParam) (string, error) {
 	p, err := parseParams(param.ExecutorParams)
 	if err != nil {
@@ -84,8 +84,8 @@ func (j *Job) Run(ctx context.Context, param xxljob.TriggerParam) (string, error
 	return "ok", nil
 }
 
-// runFull 按窗口扫库重算写主榜再刷新快照 只加全量幂等锁防多实例并发重建
-// 算分幂等 与增量对同一内容写入的都是基于当时真实计数的合理分值 故两者无需互斥
+// runFull 按窗口扫库重算写主榜再刷新快照,只加全量幂等锁防多实例并发重建
+// 算分幂等,与增量对同一内容写入的都是基于当时真实计数的合理分值,故两者无需互斥
 func (j *Job) runFull(ctx context.Context, p Params, logger logx.Logger) (string, error) {
 	lock := redis.NewRedisLock(j.redis, rediskey.BuildHotFeedFullLockKey())
 	lock.SetExpire(p.LockTTL)
@@ -103,7 +103,7 @@ func (j *Job) runFull(ctx context.Context, p Params, logger logx.Logger) (string
 		}
 	}()
 
-	// 窗口起点在批次入口固定一次 整批复用
+	// 窗口起点在批次入口固定一次,整批复用
 	startTime := time.Now().UTC().Add(-time.Duration(p.WindowDays) * 24 * time.Hour)
 	logger.Infof("热榜全量开始 windowDays=%d mainN=%d topN=%d halfLife=%.1f shards=%d",
 		p.WindowDays, p.MainN, p.TopN, p.HalfLifeHours, p.Shards)

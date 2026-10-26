@@ -19,21 +19,21 @@ import (
 
 type LikeRepository interface {
 	WithTx(tx *query.Query) LikeRepository
-	// ApplyLike 写入点赞记录 已存在则置为点赞态
+	// ApplyLike 写入点赞记录,已存在则置为点赞态
 	ApplyLike(likeDO *do.LikeDO) error
-	// CancelLike 取消点赞 仅当存在且为点赞态时翻转 否则 no-op
+	// CancelLike 取消点赞,仅当存在且为点赞态时翻转,否则 no-op
 	CancelLike(likeDO *do.LikeDO) error
 	// BatchUpsert 批量插入或更新点赞记录
 	BatchUpsert(likeDOs []*do.LikeDO) error
-	// GetByUserAndContent 根据用户ID和内容ID查询点赞记录
+	// GetByUserAndContent 根据用户 ID 和内容 ID 查询点赞记录
 	GetByUserAndContent(userID, contentID int64) (*do.LikeDO, error)
 	// IsLiked 判断用户是否已点赞
 	IsLiked(userID, contentID int64) (bool, error)
 	// BatchIsLiked 批量判断用户是否已点赞（返回 content_id -> is_liked）
 	BatchIsLiked(userID int64, contentIDs []int64) (map[int64]bool, error)
-	// QueryUserLikedTopN 查询用户最新 N 条有效点赞 按 content_id 降序 用于缓存重建
+	// QueryUserLikedTopN 查询用户最新 N 条有效点赞,按 content_id 降序,用于缓存重建
 	QueryUserLikedTopN(userID int64, limit int) ([]int64, error)
-	// GetLikedUserIDs 获取内容的所有点赞用户ID列表
+	// GetLikedUserIDs 获取内容的所有点赞用户 ID 列表
 	GetLikedUserIDs(contentID int64) ([]int64, error)
 }
 
@@ -68,7 +68,7 @@ func (r *likeRepositoryImpl) WithTx(tx *query.Query) LikeRepository {
 	}
 }
 
-// ApplyLike 写入点赞记录 已存在则置为点赞态
+// ApplyLike 写入点赞记录,已存在则置为点赞态
 // 重复点赞时 status 值未变 InnoDB 不写 binlog updated_by 也仅在状态翻转时更新
 func (r *likeRepositoryImpl) ApplyLike(likeDO *do.LikeDO) error {
 	q := r.getQuery()
@@ -95,7 +95,7 @@ ON DUPLICATE KEY UPDATE
 	return res.Error
 }
 
-// CancelLike 取消点赞 仅当 (user_id, content_id) 已存在且当前为点赞态时翻转
+// CancelLike 取消点赞,仅当 (user_id, content_id) 已存在且当前为点赞态时翻转
 func (r *likeRepositoryImpl) CancelLike(likeDO *do.LikeDO) error {
 	q := r.getQuery()
 	db := q.RanFeedLike.WithContext(r.ctx).UnderlyingDB()
@@ -218,7 +218,7 @@ func (r *likeRepositoryImpl) BatchUpsert(likeDOs []*do.LikeDO) error {
 		})
 	}
 
-	// 一条 SQL 批量插入，冲突时更新 status 和 updated_by
+	// 一条 SQL 批量插入,冲突时更新 status 和 updated_by
 	return q.RanFeedLike.WithContext(r.ctx).
 		Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "user_id"}, {Name: "content_id"}},
@@ -227,7 +227,7 @@ func (r *likeRepositoryImpl) BatchUpsert(likeDOs []*do.LikeDO) error {
 		CreateInBatches(likeModels, len(likeModels))
 }
 
-// QueryUserLikedTopN 查询用户最新 N 条有效点赞 按 content_id 降序
+// QueryUserLikedTopN 查询用户最新 N 条有效点赞,按 content_id 降序
 func (r *likeRepositoryImpl) QueryUserLikedTopN(userID int64, limit int) ([]int64, error) {
 	if userID <= 0 || limit <= 0 {
 		return []int64{}, nil
@@ -249,11 +249,11 @@ func (r *likeRepositoryImpl) QueryUserLikedTopN(userID int64, limit int) ([]int6
 	return contentIDs, nil
 }
 
-// GetLikedUserIDs 获取内容的所有点赞用户ID列表
+// GetLikedUserIDs 获取内容的所有点赞用户 ID 列表
 func (r *likeRepositoryImpl) GetLikedUserIDs(contentID int64) ([]int64, error) {
 	q := r.getQuery()
 
-	// 查询所有点赞状态为10的用户ID
+	// 查询所有点赞状态为10的用户 ID
 	var userIDs []int64
 	err := q.RanFeedLike.WithContext(r.ctx).
 		Select(q.RanFeedLike.UserID).

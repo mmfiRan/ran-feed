@@ -26,7 +26,7 @@ type ServiceContext struct {
 	CountRpc     counterservice.CounterService
 	UserRpc      userservice.UserService
 	ContentRpc   contentservice.ContentService
-	// LikeUserRebuildLocker 用户点赞 hash 缓存重建分布式锁 防跨实例并发重复打 DB
+	// LikeUserRebuildLocker 用户点赞 hash 缓存重建分布式锁,防跨实例并发重复打 DB
 	LikeUserRebuildLocker *cache.DistLocker
 }
 
@@ -43,7 +43,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		c.ContentRpcClientConf,
 		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
 	))
-	// 初始化MySQL
+	// 初始化 MySQL
 	ormConfig := &orm.Config{
 		DSN: c.MySQL.DataSource,
 	}

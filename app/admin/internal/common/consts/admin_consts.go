@@ -17,9 +17,9 @@ const (
 
 	// RedisAdminPermPrefix 管理员权限点集合缓存前缀 admin:perms:{adminId}
 	RedisAdminPermPrefix = "admin:perms"
-	// RedisAdminPermExpireSeconds 权限缓存过期 1 天 命中时滑动续期 角色/权限变更时主动失效
+	// RedisAdminPermExpireSeconds 权限缓存过期 1 天,命中时滑动续期,角色/权限变更时主动失效
 	RedisAdminPermExpireSeconds = 24 * 60 * 60
-	// RedisAdminPermLoadedSentinel 零权限管理员的哨兵成员 区分缓存未命中与真无权限
+	// RedisAdminPermLoadedSentinel 零权限管理员的哨兵成员,区分缓存未命中与真无权限
 	RedisAdminPermLoadedSentinel = "__loaded__"
 
 	HeaderAuthorization = "Authorization"

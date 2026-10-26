@@ -10,9 +10,9 @@ type EventSource string
 
 // LikeEvent 点赞事件（用于消息队列）
 type LikeEvent struct {
-	EventID       string      `json:"event_id"`   // 事件唯一ID，用于幂等
+	EventID       string      `json:"event_id"`   // 事件唯一 ID,用于幂等
 	EventType     EventType   `json:"event_type"` // 事件类型
-	Source        EventSource `json:"source"`     // 事件来源，便于消费端区分处理
+	Source        EventSource `json:"source"`     // 事件来源,便于消费端区分处理
 	UserID        int64       `json:"user_id"`
 	ContentID     int64       `json:"content_id"`
 	ContentUserID int64       `json:"content_user_id"`
@@ -20,7 +20,7 @@ type LikeEvent struct {
 	Timestamp     int64       `json:"timestamp"` // 事件发生时间戳
 }
 
-// Marshal 序列化为JSON
+// Marshal 序列化为 JSON
 func (e *LikeEvent) Marshal() (string, error) {
 	bytes, err := json.Marshal(e)
 	if err != nil {

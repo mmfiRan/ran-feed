@@ -28,7 +28,7 @@ func NewListSearchHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 	}
 }
 
-// ListSearchHistory 取当前登录用户最近搜索历史 匿名返回空
+// ListSearchHistory 取当前登录用户最近搜索历史,匿名返回空
 func (l *ListSearchHistoryLogic) ListSearchHistory() (resp *types.ListSearchHistoryRes, err error) {
 	resp = &types.ListSearchHistoryRes{Items: []types.SearchHistoryItem{}}
 

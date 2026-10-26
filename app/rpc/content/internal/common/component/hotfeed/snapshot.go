@@ -11,13 +11,13 @@ import (
 )
 
 // newSnapshotID 全局唯一快照 id 雪花号
-// 不用秒级时间戳 避免同秒两模式生成同一 key 导致快照残缺
+// 不用秒级时间戳,避免同秒两模式生成同一 key 导致快照残缺
 func newSnapshotID() string {
 	return strconv.FormatInt(snowflake.GenID(), 10)
 }
 
-// refreshSnapshot 原子裁剪主榜到 mainN 候选池 取前 topN 重建快照 切 latest 指针
-// 裁剪与快照合并在同一 Lua 内执行 主榜留 mainN 候补垫 对外快照只取 topN
+// refreshSnapshot 原子裁剪主榜到 mainN 候选池,取前 topN 重建快照,切 latest 指针
+// 裁剪与快照合并在同一 Lua 内执行,主榜留 mainN 候补垫,对外快照只取 topN
 func (f *Feed) refreshSnapshot(ctx context.Context, mainN, topN int) error {
 	card, err := f.redis.ZcardCtx(ctx, rediskey.RedisFeedHotGlobalKey)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// maxIndexPageSize 全量重建单页上限 防止调用方传入过大 limit
+// maxIndexPageSize 全量重建单页上限,防止调用方传入过大 limit
 const maxIndexPageSize = 500
 
 type ListContentForIndexLogic struct {
@@ -31,7 +31,7 @@ func NewListContentForIndexLogic(ctx context.Context, svcCtx *svc.ServiceContext
 	}
 }
 
-// ListContentForIndex 全量重建 按 id 游标扫可索引内容 组装原始投影 空返回表示扫完
+// ListContentForIndex 全量重建,按 id 游标扫可索引内容,组装原始投影,空返回表示扫完
 func (l *ListContentForIndexLogic) ListContentForIndex(in *content.ListContentForIndexReq) (*content.ListContentForIndexRes, error) {
 	if in == nil {
 		return &content.ListContentForIndexRes{Items: []*content.ContentIndexItem{}}, nil

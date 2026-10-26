@@ -1,6 +1,4 @@
 // Package feedprojector 把内容生命周期事件投影到 feed 各存储
-// 消息消费链路与对账补跑链路共用同一份投影语义 避免两条路径各自演进
-// 它只做分发与编排 每份状态的写入都委托给对应的 owner 组件
 package feedprojector
 
 import (
@@ -40,7 +38,7 @@ func New(
 	}
 }
 
-// Apply 按事件类型分发 未覆盖的类型直接忽略
+// Apply 按事件类型分发,未覆盖的类型直接忽略
 func (p *Projector) Apply(ctx context.Context, evt *contentevent.ContentEvent) error {
 	switch evt.EventType {
 	case contentenums.EventTypePublished, contentenums.EventTypeRestored:

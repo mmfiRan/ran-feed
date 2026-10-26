@@ -17,13 +17,13 @@ const (
 	negativeTTLSeconds = 60
 )
 
-// withJitter TTL 加 0 到 ttl 的随机抖动 过期落在 ttl 到两倍 ttl 之间 抗雪崩
-// 上界由 ttl 推出 不单独配常量 免得改 ttl 时漏改上界
+// withJitter TTL 加 0 到 ttl 的随机抖动,过期落在 ttl 到两倍 ttl 之间,抗雪崩
+// 上界由 ttl 推出,不单独配常量,免得改 ttl 时漏改上界
 func withJitter(ttlSeconds int) int {
 	return ttlSeconds + rand.Intn(ttlSeconds+1)
 }
 
-// writeBackBatch 回源结果批量写回 查不到的写负哨兵配一个短 TTL 写失败只记日志不影响调用方
+// writeBackBatch 回源结果批量写回,查不到的写负哨兵配一个短 TTL 写失败只记日志不影响调用方
 func (c *Cache) writeBackBatch(ctx context.Context, missIDs []int64, detailMap map[int64]*Detail, logger logx.Logger) {
 	type entry struct {
 		key   string
@@ -56,7 +56,7 @@ func (c *Cache) writeBackBatch(ctx context.Context, missIDs []int64, detailMap m
 	}
 }
 
-// encodeForCache 序列化缓存值并给出 TTL d 为 nil 说明这条内容查不到 写负哨兵配一个短 TTL
+// encodeForCache 序列化缓存值并给出 TTL d 为 nil 说明这条内容查不到,写负哨兵配一个短 TTL
 func encodeForCache(d *Detail) (string, int, error) {
 	if d == nil {
 		return rediskey.RedisContentDetailMissingSentinel, withJitter(negativeTTLSeconds), nil

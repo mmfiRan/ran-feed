@@ -95,13 +95,13 @@ func (l *GetCountLogic) rebuildCacheWithLock(in *count.GetCountReq, cacheKey str
 
 	lockAcquired, err := lock.AcquireCtx(l.ctx)
 	if err != nil {
-		// 锁获取失败直接降级查库，保证可用性
+		// 锁获取失败直接降级查库,保证可用性
 		l.Errorf("获取计数重建锁失败，降级查库: lock_key=%s, err=%v", lockKey, err)
 		return l.queryFromDB(in)
 	}
 
 	if !lockAcquired {
-		// 别人正在重建 不阻塞请求 直接回源查库
+		// 别人正在重建,不阻塞请求,直接回源查库
 		return l.queryFromDB(in)
 	}
 
@@ -111,7 +111,7 @@ func (l *GetCountLogic) rebuildCacheWithLock(in *count.GetCountReq, cacheKey str
 		}
 	}()
 
-	// 双重检查，避免重复回源
+	// 双重检查,避免重复回源
 	if value, cacheResult := l.queryFromCache(cacheKey); cacheResult == cacheHit {
 		return value, nil
 	}

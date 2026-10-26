@@ -42,7 +42,7 @@ type UserDoc struct {
 	NicknameSuggest *completionInput `json:"nickname_suggest,omitempty"`
 }
 
-// suggestField 构造 completion 输入 空文本返回 nil 使字段整体省略 避免 ES 拒绝空 input
+// suggestField 构造 completion 输入,空文本返回 nil 使字段整体省略,避免 ES 拒绝空 input
 func suggestField(text string, weight int) *completionInput {
 	if text == "" {
 		return nil
@@ -50,7 +50,7 @@ func suggestField(text string, weight int) *completionInput {
 	return &completionInput{Input: []string{text}, Weight: weight}
 }
 
-// hotScoreWeight hot_score 转 completion 权重 非正归零 上限截到 int32
+// hotScoreWeight hot_score 转 completion 权重,非正归零,上限截到 int32
 func hotScoreWeight(score float64) int {
 	if score <= 0 {
 		return 0
@@ -61,7 +61,7 @@ func hotScoreWeight(score float64) int {
 	return int(score)
 }
 
-// ContentIndexItemToItem 由 content-rpc 索引投影映射为 ES 写入项 投影只含可索引内容 故 is_deleted 恒 0
+// ContentIndexItemToItem 由 content-rpc 索引投影映射为 ES 写入项,投影只含可索引内容,故 is_deleted 恒 0
 func ContentIndexItemToItem(it *content.ContentIndexItem) es.IndexItem {
 	doc := ContentDoc{
 		ContentID:   strconv.FormatInt(it.ContentId, 10),
@@ -80,7 +80,7 @@ func ContentIndexItemToItem(it *content.ContentIndexItem) es.IndexItem {
 	return es.IndexItem{ID: doc.ContentID, Version: it.Version, Doc: doc}
 }
 
-// UserIndexItemToItem 由 user-rpc 索引投影映射为 ES 写入项 投影只含可索引用户 故 is_deleted 恒 0
+// UserIndexItemToItem 由 user-rpc 索引投影映射为 ES 写入项,投影只含可索引用户,故 is_deleted 恒 0
 func UserIndexItemToItem(it *user.UserIndexItem) es.IndexItem {
 	doc := UserDoc{
 		UserID:    strconv.FormatInt(it.UserId, 10),

@@ -25,7 +25,7 @@ func normalizeSize(size int32) int {
 	return int(size)
 }
 
-// encodeCursor 把 ES 命中 sort 值数组编码为不透明游标 空数组返回空串
+// encodeCursor 把 ES 命中 sort 值数组编码为不透明游标,空数组返回空串
 func encodeCursor(sortValues []any) string {
 	if len(sortValues) == 0 {
 		return ""
@@ -37,7 +37,7 @@ func encodeCursor(sortValues []any) string {
 	return base64.RawURLEncoding.EncodeToString(raw)
 }
 
-// decodeCursor 解码不透明游标为 search_after 值数组 空串返回 nil 非法游标报错
+// decodeCursor 解码不透明游标为 search_after 值数组,空串返回 nil 非法游标报错
 func decodeCursor(cursor string) ([]any, error) {
 	if cursor == "" {
 		return nil, nil
@@ -53,7 +53,7 @@ func decodeCursor(cursor string) ([]any, error) {
 	return values, nil
 }
 
-// nextCursor 取末条命中 sort 值编码为下一页游标 命中不足一页表示已到底返回空串
+// nextCursor 取末条命中 sort 值编码为下一页游标,命中不足一页表示已到底返回空串
 func nextCursor(hits []es.Hit, size int) string {
 	if len(hits) < size || len(hits) == 0 {
 		return ""

@@ -13,7 +13,7 @@ import (
 )
 
 // collectDirtyIDs 逐分片冻结脏集合并 SSCAN 收集脏 contentID
-// 冻结脚本把活跃桶原子搬到处理中桶 处理期间新互动安全堆进活跃桶 双缓冲
+// 冻结脚本把活跃桶原子搬到处理中桶,处理期间新互动安全堆进活跃桶,双缓冲
 func (f *Feed) collectDirtyIDs(ctx context.Context, shards int) ([]int64, error) {
 	seen := make(map[int64]struct{})
 	ids := make([]int64, 0)
@@ -63,9 +63,9 @@ func (f *Feed) cleanupProcShards(ctx context.Context, shards int) error {
 	return nil
 }
 
-// recomputeAndOverwrite 对脏 ID 回查计数总量算全分 ZADD 覆盖主榜 已删或非公开的从主榜 ZREM
-// 每批 ZADD 后立即把主榜裁回 mainN 候选池 主榜瞬时上限 等于 mainN 加 批大小
-// 每条脏 ID 的新分都照写 含掉分内容 故无降分赖榜问题 裁剪只删分数最低的多余成员
+// recomputeAndOverwrite 对脏 ID 回查计数总量算全分 ZADD 覆盖主榜,已删或非公开的从主榜 ZREM
+// 每批 ZADD 后立即把主榜裁回 mainN 候选池,主榜瞬时上限等于 mainN 加批大小
+// 每条脏 ID 的新分都照写,含掉分内容,故无降分赖榜问题,裁剪只删分数最低的多余成员
 func (f *Feed) recomputeAndOverwrite(ctx context.Context, calculator hotrank.AdditiveTime, dirtyIDs []int64, mainN, batchSize int) error {
 	statusPublished := contentEnum.ContentStatusPublished
 	visibilityPublic := contentEnum.VisibilityPublic
@@ -80,7 +80,7 @@ func (f *Feed) recomputeAndOverwrite(ctx context.Context, calculator hotrank.Add
 		}
 		batch := dirtyIDs[start:end]
 
-		// 拿 published_at 加过滤状态 未返回的即已删或非公开 从主榜移除
+		// 拿 published_at 加过滤状态,未返回的即已删或非公开,从主榜移除
 		contentMap, err := f.contentRepo.BatchGetRecommendByIDs(ctx, statusPublished, visibilityPublic, batch)
 		if err != nil {
 			return fmt.Errorf("批量拉取推荐内容失败 %w", err)
@@ -120,7 +120,7 @@ func (f *Feed) recomputeAndOverwrite(ctx context.Context, calculator hotrank.Add
 			}
 			counts := countsByID[id]
 			score := calcScore(calculator, publishedAt, counts)
-			// ZADD 覆盖非 ZINCRBY 分值是按总量重算的时点值 自愈漂移和丢事件
+			// ZADD 覆盖非 ZINCRBY 分值是按总量重算的时点值,自愈漂移和丢事件
 			redisArgs = append(redisArgs, score, strconv.FormatInt(id, 10))
 			dbIDs = append(dbIDs, id)
 			dbScores = append(dbScores, score)
@@ -132,7 +132,7 @@ func (f *Feed) recomputeAndOverwrite(ctx context.Context, calculator hotrank.Add
 			}, redisArgs...); err != nil {
 				return err
 			}
-			// 分批裁剪 每批 ZADD 后立即裁回 mainN 主榜瞬时不超过 mainN 加 批大小
+			// 分批裁剪,每批 ZADD 后立即裁回 mainN 主榜瞬时不超过 mainN 加批大小
 			if mainN > 0 {
 				if _, err = f.redis.ZremrangebyrankCtx(ctx, rediskey.RedisFeedHotGlobalKey, 0, -(int64(mainN) + 1)); err != nil {
 					return err

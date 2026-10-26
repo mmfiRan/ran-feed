@@ -49,7 +49,7 @@ func (r *bigVRepositoryImpl) WithTx(tx *query.Query) BigVRepository {
 	}
 }
 
-// Promote 大 V 晋升 粉丝数跨阈值时落表 user_id 冲突即忽略 sticky 只增不删
+// Promote 大 V 晋升,粉丝数跨阈值时落表 user_id 冲突即忽略 sticky 只增不删
 func (r *bigVRepositoryImpl) Promote(userID int64, followerCount int64) error {
 	if userID <= 0 {
 		return nil
@@ -68,7 +68,7 @@ func (r *bigVRepositoryImpl) Promote(userID int64, followerCount int64) error {
 		Create(row)
 }
 
-// ListAllUserIDs 取全部大 V user_id 供全局集合周期重建 集合体量小一次取回
+// ListAllUserIDs 取全部大 V user_id 供全局集合周期重建,集合体量小一次取回
 func (r *bigVRepositoryImpl) ListAllUserIDs() ([]int64, error) {
 	q := r.getQuery()
 	rows, err := q.RanFeedBigV.WithContext(r.ctx).

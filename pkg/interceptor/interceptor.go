@@ -49,7 +49,7 @@ func ServerGrpcInterceptor() grpc.UnaryServerInterceptor {
 		resp, err = handler(ctx, req)
 
 		if err != nil {
-			// 业务错误 Info 级别；系统/非预期错误 Error 级别
+			// 业务错误 Info 级别,系统/非预期错误 Error 级别
 			var bizErr *errorx.BizError
 			if errors.As(err, &bizErr) {
 				logc.Infof(ctx, "[gRPC Server BizError] method=%s, code=%d, message=%s", info.FullMethod, bizErr.Code, bizErr.Message)

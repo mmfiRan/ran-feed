@@ -78,7 +78,7 @@ func (l *SetAdminRolesLogic) SetAdminRoles(in *admin.SetAdminRolesReq) (*emptypb
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("设置管理员角色失败"))
 	}
 
-	// 角色变更 失效该管理员权限缓存使新权限立即生效
+	// 角色变更,失效该管理员权限缓存使新权限立即生效
 	utils.InvalidateAdminPerm(l.ctx, l.svcCtx.Redis, in.GetAdminId())
 	return &emptypb.Empty{}, nil
 }

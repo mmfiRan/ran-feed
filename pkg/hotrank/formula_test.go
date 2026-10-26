@@ -36,7 +36,7 @@ func TestDeltaScore_UnknownAction(t *testing.T) {
 func TestDeltaScore_FutureEventTime(t *testing.T) {
 	d := defaultDecay()
 	now := time.Now()
-	// 未来事件：ageHours 被 clamp 到 0，衰减因子 = 1
+	// 未来事件：ageHours 被 clamp 到 0,衰减因子 = 1
 	future := now.Add(2 * time.Hour)
 	score := d.DeltaScore(Event{Action: ActionLike, Count: 1, EventTime: future}, now)
 	expected := 1.0 * d.Weights.Like * 1.0
@@ -46,7 +46,7 @@ func TestDeltaScore_FutureEventTime(t *testing.T) {
 func TestDeltaScore_NoDecayAtEventTime(t *testing.T) {
 	d := defaultDecay()
 	now := time.Now()
-	// 事件刚发生：ageHours=0，decay=1
+	// 事件刚发生：ageHours=0,decay=1
 	score := d.DeltaScore(Event{Action: ActionLike, Count: 2, EventTime: now}, now)
 	assert.InDelta(t, 2.0*d.Weights.Like, score, 1e-9)
 }
@@ -83,7 +83,7 @@ func TestDeltaScore_ActionWeights(t *testing.T) {
 	event.Action = ActionFavorite
 	favorite := d.DeltaScore(event, now)
 
-	// comment=3x like，favorite=4x like
+	// comment=3x like,favorite=4x like
 	assert.InDelta(t, 3*like, comment, 1e-9)
 	assert.InDelta(t, 4*like, favorite, 1e-9)
 }
@@ -91,7 +91,7 @@ func TestDeltaScore_ActionWeights(t *testing.T) {
 func TestDeltaScore_ZeroHalfLife(t *testing.T) {
 	d := ExpDecay{Weights: DefaultWeights(), HalfLifeHours: 0}
 	now := time.Now()
-	// 半衰期为 0 时 lambda=0，无衰减
+	// 半衰期为 0 时 lambda=0,无衰减
 	score := d.DeltaScore(Event{Action: ActionLike, Count: 1, EventTime: now.Add(-100 * time.Hour)}, now)
 	assert.InDelta(t, d.Weights.Like, score, 1e-9)
 }

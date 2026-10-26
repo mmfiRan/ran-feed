@@ -28,7 +28,7 @@ func NewDeleteHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Del
 	}
 }
 
-// DeleteHistory all 为 true 清空 否则删单条 匿名忽略
+// DeleteHistory all 为 true 清空,否则删单条,匿名忽略
 func (l *DeleteHistoryLogic) DeleteHistory(in *search.DeleteHistoryReq) (*emptypb.Empty, error) {
 	if in == nil || in.UserId <= 0 {
 		return &emptypb.Empty{}, nil

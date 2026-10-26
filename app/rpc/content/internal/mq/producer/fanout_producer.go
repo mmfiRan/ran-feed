@@ -20,7 +20,7 @@ func NewFanOutProducer(pusher *kq.Pusher) *FanOutProducer {
 	}
 }
 
-// PublishBatch 投递一个粉丝分批 以 contentID 作 key 保证同内容分批落到同分区
+// PublishBatch 投递一个粉丝分批,以 contentID 作 key 保证同内容分批落到同分区
 func (p *FanOutProducer) PublishBatch(ctx context.Context, batch *event.FanOutBatch) error {
 	if p == nil || p.pusher == nil {
 		return nil

@@ -97,7 +97,7 @@ func TestGet_HitCache(t *testing.T) {
 	assert.Equal(t, 1, repo.getByIDCalls)
 	assert.True(t, mr.Exists(rediskey.BuildUserInfoKey(1)))
 
-	// 第二次应当命中缓存，不再调 DB
+	// 第二次应当命中缓存,不再调 DB
 	second, err := Get(context.Background(), rds, repo, 1)
 	require.NoError(t, err)
 	require.NotNil(t, second)
@@ -156,7 +156,7 @@ func TestGet_SentinelHitSkipsDB(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, 1, repo.getByIDCalls)
 
-	// 第二次：命中哨兵，不再打 DB
+	// 第二次：命中哨兵,不再打 DB
 	u, err := Get(context.Background(), rds, repo, 7)
 	require.NoError(t, err)
 	assert.Nil(t, u)
@@ -230,12 +230,12 @@ func TestBatchGet_WithSentinel(t *testing.T) {
 	rds, mr := newTestEnv(t)
 	repo := &mockRepo{users: map[int64]*do.UserDO{1: sampleUser(1)}}
 
-	// user 2 不存在，预先种入哨兵
+	// user 2 不存在,预先种入哨兵
 	require.NoError(t, mr.Set(rediskey.BuildUserInfoKey(2), rediskey.RedisUserInfoMissingSentinel))
 
 	res, err := BatchGet(context.Background(), rds, repo, []int64{1, 2})
 	require.NoError(t, err)
-	// user 1 走 DB 一次（首次 miss），user 2 命中哨兵不打 DB
+	// user 1 走 DB 一次（首次 miss）,user 2 命中哨兵不打 DB
 	assert.Equal(t, 1, repo.batchGetByIDsCalls)
 	assert.Len(t, res, 1)
 	assert.NotNil(t, res[1])

@@ -28,12 +28,12 @@ func TestConnManager_AddRemove(t *testing.T) {
 	m.Add(300, nil)
 	assert.Equal(t, 2, m.UserCount(), "非法输入不入库")
 
-	// Remove 一个 c1 只从 100 移除 不影响 200
+	// Remove 一个 c1 只从 100 移除,不影响 200
 	m.Remove(100, c1)
 	assert.Equal(t, 1, m.ConnCount(100))
 	assert.Equal(t, 1, m.ConnCount(200))
 
-	// 移光 100 下最后一个 应从 map 清 user 项
+	// 移光 100 下最后一个,应从 map 清 user 项
 	m.Remove(100, c2)
 	assert.Equal(t, 0, m.ConnCount(100))
 	assert.Equal(t, 1, m.UserCount())

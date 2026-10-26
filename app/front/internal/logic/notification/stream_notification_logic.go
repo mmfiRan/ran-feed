@@ -16,7 +16,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// heartbeatInterval 心跳间隔 定期发帧探活并防代理层因空闲断连
+// heartbeatInterval 心跳间隔,定期发帧探活并防代理层因空闲断连
 const heartbeatInterval = 15 * time.Second
 
 type StreamNotificationLogic struct {
@@ -33,7 +33,7 @@ func NewStreamNotificationLogic(ctx context.Context, svcCtx *svc.ServiceContext)
 	}
 }
 
-// StreamNotification SSE 长连接主循环 注册 conn 后阻塞转发信号帧到 client 直到断连
+// StreamNotification SSE 长连接主循环,注册 conn 后阻塞转发信号帧到 client 直到断连
 func (l *StreamNotificationLogic) StreamNotification(req *types.NotifyStreamReq, client chan<- *types.NotifyStreamRes) error {
 	userID, err := utils.GetContextUserId(l.ctx)
 	if err != nil {

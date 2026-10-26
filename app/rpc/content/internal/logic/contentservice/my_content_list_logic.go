@@ -119,7 +119,7 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 		}
 	}
 
-	// 标题封面 不可见原因 计数
+	// 标题封面,不可见原因,计数
 	var (
 		articleMap map[int64]*model.RanFeedArticle
 		videoMap   map[int64]*model.RanFeedVideo
@@ -145,7 +145,7 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 		},
 		func() error {
 			reasonMap = make(map[int64]string, len(rejectedIDs)+len(takenDownIDs))
-			// 被拒取最新拒绝理由 下架取最新下架原因 二者按当前状态分别取 互不串
+			// 被拒取最新拒绝理由,下架取最新下架原因,二者按当前状态分别取,互不串
 			if m, err := l.reviewRepository.LatestReasonByContentIDs(l.ctx,
 				rejectedIDs, []contentEnum.ReviewDecisionEnum{contentEnum.ReviewDecisionReject}); err != nil {
 				return err
@@ -210,7 +210,7 @@ func (l *MyContentListLogic) assembleItems(rows []*model.RanFeedContent) ([]*con
 	return items, nil
 }
 
-// loadCounts 计数是次要展示 拉取失败降级为零值不阻断
+// loadCounts 计数是次要展示,拉取失败降级为零值不阻断
 func (l *MyContentListLogic) loadCounts(contentIDs []int64) map[int64]*count.ContentCountsItem {
 	res := make(map[int64]*count.ContentCountsItem, len(contentIDs))
 	if len(contentIDs) == 0 {

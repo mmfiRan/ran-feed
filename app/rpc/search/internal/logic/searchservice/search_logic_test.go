@@ -44,15 +44,15 @@ func TestNextCursor(t *testing.T) {
 		{ID: "1", Sort: []any{1.0, "1"}},
 		{ID: "2", Sort: []any{2.0, "2"}},
 	}
-	// 满页 返回末条游标
+	// 满页,返回末条游标
 	require.NotEmpty(t, nextCursor(hits, 2))
 	decoded, err := decodeCursor(nextCursor(hits, 2))
 	require.NoError(t, err)
 	assert.Equal(t, []any{2.0, "2"}, decoded)
 
-	// 不足一页 到底 返回空
+	// 不足一页,到底,返回空
 	assert.Empty(t, nextCursor(hits, 10))
-	// 空命中 返回空
+	// 空命中,返回空
 	assert.Empty(t, nextCursor(nil, 10))
 }
 

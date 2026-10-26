@@ -12,7 +12,7 @@ const (
 
 // LikeEvent 点赞事件
 type LikeEvent struct {
-	EventID       string    `json:"event_id"`   // 事件唯一ID，用于幂等
+	EventID       string    `json:"event_id"`   // 事件唯一 ID,用于幂等
 	EventType     EventType `json:"event_type"` // 事件类型
 	UserID        int64     `json:"user_id"`
 	ContentID     int64     `json:"content_id"`
@@ -21,7 +21,7 @@ type LikeEvent struct {
 	Timestamp     int64     `json:"timestamp"` // 事件发生时间戳
 }
 
-// Marshal 序列化为JSON
+// Marshal 序列化为 JSON
 func (e *LikeEvent) Marshal() (string, error) {
 	bytes, err := json.Marshal(e)
 	if err != nil {

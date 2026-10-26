@@ -42,7 +42,7 @@ func (l *SubmitContentLogic) SubmitContent(in *content.SubmitContentReq) (*conte
 		return nil, errorx.NewMsg("该内容当前状态不可提交")
 	}
 
-	// 发布前完整性校验 草稿放宽 提交才强制
+	// 发布前完整性校验,草稿放宽,提交才强制
 	if err := l.checkComplete(in.ContentId, contentEnum.ContentTypeEnum(row.ContentType)); err != nil {
 		return nil, err
 	}

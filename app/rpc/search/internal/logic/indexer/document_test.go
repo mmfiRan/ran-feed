@@ -70,7 +70,7 @@ func TestUserIndexItemToItem(t *testing.T) {
 	assert.Equal(t, "alice", doc.Username)
 	assert.Equal(t, int32(10), doc.Status)
 	assert.Equal(t, int32(0), doc.IsDeleted)
-	// 昵称补全填充 用户暂无热度 weight 恒 0
+	// 昵称补全填充,用户暂无热度 weight 恒 0
 	require.NotNil(t, doc.NicknameSuggest)
 	assert.Equal(t, []string{"爱丽丝"}, doc.NicknameSuggest.Input)
 	assert.Equal(t, 0, doc.NicknameSuggest.Weight)
@@ -86,7 +86,7 @@ func TestContentIndexItemSuggest(t *testing.T) {
 	assert.Equal(t, []string{"露营装备测评"}, doc.TitleSuggest.Input)
 	assert.Equal(t, 8, doc.TitleSuggest.Weight)
 
-	// 空标题(异常视频)不产出补全字段 避免 ES 拒绝空 input
+	// 空标题(异常视频)不产出补全字段,避免 ES 拒绝空 input
 	noTitle := ContentIndexItemToItem(&content.ContentIndexItem{ContentId: 2, ContentType: content.ContentType_CONTENT_TYPE_VIDEO, Title: ""})
 	assert.Nil(t, noTitle.Doc.(ContentDoc).TitleSuggest)
 

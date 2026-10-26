@@ -15,7 +15,7 @@ import (
 	"github.com/zeromicro/go-zero/core/mr"
 )
 
-// Resolver feed 读路径公共入口 走二级缓存取内容详情 再旁挂作者与点赞
+// Resolver feed 读路径公共入口,走二级缓存取内容详情,再旁挂作者与点赞
 type Resolver struct {
 	cache       *contentcache.Cache
 	contentRepo repositories.ContentRepository
@@ -43,7 +43,7 @@ func New(
 	}
 }
 
-// Resolve 按 ids 顺序解析成 Entry 列表 返回顺序是入参顺序的子序 publicOnly 为真时只留 PUBLIC 已删和未发布的 id 直接剔除
+// Resolve 按 ids 顺序解析成 Entry 列表,返回顺序是入参顺序的子序 publicOnly 为真时只留 PUBLIC 已删和未发布的 id 直接剔除
 func (r *Resolver) Resolve(ctx context.Context, ids []int64, viewerID int64, publicOnly bool) ([]*Entry, error) {
 	details, err := r.resolveDetails(ctx, ids, publicOnly)
 	if err != nil {
@@ -97,7 +97,7 @@ func (r *Resolver) resolveDetails(ctx context.Context, ids []int64, publicOnly b
 	return details, nil
 }
 
-// loadDetails 缓存没命中时回源 content 主表和它的文章 视频子表
+// loadDetails 缓存没命中时回源 content 主表和它的文章,视频子表
 func (r *Resolver) loadDetails(ctx context.Context, missIDs []int64) (map[int64]*contentcache.Detail, error) {
 	contentMap, err := r.contentRepo.BatchGetPublishedByIDs(ctx, missIDs)
 	if err != nil {
@@ -160,7 +160,7 @@ func (r *Resolver) loadDetails(ctx context.Context, missIDs []int64) (map[int64]
 	return res, nil
 }
 
-// loadAuthorsAndLikes 并行查作者与点赞信息 点赞跟观察者相关 不进缓存
+// loadAuthorsAndLikes 并行查作者与点赞信息,点赞跟观察者相关,不进缓存
 func (r *Resolver) loadAuthorsAndLikes(ctx context.Context, details []*contentcache.Detail, viewerID int64) (map[int64]*user.UserInfo, map[int64]bool, map[int64]int64, error) {
 	authorIDs := make([]int64, 0, len(details))
 	authorSeen := make(map[int64]struct{}, len(details))

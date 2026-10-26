@@ -16,7 +16,7 @@ func TestLikeStrategy_ExtractEvents(t *testing.T) {
 	s := &likeStrategy{}
 	ctx := context.Background()
 
-	// INSERT 激活 产通知
+	// INSERT 激活,产通知
 	events := s.ExtractEvents(ctx, "INSERT", map[string]interface{}{
 		"user_id": int64(100), "content_user_id": int64(200), "content_id": int64(500), "status": int64(10),
 	}, nil)
@@ -47,7 +47,7 @@ func TestLikeStrategy_ExtractEvents(t *testing.T) {
 	}, nil)
 	assert.Empty(t, events, "DELETE 不产通知")
 
-	// 缺字段 不产
+	// 缺字段,不产
 	events = s.ExtractEvents(ctx, "INSERT", map[string]interface{}{
 		"content_user_id": int64(200), "content_id": int64(500), "status": int64(10),
 	}, nil)

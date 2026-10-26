@@ -2,13 +2,13 @@ package es
 
 import _ "embed"
 
-// 索引名 演进改 mapping 时建新版索引 reindex 后 alias 切换 代码只认这两个名
+// 索引名,演进改 mapping 时建新版索引 reindex 后 alias 切换,代码只认这两个名
 const (
 	IndexContent = "ran-feed-content"
 	IndexUser    = "ran-feed-user"
 )
 
-// 自动补全 completion 字段名 与 mapping 对齐
+// 自动补全 completion 字段名,与 mapping 对齐
 const (
 	FieldTitleSuggest    = "title_suggest"
 	FieldNicknameSuggest = "nickname_suggest"

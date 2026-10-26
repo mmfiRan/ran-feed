@@ -24,7 +24,7 @@ func NewBatchGetContentItemsLogic(ctx context.Context, svcCtx *svc.ServiceContex
 	}
 }
 
-// BatchGetContentItems 按给定 id 批量富化 复用 feed 拼装链 仅取公开内容
+// BatchGetContentItems 按给定 id 批量富化,复用 feed 拼装链,仅取公开内容
 func (l *BatchGetContentItemsLogic) BatchGetContentItems(in *content.BatchGetContentItemsReq) (*content.BatchGetContentItemsRes, error) {
 	if in == nil || len(in.ContentIds) == 0 {
 		return &content.BatchGetContentItemsRes{Items: []*content.ContentItem{}}, nil

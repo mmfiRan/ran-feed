@@ -71,7 +71,7 @@ func (l *UnlikeLogic) publishCancelLikeEvent(ctx context.Context, userID, conten
 	l.svcCtx.LikeProducer.SendCancelLikeEvent(ctx, userID, contentID, contentUserID, scene)
 }
 
-// asyncPublish 在独立后台 ctx 中异步投递事件 避免被请求 ctx 取消
+// asyncPublish 在独立后台 ctx 中异步投递事件,避免被请求 ctx 取消
 func (l *UnlikeLogic) asyncPublish(publish func(ctx context.Context)) {
 	bgCtx := context.WithoutCancel(l.ctx)
 	threading.GoSafe(func() {

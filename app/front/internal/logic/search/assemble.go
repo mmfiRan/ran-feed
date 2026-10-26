@@ -7,7 +7,7 @@ import (
 	"ran-feed/app/rpc/search/search"
 )
 
-// assembleSearchContentItems 按 content-rpc 富化后的顺序拼装 并按 content_id 合并搜索高亮
+// assembleSearchContentItems 按 content-rpc 富化后的顺序拼装,并按 content_id 合并搜索高亮
 func assembleSearchContentItems(enriched []*content.ContentItem, highlights map[int64]*search.ContentHit) []types.SearchContentItem {
 	items := make([]types.SearchContentItem, 0, len(enriched))
 	for _, it := range enriched {

@@ -25,7 +25,7 @@ type CustomValidator struct {
 func NewCustomValidator() (*CustomValidator, error) {
 	validate := validator.New()
 
-	// 使用 json 标签名作为字段名，便于对外提示与请求参数一致
+	// 使用 json 标签名作为字段名,便于对外提示与请求参数一致
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		tag := fld.Tag.Get("json")
 		if tag == "-" || tag == "" {
@@ -63,7 +63,7 @@ func (cv *CustomValidator) Error() string {
 	return cv.err
 }
 
-// Validate 校验结构体，如果失败返回中文错误
+// Validate 校验结构体,如果失败返回中文错误
 func (cv *CustomValidator) Validate(r *http.Request, data any) error {
 	err := cv.validate.Struct(data)
 	if err == nil {
@@ -76,19 +76,19 @@ func (cv *CustomValidator) Validate(r *http.Request, data any) error {
 		return cv
 	}
 
-	// 将validator的错误翻译为中文
+	// 将 validator 的错误翻译为中文
 	var sb strings.Builder
 	for _, ve := range validationErrors {
 
 		// 先尝试使用官方中文翻译
 		translated := ve.Translate(cv.translator)
 
-		// 如果未能有效翻译，则使用自定义兜底文案（不枚举标签）
+		// 如果未能有效翻译,则使用自定义兜底文案（不枚举标签）
 		if translated == ve.Error() || translated == "" {
 			translated = fallbackGenericMessage()
 		}
 
-		// 前缀采用 tag 值，便于快速定位具体的校验规则
+		// 前缀采用 tag 值,便于快速定位具体的校验规则
 		sb.WriteString(translated)
 		sb.WriteString("; ")
 	}
@@ -96,7 +96,7 @@ func (cv *CustomValidator) Validate(r *http.Request, data any) error {
 	return cv
 }
 
-// fallbackGenericMessage 统一兜底文案（不做标签枚举），保持简洁
+// fallbackGenericMessage 统一兜底文案（不做标签枚举）,保持简洁
 func fallbackGenericMessage() string {
 	return "不满足校验要求"
 }
@@ -117,7 +117,7 @@ func (cv *CustomValidator) RegisterCustomTranslation(tag, tmpl string) error {
 	)
 }
 
-// RegisterCustomTranslations 批量注册自定义翻译。
+// RegisterCustomTranslations 批量注册自定义翻译
 func (cv *CustomValidator) RegisterCustomTranslations(items map[string]string) error {
 	for tag, tmpl := range items {
 		if err := cv.RegisterCustomTranslation(tag, tmpl); err != nil {

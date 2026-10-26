@@ -3,7 +3,7 @@ package enums
 import "fmt"
 
 // FollowStatusEnum 关注状态 ran_feed_follow 表的 status 字段类型
-// 业务专属 不与其他状态机共用类型 避免误用
+// 业务专属,不与其他状态机共用类型,避免误用
 type FollowStatusEnum int32
 
 const (
@@ -12,7 +12,7 @@ const (
 	FollowStatusUnfollow FollowStatusEnum = 20
 )
 
-// followStatusNames 集中维护值与名称的映射 新增值只需在此处补充
+// followStatusNames 集中维护值与名称的映射,新增值只需在此处补充
 var followStatusNames = map[FollowStatusEnum]string{
 	FollowStatusUnknown:  "UNKNOWN",
 	FollowStatusFollow:   "FOLLOW",

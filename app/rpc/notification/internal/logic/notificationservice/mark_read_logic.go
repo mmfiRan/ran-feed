@@ -27,7 +27,7 @@ func NewMarkReadLogic(ctx context.Context, svcCtx *svc.ServiceContext) *MarkRead
 	}
 }
 
-// MarkRead 按 ids 标已读 recipient 入 where 由 repo 侧防越权 空 ids 直返 affected=0
+// MarkRead 按 ids 标已读 recipient 入 where 由 repo 侧防越权,空 ids 直返 affected=0
 func (l *MarkReadLogic) MarkRead(in *notification.MarkReadReq) (*notification.MarkReadRes, error) {
 	if in == nil || in.RecipientId <= 0 {
 		return nil, errorx.NewMsg("参数错误")

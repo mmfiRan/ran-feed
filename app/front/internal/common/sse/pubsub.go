@@ -22,8 +22,8 @@ type PubSubMessage struct {
 	Unread      int64 `json:"unread"`
 }
 
-// SSEFrame 客户端事件帧 前端 EventSource 上按 type 分派
-// type=notify 表示未读数变更 收到即走 /list 回拉
+// SSEFrame 客户端事件帧,前端 EventSource 上按 type 分派
+// type=notify 表示未读数变更,收到即走 /list 回拉
 type SSEFrame struct {
 	Type   string `json:"type"`
 	Unread int64  `json:"unread"`
@@ -34,7 +34,7 @@ func EncodeMessage(msg PubSubMessage) ([]byte, error) {
 	return json.Marshal(SSEFrame{Type: "notify", Unread: msg.Unread})
 }
 
-// DecodePayload 解 pubsub 消息 空/非法 JSON/recipient<=0 返 error
+// DecodePayload 解 pubsub 消息,空/非法 JSON/recipient<=0 返 error
 func DecodePayload(raw []byte) (PubSubMessage, error) {
 	if len(raw) == 0 {
 		return PubSubMessage{}, fmt.Errorf("空载荷")
@@ -84,7 +84,7 @@ func (p *PubSub) run(ctx context.Context) {
 		}
 	}()
 
-	// 订阅循环 出错重连避免瞬时网络抖动导致永久失联
+	// 订阅循环,出错重连避免瞬时网络抖动导致永久失联
 	for {
 		if ctx.Err() != nil {
 			return

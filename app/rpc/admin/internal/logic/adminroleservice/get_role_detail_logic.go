@@ -30,7 +30,7 @@ func NewGetRoleDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Get
 	}
 }
 
-// GetRoleDetail 角色详情含所绑权限点ID集合
+// GetRoleDetail 角色详情含所绑权限点 ID 集合
 func (l *GetRoleDetailLogic) GetRoleDetail(in *admin.GetRoleDetailReq) (*admin.GetRoleDetailRes, error) {
 	role, err := l.roleRepo.GetByID(in.GetId())
 	if err != nil {

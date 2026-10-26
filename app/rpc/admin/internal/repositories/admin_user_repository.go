@@ -17,7 +17,7 @@ type AdminUserRepository interface {
 	WithTx(tx *query.Query) AdminUserRepository
 	GetByUsername(username string) (*model.RanFeedAdminUser, error)
 	GetByID(id int64) (*model.RanFeedAdminUser, error)
-	// Page 管理员分页 status 为 nil 表示不限 id 倒序 返回列表与总数
+	// Page 管理员分页 status 为 nil 表示不限 id 倒序,返回列表与总数
 	Page(status *int32, offset, limit int) ([]*model.RanFeedAdminUser, int64, error)
 	// Create 建管理员
 	Create(row *model.RanFeedAdminUser) error
@@ -76,7 +76,7 @@ func (r *adminUserRepositoryImpl) GetByUsername(username string) (*model.RanFeed
 	return row, nil
 }
 
-// GetByID 按主键取管理员 未命中返回 nil
+// GetByID 按主键取管理员,未命中返回 nil
 func (r *adminUserRepositoryImpl) GetByID(id int64) (*model.RanFeedAdminUser, error) {
 	q := r.getQuery().RanFeedAdminUser
 	row, err := q.WithContext(r.ctx).
@@ -102,7 +102,7 @@ func (r *adminUserRepositoryImpl) Page(status *int32, offset, limit int) ([]*mod
 	return do.Order(q.ID.Desc()).FindByPage(offset, limit)
 }
 
-// Create 建管理员 返回ID
+// Create 建管理员,返回 ID
 func (r *adminUserRepositoryImpl) Create(row *model.RanFeedAdminUser) error {
 	if row == nil {
 		return nil

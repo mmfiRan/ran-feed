@@ -11,7 +11,7 @@ type Request struct {
 	FileName    string // 文件名
 }
 
-// Credential 直传票据 前端据此自行上传
+// Credential 直传票据,前端据此自行上传
 type Credential struct {
 	URL       string            // 上传 URL
 	Method    string            // HTTP 方法
@@ -21,7 +21,7 @@ type Credential struct {
 	ExpiredAt int64             // 过期时间
 }
 
-// Strategy 云存储直传凭证策略 每家云一个实现
+// Strategy 云存储直传凭证策略,每家云一个实现
 type Strategy interface {
 	Generate(ctx context.Context, req *Request) (*Credential, error)
 }

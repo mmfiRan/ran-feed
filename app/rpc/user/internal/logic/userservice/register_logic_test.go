@@ -104,7 +104,7 @@ func TestRegister_NormalizesMobileAndEmail(t *testing.T) {
 	var captured *do.UserDO
 	repo := &mockUserRepository{
 		getByMobileFn: func(mobile string) (*do.UserDO, error) {
-			// 查重同样用归一化后的号 避免裸号与带区号查不到同一个账号
+			// 查重同样用归一化后的号,避免裸号与带区号查不到同一个账号
 			assert.Equal(t, "+8613800138001", mobile)
 			return nil, nil
 		},

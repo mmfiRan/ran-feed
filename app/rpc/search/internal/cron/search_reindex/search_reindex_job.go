@@ -20,7 +20,7 @@ const HandlerName = "search.reindex"
 const scanBatchSize = 500
 
 // SearchReindexJob 全量以 content/user 域为真相源经 RPC 投影重建索引
-// 采用别名切换:新物理索引灌满后原子切别名再删旧索引 期间旧索引持续可读 且天然无孤儿文档
+// 采用别名切换:新物理索引灌满后原子切别名再删旧索引,期间旧索引持续可读,且天然无孤儿文档
 type SearchReindexJob struct {
 	svc *svc.ServiceContext
 	logx.Logger
@@ -46,7 +46,7 @@ func (j *SearchReindexJob) Run(ctx context.Context, _ xxljob.TriggerParam) (stri
 	return fmt.Sprintf("ok content=%d user=%d", contentTotal, userTotal), nil
 }
 
-// loadContent 游标经 content-rpc 投影扫可索引内容 分批 bulk 灌入指定物理索引
+// loadContent 游标经 content-rpc 投影扫可索引内容,分批 bulk 灌入指定物理索引
 // 出错上抛由 RebuildIndex 清理新索引并保留旧索引
 func (j *SearchReindexJob) loadContent(ctx context.Context, index string) (int, error) {
 	var cursor int64
@@ -81,7 +81,7 @@ func (j *SearchReindexJob) loadContent(ctx context.Context, index string) (int, 
 	return total, nil
 }
 
-// loadUser 游标经 user-rpc 投影扫可索引用户 分批 bulk 灌入指定物理索引
+// loadUser 游标经 user-rpc 投影扫可索引用户,分批 bulk 灌入指定物理索引
 func (j *SearchReindexJob) loadUser(ctx context.Context, index string) (int, error) {
 	var cursor int64
 	var total int

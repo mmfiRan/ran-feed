@@ -17,7 +17,7 @@ func testCalculator() hotrank.AdditiveTime {
 	}
 }
 
-// TestCalcScore_UsesAllThreeCounts 三个互动字段任一增大都应抬高分值 防漏读其一
+// TestCalcScore_UsesAllThreeCounts 三个互动字段任一增大都应抬高分值,防漏读其一
 func TestCalcScore_UsesAllThreeCounts(t *testing.T) {
 	calculator := testCalculator()
 	published := time.UnixMilli(1_700_000_000_000)
@@ -38,7 +38,7 @@ func TestCalcScore_UsesAllThreeCounts(t *testing.T) {
 	}
 }
 
-// TestCalcScore_NilCountsEqualsZeroCounts nil 与全零应等价 都不 panic
+// TestCalcScore_NilCountsEqualsZeroCounts nil 与全零应等价,都不 panic
 func TestCalcScore_NilCountsEqualsZeroCounts(t *testing.T) {
 	calculator := testCalculator()
 	published := time.UnixMilli(1_700_000_000_000)
@@ -46,7 +46,7 @@ func TestCalcScore_NilCountsEqualsZeroCounts(t *testing.T) {
 	assert.Equal(t, calcScore(calculator, published, &count.ContentCountsItem{}), calcScore(calculator, published, nil))
 }
 
-// TestCalcScore_OutscoresOlderWithSameCounts 同互动量下 越新发布分值越高
+// TestCalcScore_OutscoresOlderWithSameCounts 同互动量下,越新发布分值越高
 func TestCalcScore_OutscoresOlderWithSameCounts(t *testing.T) {
 	calculator := testCalculator()
 	newer := time.UnixMilli(1_700_000_000_000)

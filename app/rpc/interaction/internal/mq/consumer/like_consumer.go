@@ -42,7 +42,7 @@ func (c *LikeConsumer) Consume(ctx context.Context, key, val string) error {
 		return err
 	}
 
-	// 一条消息一条事务 先插入幂等记录 再更新 like 表
+	// 一条消息一条事务,先插入幂等记录,再更新 like 表
 	return c.svcCtx.MysqlDb.Transaction(func(tx *gorm.DB) error {
 		inserted, err := dedup.New(tx).InsertIfAbsent(ctx, c.consumerName, likeEvent.EventID)
 		if err != nil {

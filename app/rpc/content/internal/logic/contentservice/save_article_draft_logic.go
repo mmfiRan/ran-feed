@@ -32,7 +32,7 @@ func NewSaveArticleDraftLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 }
 
 func (l *SaveArticleDraftLogic) SaveArticleDraft(in *content.SaveArticleDraftReq) (*content.SaveArticleDraftRes, error) {
-	// 有 content_id 走更新 否则新建草稿
+	// 有 content_id 走更新,否则新建草稿
 	if in.ContentId != nil && *in.ContentId > 0 {
 		contentID, err := l.updateDraft(in, *in.ContentId)
 		if err != nil {

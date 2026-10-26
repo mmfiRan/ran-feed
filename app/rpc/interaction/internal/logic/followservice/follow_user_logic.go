@@ -56,7 +56,7 @@ func (l *FollowUserLogic) FollowUser(in *interaction.FollowUserReq) (*interactio
 		return nil, errorx.NewMsg("被关注用户不存在")
 	}
 
-	// 读前置状态判断是否真正翻转为关注 读失败默认按翻转处理回填幂等无害
+	// 读前置状态判断是否真正翻转为关注,读失败默认按翻转处理回填幂等无害
 	transitioned := true
 	if prior, perr := l.followRepo.GetByUserAndFollow(in.UserId, in.FollowUserId); perr != nil {
 		l.Errorf("查关注前置状态失败 默认回填 userID=%d followUserID=%d err=%v", in.UserId, in.FollowUserId, perr)
@@ -75,7 +75,7 @@ func (l *FollowUserLogic) FollowUser(in *interaction.FollowUserReq) (*interactio
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("关注失败"))
 	}
 
-	// 仅真正翻转为关注才回填 重复关注不触发 大 V 跳过与缓存失效由 content 侧统一处理
+	// 仅真正翻转为关注才回填,重复关注不触发,大 V 跳过与缓存失效由 content 侧统一处理
 	if transitioned {
 		threading.GoSafe(func() {
 			ctx, cancel := context.WithTimeout(context.WithoutCancel(l.ctx), consts.FollowMaintainTimeout)

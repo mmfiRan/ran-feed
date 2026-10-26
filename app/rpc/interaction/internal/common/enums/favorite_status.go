@@ -3,17 +3,17 @@ package enums
 import "fmt"
 
 // FavoriteStatusEnum 收藏状态 ran_feed_favorite 表的 status 字段类型
-// 业务专属 不与其他状态机共用类型 避免误用
+// 业务专属,不与其他状态机共用类型,避免误用
 type FavoriteStatusEnum int32
 
 const (
-	// FavoriteStatusLegacy 早期写入未落 status 的历史数据 按已收藏处理
+	// FavoriteStatusLegacy 早期写入未落 status 的历史数据,按已收藏处理
 	FavoriteStatusLegacy FavoriteStatusEnum = 0
 	FavoriteStatusActive FavoriteStatusEnum = 10
 	FavoriteStatusCancel FavoriteStatusEnum = 20
 )
 
-// favoriteStatusNames 集中维护值与名称的映射 新增值只需在此处补充
+// favoriteStatusNames 集中维护值与名称的映射,新增值只需在此处补充
 var favoriteStatusNames = map[FavoriteStatusEnum]string{
 	FavoriteStatusLegacy: "LEGACY",
 	FavoriteStatusActive: "ACTIVE",
@@ -49,7 +49,7 @@ func (s FavoriteStatusEnum) Message() string {
 	return fmt.Sprintf("未知(%d)", s)
 }
 
-// IsActive 是否算已收藏 历史数据与正常态都算
+// IsActive 是否算已收藏,历史数据与正常态都算
 func (s FavoriteStatusEnum) IsActive() bool {
 	return s == FavoriteStatusLegacy || s == FavoriteStatusActive
 }

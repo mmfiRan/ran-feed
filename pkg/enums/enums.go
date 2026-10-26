@@ -3,14 +3,14 @@ package enums
 
 import "fmt"
 
-// Int 枚举底层数值约束 可比较整数类型
+// Int 枚举底层数值约束,可比较整数类型
 type Int interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 |
 		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
-// Enum 业务枚举统一契约 各域自行实现
-// 方法接口不含底层类型约束 可作为值类型使用
+// Enum 业务枚举统一契约,各域自行实现
+// 方法接口不含底层类型约束,可作为值类型使用
 type Enum interface {
 	fmt.Stringer
 	// Int32 返回底层 int32 数值
@@ -21,13 +21,13 @@ type Enum interface {
 	Message() string
 }
 
-// IntEnum 组合底层整数约束与枚举契约 用于泛型工具函数
+// IntEnum 组合底层整数约束与枚举契约,用于泛型工具函数
 type IntEnum interface {
 	Enum
 	Int
 }
 
-// EnumValue 统一对外枚举结构 响应字段用
+// EnumValue 统一对外枚举结构,响应字段用
 type EnumValue struct {
 	Code    int32  `json:"code"`
 	Name    string `json:"name"`
@@ -58,7 +58,7 @@ func MustParse[T IntEnum](v int32) T {
 	return e
 }
 
-// MustValid 断言枚举值合法 否则 panic
+// MustValid 断言枚举值合法,否则 panic
 func MustValid(e Enum) {
 	if !e.Valid() {
 		panic(fmt.Sprintf("invalid enum value: %s", e))

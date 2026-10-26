@@ -3,7 +3,7 @@ package enums
 import "fmt"
 
 // CommentStatusEnum 评论状态 ran_feed_comment 表的 status 字段类型
-// 20 是墓碑态 评论仍占位返回但不展示正文 与 is_deleted 配合使用
+// 20 是墓碑态,评论仍占位返回但不展示正文,与 is_deleted 配合使用
 type CommentStatusEnum int32
 
 const (
@@ -12,7 +12,7 @@ const (
 	CommentStatusDeleted CommentStatusEnum = 20
 )
 
-// commentStatusNames 集中维护值与名称的映射 新增值只需在此处补充
+// commentStatusNames 集中维护值与名称的映射,新增值只需在此处补充
 var commentStatusNames = map[CommentStatusEnum]string{
 	CommentStatusUnknown: "UNKNOWN",
 	CommentStatusNormal:  "NORMAL",

@@ -34,7 +34,7 @@ func (l *QueryFavoriteInfoLogic) QueryFavoriteInfo(in *interaction.QueryFavorite
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询收藏计数失败"))
 	}
 
-	// 未登录用户默认未收藏 只返回计数
+	// 未登录用户默认未收藏,只返回计数
 	if in.UserId <= 0 {
 		return l.buildResp(in, favoriteCount, false), nil
 	}

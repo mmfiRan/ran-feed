@@ -180,7 +180,7 @@ func (l *BatchGetCountLogic) batchLoadFromDB(
 	return valueByMapKey
 }
 
-// batchWriteCache 一次 pipeline 回填全部 miss 计数缓存 替代逐 key 一次 RTT
+// batchWriteCache 一次 pipeline 回填全部 miss 计数缓存,替代逐 key 一次 RTT
 func (l *BatchGetCountLogic) batchWriteCache(uniqueInfoByMapKey map[string]batchCountKeyInfo, valueByMapKey map[string]int64) {
 	if len(valueByMapKey) == 0 {
 		return

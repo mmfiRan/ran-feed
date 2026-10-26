@@ -20,13 +20,13 @@ type RowMeta struct {
 	Index     int
 }
 
-// RowHandler 事务内单行业务处理 调用时该行已通过去重
+// RowHandler 事务内单行业务处理,调用时该行已通过去重
 type RowHandler func(ctx context.Context, tx *gorm.DB, meta RowMeta, row, oldRow map[string]any) error
 
-// RowFilter 行级预过滤 返回 false 跳过该行 既不落去重行也不调用 handler
+// RowFilter 行级预过滤,返回 false 跳过该行,既不落去重行也不调用 handler
 type RowFilter func(row, oldRow map[string]any) bool
 
-// RunInTx 逐行去重与业务落库同事务 保证幂等
+// RunInTx 逐行去重与业务落库同事务,保证幂等
 func RunInTx(ctx context.Context, db *gorm.DB, consumerName string, msg *canal.Message, raw string, h RowHandler, filters ...RowFilter) error {
 	eventID := msg.EventID(raw)
 	if eventID == "" {
@@ -66,7 +66,7 @@ func RunInTx(ctx context.Context, db *gorm.DB, consumerName string, msg *canal.M
 	})
 }
 
-// passFilters 全部过滤条件通过才处理该行 无过滤器时默认处理
+// passFilters 全部过滤条件通过才处理该行,无过滤器时默认处理
 func passFilters(filters []RowFilter, row, oldRow map[string]any) bool {
 	for _, f := range filters {
 		if f == nil {

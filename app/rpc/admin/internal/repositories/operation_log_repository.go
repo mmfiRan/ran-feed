@@ -16,7 +16,7 @@ import (
 type OperationLogRepository interface {
 	WithTx(tx *query.Query) OperationLogRepository
 	Create(row *model.RanFeedOperationLog) (int64, error)
-	// Page 按条件分页查审计日志 id 倒序 返回列表与总数
+	// Page 按条件分页查审计日志 id 倒序,返回列表与总数
 	Page(filter types.OperationLogFilter, offset, limit int) ([]*types.OperationLogRow, int64, error)
 }
 
@@ -51,7 +51,7 @@ func (r *operationLogRepositoryImpl) WithTx(tx *query.Query) OperationLogReposit
 	}
 }
 
-// Create 落一条操作审计日志 返回ID
+// Create 落一条操作审计日志,返回 ID
 func (r *operationLogRepositoryImpl) Create(row *model.RanFeedOperationLog) (int64, error) {
 	if row == nil {
 		return 0, nil
@@ -63,7 +63,7 @@ func (r *operationLogRepositoryImpl) Create(row *model.RanFeedOperationLog) (int
 	return row.ID, nil
 }
 
-// Page 按条件分页查审计日志 关联操作人用户名 id 倒序 复用 gen ScanByPage 末页不满免 COUNT
+// Page 按条件分页查审计日志,关联操作人用户名 id 倒序,复用 gen ScanByPage 末页不满免 COUNT
 func (r *operationLogRepositoryImpl) Page(filter types.OperationLogFilter, offset, limit int) ([]*types.OperationLogRow, int64, error) {
 	logT := r.getQuery().RanFeedOperationLog
 	userT := r.getQuery().RanFeedAdminUser

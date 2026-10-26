@@ -8,7 +8,7 @@ import (
 )
 
 // ParseInt64 把 canal 行字段统一解析为 int64 数值
-// 第二个返回值为 false 表示缺失或非法 调用方须据此跳过而非当 0 用
+// 第二个返回值为 false 表示缺失或非法,调用方须据此跳过而非当 0 用
 func ParseInt64(v any) (int64, bool) {
 	switch n := v.(type) {
 	case nil:
@@ -48,7 +48,7 @@ func ParseInt64(v any) (int64, bool) {
 	}
 }
 
-// ParseString 取字符串字段 缺失或空返回空串
+// ParseString 取字符串字段,缺失或空返回空串
 func ParseString(v any) string {
 	switch s := v.(type) {
 	case nil:

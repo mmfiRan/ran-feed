@@ -37,7 +37,7 @@ func NewCanalSearchConsumer(ctx context.Context, svcContext *svc.ServiceContext)
 	}
 }
 
-// Consume 解析后按表路由 content/article/video 归内容文档 user 归用户文档 未监听表跳过
+// Consume 解析后按表路由 content/article/video 归内容文档 user 归用户文档,未监听表跳过
 func (c *CanalSearchConsumer) Consume(ctx context.Context, key, val string) error {
 	msg, err := canal.Parse(val)
 	if err != nil {
@@ -56,7 +56,7 @@ func (c *CanalSearchConsumer) Consume(ctx context.Context, key, val string) erro
 	}
 }
 
-// handleContent 取 content_id 回源 content-rpc 索引投影 返回的 upsert 缺席的判删
+// handleContent 取 content_id 回源 content-rpc 索引投影,返回的 upsert 缺席的判删
 func (c *CanalSearchConsumer) handleContent(ctx context.Context, msg *canal.Message, eventID string) error {
 	isContentTable := msg.Table() == consts.SourceTableContent
 	ids, keys, err := c.collectPending(ctx, msg, eventID, func(row map[string]any) int64 {
@@ -67,7 +67,7 @@ func (c *CanalSearchConsumer) handleContent(ctx context.Context, msg *canal.Mess
 		id, _ := canal.ParseInt64(row["content_id"])
 		return id
 	}, func(row, oldRow map[string]any) bool {
-		// content 表热榜分钟级落库只改 hot_score 等列 与索引无关 跳过避免无谓回源与 ES 写
+		// content 表热榜分钟级落库只改 hot_score 等列,与索引无关,跳过避免无谓回源与 ES 写
 		return isContentTable && canal.OnlyIgnoredColumnsChanged(row, oldRow, pkgconsts.HotScoreOnlyColumns...)
 	})
 	if err != nil {
@@ -101,7 +101,7 @@ func (c *CanalSearchConsumer) handleContent(ctx context.Context, msg *canal.Mess
 	return nil
 }
 
-// handleUser 回源 user-rpc 索引投影 返回的 upsert 缺席的判删
+// handleUser 回源 user-rpc 索引投影,返回的 upsert 缺席的判删
 func (c *CanalSearchConsumer) handleUser(ctx context.Context, msg *canal.Message, eventID string) error {
 	ids, keys, err := c.collectPending(ctx, msg, eventID, func(row map[string]any) int64 {
 		id, _ := canal.ParseInt64(row["id"])
@@ -149,9 +149,9 @@ func missingIDs(ids []int64, present map[int64]bool) []int64 {
 	return deleteIDs
 }
 
-// collectPending 逐行查去重表收集未处理行 用 extract 取目标 id 去重
-// 幂等键不在此落库 待 ES 写成功后再由 markConsumed 落 避免回源或写 ES 失败重试被去重吞掉
-// skip 非空时先行过滤 命中的行既不落键也不回源 返回去重后的目标 id 与本次待消费的幂等键
+// collectPending 逐行查去重表收集未处理行,用 extract 取目标 id 去重
+// 幂等键不在此落库,待 ES 写成功后再由 markConsumed 落,避免回源或写 ES 失败重试被去重吞掉
+// skip 非空时先行过滤,命中的行既不落键也不回源,返回去重后的目标 id 与本次待消费的幂等键
 func (c *CanalSearchConsumer) collectPending(ctx context.Context, msg *canal.Message, eventID string, extract func(map[string]any) int64, skip func(row, oldRow map[string]any) bool) ([]int64, []string, error) {
 	table, op := msg.Table(), msg.Op()
 	seen := make(map[int64]bool, len(msg.Data))
@@ -181,7 +181,7 @@ func (c *CanalSearchConsumer) collectPending(ctx context.Context, msg *canal.Mes
 	return ids, keys, nil
 }
 
-// markConsumed 写成功后落幂等键 best-effort 失败只记日志 重复消费幂等无害
+// markConsumed 写成功后落幂等键 best-effort 失败只记日志,重复消费幂等无害
 func (c *CanalSearchConsumer) markConsumed(ctx context.Context, keys []string) {
 	for _, key := range keys {
 		if _, err := c.dedupGate.InsertIfAbsent(ctx, consumerName, key); err != nil {
@@ -190,8 +190,8 @@ func (c *CanalSearchConsumer) markConsumed(ctx context.Context, keys []string) {
 	}
 }
 
-// writeES upsert 与 delete 批量写 硬错误上抛触发重投 部分失败仅记日志靠重建 job 补
-// 增量路径 upsert 与 delete 统一用 canal 事件 ts 作 version 单分区内单调 防 删-恢复 快速翻转被旧 tombstone 挡住
+// writeES upsert 与 delete 批量写,硬错误上抛触发重投,部分失败仅记日志靠重建 job 补
+// 增量路径 upsert 与 delete 统一用 canal 事件 ts 作 version 单分区内单调,防,删-恢复,快速翻转被旧 tombstone 挡住
 func (c *CanalSearchConsumer) writeES(ctx context.Context, index string, items []es.IndexItem, deleteIDs []int64, version int64) error {
 	for i := range items {
 		items[i].Version = version

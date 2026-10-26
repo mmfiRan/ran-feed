@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestFavoriteViewerID viewer 取 viewer_id 与 owner 无关 缺失即匿名 0
+// TestFavoriteViewerID viewer 取 viewer_id 与 owner 无关,缺失即匿名 0
 func TestFavoriteViewerID(t *testing.T) {
 	viewer := int64(77)
 	owner := int64(88)

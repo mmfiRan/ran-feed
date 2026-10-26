@@ -9,7 +9,7 @@ import (
 )
 
 // TestEnumValuesMatchProto 业务枚举取值必须与 proto 枚举一致
-// canal 行解析与 RPC 请求共用同一套值 漂移会让计数落到错误的桶
+// canal 行解析与 RPC 请求共用同一套值,漂移会让计数落到错误的桶
 func TestEnumValuesMatchProto(t *testing.T) {
 	tests := []struct {
 		name  string

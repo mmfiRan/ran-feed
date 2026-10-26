@@ -16,7 +16,7 @@ const eventIDMaxLen = 64
 // tsMillisThreshold 大于该值视为毫秒时间戳
 const tsMillisThreshold = 1_000_000_000_000
 
-// Message 一条 canal binlog 消息 一次变更可能存在多行
+// Message 一条 canal binlog 消息,一次变更可能存在多行
 type Message struct {
 	ID       any              `json:"id"`
 	RawTable string           `json:"table"`
@@ -43,7 +43,7 @@ func (m *Message) Op() string {
 	return strings.ToUpper(strings.TrimSpace(m.RawType))
 }
 
-// OldRow 取第 idx 行的变更前状态 越界返回 nil
+// OldRow 取第 idx 行的变更前状态,越界返回 nil
 func (m *Message) OldRow(idx int) map[string]any {
 	if idx < 0 || idx >= len(m.Old) {
 		return nil
@@ -51,7 +51,7 @@ func (m *Message) OldRow(idx int) map[string]any {
 	return m.Old[idx]
 }
 
-// UpdatedAt canal 时间戳秒或毫秒自适应 缺失则取当前
+// UpdatedAt canal 时间戳秒或毫秒自适应,缺失则取当前
 func (m *Message) UpdatedAt() time.Time {
 	if m.Ts <= 0 {
 		return time.Now()

@@ -54,7 +54,7 @@ func main() {
 	}
 	serviceGroup.Add(s)
 
-	// xxl-job 执行器 大 V 定时修正任务
+	// xxl-job 执行器,大 V 定时修正任务
 	xxlCtx, cancelXxl := context.WithCancel(context.Background())
 	defer cancelXxl()
 	executor := xxljob.NewExecutor(xxljob.Config{
@@ -74,7 +74,7 @@ func main() {
 			if errors.Is(err, context.Canceled) {
 				return
 			}
-			// 启动失败意味着大 V 定时修正永久不可用 必须退出由 supervisor 拉起
+			// 启动失败意味着大 V 定时修正永久不可用,必须退出由 supervisor 拉起
 			logx.Errorf("xxl-job executor start failed, exiting for supervisor restart: %v", err)
 			os.Exit(1)
 		}

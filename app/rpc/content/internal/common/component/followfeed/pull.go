@@ -9,10 +9,11 @@ import (
 	rediskey "ran-feed/app/rpc/content/internal/common/consts/redis"
 	contentEnum "ran-feed/app/rpc/content/internal/common/enums"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 )
 
-// InvalidatePull 失效 viewer 的拉模式集 关注关系变更后调用 下次读按新关注集合重算
+// InvalidatePull 失效 viewer 的拉模式集,关注关系变更后调用,下次读按新关注集合重算
 func (f *Feed) InvalidatePull(ctx context.Context, viewerID int64) error {
 	if viewerID <= 0 {
 		return nil
@@ -21,42 +22,46 @@ func (f *Feed) InvalidatePull(ctx context.Context, viewerID int64) error {
 	return err
 }
 
-// ensurePull 拉模式集在即直读 否则重算一次 只翻关注列表不扫库 代价远低于收件箱重建 故不抢锁
-// 拉侧 TTL 比收件箱短 让大 V 判定能周期性刷新 棘轮语义下集合只增不减 重算期间的重叠由合并去重兜住
+// ensurePull 拉模式集在即直读,否则重算一次,只翻关注列表不扫库,代价远低于收件箱重建,故不抢锁
 func (f *Feed) ensurePull(ctx context.Context, viewerID int64) ([]int64, bool) {
 	pullKey := rediskey.BuildFollowPullKey(viewerID)
+
+	// 获取需要拉的大V作者 ID 集合
 	if f.keyExists(ctx, pullKey) {
 		return f.readPull(ctx, pullKey), true
 	}
 
+	// 拉模式集合不存在,重新计算一次
 	followees, err := f.listFolloweesCapped(ctx, viewerID, followeesScanLimit)
 	if err != nil {
-		f.logger(ctx).Errorf("查询关注列表失败 viewerID=%d err=%v", viewerID, err)
+		logx.WithContext(ctx).Errorf("查询关注列表失败 viewerID=%d err=%v", viewerID, err)
 		return nil, false
 	}
+
+	// 获取大V列表
 	bigVs, _, err := f.splitFollowees(ctx, followees)
 	if err != nil {
-		f.logger(ctx).Errorf("判定大 V 关注失败 viewerID=%d err=%v", viewerID, err)
+		logx.WithContext(ctx).Errorf("判定大 V 关注失败 viewerID=%d err=%v", viewerID, err)
 		return nil, false
 	}
 	if werr := f.writePull(ctx, pullKey, bigVs); werr != nil {
-		f.logger(ctx).Errorf("写拉模式关注集失败 viewerID=%d err=%v", viewerID, werr)
+		logx.WithContext(ctx).Errorf("写拉模式关注集失败 viewerID=%d err=%v", viewerID, werr)
 		return nil, false
 	}
 	return bigVs, true
 }
 
-// readPull 读拉模式集 已剔除哨兵
+// readPull 读拉模式集,已剔除哨兵
 func (f *Feed) readPull(ctx context.Context, pullKey string) []int64 {
 	members, err := f.redis.SmembersCtx(ctx, pullKey)
 	if err != nil {
-		f.logger(ctx).Errorf("读拉模式关注集失败 pullKey=%s err=%v", pullKey, err)
+		logx.WithContext(ctx).Errorf("读拉模式关注集失败 pullKey=%s err=%v", pullKey, err)
 		return nil
 	}
 	return parseIDMembers(members)
 }
 
-// writePull 写拉模式集 空集写哨兵防穿透
+// writePull 写拉模式集,空集写哨兵防穿透
 func (f *Feed) writePull(ctx context.Context, pullKey string, authorIDs []int64) error {
 	members := make([]any, 0, len(authorIDs)+1)
 	if len(authorIDs) == 0 {
@@ -75,21 +80,22 @@ func (f *Feed) writePull(ctx context.Context, pullKey string, authorIDs []int64)
 	})
 }
 
-// fromSource 缓存不可用时的安全降级 直接回源出窗口内全部推侧候选与拉侧作者集 不写缓存 不返回空
-// 游标过滤与截断交调用方的合并步骤 由它算 hasMore
+// fromSource 缓存不可用时的安全降级,直接回源出窗口内全部推侧候选与拉侧作者集,不写缓存,不返回空
 func (f *Feed) fromSource(ctx context.Context, viewerID int64) Sources {
 	followees, err := f.listFolloweesCapped(ctx, viewerID, followeesScanLimit)
 	if err != nil {
-		f.logger(ctx).Errorf("降级查询关注列表失败 viewerID=%d err=%v", viewerID, err)
+		logx.WithContext(ctx).Errorf("降级查询关注列表失败 viewerID=%d err=%v", viewerID, err)
 		return Sources{}
 	}
 	bigVs, small, err := f.splitFollowees(ctx, followees)
 	if err != nil {
-		f.logger(ctx).Errorf("降级判定大 V 关注失败 viewerID=%d err=%v", viewerID, err)
+		logx.WithContext(ctx).Errorf("降级判定大 V 关注失败 viewerID=%d err=%v", viewerID, err)
 		return Sources{}
 	}
 	if len(small) == 0 {
-		return Sources{PullAuthors: bigVs}
+		return Sources{
+			PullAuthors: bigVs,
+		}
 	}
 
 	rows, err := f.contentRepo.ListFollowByAuthorsCursor(ctx,
@@ -98,10 +104,13 @@ func (f *Feed) fromSource(ctx context.Context, viewerID int64) Sources {
 		small, 0, int(contentconsts.TimelineKeepN),
 	)
 	if err != nil {
-		f.logger(ctx).Errorf("降级查询关注内容失败 viewerID=%d err=%v", viewerID, err)
+		logx.WithContext(ctx).Errorf("降级查询关注内容失败 viewerID=%d err=%v", viewerID, err)
 		return Sources{PullAuthors: bigVs}
 	}
-	return Sources{PushItems: rowsToScored(rows), PullAuthors: bigVs}
+	return Sources{
+		PushItems:   rowsToScored(rows),
+		PullAuthors: bigVs,
+	}
 }
 
 // parseIDMembers 解析集合成员为 id 跳过空串与哨兵

@@ -1,4 +1,4 @@
-// Package enums search 服务级业务枚举 实现 pkg/enums.Enum 契约
+// Package enums search 服务级业务枚举,实现 pkg/enums.Enum 契约
 package enums
 
 import "fmt"

@@ -70,7 +70,7 @@ func (l *UserPublishFeedLogic) UserPublishFeed(in *content.UserPublishFeedReq) (
 	if in.ViewerId != nil {
 		viewerID = *in.ViewerId
 	}
-	// PUBLIC-only 与写扩散/大V merge 口径一致 杜绝作者主页把私密内容泄露给任意访问者
+	// PUBLIC-only 与写扩散/大 V merge 口径一致,杜绝作者主页把私密内容泄露给任意访问者
 	entries, err := l.resolver.Resolve(l.ctx, ids, viewerID, true)
 	if err != nil {
 		return nil, err
@@ -82,7 +82,7 @@ func (l *UserPublishFeedLogic) UserPublishFeed(in *content.UserPublishFeedReq) (
 	}
 
 	if len(feedItems) == 0 {
-		// 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
+		// 过滤后为空也返回原始游标,避免整页死内容导致翻页中断
 		return &content.UserPublishFeedRes{Items: []*content.ContentItem{}, NextCursor: nextCursor, HasMore: hasMore}, nil
 	}
 

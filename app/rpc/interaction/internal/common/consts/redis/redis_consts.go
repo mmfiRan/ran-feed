@@ -3,18 +3,18 @@ package redis
 const (
 	// RedisInteractionLikePrefix 点赞用户集合前缀 like:action:{scene}:{content_id}
 	RedisInteractionLikePrefix = "like:action"
-	// RedisLikeUserPrefix 用户维度点赞HASH前缀 like:user:{user_id}
+	// RedisLikeUserPrefix 用户维度点赞 HASH 前缀 like:user:{user_id}
 	RedisLikeUserPrefix = "like:user"
 	// RedisInteractionLikeCountPrefix 点赞计数前缀 like:count:{scene}:{content_id}
 	RedisInteractionLikeCountPrefix = "like:count"
 
-	// RedisLikeUserHashCapacity 用户维度点赞热数据容量上限（超过则进入冷数据，回源DB）
+	// RedisLikeUserHashCapacity 用户维度点赞热数据容量上限（超过则进入冷数据,回源 DB）
 	RedisLikeUserHashCapacity = 5000
-	// RedisLikeUserHashMetaFieldMinCid 用户维度点赞HASH元信息：热区最小content_id（小于该值视为冷数据）
+	// RedisLikeUserHashMetaFieldMinCid 用户维度点赞 HASH 元信息：热区最小 content_id（小于该值视为冷数据）
 	RedisLikeUserHashMetaFieldMinCid = "_mincid"
-	// RedisLikeUserHashMetaFieldFull 用户维度点赞HASH元信息：完整性标记（"1"=完整热区，可信；缺失=残缺，需回源/交下游）
+	// RedisLikeUserHashMetaFieldFull 用户维度点赞 HASH 元信息：完整性标记（"1"=完整热区,可信,缺失=残缺,需回源/交下游）
 	RedisLikeUserHashMetaFieldFull = "_full"
-	// RedisLikeExpireSeconds 点赞缓存过期时间（秒）；0 表示不过期
+	// RedisLikeExpireSeconds 点赞缓存过期时间（秒）,0 表示不过期
 	RedisLikeExpireSeconds      = 5 * 24 * 60 * 60
 	RedisFeedUserFavoritePrefix = "feed:user:favorite"
 

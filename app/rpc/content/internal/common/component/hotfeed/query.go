@@ -10,7 +10,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// Page 热榜一页 ResolvedSnapshotID 是实际命中的快照 由前端回传保证翻页在同一快照内
+// Page 热榜一页 ResolvedSnapshotID 是实际命中的快照,由前端回传保证翻页在同一快照内
 type Page struct {
 	ContentIDs         []int64
 	NextCursor         string
@@ -18,8 +18,8 @@ type Page struct {
 	ResolvedSnapshotID string
 }
 
-// Query 读热榜一页 优先指定快照 缺失回退最新快照再回退主榜
-// 第二个返回值表示是否读到了榜 没读到由调用方决定怎么兜底
+// Query 读热榜一页,优先指定快照,缺失回退最新快照再回退主榜
+// 第二个返回值表示是否读到了榜,没读到由调用方决定怎么兜底
 func (f *Feed) Query(ctx context.Context, snapshotID, cursor string, pageSize int) (Page, bool, error) {
 	preferredKey := ""
 	if snapshotID != "" {
@@ -45,7 +45,7 @@ func (f *Feed) Query(ctx context.Context, snapshotID, cursor string, pageSize in
 	return parseQueryReply(res)
 }
 
-// Remove 把一条内容从主榜摘掉 删除或下架时调用
+// Remove 把一条内容从主榜摘掉,删除或下架时调用
 func (f *Feed) Remove(ctx context.Context, contentID int64) error {
 	if contentID <= 0 {
 		return nil
@@ -54,7 +54,7 @@ func (f *Feed) Remove(ctx context.Context, contentID int64) error {
 	return err
 }
 
-// parseQueryReply 解 query 脚本的回复 形状是 exists hasMore nextCursor snapshotID 后跟 content_id 列表
+// parseQueryReply 解 query 脚本的回复,形状是 exists hasMore nextCursor snapshotID 后跟 content_id 列表
 func parseQueryReply(res any) (Page, bool, error) {
 	arr, ok := res.([]any)
 	if !ok || len(arr) < 4 {
@@ -108,7 +108,7 @@ func replyString(v any) (string, bool) {
 	}
 }
 
-// replyInt64 取 Eval 回复里的整数 Lua 的 number 和数字字符串都会出现 两种都认
+// replyInt64 取 Eval 回复里的整数 Lua 的 number 和数字字符串都会出现,两种都认
 func replyInt64(v any) (int64, bool) {
 	switch t := v.(type) {
 	case int64:
@@ -126,7 +126,7 @@ func replyInt64(v any) (int64, bool) {
 	}
 }
 
-// logQueryFallback 读不到榜时记一条 由调用方决定是否回源
+// logQueryFallback 读不到榜时记一条,由调用方决定是否回源
 func logQueryFallback(ctx context.Context, reason string) {
 	logx.WithContext(ctx).Infof("热榜读未命中 转查库兜底 reason=%s", reason)
 }

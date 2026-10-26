@@ -40,7 +40,7 @@ func (l *DeleteContentLogic) DeleteContent(in *content.DeleteContentReq) (*empty
 	if err != nil {
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("删除内容失败"))
 	}
-	// 查不到 已软删 与非法 id 都返回 nil 不判会解引用崩
+	// 查不到,已软删,与非法 id 都返回 nil 不判会解引用崩
 	if row == nil {
 		return nil, errorx.NewMsg("内容不存在或无权限")
 	}

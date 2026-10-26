@@ -37,7 +37,7 @@ func TestDecodeCursor(t *testing.T) {
 	assert.Equal(t, int64(1234567890), round.ts)
 	assert.Equal(t, int64(99), round.id)
 
-	// 非法格式返首页 而非报错(防翻页死循环)
+	// 非法格式返首页,而非报错(防翻页死循环)
 	for _, bad := range []string{"garbage", "abc:def", "100:xyz", "xyz:100", "only-one-part", "100:200:300"} {
 		ts, id = decodeCursor(bad)
 		if bad == "100:200:300" {

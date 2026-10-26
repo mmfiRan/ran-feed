@@ -12,7 +12,7 @@ import (
 	"github.com/zeromicro/go-zero/core/threading"
 )
 
-// recordSearchHistory 搜索时隐式记录历史 登录用户非空词才记 异步脱离请求 ctx 非致命
+// recordSearchHistory 搜索时隐式记录历史,登录用户非空词才记,异步脱离请求 ctx 非致命
 func recordSearchHistory(svcCtx *svc.ServiceContext, userID int64, keyword string) {
 	if userID <= 0 || strings.TrimSpace(keyword) == "" {
 		return

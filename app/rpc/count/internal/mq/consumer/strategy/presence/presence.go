@@ -1,5 +1,5 @@
-// Package presence 出现消失型计数策略 互动新增即加一 取消即减一
-// 覆盖 like favorite comment follow 由判活谓词与目标映射两个轴配置 共用同一套增量算法
+// Package presence 出现消失型计数策略,互动新增即加一,取消即减一
+// 覆盖 like favorite comment follow 由判活谓词与目标映射两个轴配置,共用同一套增量算法
 package presence
 
 import (
@@ -17,8 +17,8 @@ import (
 // presenceCounterStrategy 把一行互动变更映射为若干计数目标上的同一增量
 type presenceCounterStrategy struct {
 	tableName string
-	isActive  func(row map[string]interface{}) bool                               // 轴A 判活谓词
-	targetsOf func(ctx context.Context, row map[string]interface{}) []countTarget // 轴B 行到计数目标
+	isActive  func(row map[string]interface{}) bool                               // 轴 A 判活谓词
+	targetsOf func(ctx context.Context, row map[string]interface{}) []countTarget // 轴 B 行到计数目标
 }
 
 // countTarget 一条增量要落到的计数对象
@@ -58,7 +58,7 @@ func (s *presenceCounterStrategy) ExtractUpdates(ctx context.Context, op string,
 	return updates
 }
 
-// presenceDelta op 加 判活谓词得出增量 新增活跃加一 删除前活跃减一 更新看活跃翻转
+// presenceDelta op 加判活谓词得出增量,新增活跃加一,删除前活跃减一,更新看活跃翻转
 func presenceDelta(op string, isActive func(map[string]interface{}) bool, row, oldRow map[string]interface{}) int64 {
 	switch strings.ToUpper(strings.TrimSpace(op)) {
 	case "INSERT":
@@ -75,7 +75,7 @@ func presenceDelta(op string, isActive func(map[string]interface{}) bool, row, o
 	return 0
 }
 
-// beforeView 还原变更前整行 canal 的 Old 只带改动列 用其覆盖新行得到旧视图
+// beforeView 还原变更前整行 canal 的 Old 只带改动列,用其覆盖新行得到旧视图
 func beforeView(row, oldRow map[string]interface{}) map[string]interface{} {
 	if len(oldRow) == 0 {
 		return row
@@ -121,12 +121,12 @@ func statusActiveNotDeleted(row map[string]interface{}) bool {
 	return !enums.IsDeleted(int32(v)).IsDel()
 }
 
-// alwaysActive 无状态字段的表恒计数 如 favorite
+// alwaysActive 无状态字段的表恒计数,如 favorite
 func alwaysActive(map[string]interface{}) bool {
 	return true
 }
 
-// contentTargets 行映射到单个内容计数 取 content_id 与作者 content_user_id
+// contentTargets 行映射到单个内容计数,取 content_id 与作者 content_user_id
 func contentTargets(bizType countenum.BizTypeEnum) func(ctx context.Context, row map[string]interface{}) []countTarget {
 	return func(ctx context.Context, row map[string]interface{}) []countTarget {
 		contentID, ok := canal.ParseInt64(row["content_id"])

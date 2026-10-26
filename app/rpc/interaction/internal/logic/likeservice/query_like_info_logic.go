@@ -57,7 +57,7 @@ func (l *QueryLikeInfoLogic) buildResp(in *interaction.QueryLikeInfoReq, likeCou
 	}
 }
 
-// queryIsLiked 复用批量路径 保证单条与批量行为完全一致
+// queryIsLiked 复用批量路径,保证单条与批量行为完全一致
 func (l *QueryLikeInfoLogic) queryIsLiked(scene string, userID, contentID int64) (bool, error) {
 	if userID <= 0 || contentID <= 0 {
 		return false, nil

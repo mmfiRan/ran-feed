@@ -4,7 +4,7 @@ import "google.golang.org/grpc/codes"
 
 // gRPC 标准错误码枚举和说明
 const (
-	// OK 成功，无错误
+	// OK 成功,无错误
 	// HTTP 映射: 200 OK
 	OK = codes.OK
 
@@ -47,14 +47,14 @@ const (
 	// HTTP 映射: 429 Too Many Requests
 	ResourceExhausted = codes.ResourceExhausted
 
-	// FailedPrecondition 操作被拒绝，因为系统状态不满足前提条件
+	// FailedPrecondition 操作被拒绝,因为系统状态不满足前提条件
 	// 用于操作顺序错误、状态不符等情况
 	// 例如：删除非空目录、在未登录状态下操作
 	// HTTP 映射: 400 Bad Request
 	FailedPrecondition = codes.FailedPrecondition
 
 	// Aborted 操作被中止
-	// 通常是并发冲突，如读-修改-写冲突
+	// 通常是并发冲突,如读-修改-写冲突
 	// HTTP 映射: 409 Conflict
 	Aborted = codes.Aborted
 
@@ -69,17 +69,17 @@ const (
 	Unimplemented = codes.Unimplemented
 
 	// Internal 内部错误
-	// 服务器内部错误，通常是 bug 或系统故障
+	// 服务器内部错误,通常是 bug 或系统故障
 	// HTTP 映射: 500 Internal Server Error
 	Internal = codes.Internal
 
 	// Unavailable 服务当前不可用
-	// 通常是临时状态，客户端可以重试
+	// 通常是临时状态,客户端可以重试
 	// HTTP 映射: 503 Service Unavailable
 	Unavailable = codes.Unavailable
 
 	// DataLoss 不可恢复的数据丢失或损坏
-	// 严重错误，表示数据完整性问题
+	// 严重错误,表示数据完整性问题
 	// HTTP 映射: 500 Internal Server Error
 	DataLoss = codes.DataLoss
 

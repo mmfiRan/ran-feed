@@ -35,7 +35,7 @@ func (l *RemoveFavoriteLogic) RemoveFavorite(in *interaction.RemoveFavoriteReq) 
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("取消收藏失败"))
 	}
 
-	// 失效收藏流缓存 跨域数据走对应 RPC 不直删 content 侧 key 失败只记日志由 TTL 兜底
+	// 失效收藏流缓存,跨域数据走对应 RPC 不直删 content 侧 key 失败只记日志由 TTL 兜底
 	if _, cerr := l.svcCtx.ContentRpc.ClearUserFavoriteCache(l.ctx, &content.ClearUserFavoriteCacheReq{UserId: in.UserId}); cerr != nil {
 		l.Errorf("失效收藏流缓存失败: %v, user_id=%d", cerr, in.UserId)
 	}

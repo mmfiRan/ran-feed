@@ -13,15 +13,15 @@ import (
 
 type AdminUserRoleRepository interface {
 	WithTx(tx *query.Query) AdminUserRoleRepository
-	// ListRoleIDsByAdminID 取管理员绑定的角色ID集合
+	// ListRoleIDsByAdminID 取管理员绑定的角色 ID 集合
 	ListRoleIDsByAdminID(adminID int64) ([]int64, error)
-	// ListRoleIDsByAdminIDs 取管理员集合各自绑定的角色ID
+	// ListRoleIDsByAdminIDs 取管理员集合各自绑定的角色 ID
 	ListRoleIDsByAdminIDs(adminIDs []int64) (map[int64][]int64, error)
-	// ListAdminIDsByRoleID 取绑定该角色的管理员ID集合
+	// ListAdminIDsByRoleID 取绑定该角色的管理员 ID 集合
 	ListAdminIDsByRoleID(roleID int64) ([]int64, error)
 	// DeleteByRoleID 物理删该角色的全部管理员绑定
 	DeleteByRoleID(roleID int64) (int64, error)
-	// DeleteByAdminID 物理删该管理员的全部角色绑定 返回影响行数
+	// DeleteByAdminID 物理删该管理员的全部角色绑定,返回影响行数
 	DeleteByAdminID(adminID int64) (int64, error)
 	// BatchCreate 批量建绑定
 	BatchCreate(rows []*model.RanFeedAdminUserRole) error
@@ -58,7 +58,7 @@ func (r *adminUserRoleRepositoryImpl) WithTx(tx *query.Query) AdminUserRoleRepos
 	}
 }
 
-// ListRoleIDsByAdminID 取管理员绑定的角色ID集合
+// ListRoleIDsByAdminID 取管理员绑定的角色 ID 集合
 func (r *adminUserRoleRepositoryImpl) ListRoleIDsByAdminID(adminID int64) ([]int64, error) {
 	q := r.getQuery().RanFeedAdminUserRole
 	rows, err := q.WithContext(r.ctx).
@@ -78,7 +78,7 @@ func (r *adminUserRoleRepositoryImpl) ListRoleIDsByAdminID(adminID int64) ([]int
 	return ids, nil
 }
 
-// ListRoleIDsByAdminIDs 取管理员集合各自绑定的角色ID
+// ListRoleIDsByAdminIDs 取管理员集合各自绑定的角色 ID
 func (r *adminUserRoleRepositoryImpl) ListRoleIDsByAdminIDs(adminIDs []int64) (map[int64][]int64, error) {
 	if len(adminIDs) == 0 {
 		return map[int64][]int64{}, nil
@@ -102,7 +102,7 @@ func (r *adminUserRoleRepositoryImpl) ListRoleIDsByAdminIDs(adminIDs []int64) (m
 	return out, nil
 }
 
-// DeleteByAdminID 物理删该管理员的全部角色绑定 返回影响行数
+// DeleteByAdminID 物理删该管理员的全部角色绑定,返回影响行数
 func (r *adminUserRoleRepositoryImpl) DeleteByAdminID(adminID int64) (int64, error) {
 	q := r.getQuery().RanFeedAdminUserRole
 	res, err := q.WithContext(r.ctx).Where(q.AdminUserID.Eq(adminID)).Delete()
@@ -112,7 +112,7 @@ func (r *adminUserRoleRepositoryImpl) DeleteByAdminID(adminID int64) (int64, err
 	return res.RowsAffected, nil
 }
 
-// ListAdminIDsByRoleID 取绑定该角色的管理员ID集合
+// ListAdminIDsByRoleID 取绑定该角色的管理员 ID 集合
 func (r *adminUserRoleRepositoryImpl) ListAdminIDsByRoleID(roleID int64) ([]int64, error) {
 	q := r.getQuery().RanFeedAdminUserRole
 	rows, err := q.WithContext(r.ctx).
@@ -132,7 +132,7 @@ func (r *adminUserRoleRepositoryImpl) ListAdminIDsByRoleID(roleID int64) ([]int6
 	return ids, nil
 }
 
-// DeleteByRoleID 物理删该角色的全部管理员绑定 返回影响行数
+// DeleteByRoleID 物理删该角色的全部管理员绑定,返回影响行数
 func (r *adminUserRoleRepositoryImpl) DeleteByRoleID(roleID int64) (int64, error) {
 	q := r.getQuery().RanFeedAdminUserRole
 	res, err := q.WithContext(r.ctx).Where(q.RoleID.Eq(roleID)).Delete()

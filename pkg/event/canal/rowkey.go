@@ -8,7 +8,7 @@ import (
 // unknownEventID eventID 缺失时的占位
 const unknownEventID = "unknown"
 
-// RowEventID 行级幂等标识 优先用行主键 缺失则用行内容加下标 保证同一行只处理一次
+// RowEventID 行级幂等标识,优先用行主键,缺失则用行内容加下标,保证同一行只处理一次
 func RowEventID(eventID, table, op string, row map[string]any, idx int) string {
 	if eventID == "" {
 		eventID = unknownEventID

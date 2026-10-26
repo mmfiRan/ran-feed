@@ -11,7 +11,7 @@ type scoredID struct {
 	score int64
 }
 
-// parseCursor 解析 score:id 复合游标 解不出来或非法一律当从头开始
+// parseCursor 解析 score:id 复合游标,解不出来或非法一律当从头开始
 func parseCursor(cursor string) (int64, int64) {
 	if cursor == "" || cursor == "0" {
 		return 0, 0
@@ -39,7 +39,7 @@ func formatCursor(score, id int64) string {
 	return strconv.FormatInt(score, 10) + ":" + strconv.FormatInt(id, 10)
 }
 
-// afterCursor 判断 s 是否严格排在游标之后 总序是 published_at 降序 同一毫秒再按 content_id 降序
+// afterCursor 判断 s 是否严格排在游标之后,总序是 published_at 降序,同一毫秒再按 content_id 降序
 func afterCursor(s scoredID, cursorScore, cursorID int64) bool {
 	if cursorScore <= 0 {
 		return true

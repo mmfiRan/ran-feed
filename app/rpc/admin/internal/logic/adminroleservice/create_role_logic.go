@@ -30,7 +30,7 @@ func NewCreateRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 	}
 }
 
-// CreateRole 建角色 code 唯一 撞码则拒
+// CreateRole 建角色 code 唯一,撞码则拒
 func (l *CreateRoleLogic) CreateRole(in *admin.CreateRoleReq) (*admin.CreateRoleRes, error) {
 	code := strings.TrimSpace(in.GetCode())
 	name := strings.TrimSpace(in.GetName())

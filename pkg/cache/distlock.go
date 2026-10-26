@@ -18,8 +18,8 @@ const (
 
 var ErrLockBusy = errors.New("缓存重建繁忙稍后再试")
 
-// DistLocker 跨实例防击穿 同一 lockKey 只放一个调用者执行 rebuild
-// 未抢到锁的轮询 checkCache 等别人重建好 超时返回 ErrLockBusy
+// DistLocker 跨实例防击穿,同一 lockKey 只放一个调用者执行 rebuild
+// 未抢到锁的轮询 checkCache 等别人重建好,超时返回 ErrLockBusy
 type DistLocker struct {
 	store        *redis.Redis
 	lockTTL      time.Duration
@@ -36,14 +36,14 @@ func WithLockTTL(d time.Duration) DistLockerOption {
 	}
 }
 
-// WithWaitTimeout 未抢到锁时的总等待上限 默认 3s
+// WithWaitTimeout 未抢到锁时的总等待上限,默认 3s
 func WithWaitTimeout(d time.Duration) DistLockerOption {
 	return func(dl *DistLocker) {
 		dl.waitTimeout = d
 	}
 }
 
-// WithPollInterval 未抢到锁时的轮询间隔 默认 100ms
+// WithPollInterval 未抢到锁时的轮询间隔,默认 100ms
 func WithPollInterval(d time.Duration) DistLockerOption {
 	return func(dl *DistLocker) {
 		dl.pollInterval = d
@@ -69,8 +69,8 @@ func BuildLockKey(resourceKey string) string {
 }
 
 // DoWithLock
-// 抢到锁 先 checkCache 双检一次 还没就绪才 rebuild 释放锁
-// 没抢到 轮询 checkCache 等别人重建好
+// 抢到锁,先 checkCache 双检一次,还没就绪才 rebuild 释放锁
+// 没抢到,轮询 checkCache 等别人重建好
 func DoWithLock[T any](d *DistLocker, ctx context.Context, lockKey string,
 	checkCache func(ctx context.Context) (T, bool, error),
 	rebuild func(ctx context.Context) (T, error),
@@ -96,7 +96,7 @@ func DoWithLock[T any](d *DistLocker, ctx context.Context, lockKey string,
 	return waitForRebuild(ctx, d, checkCache)
 }
 
-// waitForRebuild 没抢到锁的等待路径 先立即查一次再定时轮询
+// waitForRebuild 没抢到锁的等待路径,先立即查一次再定时轮询
 func waitForRebuild[T any](ctx context.Context, d *DistLocker, checkCache func(ctx context.Context) (T, bool, error)) (T, error) {
 	var zero T
 

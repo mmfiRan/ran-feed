@@ -2,8 +2,8 @@
 -- 作者发件箱 zset 回填与裁剪
 -- KEYS[1] = publish zset key
 -- ARGV[1] = keep_latest_n
--- ARGV[2] = cutoff_millis 早于此 score 的成员裁剪 <=0 跳过
--- ARGV[3] = ttl_seconds 整 key 续期 <=0 跳过
+-- ARGV[2] = cutoff_millis早于此 score 的成员裁剪
+-- ARGV[3] = ttl_seconds整 key 续期
 -- ARGV[4...] = score1, member1, score2, member2, ...
 -- 返回: 1
 

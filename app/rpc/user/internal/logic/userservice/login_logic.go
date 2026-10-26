@@ -38,7 +38,7 @@ func (l *LoginLogic) Login(in *user.LoginReq) (*user.LoginRes, error) {
 		return nil, errorx.NewMsg("参数错误")
 	}
 
-	// 先归一化再限频与查询 保证裸号与带区号落到同一账号和同一计数
+	// 先归一化再限频与查询,保证裸号与带区号落到同一账号和同一计数
 	mobile, err := utils.NormalizeMobile(in.GetMobile())
 	if err != nil {
 		return nil, errorx.NewMsg("手机号格式错误")

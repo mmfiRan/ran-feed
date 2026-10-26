@@ -20,7 +20,7 @@ import (
 
 const auditWriteTimeout = 5 * time.Second
 
-// responseBody 统一响应结构 用于读业务 code 判操作成败
+// responseBody 统一响应结构,用于读业务 code 判操作成败
 type responseBody struct {
 	Code    uint32 `json:"code"`
 	Message string `json:"message"`

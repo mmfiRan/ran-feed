@@ -1,14 +1,14 @@
-// Package usercache 提供用户信息的 Redis 旁路缓存。
+// Package usercache 提供用户信息的 Redis 旁路缓存
 //
 // 三个公开查询接口 GetUser / BatchGetUser / GetUserProfile 共用同一 DO
-// 来源（repo.GetByID / BatchGetByIDs），统一收敛到此层避免重复实现。
+// 来源（repo.GetByID / BatchGetByIDs）,统一收敛到此层避免重复实现
 //
 // 策略：
 //   - 命中正值：JSON 反序列化为 *do.UserDO 返回
-//   - 命中负值哨兵（"-"）：返回 (nil, nil)，不再回源 DB
-//   - miss：回源 DB，成功写正值，DB 也 miss 时写哨兵
+//   - 命中负值哨兵（"-"）：返回 (nil, nil),不再回源 DB
+//   - miss：回源 DB,成功写正值,DB 也 miss 时写哨兵
 //
-// TTL 正负值均叠加固定抖动抗雪崩 抖动上限为工程常量 与 count 服务保持一致风格。
+// TTL 正负值均叠加固定抖动抗雪崩,抖动上限为工程常量,与 count 服务保持一致风格
 package usercache
 
 import (
@@ -25,8 +25,8 @@ import (
 	"ran-feed/app/rpc/user/internal/repositories"
 )
 
-// userCacheDO 缓存中存放的字段子集，去掉了 PasswordHash / Email
-// 等敏感字段（这些字段调用方接口从不返回）。
+// userCacheDO 缓存中存放的字段子集,去掉了 PasswordHash / Email
+// 等敏感字段（这些字段调用方接口从不返回）
 type userCacheDO struct {
 	ID        int64      `json:"id"`
 	Username  string     `json:"username"`
@@ -73,9 +73,9 @@ func (c *userCacheDO) toUserDO() *do.UserDO {
 	}
 }
 
-// Get 单查用户信息，cache-aside。
-// userID <= 0 直接返回 (nil, nil)。
-// 缓存层任何 Redis 错误均降级为直接回源，错误只记日志不冒泡。
+// Get 单查用户信息,cache-aside
+// userID <= 0 直接返回 (nil, nil)
+// 缓存层任何 Redis 错误均降级为直接回源,错误只记日志不冒泡
 func Get(
 	ctx context.Context,
 	rds *redis.Redis,
@@ -100,9 +100,9 @@ func Get(
 	return u, nil
 }
 
-// BatchGet 批量查询用户信息，cache-aside。
-// 自动去重并跳过 userID <= 0 的元素。返回 map 的 key 是用户 ID。
-// Redis MGET 失败时整体降级回 DB（保留单次批查特性）。
+// BatchGet 批量查询用户信息,cache-aside
+// 自动去重并跳过 userID <= 0 的元素。返回 map 的 key 是用户 ID
+// Redis MGET 失败时整体降级回 DB（保留单次批查特性）
 func BatchGet(
 	ctx context.Context,
 	rds *redis.Redis,
@@ -179,7 +179,7 @@ func BatchGet(
 	return result, nil
 }
 
-// Invalidate 删除指定用户的缓存，供未来 update 路径调用。
+// Invalidate 删除指定用户的缓存,供未来 update 路径调用
 func Invalidate(ctx context.Context, rds *redis.Redis, userID int64) error {
 	if userID <= 0 {
 		return nil
@@ -263,7 +263,7 @@ func writeBackBatch(
 	}
 }
 
-// 用户缓存 TTL 秒 负哨兵短 TTL 防穿透 抖动上限为抗雪崩的工程参数 不暴露为配置
+// 用户缓存 TTL 秒,负哨兵短 TTL 防穿透,抖动上限为抗雪崩的工程参数,不暴露为配置
 const (
 	ttlSeconds               = 600
 	negativeTTLSeconds       = 60

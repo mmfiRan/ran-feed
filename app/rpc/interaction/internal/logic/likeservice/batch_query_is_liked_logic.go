@@ -31,8 +31,8 @@ func NewBatchQueryIsLikedLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 	}
 }
 
-// cacheView Redis 缓存视图 描述某次查询的命中情况
-// trusted=true 当且仅当 _full=1 蕴含 key 存在 业务上 _full 未置位都视为残缺需重建
+// cacheView Redis 缓存视图,描述某次查询的命中情况
+// trusted=true 当且仅当 _full=1 蕴含 key 存在,业务上 _full 未置位都视为残缺需重建
 type cacheView struct {
 	trusted  bool           // _full=1 缓存可信
 	minCID   int64          // 热区最小 cid
@@ -62,7 +62,7 @@ func (l *BatchQueryIsLikedLogic) BatchQueryIsLiked(in *interaction.BatchQueryIsL
 
 	view, err := l.queryFromCache(userLikeKey, contentIDs)
 	if err != nil {
-		// 缓存读失败 直接回源 DB 保证可用性
+		// 缓存读失败,直接回源 DB 保证可用性
 		l.Errorf("批量查询点赞缓存失败 降级走 DB: user_id=%d err=%v", userID, err)
 		return l.fillAllFromDB(out, userID, contentIDs)
 	}
@@ -86,7 +86,7 @@ func (l *BatchQueryIsLikedLogic) BatchQueryIsLiked(in *interaction.BatchQueryIsL
 }
 
 // queryFromCache 用单条 HMGET 一次性拉取 _full + _mincid + 所有指定 cid 的值
-// 字段不存在时 HMGET 返回空字符串 业务字段值固定为 "1"
+// 字段不存在时 HMGET 返回空字符串,业务字段值固定为 "1"
 func (l *BatchQueryIsLikedLogic) queryFromCache(userLikeKey string, contentIDs []int64) (*cacheView, error) {
 	uniqIDs := dedupContentIDs(contentIDs)
 	if len(uniqIDs) == 0 {
@@ -101,8 +101,8 @@ func (l *BatchQueryIsLikedLogic) queryFromCache(userLikeKey string, contentIDs [
 	return parseHmgetView(vals, uniqIDs), nil
 }
 
-// rebuildAndGetView 通过分布式锁重建 全集群同 userKey 同时刻只一个实例执行 rebuild
-// 拿不到锁的实例轮询 cache 等别人重建好 超时返回 ErrLockBusy
+// rebuildAndGetView 通过分布式锁重建,全集群同 userKey 同时刻只一个实例执行 rebuild
+// 拿不到锁的实例轮询 cache 等别人重建好,超时返回 ErrLockBusy
 func (l *BatchQueryIsLikedLogic) rebuildAndGetView(userID int64, userLikeKey string) (*cacheView, error) {
 	lockKey := cache.BuildLockKey(userLikeKey)
 	return cache.DoWithLock(
@@ -145,7 +145,7 @@ func (l *BatchQueryIsLikedLogic) doRebuild(userID int64, userLikeKey string) (vi
 	return buildRebuiltView(cids), nil
 }
 
-// probeCache 探测当前缓存元信息 用于分布式锁的双检与等待轮询
+// probeCache 探测当前缓存元信息,用于分布式锁的双检与等待轮询
 // 只拉 _full 和 _mincid 不查具体 cid
 func (l *BatchQueryIsLikedLogic) probeCache(ctx context.Context, userLikeKey string) (*cacheView, error) {
 	vals, err := l.svcCtx.Redis.HmgetCtx(ctx, userLikeKey, "_full", "_mincid")
@@ -160,10 +160,10 @@ func (l *BatchQueryIsLikedLogic) evalRebuildScript(ctx context.Context, userLike
 	args := make([]any, 0, len(cids)+2)
 	args = append(args, strconv.FormatInt(rediskey.RedisLikeExpireSeconds, 10))
 	if len(cids) > 0 {
-		// topN 是降序 最小 cid 在末尾 用其当 _mincid
+		// topN 是降序,最小 cid 在末尾,用其当 _mincid
 		args = append(args, strconv.FormatInt(cids[len(cids)-1], 10))
 	} else {
-		// 用户无任何点赞 写一个标记 _full=1 的空 hash 避免反复重建
+		// 用户无任何点赞,写一个标记 _full=1 的空 hash 避免反复重建
 		args = append(args, "")
 	}
 	for _, cid := range cids {
@@ -178,7 +178,7 @@ func (l *BatchQueryIsLikedLogic) evalRebuildScript(ctx context.Context, userLike
 	return err
 }
 
-// fillFromCacheView 按缓存视图填充结果 返回需回源 DB 的冷数据 cid 列表
+// fillFromCacheView 按缓存视图填充结果,返回需回源 DB 的冷数据 cid 列表
 func (l *BatchQueryIsLikedLogic) fillFromCacheView(out *interaction.BatchQueryIsLikedRes, view *cacheView) []int64 {
 	dbQueryIDs := make([]int64, 0)
 	for _, item := range out.IsLikedInfos {
@@ -210,11 +210,11 @@ func (l *BatchQueryIsLikedLogic) fillColdFromDB(out *interaction.BatchQueryIsLik
 	return nil
 }
 
-// fillAllFromDB 缓存完全不可用时 整批走 DB 兜底
+// fillAllFromDB 缓存完全不可用时,整批走 DB 兜底
 func (l *BatchQueryIsLikedLogic) fillAllFromDB(out *interaction.BatchQueryIsLikedRes, userID int64, contentIDs []int64) (*interaction.BatchQueryIsLikedRes, error) {
 	dbLikedMap, err := l.likeRepo.BatchIsLiked(userID, contentIDs)
 	if err != nil {
-		// DB 也失败 返回 default false 但记日志 不阻塞调用方
+		// DB 也失败,返回 default false 但记日志,不阻塞调用方
 		l.Errorf("缓存降级后 DB 批量查询点赞也失败: user_id=%d err=%v", userID, err)
 		return out, nil
 	}
@@ -226,7 +226,7 @@ func (l *BatchQueryIsLikedLogic) fillAllFromDB(out *interaction.BatchQueryIsLike
 	return out, nil
 }
 
-// buildDefaultOut 入参默认未点赞的结果集 保留 nil 过滤后顺序
+// buildDefaultOut 入参默认未点赞的结果集,保留 nil 过滤后顺序
 func buildDefaultOut(infos []*interaction.LikeInfo) *interaction.BatchQueryIsLikedRes {
 	out := &interaction.BatchQueryIsLikedRes{
 		IsLikedInfos: make([]*interaction.IsLikedInfo, 0, len(infos)),
@@ -270,7 +270,7 @@ func dedupContentIDs(contentIDs []int64) []int64 {
 	return uniq
 }
 
-// buildHmgetFields 拼装 HMGET 参数 顺序固定 _full _mincid 业务 cid...
+// buildHmgetFields 拼装 HMGET 参数,顺序固定 _full _mincid 业务 cid...
 // 与 parseHmgetView 的解析顺序一一对应
 func buildHmgetFields(uniqIDs []int64) []string {
 	fields := make([]string, 0, len(uniqIDs)+2)
@@ -282,7 +282,7 @@ func buildHmgetFields(uniqIDs []int64) []string {
 }
 
 // parseHmgetView 把 HMGET 返回的 []string 翻译为 cacheView
-// uniqIDs 传 nil 表示仅探测模式 不构造 likedMap
+// uniqIDs 传 nil 表示仅探测模式,不构造 likedMap
 func parseHmgetView(vals []string, uniqIDs []int64) *cacheView {
 	view := &cacheView{
 		likedMap: make(map[int64]bool, len(uniqIDs)),

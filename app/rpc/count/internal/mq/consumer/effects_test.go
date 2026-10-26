@@ -30,7 +30,7 @@ func newTestCountConsumer(t *testing.T) (*miniredis.Miniredis, *redis.Redis, *Ca
 	}
 }
 
-// TestMarkHotDirty_ShardedByMod 内容按 id 取模落到对应分片 一次 pipeline 提交
+// TestMarkHotDirty_ShardedByMod 内容按 id 取模落到对应分片,一次 pipeline 提交
 func TestMarkHotDirty_ShardedByMod(t *testing.T) {
 	_, r, c := newTestCountConsumer(t)
 	cs := newChangeSet()

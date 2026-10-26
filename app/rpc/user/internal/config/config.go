@@ -15,8 +15,8 @@ type Config struct {
 	CountRpcClientConf       zrpc.RpcClientConf
 }
 
-// LoginRateLimitConfig 登录频率限制（按手机号维度，滑动窗口）。
-// WindowSeconds 或 MaxAttempts <= 0 时整体关闭。
+// LoginRateLimitConfig 登录频率限制（按手机号维度,滑动窗口）
+// WindowSeconds 或 MaxAttempts <= 0 时整体关闭
 type LoginRateLimitConfig struct {
 	WindowSeconds int64 `json:",default=300"`
 	MaxAttempts   int64 `json:",default=5"`

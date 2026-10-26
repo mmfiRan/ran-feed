@@ -30,7 +30,7 @@ func NewGetAdminDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ge
 	}
 }
 
-// GetAdminDetail 管理员详情含所绑角色ID与角色码
+// GetAdminDetail 管理员详情含所绑角色 ID 与角色码
 func (l *GetAdminDetailLogic) GetAdminDetail(in *admin.GetAdminDetailReq) (*admin.GetAdminDetailRes, error) {
 
 	row, err := l.adminUserRepo.GetByID(in.GetId())

@@ -32,8 +32,8 @@ func newTestDeleteLogic(repo repositories.ContentRepository) *DeleteContentLogic
 	}
 }
 
-// TestDeleteContent_MissingRow 主表查不到 已软删 与非法 id 都返回 nil,nil
-// 不判空就会在 row.UserID 处解引用崩 三种入参都要走到报错而不是 panic
+// TestDeleteContent_MissingRow 主表查不到,已软删,与非法 id 都返回 nil,nil
+// 不判空就会在 row.UserID 处解引用崩,三种入参都要走到报错而不是 panic
 func TestDeleteContent_MissingRow(t *testing.T) {
 	found := &model.RanFeedContent{ID: 100, UserID: 7}
 

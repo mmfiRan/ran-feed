@@ -33,7 +33,7 @@ func NewAdminPermissionRepository(ctx context.Context, db *orm.DB) AdminPermissi
 	}
 }
 
-// ListCodesByIDs 按权限点ID集合取 code 集合
+// ListCodesByIDs 按权限点 ID 集合取 code 集合
 func (r *adminPermissionRepositoryImpl) ListCodesByIDs(ids []int64) ([]string, error) {
 	if len(ids) == 0 {
 		return nil, nil

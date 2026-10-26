@@ -18,7 +18,7 @@ import (
 
 const loginWriteTimeout = 5 * time.Second
 
-// loginReqBody 登录请求体 只取 username 记录不落密码
+// loginReqBody 登录请求体,只取 username 记录不落密码
 type loginReqBody struct {
 	Username string `json:"username"`
 }
@@ -28,7 +28,7 @@ type loginResData struct {
 	AdminId int64 `json:"admin_id"`
 }
 
-// AdminLoginLogMiddleware 记录后台登录成功与失败 挂在 /login 路由
+// AdminLoginLogMiddleware 记录后台登录成功与失败,挂在 /login 路由
 type AdminLoginLogMiddleware struct {
 	adminRpc adminauditservice.AdminAuditService
 }
@@ -72,7 +72,7 @@ func readLoginUsername(r *http.Request) string {
 	return req.Username
 }
 
-// loginOutcome 按统一响应结构判登录成败 成功从 data 取 admin_id 失败取 message
+// loginOutcome 按统一响应结构判登录成败,成功从 data 取 admin_id 失败取 message
 func (m *AdminLoginLogMiddleware) loginOutcome(sw *bodyCaptureWriter) (admin.LoginStatus, string, int64) {
 	var body responseBody
 	if err := json.Unmarshal(sw.body.Bytes(), &body); err != nil || body.Code == 0 {
@@ -84,7 +84,7 @@ func (m *AdminLoginLogMiddleware) loginOutcome(sw *bodyCaptureWriter) (admin.Log
 	return admin.LoginStatus_LOGIN_STATUS_FAIL, body.Message, 0
 }
 
-// parseAdminID 从成功响应体 data.admin_id 取登录管理员ID
+// parseAdminID 从成功响应体 data.admin_id 取登录管理员 ID
 func parseAdminID(raw []byte) int64 {
 	var resp struct {
 		Data *loginResData `json:"data"`

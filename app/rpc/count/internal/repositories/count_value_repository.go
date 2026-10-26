@@ -101,7 +101,7 @@ func (r *countValueRepositoryImpl) BatchGet(bizType int32, targetType int32, tar
 	return res, nil
 }
 
-// ListTargetValuesByValueGte 取 value 不小于阈值的 target_id 与 value 供大 V 定时修正补晋升 集合体量小一次取回
+// ListTargetValuesByValueGte 取 value 不小于阈值的 target_id 与 value 供大 V 定时修正补晋升,集合体量小一次取回
 func (r *countValueRepositoryImpl) ListTargetValuesByValueGte(bizType int32, targetType int32, minValue int64) ([]*model.RanFeedCountValue, error) {
 	if bizType <= 0 || targetType <= 0 {
 		return nil, nil

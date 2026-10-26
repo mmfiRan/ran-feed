@@ -29,7 +29,7 @@ const (
 	snippetMaxRunes           = 140
 )
 
-// ContentReviewConsumer 消费 content 域 outbox 事件 把审核结果通知作者
+// ContentReviewConsumer 消费 content 域 outbox 事件,把审核结果通知作者
 // 与主 canal 消费者独立 topic 独立 group dedup 与落库同事务
 type ContentReviewConsumer struct {
 	ctx        context.Context
@@ -47,7 +47,7 @@ func NewContentReviewConsumer(ctx context.Context, svcContext *svc.ServiceContex
 	}
 }
 
-// Consume 解析 outbox canal 消息 逐行 dedup 与落库同事务 事务成功后 dispatch
+// Consume 解析 outbox canal 消息,逐行 dedup 与落库同事务,事务成功后 dispatch
 func (c *ContentReviewConsumer) Consume(ctx context.Context, key, val string) error {
 	msg, err := canal.Parse(val)
 	if err != nil {
@@ -84,7 +84,7 @@ func (c *ContentReviewConsumer) Consume(ctx context.Context, key, val string) er
 	return nil
 }
 
-// dispatch 事务外推送未读数 供 SSE 实时更新 脱离请求 ctx 独立超时 失败只记日志
+// dispatch 事务外推送未读数,供 SSE 实时更新,脱离请求 ctx 独立超时,失败只记日志
 func (c *ContentReviewConsumer) dispatch(recipients map[int64]struct{}) {
 	if len(recipients) == 0 {
 		return
@@ -114,7 +114,7 @@ func (c *ContentReviewConsumer) pushUnread(ctx context.Context, repo repositorie
 	}
 }
 
-// buildReviewNotification 事件转通知行 非审核类事件返回 false
+// buildReviewNotification 事件转通知行,非审核类事件返回 false
 func buildReviewNotification(evt *contentevent.ContentEvent, at time.Time) (*model.RanFeedNotification, bool) {
 	var snippet string
 	switch evt.EventType {
@@ -142,7 +142,7 @@ func buildReviewNotification(evt *contentevent.ContentEvent, at time.Time) (*mod
 	}, true
 }
 
-// reasonSuffix 有理由则前缀冒号无理由返回空串 避免尾随空格
+// reasonSuffix 有理由则前缀冒号无理由返回空串,避免尾随空格
 func reasonSuffix(reason string) string {
 	if reason == "" {
 		return ""

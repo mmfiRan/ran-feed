@@ -1,4 +1,4 @@
-// 本文件负责关注流读接口的编排 两侧取数在 follow_feed_source 合并在 follow_feed_mapper
+// Package feedservicelogic 负责关注流读接口的编排,两侧取数在 follow_feed_source 合并在 follow_feed_mapper
 package feedservicelogic
 
 import (
@@ -32,7 +32,7 @@ func NewFollowFeedLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Follow
 	}
 }
 
-// FollowFeed 关注流 推侧读收件箱本页 拉侧读拉模式集的作者发件箱 合并去重排序
+// FollowFeed 关注流,推侧读收件箱本页,拉侧读拉模式集的作者发件箱,合并去重排序
 func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.FollowFeedRes, error) {
 	if in == nil {
 		return emptyFollowFeedRes(), nil
@@ -52,13 +52,13 @@ func (l *FollowFeedLogic) FollowFeed(in *content.FollowFeedReq) (*content.Follow
 		return emptyFollowFeedRes(), nil
 	}
 
-	// 走统一二级缓存取详情 关注流只读 PUBLIC 再旁挂作者与点赞
+	// 走统一二级缓存取详情,关注流只读 PUBLIC 再旁挂作者与点赞
 	entries, err := l.resolver.Resolve(l.ctx, ids, in.UserId, true)
 	if err != nil {
 		return nil, err
 	}
 	if len(entries) == 0 {
-		// 过滤后为空也返回原始游标 避免整页死内容导致翻页中断
+		// 过滤后为空也返回原始游标,避免整页死内容导致翻页中断
 		return &content.FollowFeedRes{Items: []*content.FollowFeedItem{}, NextCursor: nextCursor, HasMore: hasMore}, nil
 	}
 

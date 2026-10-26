@@ -1,5 +1,4 @@
-// Package feedpub 负责内容进入 feed 的发布副作用汇总 由 ServiceContext 注入
-// 它只做编排 各份状态的写入都委托给对应的 owner 组件
+// Package feedpub 负责内容进入 feed 的发布
 package feedpub
 
 import (
@@ -32,13 +31,7 @@ type Publisher struct {
 	producer   FanOutPublisher
 }
 
-func NewPublisher(
-	rds *redis.Redis,
-	followRpc followservice.FollowService,
-	bigvSet *bigv.Set,
-	publishBox *publishbox.Box,
-	producer FanOutPublisher,
-) *Publisher {
+func NewPublisher(rds *redis.Redis, followRpc followservice.FollowService, bigvSet *bigv.Set, publishBox *publishbox.Box, producer FanOutPublisher) *Publisher {
 	return &Publisher{
 		redis:      rds,
 		followRpc:  followRpc,
@@ -48,24 +41,26 @@ func NewPublisher(
 	}
 }
 
-// Publish 内容进入 feed 时的副作用汇总 由 feed 消费者消费发布事件触发
-// 写作者发件箱 加 登记热榜脏集合 加 投递分批扇出消息
-// 消费者已在后台 同步执行并返回错误 失败由 kafka 重投重放(内部均幂等)
+// Publish 内容进入 feed 汇总,由 feed 消费者消费发布事件触发
+// 写作者发件箱加登记热榜脏集合加投递分批扇出消息
 func (p *Publisher) Publish(ctx context.Context, contentID, authorID, publishedAtMillis int64, visibility contentEnum.VisibilityEnum) error {
-	// 发件箱只装公开内容 与扇出 热榜种子 大 V merge 口径一致 私密内容不进任何 feed
+	// 发件箱只装公开内容
 	if visibility != contentEnum.VisibilityPublic {
 		return nil
 	}
+
+	// 写作者发件箱
 	if err := p.publishBox.Write(ctx, authorID, contentID, publishedAtMillis); err != nil {
 		return err
 	}
+
 	if err := p.writePublishHotSeed(ctx, contentID); err != nil {
 		return err
 	}
 	return p.fanOutToFollowers(ctx, authorID, contentID, publishedAtMillis)
 }
 
-// writePublishHotSeed 发布即登记脏 把新内容放进热榜脏集合 让下一轮增量算分
+// writePublishHotSeed 发布即记录,把新内容放进热榜脏集合,让下一轮增量算分
 func (p *Publisher) writePublishHotSeed(ctx context.Context, contentID int64) error {
 	if contentID <= 0 {
 		return nil
@@ -75,8 +70,8 @@ func (p *Publisher) writePublishHotSeed(ctx context.Context, contentID int64) er
 	return err
 }
 
-// fanOutToFollowers 按粉丝游标分页 每页投一条扇出消息 由独立消费者逐批写收件箱
-// 大 V 跳过由读路径 merge 大 V 判定失败宁可报错重试 误判成非大 V 会造成扩散风暴
+// fanOutToFollowers 按粉丝游标分页,每页投一条扇出消息,由独立消费者逐批写收件箱
+// 大V 跳过由读路径 merge 大V
 func (p *Publisher) fanOutToFollowers(ctx context.Context, authorID, contentID, publishedAtMillis int64) error {
 	if authorID <= 0 || contentID <= 0 {
 		return nil
@@ -113,7 +108,7 @@ func (p *Publisher) fanOutToFollowers(ctx context.Context, authorID, contentID, 
 			}
 		}
 		if len(followerIDs) > 0 {
-			if err := p.publishBatch(ctx, contentID, authorID, publishedAtMillis, followerIDs); err != nil {
+			if err = p.publishBatch(ctx, contentID, authorID, publishedAtMillis, followerIDs); err != nil {
 				return err
 			}
 			total += len(followerIDs)

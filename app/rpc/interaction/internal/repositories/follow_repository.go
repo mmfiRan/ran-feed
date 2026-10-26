@@ -173,7 +173,7 @@ func (r *followRepositoryImpl) ListFolloweesByCursor(userID int64, cursorFollowU
 }
 
 // ListFollowersByCursor 分页查询 userID 的粉丝列表（关注了 userID 的用户）
-// cursorFollowerID 上一页最后一个粉丝的 user_id，传 0 表示首页；按 user_id DESC 排序
+// cursorFollowerID 上一页最后一个粉丝的 user_id,传 0 表示首页,按 user_id DESC 排序
 func (r *followRepositoryImpl) ListFollowersByCursor(userID int64, cursorFollowerID int64, limit int) ([]int64, error) {
 	if userID <= 0 || limit <= 0 {
 		return []int64{}, nil

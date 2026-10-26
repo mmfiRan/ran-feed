@@ -8,7 +8,7 @@ func HasPermission(perms map[string]struct{}, required string) bool {
 	return ok
 }
 
-// toSet 成员切片转集合 剔除哨兵
+// toSet 成员切片转集合,剔除哨兵
 func toSet(members []string) map[string]struct{} {
 	set := make(map[string]struct{}, len(members))
 	for _, m := range members {

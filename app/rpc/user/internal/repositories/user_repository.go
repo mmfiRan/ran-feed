@@ -22,13 +22,13 @@ type UserRepository interface {
 	WithTx(tx *query.Query) UserRepository
 	// GetByMobile 根据手机号查询用户
 	GetByMobile(mobile string) (*do.UserDO, error)
-	// GetByID 根据用户ID查询用户
+	// GetByID 根据用户 ID 查询用户
 	GetByID(userID int64) (*do.UserDO, error)
-	// BatchGetByIDs 批量根据用户ID查询
+	// BatchGetByIDs 批量根据用户 ID 查询
 	BatchGetByIDs(userIDs []int64) (map[int64]*do.UserDO, error)
-	// BatchGetActiveForIndex 增量回源 取可索引用户(正常+未删除) 附建索引所需原始字段
+	// BatchGetActiveForIndex 增量回源,取可索引用户(正常+未删除) 附建索引所需原始字段
 	BatchGetActiveForIndex(userIDs []int64) (map[int64]*model.RanFeedUser, error)
-	// ScanActiveForIndex 全量重建 按 id 升序游标扫可索引用户
+	// ScanActiveForIndex 全量重建,按 id 升序游标扫可索引用户
 	ScanActiveForIndex(cursorID int64, limit int) ([]*model.RanFeedUser, error)
 	// Create 创建用户
 	Create(userDO *do.UserDO) (int64, error)
@@ -177,7 +177,7 @@ func (r *userRepositoryImpl) BatchGetByIDs(userIDs []int64) (map[int64]*do.UserD
 	return res, nil
 }
 
-// BatchGetActiveForIndex 建索引批量取正常未删除用户 只选建索引所需字段(含 updated_at 作 version)
+// BatchGetActiveForIndex 建索引批量取正常未删除用户,只选建索引所需字段(含 updated_at 作 version)
 func (r *userRepositoryImpl) BatchGetActiveForIndex(userIDs []int64) (map[int64]*model.RanFeedUser, error) {
 	if len(userIDs) == 0 {
 		return map[int64]*model.RanFeedUser{}, nil
@@ -204,7 +204,7 @@ func (r *userRepositoryImpl) BatchGetActiveForIndex(userIDs []int64) (map[int64]
 	return res, nil
 }
 
-// ScanActiveForIndex 全量重建 按 id 升序 keyset 游标扫正常未删除用户
+// ScanActiveForIndex 全量重建,按 id 升序 keyset 游标扫正常未删除用户
 func (r *userRepositoryImpl) ScanActiveForIndex(cursorID int64, limit int) ([]*model.RanFeedUser, error) {
 	if limit <= 0 {
 		return nil, nil

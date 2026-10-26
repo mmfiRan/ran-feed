@@ -29,7 +29,7 @@ func buildNotificationItem(row *model.RanFeedNotification) *notification.Notific
 	}
 }
 
-// splitOverFetch 处理 over-fetch+1 结果 切出真实页 + next cursor + has_more
+// splitOverFetch 处理 over-fetch+1 结果,切出真实页 + next cursor + has_more
 func splitOverFetch(rows []*model.RanFeedNotification, pageSize int) ([]*model.RanFeedNotification, bool, int64, int64) {
 	if len(rows) == 0 || pageSize <= 0 {
 		return nil, false, 0, 0

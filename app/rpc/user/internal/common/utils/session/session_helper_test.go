@@ -53,7 +53,7 @@ func TestRemoveByUserID(t *testing.T) {
 		err := RemoveByUserID(ctx, r, userID)
 		assert.NoError(t, err)
 
-		// 空串不调用 RemoveSession，反向索引仍在
+		// 空串不调用 RemoveSession,反向索引仍在
 		exists, _ := r.ExistsCtx(ctx, userKey)
 		assert.True(t, exists)
 	})

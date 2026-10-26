@@ -34,12 +34,12 @@ type ContentRepository interface {
 	AdminUpdateStatus(ctx context.Context, contentID int64, fromStatus, toStatus contentEnum.ContentStatusEnum, operatorID int64) (int64, error)
 	// AdminApproveContent 审核通过 PENDING_REVIEW->PUBLISHED
 	AdminApproveContent(ctx context.Context, contentID, operatorID int64, publishedAt time.Time) (int64, error)
-	// GetOwnedByID 取本人任意状态内容 草稿编辑与提交鉴权用
+	// GetOwnedByID 取本人任意状态内容,草稿编辑与提交鉴权用
 	GetOwnedByID(ctx context.Context, contentID, userID int64) (*model.RanFeedContent, error)
-	// UpdateDraftMeta 草稿编辑更新内容级字段 状态回落 DRAFT
+	// UpdateDraftMeta 草稿编辑更新内容级字段,状态回落 DRAFT
 	UpdateDraftMeta(ctx context.Context, contentID int64, visibility contentEnum.VisibilityEnum, updatedBy int64) error
-	// SubmitOwned 本人指定状态提交进审核 条件更新返回受影响行数
+	// SubmitOwned 本人指定状态提交进审核,条件更新返回受影响行数
 	SubmitOwned(ctx context.Context, contentID, userID int64, fromStatuses []contentEnum.ContentStatusEnum, toStatus contentEnum.ContentStatusEnum, updatedBy int64) (int64, error)
-	// MyContentPage 我的内容 全状态 keyset 游标按 id 倒序 id 与 created_at 同序
+	// MyContentPage 我的内容,全状态 keyset 游标按 id 倒序 id 与 created_at 同序
 	MyContentPage(ctx context.Context, userID int64, status *contentEnum.ContentStatusEnum, contentType *contentEnum.ContentTypeEnum, cursorID int64, limit int) ([]*model.RanFeedContent, error)
 }

@@ -52,7 +52,7 @@ func (l *RegisterLogic) Register(in *user.RegisterReq) (*user.RegisterRes, error
 		nickname = mobile
 	}
 
-	// 生日按原秒级语义还原 保持本地时区取日 用 AsTime 的 UTC 会让日期偏一天
+	// 生日按原秒级语义还原,保持本地时区取日,用 AsTime 的 UTC 会让日期偏一天
 	birthdayTime := l.truncateToDate(time.Unix(in.GetBirthday().GetSeconds(), 0))
 
 	// 校验手机号是否已注册

@@ -28,7 +28,7 @@ func NewDeleteSearchHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext
 	}
 }
 
-// DeleteSearchHistory 带 keyword 删单条 all 为 true 清空 匿名直接返回成功
+// DeleteSearchHistory 带 keyword 删单条 all 为 true 清空,匿名直接返回成功
 func (l *DeleteSearchHistoryLogic) DeleteSearchHistory(req *types.DeleteSearchHistoryReq) (resp *types.DeleteSearchHistoryRes, err error) {
 	viewerID := utils.GetContextUserIdWithDefault(l.ctx)
 	if viewerID <= 0 {

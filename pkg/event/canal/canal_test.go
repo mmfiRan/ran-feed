@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// wantSHA1 按已落库的哈希输入格式算期望值 锁死格式而非硬编码不透明十六进制串
+// wantSHA1 按已落库的哈希输入格式算期望值,锁死格式而非硬编码不透明十六进制串
 func wantSHA1(t *testing.T, format string, args ...any) string {
 	t.Helper()
 	h := sha1.Sum(fmt.Appendf(nil, format, args...))
@@ -81,7 +81,7 @@ func TestMessage_EventID(t *testing.T) {
 	})
 }
 
-// TestRowEventID_哈希输入格式 去重表已落库记录依赖该格式 变更等于去重失效
+// TestRowEventID_哈希输入格式,去重表已落库记录依赖该格式,变更等于去重失效
 func TestRowEventID_哈希输入格式(t *testing.T) {
 	t.Run("有行主键用主键", func(t *testing.T) {
 		row := map[string]any{"id": "100", "user_id": "9"}

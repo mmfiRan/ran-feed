@@ -28,7 +28,7 @@ func NewRecordHistoryLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Rec
 	}
 }
 
-// RecordHistory 记录一次搜索 匿名或空词忽略 去重提到最前
+// RecordHistory 记录一次搜索,匿名或空词忽略,去重提到最前
 func (l *RecordHistoryLogic) RecordHistory(in *search.RecordHistoryReq) (*emptypb.Empty, error) {
 	if in == nil || in.UserId <= 0 || in.Keyword == "" {
 		return &emptypb.Empty{}, nil

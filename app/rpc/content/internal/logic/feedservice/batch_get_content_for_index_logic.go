@@ -29,7 +29,7 @@ func NewBatchGetContentForIndexLogic(ctx context.Context, svcCtx *svc.ServiceCon
 	}
 }
 
-// BatchGetContentForIndex 增量回源 只返回可索引内容的原始投影 不可索引的 id 直接缺席由 search 判删
+// BatchGetContentForIndex 增量回源,只返回可索引内容的原始投影,不可索引的 id 直接缺席由 search 判删
 func (l *BatchGetContentForIndexLogic) BatchGetContentForIndex(in *content.BatchGetContentForIndexReq) (*content.BatchGetContentForIndexRes, error) {
 	if in == nil || len(in.ContentIds) == 0 {
 		return &content.BatchGetContentForIndexRes{Items: []*content.ContentIndexItem{}}, nil
@@ -51,5 +51,7 @@ func (l *BatchGetContentForIndexLogic) BatchGetContentForIndex(in *content.Batch
 	if err != nil {
 		return nil, err
 	}
-	return &content.BatchGetContentForIndexRes{Items: items}, nil
+	return &content.BatchGetContentForIndexRes{
+		Items: items,
+	}, nil
 }

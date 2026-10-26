@@ -13,7 +13,7 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// mockContentRepo 仅覆盖兜底查询路径用到的方法 其余嵌接口占位
+// mockContentRepo 仅覆盖兜底查询路径用到的方法,其余嵌接口占位
 type mockContentRepo struct {
 	repositories.ContentRepository
 	score    float64
@@ -80,7 +80,7 @@ func TestPageFromDB_CursorResolvedByScore(t *testing.T) {
 	assert.Equal(t, 5.5, repo.gotCursorScore)
 }
 
-// TestPageFromDB_CursorScoreMissFallsBackToFirstPage 游标内容已删取不到分值 退化为首页不返空
+// TestPageFromDB_CursorScoreMissFallsBackToFirstPage 游标内容已删取不到分值,退化为首页不返空
 func TestPageFromDB_CursorScoreMissFallsBackToFirstPage(t *testing.T) {
 	repo := &mockContentRepo{scoreErr: assert.AnError, rows: []*model.RanFeedContent{{ID: 900}}}
 	l := newTestRecommendLogic(repo)

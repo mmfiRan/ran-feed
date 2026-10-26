@@ -21,7 +21,7 @@ import (
 	"ran-feed/app/rpc/user/user"
 )
 
-// fakeCommentRepo 测试桩 只实现列表读用到的方法 其余 panic 提示误用
+// fakeCommentRepo 测试桩,只实现列表读用到的方法,其余 panic 提示误用
 type fakeCommentRepo struct {
 	rootRows     []*model.RanFeedComment
 	replyRows    []*model.RanFeedComment
@@ -62,7 +62,7 @@ func (f *fakeCommentRepo) BatchCountByRootIDs(_ []int64) (map[int64]int64, error
 	return f.rootCounts, nil
 }
 
-// fakeUserRpc 只覆盖 BatchGetUser 其余方法走嵌入接口 未实现 调用即 panic
+// fakeUserRpc 只覆盖 BatchGetUser 其余方法走嵌入接口,未实现,调用即 panic
 type fakeUserRpc struct {
 	userservice.UserService
 	users map[int64]*user.UserInfo
@@ -88,7 +88,7 @@ func newCommentListLogic(repo repositories.CommentRepository, user userservice.U
 	}
 }
 
-// cmtRow 构造一行评论 默认正常态
+// cmtRow 构造一行评论,默认正常态
 func cmtRow(id, contentID, userID, parentID, rootID int64, isDeleted, status int32) *model.RanFeedComment {
 	return &model.RanFeedComment{
 		ID:            id,
@@ -115,7 +115,7 @@ func TestQueryCommentList_InvalidReq(t *testing.T) {
 }
 
 func TestQueryCommentList_PaginationHasMore(t *testing.T) {
-	// pageSize=2 但 DB 返回 3 条 命中 hasMore 截断
+	// pageSize=2 但 DB 返回 3 条,命中 hasMore 截断
 	repo := &fakeCommentRepo{
 		rootRows: []*model.RanFeedComment{
 			cmtRow(30, 1, 100, 0, 0, 0, 10),
@@ -196,7 +196,7 @@ func TestQueryCommentList_ReplyCountAndUsers(t *testing.T) {
 	repo := &fakeCommentRepo{
 		rootRows: []*model.RanFeedComment{
 			cmtRow(30, 1, 100, 0, 0, 0, 10),
-			cmtRow(20, 1, 0, 0, 0, 1, 10), // 墓碑 不补用户
+			cmtRow(20, 1, 0, 0, 0, 1, 10), // 墓碑,不补用户
 		},
 		rootCounts: map[int64]int64{30: 5},
 	}

@@ -54,7 +54,7 @@ func RemoveSession(ctx context.Context, r *redis.Redis, userID int64, token stri
 	return err
 }
 
-// RemoveByUserID 根据用户ID踢下线
+// RemoveByUserID 根据用户 ID 踢下线
 func RemoveByUserID(ctx context.Context, r *redis.Redis, userID int64) error {
 	userKey := rediskey.BuildUserSessionUserKey(userID)
 	token, err := r.GetCtx(ctx, userKey)

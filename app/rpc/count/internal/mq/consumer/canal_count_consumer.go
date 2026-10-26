@@ -45,7 +45,7 @@ func NewCanalCountConsumer(ctx context.Context, svcContext *svc.ServiceContext) 
 	}
 }
 
-// Consume 五步管道 解析 路由 去重 落库 派发副作用 去重与落库同事务保证幂等 副作用在事务外
+// Consume 五步管道,解析,路由,去重,落库,派发副作用,去重与落库同事务保证幂等,副作用在事务外
 func (c *CanalCountConsumer) Consume(ctx context.Context, key, val string) error {
 	logc.Infof(ctx, "收到canal消息: key=%s, val=%s", key, val)
 
@@ -62,7 +62,7 @@ func (c *CanalCountConsumer) Consume(ctx context.Context, key, val string) error
 	}
 
 	cs := newChangeSet()
-	// 策略可选声明无关变更行 在落去重前跳过 例如 content 表的热榜分值更新与计数无关
+	// 策略可选声明无关变更行,在落去重前跳过,例如 content 表的热榜分值更新与计数无关
 	var filters []pipeline.RowFilter
 	if skipper, ok := tableStrategy.(strategy.RowSkipper); ok {
 		filters = append(filters, skipper.SkipRow)
@@ -78,7 +78,7 @@ func (c *CanalCountConsumer) Consume(ctx context.Context, key, val string) error
 	return c.dispatch(ctx, cs)
 }
 
-// processRow 单行处理 翻译 落库 去重由管道负责
+// processRow 单行处理,翻译,落库,去重由管道负责
 func (c *CanalCountConsumer) processRow(ctx context.Context, tx *query.Query, meta pipeline.RowMeta, tableStrategy strategy.TableStrategy, row, oldRow map[string]any, cs *changeSet) error {
 	for _, u := range tableStrategy.ExtractUpdates(ctx, meta.Op, row, oldRow) {
 		applied, ownerID, err := c.applyUpdate(tx, u, meta.UpdatedAt)
@@ -92,7 +92,7 @@ func (c *CanalCountConsumer) processRow(ctx context.Context, tx *query.Query, me
 	return nil
 }
 
-// applyUpdate 把一条 Update 落库 区分增量与清零两种动作 返回是否真的改动与归属 owner
+// applyUpdate 把一条 Update 落库,区分增量与清零两种动作,返回是否真的改动与归属 owner
 func (c *CanalCountConsumer) applyUpdate(tx *query.Query, u strategy.Update, updatedAt time.Time) (bool, int64, error) {
 	if u.TargetID <= 0 {
 		return false, 0, nil

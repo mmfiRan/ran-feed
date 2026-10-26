@@ -30,7 +30,7 @@ func NewListOperationLogsLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 	}
 }
 
-// ListOperationLogs 按条件分页查操作审计日志 先统计总数为0直接返回
+// ListOperationLogs 按条件分页查操作审计日志,先统计总数为0直接返回
 func (l *ListOperationLogsLogic) ListOperationLogs(in *admin.ListOperationLogsReq) (*admin.ListOperationLogsRes, error) {
 	filter := types.OperationLogFilter{
 		AdminID:  in.AdminId,

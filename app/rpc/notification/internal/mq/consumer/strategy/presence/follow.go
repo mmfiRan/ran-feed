@@ -41,7 +41,7 @@ func (s *followStrategy) ExtractEvents(ctx context.Context, op string, row, oldR
 		return nil
 	}
 	// FOLLOW 走 PersistAggregate 依赖 uk_recipient_aggkey 收敛「取关→再关注」到同一行并 re-surface
-	// aggKey=FO:{actor_id} agg_count 在 FOLLOW 语义无产品含义 客户端渲染忽略
+	// aggKey=FO:{actor_id} agg_count 在 FOLLOW 语义无产品含义,客户端渲染忽略
 	return []strategy.NotifyEvent{{
 		RecipientID: recipientID,
 		ActorID:     actorID,

@@ -13,7 +13,7 @@ import (
 
 type AdminRolePermissionRepository interface {
 	WithTx(tx *query.Query) AdminRolePermissionRepository
-	// ListPermissionIDsByRoleIDs 取角色集合绑定的权限点ID集合
+	// ListPermissionIDsByRoleIDs 取角色集合绑定的权限点 ID 集合
 	ListPermissionIDsByRoleIDs(roleIDs []int64) ([]int64, error)
 	// DeleteByRoleID 删角色的全部权限点绑定
 	DeleteByRoleID(roleID int64) (int64, error)
@@ -52,7 +52,7 @@ func (r *adminRolePermissionRepositoryImpl) WithTx(tx *query.Query) AdminRolePer
 	}
 }
 
-// ListPermissionIDsByRoleIDs 取角色集合绑定的权限点ID集合
+// ListPermissionIDsByRoleIDs 取角色集合绑定的权限点 ID 集合
 func (r *adminRolePermissionRepositoryImpl) ListPermissionIDsByRoleIDs(roleIDs []int64) ([]int64, error) {
 	if len(roleIDs) == 0 {
 		return nil, nil

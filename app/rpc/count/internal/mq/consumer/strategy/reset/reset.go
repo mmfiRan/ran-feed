@@ -1,4 +1,4 @@
-// Package reset 内容软删清零策略 内容被软删时把其点赞收藏评论计数级联归零
+// Package reset 内容软删清零策略,内容被软删时把其点赞收藏评论计数级联归零
 package reset
 
 import (
@@ -30,7 +30,7 @@ func (s *contentResetStrategy) TableName() string {
 	return s.tableName
 }
 
-// SkipRow 热榜任务分钟级落库只改 hot_score 等列 与计数无关 跳过避免落无谓去重行
+// SkipRow 热榜任务分钟级落库只改 hot_score 等列,与计数无关,跳过避免落无谓去重行
 func (s *contentResetStrategy) SkipRow(row, oldRow map[string]interface{}) bool {
 	return canal.OnlyIgnoredColumnsChanged(row, oldRow, consts.HotScoreOnlyColumns...)
 }

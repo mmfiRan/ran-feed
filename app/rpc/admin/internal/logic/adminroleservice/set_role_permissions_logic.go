@@ -81,7 +81,7 @@ func (l *SetRolePermissionsLogic) SetRolePermissions(in *admin.SetRolePermission
 		return nil, errorx.Wrap(l.ctx, err, errorx.NewMsg("查询受影响管理员失败"))
 	}
 
-	// 权限点变更 失效受影响管理员的权限缓存使新权限立即生效
+	// 权限点变更,失效受影响管理员的权限缓存使新权限立即生效
 	utils.InvalidateAdminPerms(l.ctx, l.svcCtx.Redis, adminIDs)
 	return &admin.SetRolePermissionsRes{
 		AffectedAdminIds: adminIDs,

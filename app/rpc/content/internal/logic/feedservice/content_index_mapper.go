@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// publishedMillis 发布时间转毫秒 空时间返回 0
+// publishedMillis 发布时间转毫秒,空时间返回 0
 func publishedMillis(t *time.Time) int64 {
 	if t == nil {
 		return 0
@@ -18,9 +18,9 @@ func publishedMillis(t *time.Time) int64 {
 	return t.UnixMilli()
 }
 
-// buildContentIndexItem 单条映射 文章带标题 简介 正文 视频只有标题 子表缺失留空不拖垮整批索引
+// buildContentIndexItem 单条映射,文章带标题,简介,正文,视频只有标题,子表缺失留空不拖垮整批索引
 func buildContentIndexItem(c *model.RanFeedContent, article *model.RanFeedArticle, video *model.RanFeedVideo) *content.ContentIndexItem {
-	// 这三个字段是构造给 search 域的协议消息 属 RPC 边界 故直接落 pb 枚举 不转业务枚举
+	// 这三个字段是构造给 search 域的协议消息,属 RPC 边界,故直接落 pb 枚举,不转业务枚举
 	item := &content.ContentIndexItem{
 		ContentId:   c.ID,
 		ContentType: content.ContentType(c.ContentType),

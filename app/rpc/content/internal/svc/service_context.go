@@ -52,13 +52,13 @@ type ServiceContext struct {
 	FavoriteRpc             favoriteservice.FavoriteService
 	FollowRpc               followservice.FollowService
 	CountRpc                counterservice.CounterService
-	// BigV 全局大 V 集合 判推拉分流
+	// BigV 全局大 V 集合,判推拉分流
 	BigV *bigv.Set
-	// ContentCache 内容详情二级缓存 读回填与写失效的 owner
+	// ContentCache 内容详情二级缓存,读回填与写失效的 owner
 	ContentCache *contentcache.Cache
 	// PublishBox 作者发件箱 owner
 	PublishBox *publishbox.Box
-	// FollowFeed 关注流两半 收件箱与拉模式集的 owner
+	// FollowFeed 关注流两半,收件箱与拉模式集的 owner
 	FollowFeed *followfeed.Feed
 	// FavoriteBox 用户收藏流 owner
 	FavoriteBox *favoritebox.Box
@@ -66,7 +66,7 @@ type ServiceContext struct {
 	HotFeed *hotfeed.Feed
 	// FeedPublisher 内容进入 feed 的发布副作用编排
 	FeedPublisher *feedpub.Publisher
-	// FeedProjector 内容生命周期事件的 feed 投影 消息消费与对账补跑共用
+	// FeedProjector 内容生命周期事件的 feed 投影,消息消费与对账补跑共用
 	FeedProjector *feedprojector.Projector
 	// ContentResolver feed 读路径公共入口 feedservice 多个 Logic 共用
 	ContentResolver *contentresolver.Resolver
@@ -124,7 +124,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		kq.WithBalancer(&kafka.Hash{}),
 	))
 
-	// 组件 每份状态一个 owner 重建锁跟着它保护的那份状态走
+	// 组件,每份状态一个 owner 重建锁跟着它保护的那份状态走
 	bigvSet := bigv.New(redisClient)
 	contentCache := contentcache.New(redisClient)
 	publishBox := publishbox.New(redisClient, cache.NewDistLocker(redisClient), contentRepository)
