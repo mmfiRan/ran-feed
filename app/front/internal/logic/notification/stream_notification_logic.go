@@ -16,9 +16,6 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-// heartbeatInterval 心跳间隔,定期发帧探活并防代理层因空闲断连
-const heartbeatInterval = 15 * time.Second
-
 type StreamNotificationLogic struct {
 	logx.Logger
 	ctx    context.Context
@@ -52,7 +49,7 @@ func (l *StreamNotificationLogic) StreamNotification(req *types.NotifyStreamReq,
 		return nil
 	}
 
-	ticker := time.NewTicker(heartbeatInterval)
+	ticker := time.NewTicker(sse.HeartbeatInterval)
 	defer ticker.Stop()
 
 	for {

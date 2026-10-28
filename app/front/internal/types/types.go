@@ -62,7 +62,7 @@ type ContentDetail struct {
 }
 
 type ContentUploadsCredentialsReq struct {
-	Scene    int32  `json:"scene" validate:"required,oneof=1 2 3"`
+	Scene    int32  `json:"scene" validate:"required,oneof=1 2 3 4 5"`
 	FileExt  int32  `json:"file_ext" validate:"required,oneof=1 2 3 4 5 6 7 8 9"`
 	FileSize int64  `json:"file_size" validate:"required,min=1,max=10737418240"`
 	FileName string `json:"file_name" validate:"required"`
@@ -164,6 +164,154 @@ type GetMeRes struct {
 	FollowerCount         int64    `json:"follower_count"`
 	LikeReceivedCount     int64    `json:"like_received_count"`
 	FavoriteReceivedCount int64    `json:"favorite_received_count"`
+}
+
+type IMConversationItem struct {
+	ConversationId int64             `json:"conversation_id,string"`
+	ConvType       EnumValue         `json:"conv_type"`
+	Peer           *IMUserBrief      `json:"peer,optional"`
+	Group          *IMGroupBrief     `json:"group,optional"`
+	MaxSeq         int64             `json:"max_seq,string"`
+	ReadSeq        int64             `json:"read_seq,string"`
+	MinSeq         int64             `json:"min_seq,string"`
+	Unread         int64             `json:"unread"`
+	Muted          bool              `json:"muted"`
+	LastMessage    *IMMessagePreview `json:"last_message,optional"`
+}
+
+type IMConversationListReq struct {
+	Cursor   string `form:"cursor,optional"`
+	PageSize uint32 `form:"page_size,optional,default=20"`
+}
+
+type IMConversationListRes struct {
+	List    []IMConversationItem `json:"list"`
+	Cursor  string               `json:"cursor"`
+	HasMore bool                 `json:"has_more"`
+}
+
+type IMCreateGroupReq struct {
+	Name      string   `json:"name" validate:"required,max=64"`
+	Avatar    string   `json:"avatar,optional" validate:"max=512"`
+	MemberIds []string `json:"member_ids,optional"`
+}
+
+type IMCreateGroupRes struct {
+	GroupId        int64 `json:"group_id,string"`
+	ConversationId int64 `json:"conversation_id,string"`
+}
+
+type IMGetGroupInfoReq struct {
+	GroupId int64 `form:"group_id" validate:"required,gt=0"`
+}
+
+type IMGetGroupInfoRes struct {
+	GroupId     int64           `json:"group_id,string"`
+	Name        string          `json:"name"`
+	Avatar      string          `json:"avatar"`
+	OwnerId     int64           `json:"owner_id,string"`
+	MemberCount int32           `json:"member_count"`
+	Status      EnumValue       `json:"status"`
+	Members     []IMGroupMember `json:"members"`
+}
+
+type IMGroupBrief struct {
+	GroupId int64     `json:"group_id,string"`
+	Name    string    `json:"name"`
+	Avatar  string    `json:"avatar"`
+	Status  EnumValue `json:"status"`
+}
+
+type IMGroupMember struct {
+	UserId   int64  `json:"user_id,string"`
+	Nickname string `json:"nickname"`
+	Avatar   string `json:"avatar"`
+	Muted    bool   `json:"muted"`
+	JoinedAt int64  `json:"joined_at"`
+}
+
+type IMInviteGroupMembersReq struct {
+	GroupId   int64    `json:"group_id,string" validate:"required,gt=0"`
+	MemberIds []string `json:"member_ids" validate:"required,min=1"`
+}
+
+type IMInviteGroupMembersRes struct {
+}
+
+type IMMarkReadReq struct {
+	ConversationId int64 `json:"conversation_id,string" validate:"required,gt=0"`
+	ReadSeq        int64 `json:"read_seq,string" validate:"required,gt=0"`
+}
+
+type IMMarkReadRes struct {
+}
+
+type IMMessagePreview struct {
+	MessageId   int64     `json:"message_id,string"`
+	Seq         int64     `json:"seq,string"`
+	SenderId    int64     `json:"sender_id,string"`
+	ContentType EnumValue `json:"content_type"`
+	Content     string    `json:"content"`
+	Status      EnumValue `json:"status"`
+	SendTime    int64     `json:"send_time"`
+}
+
+type IMPullMessagesReq struct {
+	ConversationId int64  `form:"conversation_id" validate:"required,gt=0"`
+	SeqBegin       *int64 `form:"seq_begin,optional" validate:"omitempty,gte=0"`
+	SeqEnd         int64  `form:"seq_end" validate:"required,gt=0"`
+}
+
+type IMPullMessagesRes struct {
+	List []IMMessagePreview `json:"list"`
+}
+
+type IMQuitGroupReq struct {
+	GroupId int64 `json:"group_id,string" validate:"required,gt=0"`
+}
+
+type IMQuitGroupRes struct {
+}
+
+type IMRevokeMessageReq struct {
+	ConversationId int64 `json:"conversation_id,string" validate:"required,gt=0"`
+	Seq            int64 `json:"seq,string" validate:"required,gt=0"`
+}
+
+type IMRevokeMessageRes struct {
+}
+
+type IMSendMessageReq struct {
+	ConversationId int64  `json:"conversation_id,string" validate:"required,gt=0"`
+	ClientMsgId    string `json:"client_msg_id" validate:"required,max=64"`
+	ContentType    int32  `json:"content_type" validate:"required,oneof=10 20 30"`
+	Content        string `json:"content" validate:"required,max=4096"`
+}
+
+type IMSendMessageRes struct {
+	MessageId int64 `json:"message_id,string"`
+	Seq       int64 `json:"seq,string"`
+	SendTime  int64 `json:"send_time"`
+}
+
+type IMStreamReq struct {
+}
+
+type IMStreamRes struct {
+	Type           string  `json:"type"`
+	ConversationId *int64  `json:"conversation_id,string,optional"`
+	MessageId      *int64  `json:"message_id,string,optional"`
+	Seq            *int64  `json:"seq,string,optional"`
+	SenderId       *int64  `json:"sender_id,string,optional"`
+	ContentType    *int32  `json:"content_type,optional"`
+	Content        *string `json:"content,optional"`
+	SendTime       *int64  `json:"send_time,optional"`
+}
+
+type IMUserBrief struct {
+	UserId   int64  `json:"user_id,string"`
+	Nickname string `json:"nickname"`
+	Avatar   string `json:"avatar"`
 }
 
 type LikeReq struct {
@@ -277,6 +425,17 @@ type NotifyStreamReq struct {
 type NotifyStreamRes struct {
 	Type   string `json:"type"`
 	Unread *int64 `json:"unread,optional"`
+}
+
+type OpenIMConversationReq struct {
+	PeerUserId int64 `json:"peer_user_id,string" validate:"required,gt=0"`
+}
+
+type OpenIMConversationRes struct {
+	ConversationId int64 `json:"conversation_id,string"`
+	MaxSeq         int64 `json:"max_seq,string"`
+	ReadSeq        int64 `json:"read_seq,string"`
+	MinSeq         int64 `json:"min_seq,string"`
 }
 
 type PageQueryReq struct {

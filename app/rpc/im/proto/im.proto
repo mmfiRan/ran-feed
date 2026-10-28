@@ -1,0 +1,210 @@
+syntax = "proto3";
+
+package ranfeed.im;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "pkg/commonpb/common.proto";
+
+option go_package = "ran-feed/app/rpc/im/im";
+
+// ConvType 会话类型
+enum ConvType {
+  CONV_TYPE_UNSPECIFIED = 0; // 未指定
+  CONV_TYPE_SINGLE = 10;     // 单聊
+  CONV_TYPE_GROUP = 20;      // 群聊
+}
+
+// MessageContentType 消息内容类型
+enum MessageContentType {
+  MESSAGE_CONTENT_TYPE_UNSPECIFIED = 0; // 未指定
+  MESSAGE_CONTENT_TYPE_TEXT = 10;       // 文本
+  MESSAGE_CONTENT_TYPE_IMAGE = 20;      // 图片
+  MESSAGE_CONTENT_TYPE_VIDEO = 30;      // 视频
+}
+
+// MessageStatus 消息状态
+enum MessageStatus {
+  MESSAGE_STATUS_UNSPECIFIED = 0; // 未指定
+  MESSAGE_STATUS_NORMAL = 10;     // 正常
+  MESSAGE_STATUS_REVOKED = 20;    // 已撤回
+}
+
+// GroupStatus 群状态
+enum GroupStatus {
+  GROUP_STATUS_UNSPECIFIED = 0; // 未指定
+  GROUP_STATUS_NORMAL = 10;     // 正常
+  GROUP_STATUS_DISSOLVED = 20;  // 已解散
+}
+
+// ImMessage 消息
+message ImMessage {
+  int64 message_id = 1;                        // 消息 ID
+  int64 seq = 2;                               // 会话内序号
+  int64 sender_id = 3;                         // 发送者用户 ID
+  ranfeed.commonpb.EnumValue content_type = 4; // 内容类型
+  string content = 5;                          // 文本正文或富媒体 JSON
+  ranfeed.commonpb.EnumValue status = 6;       // 消息状态
+  google.protobuf.Timestamp send_time = 7;     // 服务端发送时间
+}
+
+// ConversationItem 会话列表项
+message ConversationItem {
+  int64 conversation_id = 1;                   // 会话 ID
+  ranfeed.commonpb.EnumValue conv_type = 2;    // 会话类型
+  int64 peer_user_id = 3;                      // 单聊对方用户 ID,群聊为 0
+  int64 group_id = 4;                          // 群 ID,单聊为 0
+  string group_name = 5;                       // 群名称,单聊为空
+  string group_avatar = 6;                     // 群头像,单聊为空
+  ranfeed.commonpb.EnumValue group_status = 7; // 群状态,单聊为未指定
+  int64 max_seq = 8;                           // 会话最大序号
+  int64 read_seq = 9;                          // 当前用户已读水位
+  int64 min_seq = 10;                          // 当前用户可见起点
+  int64 unread = 11;                           // 未读数 max_seq - read_seq
+  bool muted = 12;                             // 免打扰
+  ImMessage last_message = 13;                 // 最后一条消息,空会话为空
+}
+
+// OpenConversationReq 打开或创建单聊会话
+message OpenConversationReq {
+  int64 user_id = 1;       // 当前用户 ID
+  int64 peer_user_id = 2;  // 对方用户 ID
+}
+
+// OpenConversationRes 打开或创建单聊会话响应
+message OpenConversationRes {
+  int64 conversation_id = 1; // 会话 ID
+  int64 max_seq = 2;         // 会话最大序号
+  int64 read_seq = 3;        // 当前用户已读水位
+  int64 min_seq = 4;         // 当前用户可见起点
+}
+
+// ListConversationsReq 会话列表请求
+message ListConversationsReq {
+  int64 user_id = 1;              // 当前用户 ID
+  int64 cursor_last_msg_at = 2;   // 游标时间毫秒,0 表示首页
+  int64 cursor_id = 3;            // 游标会话 ID,0 表示首页
+  uint32 page_size = 4;           // 每页条数
+}
+
+// ListConversationsRes 会话列表响应
+message ListConversationsRes {
+  repeated ConversationItem items = 1;  // 会话列表
+  int64 next_cursor_last_msg_at = 2;    // 下一页游标时间毫秒
+  int64 next_cursor_id = 3;             // 下一页游标会话 ID
+  bool has_more = 4;                    // 是否还有下一页
+}
+
+// MarkReadReq 上报已读水位
+message MarkReadReq {
+  int64 user_id = 1;        // 当前用户 ID
+  int64 conversation_id = 2; // 会话 ID
+  int64 read_seq = 3;       // 已读到的序号
+}
+
+// SendMessageReq 发送消息
+message SendMessageReq {
+  int64 user_id = 1;                 // 发送者用户 ID
+  int64 conversation_id = 2;         // 会话 ID
+  string client_msg_id = 3;          // 客户端消息唯一标识
+  MessageContentType content_type = 4; // 内容类型
+  string content = 5;                // 消息内容
+}
+
+// SendMessageRes 发送消息响应
+message SendMessageRes {
+  int64 message_id = 1;               // 消息 ID
+  int64 seq = 2;                      // 会话内序号
+  google.protobuf.Timestamp send_time = 3; // 服务端发送时间
+}
+
+// PullMessagesReq 按序号区间拉取消息
+message PullMessagesReq {
+  int64 user_id = 1;        // 当前用户 ID
+  int64 conversation_id = 2; // 会话 ID
+  int64 seq_begin = 3;      // 起始序号,开区间
+  int64 seq_end = 4;        // 结束序号,闭区间
+}
+
+// PullMessagesRes 拉取消息响应
+message PullMessagesRes {
+  repeated ImMessage items = 1; // 序号升序消息列表
+}
+
+
+// RevokeMessageReq 撤回消息
+message RevokeMessageReq {
+  int64 user_id = 1;        // 操作人用户ID
+  int64 conversation_id = 2; // 会话 ID
+  int64 seq = 3;            // 要撤回的消息序号
+}
+
+// GroupMember 群成员
+message GroupMember {
+  int64 user_id = 1;                      // 成员用户 ID
+  google.protobuf.Timestamp joined_at = 2; // 入群时间
+  bool muted = 3;                         // 免打扰
+}
+
+// CreateGroupReq 创建群
+message CreateGroupReq {
+  int64 user_id = 1;             // 群主用户 ID
+  string name = 2;               // 群名称
+  string avatar = 3;             // 群头像
+  repeated int64 member_ids = 4; // 初始成员,群主自动加入
+}
+
+// CreateGroupRes 创建群响应
+message CreateGroupRes {
+  int64 group_id = 1;        // 群ID
+  int64 conversation_id = 2; // 会话 ID
+}
+
+// InviteGroupMembersReq 邀请成员入群
+message InviteGroupMembersReq {
+  int64 user_id = 1;             // 操作人,仅群主可邀请
+  int64 group_id = 2;            // 群ID
+  repeated int64 member_ids = 3; // 待邀请用户 ID
+}
+
+// QuitGroupReq 退出群聊
+message QuitGroupReq {
+  int64 user_id = 1; // 操作人用户ID
+  int64 group_id = 2; // 群ID
+}
+
+// GetGroupInfoReq 群信息
+message GetGroupInfoReq {
+  int64 user_id = 1; // 操作人用户ID
+  int64 group_id = 2; // 群ID
+}
+
+// GetGroupInfoRes 群信息响应
+message GetGroupInfoRes {
+  int64 group_id = 1;        // 群ID
+  string name = 2;           // 群名称
+  string avatar = 3;         // 群头像
+  int64 owner_id = 4;        // 群主用户 ID
+  int32 member_count = 5;    // 当前成员数
+  ranfeed.commonpb.EnumValue status = 6; // 群状态
+  repeated GroupMember members = 7; // 活跃成员列表
+}
+
+service ConversationService {
+  rpc OpenConversation(OpenConversationReq) returns (OpenConversationRes);
+  rpc ListConversations(ListConversationsReq) returns (ListConversationsRes);
+  rpc MarkRead(MarkReadReq) returns (google.protobuf.Empty);
+}
+
+service MessageService {
+  rpc SendMessage(SendMessageReq) returns (SendMessageRes);
+  rpc PullMessages(PullMessagesReq) returns (PullMessagesRes);
+  rpc RevokeMessage(RevokeMessageReq) returns (google.protobuf.Empty);
+}
+
+service GroupService {
+  rpc CreateGroup(CreateGroupReq) returns (CreateGroupRes);
+  rpc InviteGroupMembers(InviteGroupMembersReq) returns (google.protobuf.Empty);
+  rpc QuitGroup(QuitGroupReq) returns (google.protobuf.Empty);
+  rpc GetGroupInfo(GetGroupInfoReq) returns (GetGroupInfoRes);
+}

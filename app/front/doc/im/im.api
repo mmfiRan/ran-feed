@@ -1,0 +1,223 @@
+syntax = "v1"
+
+import "../base/base.api"
+
+type (
+	IMUserBrief {
+		UserId   int64  `json:"user_id,string"`
+		Nickname string `json:"nickname"`
+		Avatar   string `json:"avatar"`
+	}
+	IMGroupBrief {
+		GroupId int64     `json:"group_id,string"`
+		Name    string    `json:"name"`
+		Avatar  string    `json:"avatar"`
+		Status  EnumValue `json:"status"`
+	}
+	IMMessagePreview {
+		MessageId   int64     `json:"message_id,string"`
+		Seq         int64     `json:"seq,string"`
+		SenderId    int64     `json:"sender_id,string"`
+		ContentType EnumValue `json:"content_type"`
+		Content     string    `json:"content"`
+		Status      EnumValue `json:"status"`
+		SendTime    int64     `json:"send_time"`
+	}
+	IMConversationItem {
+		ConversationId int64             `json:"conversation_id,string"`
+		ConvType       EnumValue         `json:"conv_type"`
+		Peer           *IMUserBrief      `json:"peer,optional"`
+		Group          *IMGroupBrief     `json:"group,optional"`
+		MaxSeq         int64             `json:"max_seq,string"`
+		ReadSeq        int64             `json:"read_seq,string"`
+		MinSeq         int64             `json:"min_seq,string"`
+		Unread         int64             `json:"unread"`
+		Muted          bool              `json:"muted"`
+		LastMessage    *IMMessagePreview `json:"last_message,optional"`
+	}
+	OpenIMConversationReq {
+		PeerUserId int64 `json:"peer_user_id,string" validate:"required,gt=0"`
+	}
+	OpenIMConversationRes {
+		ConversationId int64 `json:"conversation_id,string"`
+		MaxSeq         int64 `json:"max_seq,string"`
+		ReadSeq        int64 `json:"read_seq,string"`
+		MinSeq         int64 `json:"min_seq,string"`
+	}
+	IMConversationListReq {
+		Cursor   string `form:"cursor,optional"`
+		PageSize uint32 `form:"page_size,optional,default=20"`
+	}
+	IMConversationListRes {
+		List    []IMConversationItem `json:"list"`
+		Cursor  string               `json:"cursor"`
+		HasMore bool                 `json:"has_more"`
+	}
+	IMSendMessageReq {
+		ConversationId int64  `json:"conversation_id,string" validate:"required,gt=0"`
+		ClientMsgId    string `json:"client_msg_id" validate:"required,max=64"`
+		ContentType    int32  `json:"content_type" validate:"required,oneof=10 20 30"`
+		Content        string `json:"content" validate:"required,max=4096"`
+	}
+	IMSendMessageRes {
+		MessageId int64 `json:"message_id,string"`
+		Seq       int64 `json:"seq,string"`
+		SendTime  int64 `json:"send_time"`
+	}
+	IMPullMessagesReq {
+		ConversationId int64  `form:"conversation_id" validate:"required,gt=0"`
+		SeqBegin       *int64 `form:"seq_begin,optional" validate:"omitempty,gte=0"`
+		SeqEnd         int64  `form:"seq_end" validate:"required,gt=0"`
+	}
+	IMPullMessagesRes {
+		List []IMMessagePreview `json:"list"`
+	}
+	IMMarkReadReq {
+		ConversationId int64 `json:"conversation_id,string" validate:"required,gt=0"`
+		ReadSeq        int64 `json:"read_seq,string" validate:"required,gt=0"`
+	}
+	IMMarkReadRes {
+	}
+	IMStreamReq {
+	}
+	IMGroupMember {
+		UserId   int64  `json:"user_id,string"`
+		Nickname string `json:"nickname"`
+		Avatar   string `json:"avatar"`
+		Muted    bool   `json:"muted"`
+		JoinedAt int64  `json:"joined_at"`
+	}
+	IMCreateGroupReq {
+		Name      string   `json:"name" validate:"required,max=64"`
+		Avatar    string   `json:"avatar,optional" validate:"max=512"`
+		MemberIds []string `json:"member_ids,optional"`
+	}
+	IMCreateGroupRes {
+		GroupId        int64 `json:"group_id,string"`
+		ConversationId int64 `json:"conversation_id,string"`
+	}
+	IMInviteGroupMembersReq {
+		GroupId   int64    `json:"group_id,string" validate:"required,gt=0"`
+		MemberIds []string `json:"member_ids" validate:"required,min=1"`
+	}
+	IMInviteGroupMembersRes {
+	}
+	IMQuitGroupReq {
+		GroupId int64 `json:"group_id,string" validate:"required,gt=0"`
+	}
+	IMQuitGroupRes {
+	}
+	IMGetGroupInfoReq {
+		GroupId int64 `form:"group_id" validate:"required,gt=0"`
+	}
+	IMGetGroupInfoRes {
+		GroupId     int64           `json:"group_id,string"`
+		Name        string          `json:"name"`
+		Avatar      string          `json:"avatar"`
+		OwnerId     int64           `json:"owner_id,string"`
+		MemberCount int32           `json:"member_count"`
+		Status      EnumValue       `json:"status"`
+		Members     []IMGroupMember `json:"members"`
+	}
+	IMRevokeMessageReq {
+		ConversationId int64 `json:"conversation_id,string" validate:"required,gt=0"`
+		Seq            int64 `json:"seq,string" validate:"required,gt=0"`
+	}
+	IMRevokeMessageRes {
+	}
+	// SSE 实时帧 connected/heartbeat/message/revoke 按 type 分派
+	IMStreamRes {
+		Type           string  `json:"type"`
+		ConversationId *int64  `json:"conversation_id,string,optional"`
+		MessageId      *int64  `json:"message_id,string,optional"`
+		Seq            *int64  `json:"seq,string,optional"`
+		SenderId       *int64  `json:"sender_id,string,optional"`
+		ContentType    *int32  `json:"content_type,optional"`
+		Content        *string `json:"content,optional"`
+		SendTime       *int64  `json:"send_time,optional"`
+	}
+)
+
+@server (
+	tags:       im
+	group:      im
+	prefix:     /v1/im
+	middleware: UserLoginStatusAuthMiddleware
+)
+service front-api {
+	@doc (
+		description: "打开或创建单聊会话 幂等"
+	)
+	@handler OpenIMConversation
+	post /conversation/open (OpenIMConversationReq) returns (OpenIMConversationRes)
+
+	@doc (
+		description: "会话列表 含未读数与最后一条消息预览"
+	)
+	@handler ListIMConversations
+	get /conversation/list (IMConversationListReq) returns (IMConversationListRes)
+
+	@doc (
+		description: "上报已读水位 只增不减"
+	)
+	@handler MarkIMRead
+	post /conversation/read (IMMarkReadReq) returns (IMMarkReadRes)
+
+	@doc (
+		description: "发送消息 同步返回会话内 seq"
+	)
+	@handler SendIMMessage
+	post /message/send (IMSendMessageReq) returns (IMSendMessageRes)
+
+	@doc (
+		description: "按 seq 区间拉取消息 用于首屏与空洞补齐"
+	)
+	@handler PullIMMessages
+	get /message/pull (IMPullMessagesReq) returns (IMPullMessagesRes)
+
+	@doc (
+		description: "撤回本人发送的消息 超时返回 100302"
+	)
+	@handler RevokeIMMessage
+	post /message/revoke (IMRevokeMessageReq) returns (IMRevokeMessageRes)
+
+	@doc (
+		description: "创建群 创建者为群主"
+	)
+	@handler CreateIMGroup
+	post /group/create (IMCreateGroupReq) returns (IMCreateGroupRes)
+
+	@doc (
+		description: "邀请成员入群 仅群主可操作"
+	)
+	@handler InviteIMGroupMembers
+	post /group/invite (IMInviteGroupMembersReq) returns (IMInviteGroupMembersRes)
+
+	@doc (
+		description: "退出群聊 群主退群即解散"
+	)
+	@handler QuitIMGroup
+	post /group/quit (IMQuitGroupReq) returns (IMQuitGroupRes)
+
+	@doc (
+		description: "群信息与成员列表"
+	)
+	@handler GetIMGroupInfo
+	get /group/info (IMGetGroupInfoReq) returns (IMGetGroupInfoRes)
+}
+
+// SSE 通道单独一个 @server 段 sse: true 会给整段路由挂 rest.WithSSE()
+@server (
+	tags:       im
+	group:      im
+	prefix:     /v1/im
+	middleware: UserLoginStatusAuthMiddleware
+	sse:        true
+)
+service front-api {
+	@doc (
+		description: "IM 实时消息流 推送消息明细 客户端按 seq 检测空洞并补拉"
+	)
+	@handler StreamIM
+	get /stream (IMStreamReq) returns (IMStreamRes)
+}

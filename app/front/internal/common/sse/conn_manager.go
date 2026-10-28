@@ -1,12 +1,12 @@
-// Package sse 通知系统实时层,进程内 ConnManager 单例 + Redis Pub/Sub 扇入
-// 语义(N7):
-//   - 只推信号不推明细,收到即回拉/list 保证漏推被下次拉取纠正
+// Package sse 实时下行层,进程内 ConnManager + Redis Pub/Sub 扇入
+// 通知流只推信号不推明细,IM 流推消息明细,两者各自一个 ConnManager 实例
 //   - 每个 SSE 连接一个缓冲 send channel 慢连接直接丢帧(drop) 不阻塞广播
 //   - 多标签页多设备场景:同一 userId 可有多个 conn 逐 conn 推
 package sse
 
 import (
 	"sync"
+	"time"
 )
 
 // Conn 表示一路 SSE 长连接,由 handler 侧构造,传给 ConnManager
@@ -21,6 +21,9 @@ type Conn struct {
 
 // DefaultSendBuffer 单 conn 缓冲长度 8 = 短时 8 个 push 都不丢
 const DefaultSendBuffer = 8
+
+// HeartbeatInterval SSE 心跳间隔,定期发帧探活并防代理层因空闲断连
+const HeartbeatInterval = 15 * time.Second
 
 // NewConn 建 send 缓冲 conn done 由外部传入(通常 r.Context().Done())
 func NewConn(done <-chan struct{}) *Conn {

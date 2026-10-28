@@ -19,7 +19,9 @@ import (
 	contentenums "ran-feed/pkg/enums/content"
 	"ran-feed/pkg/event/canal"
 	"ran-feed/pkg/event/contentevent"
+	"ran-feed/pkg/event/notificationevent"
 	"ran-feed/pkg/event/pipeline"
+	"ran-feed/pkg/rediskey"
 )
 
 const (
@@ -105,11 +107,11 @@ func (c *ContentReviewConsumer) pushUnread(ctx context.Context, repo repositorie
 		c.Errorf("审核通知查未读数失败 recipientID=%d err=%v", recipientID, err)
 		return
 	}
-	payload, err := json.Marshal(notifyPushPayload{RecipientID: recipientID, Unread: unread})
+	payload, err := json.Marshal(notificationevent.Payload{RecipientID: recipientID, Unread: unread})
 	if err != nil {
 		return
 	}
-	if _, err := c.svcContext.Redis.PublishCtx(ctx, notifyPushChannel, string(payload)); err != nil {
+	if _, err := c.svcContext.Redis.PublishCtx(ctx, rediskey.NotifyPushChannel, string(payload)); err != nil {
 		c.Errorf("审核通知推送失败 recipientID=%d err=%v", recipientID, err)
 	}
 }

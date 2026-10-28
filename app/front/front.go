@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"ran-feed/pkg/envx"
+	"ran-feed/pkg/rediskey"
 	"ran-feed/pkg/result"
 	"ran-feed/pkg/validate"
 
@@ -37,11 +38,12 @@ func main() {
 	ctx := svc.NewServiceContext(c)
 	handler.RegisterHandlers(server, ctx)
 
-	// 启动 Redis Pub/Sub 订阅,分发 notify:push 到 ConnManager
-	// SSE 路由与 rest.WithSSE() 由 notification.api 声明 goctl 生成到 routes.go
+	// 启动 Redis Pub/Sub 订阅,通知信号分发到 NotifyConnManager
+	// SSE 路由与 rest.WithSSE() 由 .api 声明 goctl 生成到 routes.go
 	pubsubCtx, cancelPubSub := context.WithCancel(context.Background())
 	defer cancelPubSub()
-	sse.NewPubSub(c.RedisConfig, ctx.NotifyConnManager).Start(pubsubCtx)
+	sse.NewPubSub(c.RedisConfig, rediskey.NotifyPushChannel, ctx.NotifyConnManager, sse.NotifyTransformer).Start(pubsubCtx)
+	sse.NewPubSub(c.RedisConfig, rediskey.IMPushChannel, ctx.IMConnManager, sse.IMTransformer).Start(pubsubCtx)
 
 	validator, err := validate.NewCustomValidator()
 	if err != nil {

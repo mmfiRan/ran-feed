@@ -4,6 +4,10 @@ package rediskey
 import "strconv"
 
 const (
+	// NotifyPushChannel 通知实时信号 channel,notification-rpc 发布 / front-api 订阅
+	NotifyPushChannel = "notify:push"
+	// IMPushChannel IM 消息实时下行 channel,im-rpc 发布 / front-api 订阅
+	IMPushChannel = "im:push"
 	// FeedBigVGlobal 全局大V集合
 	FeedBigVGlobal = "feed:bigv:global"
 	// FeedBigVGlobalRebuild 大V集合周期重建临时 key 建好后 RENAME 原子换到正式 key

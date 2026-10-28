@@ -1212,6 +1212,881 @@
         }
       }
     },
+    "/v1/im/conversation/list": {
+      "get": {
+        "description": "会话列表 含未读数与最后一条消息预览",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "ListIMConversations",
+        "operationId": "imListIMConversations",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "cursor",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "default": 20,
+            "example": 20,
+            "name": "page_size",
+            "in": "query",
+            "allowEmptyValue": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cursor": {
+                  "type": "string"
+                },
+                "has_more": {
+                  "type": "boolean"
+                },
+                "list": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "conversation_id",
+                      "conv_type",
+                      "max_seq",
+                      "read_seq",
+                      "min_seq",
+                      "unread",
+                      "muted"
+                    ],
+                    "properties": {
+                      "conv_type": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "conversation_id": {
+                        "type": "integer"
+                      },
+                      "group": {
+                        "type": "object",
+                        "required": [
+                          "group_id",
+                          "name",
+                          "avatar",
+                          "status"
+                        ],
+                        "properties": {
+                          "avatar": {
+                            "type": "string"
+                          },
+                          "group_id": {
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "object",
+                            "required": [
+                              "code",
+                              "name",
+                              "message"
+                            ],
+                            "properties": {
+                              "code": {
+                                "type": "integer"
+                              },
+                              "message": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "last_message": {
+                        "type": "object",
+                        "required": [
+                          "message_id",
+                          "seq",
+                          "sender_id",
+                          "content_type",
+                          "content",
+                          "status",
+                          "send_time"
+                        ],
+                        "properties": {
+                          "content": {
+                            "type": "string"
+                          },
+                          "content_type": {
+                            "type": "object",
+                            "required": [
+                              "code",
+                              "name",
+                              "message"
+                            ],
+                            "properties": {
+                              "code": {
+                                "type": "integer"
+                              },
+                              "message": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "message_id": {
+                            "type": "integer"
+                          },
+                          "send_time": {
+                            "type": "integer"
+                          },
+                          "sender_id": {
+                            "type": "integer"
+                          },
+                          "seq": {
+                            "type": "integer"
+                          },
+                          "status": {
+                            "type": "object",
+                            "required": [
+                              "code",
+                              "name",
+                              "message"
+                            ],
+                            "properties": {
+                              "code": {
+                                "type": "integer"
+                              },
+                              "message": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "max_seq": {
+                        "type": "integer"
+                      },
+                      "min_seq": {
+                        "type": "integer"
+                      },
+                      "muted": {
+                        "type": "boolean"
+                      },
+                      "peer": {
+                        "type": "object",
+                        "required": [
+                          "user_id",
+                          "nickname",
+                          "avatar"
+                        ],
+                        "properties": {
+                          "avatar": {
+                            "type": "string"
+                          },
+                          "nickname": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "read_seq": {
+                        "type": "integer"
+                      },
+                      "unread": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/im/conversation/open": {
+      "post": {
+        "description": "打开或创建单聊会话 幂等",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "OpenIMConversation",
+        "operationId": "imOpenIMConversation",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "peer_user_id"
+              ],
+              "properties": {
+                "peer_user_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "conversation_id": {
+                  "type": "integer"
+                },
+                "max_seq": {
+                  "type": "integer"
+                },
+                "min_seq": {
+                  "type": "integer"
+                },
+                "read_seq": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/im/conversation/read": {
+      "post": {
+        "description": "上报已读水位 只增不减",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "MarkIMRead",
+        "operationId": "imMarkIMRead",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "conversation_id",
+                "read_seq"
+              ],
+              "properties": {
+                "conversation_id": {
+                  "type": "integer"
+                },
+                "read_seq": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/im/group/create": {
+      "post": {
+        "description": "创建群 创建者为群主",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "CreateIMGroup",
+        "operationId": "imCreateIMGroup",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "avatar": {
+                  "type": "string"
+                },
+                "member_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "conversation_id": {
+                  "type": "integer"
+                },
+                "group_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/im/group/info": {
+      "get": {
+        "description": "群信息与成员列表",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "GetIMGroupInfo",
+        "operationId": "imGetIMGroupInfo",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "group_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "avatar": {
+                  "type": "string"
+                },
+                "group_id": {
+                  "type": "integer"
+                },
+                "member_count": {
+                  "type": "integer"
+                },
+                "members": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "user_id",
+                      "nickname",
+                      "avatar",
+                      "muted",
+                      "joined_at"
+                    ],
+                    "properties": {
+                      "avatar": {
+                        "type": "string"
+                      },
+                      "joined_at": {
+                        "type": "integer"
+                      },
+                      "muted": {
+                        "type": "boolean"
+                      },
+                      "nickname": {
+                        "type": "string"
+                      },
+                      "user_id": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                },
+                "name": {
+                  "type": "string"
+                },
+                "owner_id": {
+                  "type": "integer"
+                },
+                "status": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "name",
+                    "message"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/im/group/invite": {
+      "post": {
+        "description": "邀请成员入群 仅群主可操作",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "InviteIMGroupMembers",
+        "operationId": "imInviteIMGroupMembers",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "group_id",
+                "member_ids"
+              ],
+              "properties": {
+                "group_id": {
+                  "type": "integer"
+                },
+                "member_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/im/group/quit": {
+      "post": {
+        "description": "退出群聊 群主退群即解散",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "QuitIMGroup",
+        "operationId": "imQuitIMGroup",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "group_id"
+              ],
+              "properties": {
+                "group_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/im/message/pull": {
+      "get": {
+        "description": "按 seq 区间拉取消息 用于首屏与空洞补齐",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "PullIMMessages",
+        "operationId": "imPullIMMessages",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "conversation_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "name": "seq_begin",
+            "in": "query",
+            "allowEmptyValue": true
+          },
+          {
+            "type": "integer",
+            "name": "seq_end",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "list": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "message_id",
+                      "seq",
+                      "sender_id",
+                      "content_type",
+                      "content",
+                      "status",
+                      "send_time"
+                    ],
+                    "properties": {
+                      "content": {
+                        "type": "string"
+                      },
+                      "content_type": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "message_id": {
+                        "type": "integer"
+                      },
+                      "send_time": {
+                        "type": "integer"
+                      },
+                      "sender_id": {
+                        "type": "integer"
+                      },
+                      "seq": {
+                        "type": "integer"
+                      },
+                      "status": {
+                        "type": "object",
+                        "required": [
+                          "code",
+                          "name",
+                          "message"
+                        ],
+                        "properties": {
+                          "code": {
+                            "type": "integer"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/im/message/revoke": {
+      "post": {
+        "description": "撤回本人发送的消息 超时返回 100302",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "RevokeIMMessage",
+        "operationId": "imRevokeIMMessage",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "conversation_id",
+                "seq"
+              ],
+              "properties": {
+                "conversation_id": {
+                  "type": "integer"
+                },
+                "seq": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/im/message/send": {
+      "post": {
+        "description": "发送消息 同步返回会话内 seq",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "SendIMMessage",
+        "operationId": "imSendIMMessage",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": [
+                "conversation_id",
+                "client_msg_id",
+                "content_type",
+                "content"
+              ],
+              "properties": {
+                "client_msg_id": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                },
+                "content_type": {
+                  "type": "integer"
+                },
+                "conversation_id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message_id": {
+                  "type": "integer"
+                },
+                "send_time": {
+                  "type": "integer"
+                },
+                "seq": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/im/stream": {
+      "get": {
+        "description": "IM 实时消息流 推送消息明细 客户端按 seq 检测空洞并补拉",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "https"
+        ],
+        "tags": [
+          "im"
+        ],
+        "summary": "StreamIM",
+        "operationId": "imStreamIM",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "content": {
+                  "type": "string"
+                },
+                "content_type": {
+                  "type": "integer"
+                },
+                "conversation_id": {
+                  "type": "integer"
+                },
+                "message_id": {
+                  "type": "integer"
+                },
+                "send_time": {
+                  "type": "integer"
+                },
+                "sender_id": {
+                  "type": "integer"
+                },
+                "seq": {
+                  "type": "integer"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/interaction/comment": {
       "post": {
         "description": "评论",
@@ -3098,7 +3973,7 @@
       }
     }
   },
-  "x-date": "2026-10-09 15:25:18",
+  "x-date": "2026-10-28 15:50:08",
   "x-description": "This is a goctl generated swagger file.",
   "x-github": "https://github.com/zeromicro/go-zero",
   "x-go-zero-doc": "https://go-zero.dev/",

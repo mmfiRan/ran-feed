@@ -15,6 +15,9 @@ import (
 	"ran-feed/app/rpc/content/client/contentservice"
 	"ran-feed/app/rpc/content/client/feedservice"
 	"ran-feed/app/rpc/count/client/counterservice"
+	"ran-feed/app/rpc/im/client/conversationservice"
+	"ran-feed/app/rpc/im/client/groupservice"
+	"ran-feed/app/rpc/im/client/messageservice"
 	"ran-feed/app/rpc/interaction/client/commentservice"
 	"ran-feed/app/rpc/interaction/client/favoriteservice"
 	"ran-feed/app/rpc/interaction/client/followservice"
@@ -44,7 +47,11 @@ type ServiceContext struct {
 	CountRpc                      counterservice.CounterService
 	SearchRpc                     searchservice.SearchService
 	NotificationRpc               notificationservice.NotificationService
+	ImConversationRpc             conversationservice.ConversationService
+	ImMessageRpc                  messageservice.MessageService
+	ImGroupRpc                    groupservice.GroupService
 	NotifyConnManager             *sse.ConnManager
+	IMConnManager                 *sse.ConnManager
 	OssContext                    *oss.Context
 }
 
@@ -89,6 +96,18 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		c.NotificationRpcClientConf,
 		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
 	))
+	imConversationRpc := conversationservice.NewConversationService(zrpc.MustNewClient(
+		c.ImRpcClientConf,
+		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
+	))
+	imMessageRpc := messageservice.NewMessageService(zrpc.MustNewClient(
+		c.ImRpcClientConf,
+		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
+	))
+	imGroupRpc := groupservice.NewGroupService(zrpc.MustNewClient(
+		c.ImRpcClientConf,
+		zrpc.WithUnaryClientInterceptor(interceptor.ClientGrpcInterceptor()),
+	))
 
 	provider := strings.TrimSpace(c.Oss.Provider)
 	if provider == "" {
@@ -121,7 +140,11 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		CountRpc:                      countRpc,
 		SearchRpc:                     searchRpc,
 		NotificationRpc:               notificationRpc,
+		ImConversationRpc:             imConversationRpc,
+		ImMessageRpc:                  imMessageRpc,
+		ImGroupRpc:                    imGroupRpc,
 		NotifyConnManager:             sse.NewConnManager(),
+		IMConnManager:                 sse.NewConnManager(),
 		OssContext:                    ossContext,
 		Redis:                         r,
 		UserLoginStatusAuthMiddleware: middleware.NewUserLoginStatusAuthMiddleware(r, c).Handle,

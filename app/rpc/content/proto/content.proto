@@ -48,6 +48,8 @@ enum UploadScene {
   UPLOAD_SCENE_ARTICLE_COVER = 1;  // 文章封面
   UPLOAD_SCENE_VIDEO = 2;          // 视频
   UPLOAD_SCENE_AVATAR = 3;         // 头像
+  UPLOAD_SCENE_IM_IMAGE = 4;       // IM 图片
+  UPLOAD_SCENE_IM_VIDEO = 5;       // IM 视频
 }
 
 // 上传文件扩展名枚举

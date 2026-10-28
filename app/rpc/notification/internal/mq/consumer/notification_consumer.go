@@ -16,23 +16,18 @@ import (
 	"ran-feed/app/rpc/notification/internal/repositories"
 	"ran-feed/app/rpc/notification/internal/svc"
 	"ran-feed/pkg/event/canal"
+	"ran-feed/pkg/event/notificationevent"
 	"ran-feed/pkg/event/pipeline"
+	"ran-feed/pkg/rediskey"
 
 	// 空导入触发各表策略 init 注册
 	_ "ran-feed/app/rpc/notification/internal/mq/consumer/strategy/presence"
 )
 
 const (
-	consumerName      = "notification.canal_consumer"
-	dispatchTimeout   = 5 * time.Second
-	notifyPushChannel = "notify:push"
+	consumerName    = "notification.canal_consumer"
+	dispatchTimeout = 5 * time.Second
 )
-
-// notifyPushPayload dispatch → SSE 层的信号消息,与 front sse.PubSubMessage 对齐
-type notifyPushPayload struct {
-	RecipientID int64 `json:"recipient_id"`
-	Unread      int64 `json:"unread"`
-}
 
 // CanalNotificationConsumer 五步管道,解析 → strategy 路由 → 每行 rowEventID dedup 与落库同事务 → 事务外 dispatch(桩)
 type CanalNotificationConsumer struct {
@@ -156,13 +151,13 @@ func (c *CanalNotificationConsumer) dispatch(recipients map[int64]struct{}) {
 				logc.Errorf(bg, "dispatch CountUnread 失败 recipient=%d err=%v", recipient, err)
 				continue
 			}
-			payload, mErr := json.Marshal(notifyPushPayload{RecipientID: recipient, Unread: unread})
+			payload, mErr := json.Marshal(notificationevent.Payload{RecipientID: recipient, Unread: unread})
 			if mErr != nil {
 				logc.Errorf(bg, "dispatch payload 序列化失败 recipient=%d err=%v", recipient, mErr)
 				continue
 			}
-			if _, pErr := c.svcContext.Redis.PublishCtx(bg, notifyPushChannel, payload); pErr != nil {
-				logc.Errorf(bg, "dispatch PUBLISH 失败 channel=%s recipient=%d err=%v", notifyPushChannel, recipient, pErr)
+			if _, pErr := c.svcContext.Redis.PublishCtx(bg, rediskey.NotifyPushChannel, payload); pErr != nil {
+				logc.Errorf(bg, "dispatch PUBLISH 失败 channel=%s recipient=%d err=%v", rediskey.NotifyPushChannel, recipient, pErr)
 			}
 		}
 	})

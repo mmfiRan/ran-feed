@@ -8,6 +8,7 @@ import (
 
 	content "ran-feed/app/front/internal/handler/content"
 	feed "ran-feed/app/front/internal/handler/feed"
+	im "ran-feed/app/front/internal/handler/im"
 	interaction "ran-feed/app/front/internal/handler/interaction"
 	notification "ran-feed/app/front/internal/handler/notification"
 	search "ran-feed/app/front/internal/handler/search"
@@ -108,6 +109,80 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			}...,
 		),
 		rest.WithPrefix("/v1/feed"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.UserLoginStatusAuthMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/conversation/list",
+					Handler: im.ListIMConversationsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/conversation/open",
+					Handler: im.OpenIMConversationHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/conversation/read",
+					Handler: im.MarkIMReadHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/group/create",
+					Handler: im.CreateIMGroupHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/group/info",
+					Handler: im.GetIMGroupInfoHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/group/invite",
+					Handler: im.InviteIMGroupMembersHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/group/quit",
+					Handler: im.QuitIMGroupHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/message/pull",
+					Handler: im.PullIMMessagesHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/message/revoke",
+					Handler: im.RevokeIMMessageHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/message/send",
+					Handler: im.SendIMMessageHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/im"),
+	)
+
+	server.AddRoutes(
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.UserLoginStatusAuthMiddleware},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/stream",
+					Handler: im.StreamIMHandler(serverCtx),
+				},
+			}...,
+		),
+		rest.WithPrefix("/v1/im"),
+		rest.WithSSE(),
 	)
 
 	server.AddRoutes(

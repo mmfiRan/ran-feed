@@ -81,6 +81,13 @@ NotificationRpcClientConf:
     Key: notification.rpc
   NonBlock: true
 
+ImRpcClientConf:
+  Etcd:
+    Hosts:
+      - ${ETCD_HOST}:2379
+    Key: im.rpc
+  NonBlock: true
+
 Oss:
   Provider: ${OSS_PROVIDER}
   Region: ${OSS_REGION}

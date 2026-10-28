@@ -1,11 +1,19 @@
 package sse
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
+	"time"
 
+	"github.com/alicebob/miniredis/v2"
+	red "github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/zeromicro/go-zero/core/stores/redis"
+
+	"ran-feed/pkg/event/notificationevent"
+	"ran-feed/pkg/rediskey"
 )
 
 func TestConnManager_AddRemove(t *testing.T) {
@@ -144,7 +152,7 @@ func TestDecodePayload(t *testing.T) {
 }
 
 func TestEncodeMessage(t *testing.T) {
-	raw, err := EncodeMessage(PubSubMessage{RecipientID: 1, Unread: 7})
+	raw, err := EncodeMessage(notificationevent.Payload{RecipientID: 1, Unread: 7})
 	require.NoError(t, err)
 	var frame SSEFrame
 	require.NoError(t, json.Unmarshal(raw, &frame))
@@ -159,4 +167,119 @@ func TestTruncate(t *testing.T) {
 	assert.Equal(t, "abcde", truncate([]byte("abcde"), 5))
 	got := truncate([]byte("abcdefghij"), 3)
 	assert.Equal(t, "abc...(7 more bytes)", got)
+}
+
+func TestNotifyTransformer(t *testing.T) {
+	userIDs, frame, err := NotifyTransformer([]byte(`{"recipient_id":100,"unread":3}`))
+	require.NoError(t, err)
+	assert.Equal(t, []int64{100}, userIDs)
+
+	var f SSEFrame
+	require.NoError(t, json.Unmarshal(frame, &f))
+	assert.Equal(t, "notify", f.Type)
+	assert.Equal(t, int64(3), f.Unread)
+
+	_, _, err = NotifyTransformer([]byte("garbage"))
+	assert.Error(t, err)
+}
+
+func TestPubSubHandle(t *testing.T) {
+	m := NewConnManager()
+	done := make(chan struct{})
+	c1 := NewConn(done)
+	c2 := NewConn(done)
+	m.Add(100, c1)
+	m.Add(200, c2)
+	p := &PubSub{cm: m, tf: NotifyTransformer}
+
+	p.handle([]byte(`{"recipient_id":100,"unread":2}`))
+	select {
+	case got := <-c1.Send:
+		var f SSEFrame
+		require.NoError(t, json.Unmarshal(got, &f))
+		assert.Equal(t, int64(2), f.Unread)
+	default:
+		t.Fatal("期望 100 收到通知帧")
+	}
+
+	// 非法载荷丢弃,不 panic 也不投递
+	p.handle([]byte("garbage"))
+	assert.Equal(t, 0, len(c1.Send))
+	assert.Equal(t, 0, len(c2.Send))
+
+	// 多接收者逐用户投递
+	p.tf = func([]byte) ([]int64, []byte, error) {
+		return []int64{100, 200}, []byte("multi"), nil
+	}
+	p.handle([]byte("x"))
+	assert.Equal(t, "multi", string(<-c1.Send))
+	assert.Equal(t, "multi", string(<-c2.Send))
+
+	// 无接收者不投递
+	p.tf = func([]byte) ([]int64, []byte, error) {
+		return nil, []byte("none"), nil
+	}
+	p.handle([]byte("x"))
+	assert.Equal(t, 0, len(c1.Send))
+	assert.Equal(t, 0, len(c2.Send))
+}
+
+func TestPubSub_订阅投递(t *testing.T) {
+	mr := miniredis.RunT(t)
+
+	m := NewConnManager()
+	conn := NewConn(make(chan struct{}))
+	m.Add(100, conn)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
+	ps := NewPubSub(redis.RedisConf{Host: mr.Addr()}, rediskey.NotifyPushChannel, m, NotifyTransformer)
+	ps.Start(ctx)
+
+	pub := red.NewClient(&red.Options{Addr: mr.Addr()})
+	t.Cleanup(func() { _ = pub.Close() })
+
+	payload := `{"recipient_id":100,"unread":5}`
+	deadline := time.After(3 * time.Second)
+	tick := time.NewTicker(50 * time.Millisecond)
+	defer tick.Stop()
+	for {
+		select {
+		case <-deadline:
+			t.Fatal("3s 内未收到 SSE 帧")
+		case <-tick.C:
+			// 订阅建立是异步的,首帧到达前反复发布
+			require.NoError(t, pub.Publish(ctx, rediskey.NotifyPushChannel, payload).Err())
+		case got := <-conn.Send:
+			var f SSEFrame
+			require.NoError(t, json.Unmarshal(got, &f))
+			assert.Equal(t, "notify", f.Type)
+			assert.Equal(t, int64(5), f.Unread)
+			return
+		}
+	}
+}
+
+func TestIMTransformer(t *testing.T) {
+	raw := []byte(`{"user_ids":[100,200],"frame":{"type":"message","seq":"42"}}`)
+	userIDs, frame, err := IMTransformer(raw)
+	require.NoError(t, err)
+	assert.Equal(t, []int64{100, 200}, userIDs)
+
+	var f map[string]any
+	require.NoError(t, json.Unmarshal(frame, &f))
+	assert.Equal(t, "message", f["type"])
+	assert.Equal(t, "42", f["seq"])
+
+	for _, bad := range []string{
+		"",
+		"garbage",
+		`{"user_ids":[],"frame":{"type":"message"}}`,
+		`{"user_ids":[1],"frame":null}`,
+		`{"user_ids":[0,-1],"frame":{"type":"message"}}`,
+	} {
+		_, _, err := IMTransformer([]byte(bad))
+		assert.Error(t, err, bad)
+	}
 }

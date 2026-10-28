@@ -10,6 +10,8 @@ const (
 	UploadSceneArticleCover UploadSceneEnum = 1
 	UploadSceneVideo        UploadSceneEnum = 2
 	UploadSceneAvatar       UploadSceneEnum = 3
+	UploadSceneImImage      UploadSceneEnum = 4
+	UploadSceneImVideo      UploadSceneEnum = 5
 )
 
 var uploadSceneNames = map[UploadSceneEnum]string{
@@ -17,6 +19,8 @@ var uploadSceneNames = map[UploadSceneEnum]string{
 	UploadSceneArticleCover: "ARTICLE_COVER",
 	UploadSceneVideo:        "VIDEO",
 	UploadSceneAvatar:       "AVATAR",
+	UploadSceneImImage:      "IM_IMAGE",
+	UploadSceneImVideo:      "IM_VIDEO",
 }
 
 var uploadSceneMessages = map[UploadSceneEnum]string{
@@ -24,6 +28,8 @@ var uploadSceneMessages = map[UploadSceneEnum]string{
 	UploadSceneArticleCover: "文章封面",
 	UploadSceneVideo:        "视频",
 	UploadSceneAvatar:       "头像",
+	UploadSceneImImage:      "IM图片",
+	UploadSceneImVideo:      "IM视频",
 }
 
 func (s UploadSceneEnum) Int32() int32 {
@@ -58,6 +64,10 @@ func (s UploadSceneEnum) Path() string {
 		return "video"
 	case UploadSceneAvatar:
 		return "avatar"
+	case UploadSceneImImage:
+		return "im/image"
+	case UploadSceneImVideo:
+		return "im/video"
 	default:
 		return "unknown"
 	}

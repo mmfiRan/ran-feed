@@ -6,6 +6,7 @@ import "user/user.api"
 import "feed/feed.api"
 import "search/search.api"
 import "notification/notification.api"
+import "im/im.api"
 
 info (
 	title:        "ran-feed相关接口"

@@ -2,8 +2,6 @@ package sse
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -13,53 +11,22 @@ import (
 	"github.com/zeromicro/go-zero/core/threading"
 )
 
-// NotifyPushChannel 与 notification-rpc dispatch 侧对齐
-const NotifyPushChannel = "notify:push"
+// Transformer 把 pubsub 原始载荷转为目标用户与 SSE 帧字节
+// userIDs 为空表示无接收者,err 非空表示载荷非法由调用方丢弃并记日志
+type Transformer func(raw []byte) (userIDs []int64, frame []byte, err error)
 
-// PubSubMessage notify:push channel 的信号 payload 与 notification-rpc dispatch 侧对齐
-type PubSubMessage struct {
-	RecipientID int64 `json:"recipient_id"`
-	Unread      int64 `json:"unread"`
-}
-
-// SSEFrame 客户端事件帧,前端 EventSource 上按 type 分派
-// type=notify 表示未读数变更,收到即走 /list 回拉
-type SSEFrame struct {
-	Type   string `json:"type"`
-	Unread int64  `json:"unread"`
-}
-
-// EncodeMessage 把 pubsub 载荷 → SSE 帧序列化字节
-func EncodeMessage(msg PubSubMessage) ([]byte, error) {
-	return json.Marshal(SSEFrame{Type: "notify", Unread: msg.Unread})
-}
-
-// DecodePayload 解 pubsub 消息,空/非法 JSON/recipient<=0 返 error
-func DecodePayload(raw []byte) (PubSubMessage, error) {
-	if len(raw) == 0 {
-		return PubSubMessage{}, fmt.Errorf("空载荷")
-	}
-	var msg PubSubMessage
-	if err := json.Unmarshal(raw, &msg); err != nil {
-		return PubSubMessage{}, fmt.Errorf("解析 pubsub payload 失败: %w", err)
-	}
-	if msg.RecipientID <= 0 {
-		return PubSubMessage{}, fmt.Errorf("非法 recipient_id=%d", msg.RecipientID)
-	}
-	return msg, nil
-}
-
-// PubSub 独立 go-redis client 订阅 notify:push 分发到 ConnManager
-// 独立 client 是因为 go-zero core/stores/redis 未直接暴露 Subscribe 且订阅是长连接
-// 与业务命令池分开更清晰
+// PubSub 独立 go-redis client 订阅指定 channel 分发到 ConnManager
+// channel 与帧转换由构造参数注入,notification 与 im 各自一个实例
 type PubSub struct {
-	client *red.Client
-	cm     *ConnManager
+	client  *red.Client
+	channel string
+	cm      *ConnManager
+	tf      Transformer
 }
 
 // NewPubSub 用 front-api.yaml 的 RedisConfig 建独立 go-redis client
 // 目前仅支持 node 模式(与项目现有 RedisConfig 使用一致)
-func NewPubSub(conf redis.RedisConf, cm *ConnManager) *PubSub {
+func NewPubSub(conf redis.RedisConf, channel string, cm *ConnManager, tf Transformer) *PubSub {
 	dbNum := 0
 	client := red.NewClient(&red.Options{
 		Addr:     conf.Host,
@@ -67,7 +34,7 @@ func NewPubSub(conf redis.RedisConf, cm *ConnManager) *PubSub {
 		Password: conf.Pass,
 		DB:       dbNum,
 	})
-	return &PubSub{client: client, cm: cm}
+	return &PubSub{client: client, channel: channel, cm: cm, tf: tf}
 }
 
 // Start 起 goroutine 常驻订阅 ctx 取消则退出并关闭 client
@@ -100,11 +67,11 @@ func (p *PubSub) run(ctx context.Context) {
 }
 
 func (p *PubSub) consume(ctx context.Context) {
-	sub := p.client.Subscribe(ctx, NotifyPushChannel)
+	sub := p.client.Subscribe(ctx, p.channel)
 	defer func() { _ = sub.Close() }()
 
 	ch := sub.Channel()
-	logx.Infof("sse pubsub 订阅启动 channel=%s", NotifyPushChannel)
+	logx.Infof("sse pubsub 订阅启动 channel=%s", p.channel)
 
 	for {
 		select {
@@ -112,7 +79,7 @@ func (p *PubSub) consume(ctx context.Context) {
 			return
 		case m, ok := <-ch:
 			if !ok {
-				logx.Errorf("sse pubsub channel 关闭 触发重连")
+				logx.Errorf("sse pubsub channel 关闭 触发重连 channel=%s", p.channel)
 				return
 			}
 			p.handle([]byte(m.Payload))
@@ -121,23 +88,23 @@ func (p *PubSub) consume(ctx context.Context) {
 }
 
 func (p *PubSub) handle(payload []byte) {
-	msg, err := DecodePayload(payload)
+	userIDs, frame, err := p.tf(payload)
 	if err != nil {
-		logx.Errorf("sse pubsub 丢弃非法 payload err=%v raw=%s", err, truncate(payload, 128))
+		logx.Errorf("sse pubsub 丢弃非法 payload channel=%s err=%v raw=%s", p.channel, err, truncate(payload, 128))
 		return
 	}
-	frame, err := EncodeMessage(msg)
-	if err != nil {
-		logx.Errorf("sse pubsub 编码 frame 失败 err=%v recipient=%d", err, msg.RecipientID)
+	if len(userIDs) == 0 || len(frame) == 0 {
 		return
 	}
-	delivered, dropped := p.cm.Broadcast(msg.RecipientID, frame)
-	if delivered == 0 && dropped == 0 {
-		// 本 pod 未持有该 user 属正常情况(多 pod 每 pod 都收到 pubsub 但只有对应实例响应)
-		return
-	}
-	if dropped > 0 {
-		logx.Infof("sse broadcast recipient=%d delivered=%d dropped=%d(慢连接)", msg.RecipientID, delivered, dropped)
+	for _, userID := range userIDs {
+		delivered, dropped := p.cm.Broadcast(userID, frame)
+		if delivered == 0 && dropped == 0 {
+			// 本 pod 未持有该 user 属正常情况(多 pod 每 pod 都收到 pubsub 但只有对应实例响应)
+			continue
+		}
+		if dropped > 0 {
+			logx.Infof("sse broadcast channel=%s userID=%d delivered=%d dropped=%d(慢连接)", p.channel, userID, delivered, dropped)
+		}
 	}
 }
 
