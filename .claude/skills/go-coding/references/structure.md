@@ -174,12 +174,12 @@ admin docmeta。生成命令见 [new-interface.md](new-interface.md)。
 - **全仓规则**（各域都已达标，不分域）：跨服务 internal import、Repository 不引 Logic 与 Component、
   Logic 不引 Repository 实现子包、`pkg` 不反引 `app`、跨服务 Redis Key 不重复定义、
   `internal/common` 根目录无 Go 文件、`common/component` 下无兜底子目录
-- **按域规则**（`STRUCT_SCOPES`，**目前只有 `app/rpc/content`**）：cron 不引 logic 与 consumer、
+- **按域规则**（`STRUCT_SCOPES`，目前 `app/rpc/content` `app/rpc/im`）：cron 不引 logic 与 consumer、
   consumer 不引业务 Repository、Logic 不存完整 `ServiceContext`、无 `utils` 目录、枚举一致性测试存在
-- **所有权规则**（`OWNERSHIP_SCOPES`，目前 `app/rpc/content`）：Logic 与 Consumer 不操作 Redis、
+- **所有权规则**（`OWNERSHIP_SCOPES`，目前 `app/rpc/content` `app/rpc/im`）：Logic 与 Consumer 不操作 Redis、
   `component` 子包必须有构造函数、Consumer 与 Cron 不存 `ctx` 或 `Logger` 字段
 
-其余 8 个服务还没迁到按域与所有权规则（`cron` 还引 `logic`、`consumer` 还引业务 Repository、
+其余 rpc 服务还没迁到按域与所有权规则（`cron` 还引 `logic`、`consumer` 还引业务 Repository、
 多处 `utils` 目录、Redis key 散在 Logic 里）。
 
 某个域清理干净后，把根路径加进对应变量就放开了。三条纪律：
@@ -249,7 +249,8 @@ admin docmeta。生成命令见 [new-interface.md](new-interface.md)。
 | 服务 | 状态 |
 |---|---|
 | `app/rpc/content` | W1–W8 全部完成（试点），三层机检均已打开 |
-| 其余 8 个服务 | 未开始，按本文骨架裁剪 |
+| `app/rpc/im` | 新增服务，按本文约束直接落地，三层机检已打开 |
+| 其余服务 | 未开始，按本文骨架裁剪 |
 
 `content` 的状态归属可作样板：
 

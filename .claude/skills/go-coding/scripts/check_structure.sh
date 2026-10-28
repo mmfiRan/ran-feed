@@ -6,11 +6,9 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "$REPO_ROOT"
 
-# 按域规则目前只有 content 域达标。某个域迁移完成后，把它的根路径加进这一行即可放开，
-# 全仓规则（下面 1~7 条）各域都已达标，不分域。
-STRUCT_SCOPES="app/rpc/content"
+STRUCT_SCOPES="app/rpc/content app/rpc/im"
 
-OWNERSHIP_SCOPES="app/rpc/content"
+OWNERSHIP_SCOPES="app/rpc/content app/rpc/im"
 
 VIOLATIONS=0
 
@@ -56,7 +54,7 @@ if [ -n "$PKG_APP" ]; then
 fi
 
 # 5 跨服务 Redis Key 只有一个契约来源 服务内不得再写字面量
-DUP_KEY=$(grep -rn --include='*.go' -E '"(feed:bigv:global|feed:hot:dirty)"' app pkg 2>/dev/null | grep -v '^pkg/rediskey/' | grep -v '_test.go' || true)
+DUP_KEY=$(grep -rn --include='*.go' -E '"(feed:bigv:global|feed:hot:dirty|notify:push|im:push)"' app pkg 2>/dev/null | grep -v '^pkg/rediskey/' | grep -v '_test.go' || true)
 if [ -n "$DUP_KEY" ]; then
   report "跨服务 Redis Key 在服务内重复定义（应走 pkg/rediskey）：" "$DUP_KEY"
 fi
